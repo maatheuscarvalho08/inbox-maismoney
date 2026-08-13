@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  operador
+}
+
+enum TipoConexao {
+  evolution
+  meta_cloud
+}
+
+enum StatusInstancia {
+  conectado
+  desconectado
+}
+
+enum StatusConversa {
+  aberta
+  em_atendimento
+  aguardando
+  encerrada
+}
+
+enum RemetenteTipo {
+  cliente
+  operador
+}
+
+model Usuario {
+  id         String   @id @default(uuid())
+  nome       String
+  email      String   @unique
+  senhaHash  String   @map("senha_hash")
+  role       Role
+  ativo      Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  conversas  Conversa[]  @relation("OperadorConversas")
+  mensagens  Mensagem[]  @relation("OperadorMensagens")
+
+  @@map("usuarios")
+}
+
+model Instancia {
+  id                 String           @id @default(uuid())
+  nome               String
+  numero             String           @unique
+  tipoConexao        TipoConexao      @map("tipo_conexao")
+  evolutionInstanceId String?         @map("evolution_instance_id")
+  metaPhoneNumberId  String?          @map("meta_phone_number_id")
+  metaWabaId         String?          @map("meta_waba_id")
+  status             StatusInstancia  @default(desconectado)
+  createdAt          DateTime         @default(now()) @map("created_at")
+
+  templates          Template[]
+  conversas          Conversa[]
+
+  @@map("instancias")
+}
+
+model Template {
+  id              String   @id @default(uuid())
+  instanciaId     String   @map("instancia_id")
+  nome            String
+  metaTemplateId  String   @map("meta_template_id")
+  variaveisSchema Json?    @map("variaveis_schema")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  instancia       Instancia @relation(fields: [instanciaId], references: [id])
+
+  @@map("templates")
+}
+
+model Contato {
+  id             String   @id @default(uuid())
+  nome           String?
+  numeroWhatsapp String   @unique @map("numero_whatsapp")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversas      Conversa[]
+
+  @@map("contatos")
+}
+
+model Conversa {
+  id            String          @id @default(uuid())
+  instanciaId   String          @map("instancia_id")
+  contatoId     String          @map("contato_id")
+  status        StatusConversa  @default(aberta)
+  operadorId    String?         @map("operador_id")
+  lastMessageAt DateTime        @default(now()) @map("last_message_at")
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  instancia     Instancia  @relation(fields: [instanciaId], references: [id])
+  contato       Contato    @relation(fields: [contatoId], references: [id])
+  operador      Usuario?   @relation("OperadorConversas", fields: [operadorId], references: [id])
+  mensagens     Mensagem[]
+  etiquetas     ConversaEtiqueta[]
+
+  @@map("conversas")
+}
+
+model Etiqueta {
+  id        String   @id @default(uuid())
+  nome      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  conversas ConversaEtiqueta[]
+
+  @@map("etiquetas")
+}
+
+model ConversaEtiqueta {
+  conversaId String   @map("conversa_id")
+  etiquetaId String   @map("etiqueta_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  conversa   Conversa @relation(fields: [conversaId], references: [id])
+  etiqueta   Etiqueta @relation(fields: [etiquetaId], references: [id])
+
+  @@id([conversaId, etiquetaId])
+  @@map("conversa_etiquetas")
+}
+
+model Mensagem {
+  id            String        @id @default(uuid())
+  conversaId    String        @map("conversa_id")
+  remetenteTipo RemetenteTipo @map("remetente_tipo")
+  operadorId    String?       @map("operador_id")
+  conteudoTexto String?       @map("conteudo_texto")
+  tipoMidia     String?       @map("tipo_midia")
+  midiaPath     String?       @map("midia_path")
+  midiaDeleted  Boolean       @default(false) @map("midia_deleted")
+  timestamp     DateTime      @default(now())
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  conversa      Conversa @relation(fields: [conversaId], references: [id])
+  operador      Usuario? @relation("OperadorMensagens", fields: [operadorId], references: [id])
+
+  @@map("mensagens")
+}

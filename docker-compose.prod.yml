@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-maismoney}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-maismoney_inbox}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-maismoney}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Só acessível pelos outros containers desta rede — não expõe 5432 na VPS.
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    volumes:
+      - backend_uploads:/app/uploads
+    ports:
+      # Só em localhost — o Nginx do host é quem expõe pra internet (com HTTPS).
+      - "127.0.0.1:3333:3333"
+
+  # Evolution API (self-hosted, números de atendimento receptivo).
+  # Confirme a imagem/variáveis mais atuais na documentação oficial antes de
+  # subir em produção — projeto self-hosted que muda com frequência.
+  evolution-api:
+    image: atendai/evolution-api:latest
+    restart: unless-stopped
+    environment:
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:?defina EVOLUTION_API_KEY no .env}
+      SERVER_URL: ${EVOLUTION_SERVER_URL:?defina EVOLUTION_SERVER_URL no .env (ex. https://seu-dominio.com/evolution)}
+      DATABASE_ENABLED: "false"
+    volumes:
+      - evolution_data:/evolution/instances
+    ports:
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  db_data:
+  backend_uploads:
+  evolution_data:
