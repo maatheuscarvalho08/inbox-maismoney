@@ -33,7 +33,7 @@ services:
   # Confirme a imagem/variáveis mais atuais na documentação oficial antes de
   # subir em produção — projeto self-hosted que muda com frequência.
   evolution-api:
-    image: atendai/evolution-api:latest
+    image: evoapicloud/evolution-api:latest
     restart: unless-stopped
     environment:
       AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:?defina EVOLUTION_API_KEY no .env}
