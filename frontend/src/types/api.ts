@@ -30,6 +30,7 @@ export interface Template {
   instanciaId: string;
   nome: string;
   metaTemplateId: string;
+  idioma: string;
   createdAt: string;
 }
 

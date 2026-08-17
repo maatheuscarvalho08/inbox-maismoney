@@ -23,6 +23,7 @@ const criarSchema = z.object({
   instanciaId: z.string().uuid(),
   nome: z.string().trim().min(1),
   metaTemplateId: z.string().trim().min(1),
+  idioma: z.string().trim().min(1).default("pt_BR"),
 });
 
 // Cadastro dos templates HSM aprovados pela Meta — admin only.

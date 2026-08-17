@@ -47,7 +47,7 @@ router.post(
     let entregue = false;
     let erroEntrega: string | undefined;
     try {
-      await enviarTemplateMeta(instancia.metaPhoneNumberId, numeroDestino, template.metaTemplateId, variaveis);
+      await enviarTemplateMeta(instancia.metaPhoneNumberId, numeroDestino, template.metaTemplateId, variaveis, template.idioma);
       entregue = true;
     } catch (err) {
       erroEntrega = err instanceof Error ? err.message : "Falha ao enviar disparo";

@@ -22,6 +22,7 @@ export async function enviarTemplateMeta(
   numero: string,
   templateName: string,
   variaveis: string[] = [],
+  idioma = "pt_BR",
 ) {
   const { data } = await client.post(`/${phoneNumberId}/messages`, {
     messaging_product: "whatsapp",
@@ -29,7 +30,7 @@ export async function enviarTemplateMeta(
     type: "template",
     template: {
       name: templateName,
-      language: { code: "pt_BR" },
+      language: { code: idioma },
       ...(variaveis.length
         ? { components: [{ type: "body", parameters: variaveis.map((texto) => ({ type: "text", text: texto })) }] }
         : {}),

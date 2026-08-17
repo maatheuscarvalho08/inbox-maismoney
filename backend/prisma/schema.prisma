@@ -71,6 +71,7 @@ model Template {
   instanciaId     String   @map("instancia_id")
   nome            String
   metaTemplateId  String   @map("meta_template_id")
+  idioma          String   @default("pt_BR")
   variaveisSchema Json?    @map("variaveis_schema")
   createdAt       DateTime @default(now()) @map("created_at")
 

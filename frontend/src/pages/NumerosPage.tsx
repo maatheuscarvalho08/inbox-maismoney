@@ -143,6 +143,7 @@ function TemplatesDaInstancia({ instanciaId }: { instanciaId: string }) {
   const [adicionando, setAdicionando] = useState(false);
   const [nome, setNome] = useState("");
   const [metaTemplateId, setMetaTemplateId] = useState("");
+  const [idioma, setIdioma] = useState("pt_BR");
   const [erro, setErro] = useState<string | null>(null);
 
   async function carregar() {
@@ -158,9 +159,10 @@ function TemplatesDaInstancia({ instanciaId }: { instanciaId: string }) {
     e.preventDefault();
     setErro(null);
     try {
-      await api.post("/templates", { instanciaId, nome, metaTemplateId });
+      await api.post("/templates", { instanciaId, nome, metaTemplateId, idioma });
       setNome("");
       setMetaTemplateId("");
+      setIdioma("pt_BR");
       setAdicionando(false);
       carregar();
     } catch (err) {
@@ -211,6 +213,13 @@ function TemplatesDaInstancia({ instanciaId }: { instanciaId: string }) {
             placeholder="ID aprovado na Meta"
             value={metaTemplateId}
             onChange={(e) => setMetaTemplateId(e.target.value)}
+            className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
+          />
+          <input
+            required
+            placeholder="Idioma (ex. pt_BR, en)"
+            value={idioma}
+            onChange={(e) => setIdioma(e.target.value)}
             className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
           />
           {erro && <p className="text-[10px] text-primary">{erro}</p>}
