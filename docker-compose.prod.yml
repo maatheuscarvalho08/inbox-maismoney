@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-maismoney_inbox}
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./deploy/postgres-init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-maismoney}"]
       interval: 5s
@@ -35,10 +36,17 @@ services:
   evolution-api:
     image: evoapicloud/evolution-api:latest
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:?defina EVOLUTION_API_KEY no .env}
       SERVER_URL: ${EVOLUTION_SERVER_URL:?defina EVOLUTION_SERVER_URL no .env (ex. https://seu-dominio.com/evolution)}
-      DATABASE_ENABLED: "false"
+      # v2 exige banco próprio mesmo em uso single-instance — reaproveita o Postgres do
+      # compose num banco separado (criado por deploy/postgres-init/001-evolution-db.sql).
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: "postgresql"
+      DATABASE_CONNECTION_URI: "postgresql://${POSTGRES_USER:-maismoney}:${POSTGRES_PASSWORD}@db:5432/evolution_api?schema=public"
     volumes:
       - evolution_data:/evolution/instances
     ports:
