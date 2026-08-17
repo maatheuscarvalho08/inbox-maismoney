@@ -47,6 +47,9 @@ services:
       DATABASE_ENABLED: "true"
       DATABASE_PROVIDER: "postgresql"
       DATABASE_CONNECTION_URI: "postgresql://${POSTGRES_USER:-maismoney}:${POSTGRES_PASSWORD}@db:5432/evolution_api?schema=public"
+      # Sem Redis nesta stack — desliga o cache pra parar de tentar conectar (opcional, não crítico).
+      CACHE_REDIS_ENABLED: "false"
+      CACHE_LOCAL_ENABLED: "true"
     volumes:
       - evolution_data:/evolution/instances
     ports:
