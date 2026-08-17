@@ -160,6 +160,15 @@ cd frontend && npm install && npm run build && cd ..
 systemctl reload nginx
 ```
 
+## Segurança — revisão feita antes do deploy (2026-08-14)
+
+Revisei o código em busca de vulnerabilidades antes de liberar o deploy. Corrigidos direto no código: path traversal no upload de mídia (usuário conseguia escrever arquivo fora de `uploads/` via `conversaId` malicioso), sessão de usuário desativado/rebaixado que continuava válida até o token expirar (até 8h), verificação de assinatura do webhook Meta que "falhava aberta" quando `META_APP_SECRET` não estava configurado, reuso do `JWT_SECRET` como chave de assinatura de mídia, e falta de rate limit geral na API.
+
+Dois pontos ficaram **documentados, não corrigidos** — avaliei que mexer agora tinha mais risco de travar o deploy do que benefício imediato:
+
+- **Container do backend roda como root** (`backend/Dockerfile` não define `USER`). Rodar como usuário não-root é mais seguro, mas exige garantir que o volume `backend_uploads` tenha permissão de escrita pro novo usuário — não dá pra validar isso sem um Docker de verdade rodando (este ambiente de dev não tem Docker). Recomendo revisitar depois que o deploy inicial estiver estável.
+- **`npm audit` no backend acusa uma vulnerabilidade alta em `deepmerge-ts`**, puxada por `@prisma/config`/`prisma`. É a *CLI* do Prisma (usada só em `prisma migrate deploy` no start do container), não código exposto a request HTTP — risco prático baixo. Ainda não existe versão corrigida publicada. Rode `npm audit` de novo mais perto do deploy pra ver se já saiu fix.
+
 ## O que eu não consegui validar daqui
 
 Este ambiente de desenvolvimento não tem Docker instalado (sem acesso admin), então

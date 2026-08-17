@@ -2,15 +2,10 @@ import crypto from "crypto";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../config/env.js";
 
-let avisoEmitido = false;
-
 export function verifyMetaSignature(req: Request, res: Response, next: NextFunction) {
   if (!env.META_APP_SECRET) {
-    if (!avisoEmitido) {
-      console.warn("META_APP_SECRET não configurado — assinatura do webhook Meta não está sendo verificada.");
-      avisoEmitido = true;
-    }
-    return next();
+    console.error("META_APP_SECRET não configurado — recusando webhook Meta. Configure antes de conectar números reais.");
+    return res.status(503).json({ error: "Webhook não configurado" });
   }
 
   const assinatura = req.headers["x-hub-signature-256"];

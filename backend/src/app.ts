@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { env } from "./config/env.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import conversasRoutes from "./modules/conversas/conversas.routes.js";
@@ -34,6 +35,17 @@ app.use(
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
+
+// Camada extra de proteção contra loop de script/uso abusivo de um token vazado.
+// Webhooks ficam de fora porque precisam aceitar rajadas normais da Evolution API / Meta.
+const apiRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.path.startsWith("/api/webhooks"),
+});
+app.use("/api", apiRateLimit);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/conversas", conversasRoutes);
