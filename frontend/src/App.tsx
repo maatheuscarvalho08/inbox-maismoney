@@ -21,6 +21,13 @@ const DisparosPage = lazy(() => import("./pages/DisparosPage").then((m) => ({ de
 const ConfiguracoesPage = lazy(() =>
   import("./pages/ConfiguracoesPage").then((m) => ({ default: m.ConfiguracoesPage })),
 );
+const DiscadoraPage = lazy(() => import("./pages/DiscadoraPage").then((m) => ({ default: m.DiscadoraPage })));
+const DiscadoraNovaPage = lazy(() =>
+  import("./pages/DiscadoraNovaPage").then((m) => ({ default: m.DiscadoraNovaPage })),
+);
+const DiscadoraDetalhePage = lazy(() =>
+  import("./pages/DiscadoraDetalhePage").then((m) => ({ default: m.DiscadoraDetalhePage })),
+);
 
 function RouteFallback() {
   return <div className="flex h-full items-center justify-center p-8 text-sm text-muted">Carregando...</div>;
@@ -59,6 +66,9 @@ export default function App() {
               <Route path=":id" element={pagina(ConversaDetalhePage)} />
             </Route>
             <Route path="/disparos" element={pagina(DisparosPage)} />
+            <Route path="/discadora" element={pagina(DiscadoraPage)} />
+            <Route path="/discadora/nova" element={pagina(DiscadoraNovaPage)} />
+            <Route path="/discadora/:id" element={pagina(DiscadoraDetalhePage)} />
             <Route path="/configuracoes" element={pagina(ConfiguracoesPage)} />
 
             <Route element={<ProtectedRoute allow={["admin"]} />}>

@@ -14,8 +14,10 @@ import usuariosRoutes from "./modules/usuarios/usuarios.routes.js";
 import etiquetasRoutes from "./modules/etiquetas/etiquetas.routes.js";
 import configRoutes from "./modules/config/config.routes.js";
 import midiaRoutes from "./modules/midia/midia.routes.js";
+import campanhasRoutes from "./modules/campanhas/campanhas.routes.js";
 import evolutionWebhookRoutes from "./modules/webhooks/evolution.routes.js";
 import metaWebhookRoutes from "./modules/webhooks/meta.routes.js";
+import twilioWebhookRoutes from "./modules/webhooks/twilio.routes.js";
 
 export const app = express();
 
@@ -58,8 +60,10 @@ app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/etiquetas", etiquetasRoutes);
 app.use("/api/config", configRoutes);
 app.use("/api/midia", midiaRoutes);
+app.use("/api/campanhas", campanhasRoutes);
 app.use("/api/webhooks", evolutionWebhookRoutes);
 app.use("/api/webhooks", metaWebhookRoutes);
+app.use("/api/webhooks/twilio", twilioWebhookRoutes);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);

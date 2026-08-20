@@ -22,13 +22,32 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file:
       - ./backend/.env
+    environment:
+      # Fila da discadora (Fase 2) — Redis dedicado do compose, não o mesmo Redis desligado no Evolution API.
+      REDIS_URL: redis://redis:6379
     volumes:
       - backend_uploads:/app/uploads
     ports:
       # Só em localhost — o Nginx do host é quem expõe pra internet (com HTTPS).
       - "127.0.0.1:3333:3333"
+
+  # Fila de discagem da discadora (Fase 2, BullMQ). Isolado do Evolution API, que
+  # roda com cache local em vez de Redis (ver comentário abaixo).
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Só acessível pelos outros containers desta rede.
 
   # Evolution API (self-hosted, números de atendimento receptivo).
   # Confirme a imagem/variáveis mais atuais na documentação oficial antes de
@@ -59,3 +78,4 @@ volumes:
   db_data:
   backend_uploads:
   evolution_data:
+  redis_data:

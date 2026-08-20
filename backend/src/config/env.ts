@@ -22,6 +22,12 @@ const envSchema = z.object({
   // Deleção automática de mídia
   MEDIA_RETENTION_DIAS: z.coerce.number().default(4),
   UPLOADS_DIR: z.string().default("uploads"),
+
+  // Discadora (Fase 2) — Twilio Voice + IVR
+  TWILIO_ACCOUNT_SID: z.string().default(""),
+  TWILIO_AUTH_TOKEN: z.string().default(""),
+  TWILIO_PHONE_NUMBER: z.string().default(""),
+  REDIS_URL: z.string().default("redis://localhost:6379"),
 });
 
 export const env = envSchema.parse(process.env);

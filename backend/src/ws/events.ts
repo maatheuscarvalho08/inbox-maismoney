@@ -11,3 +11,7 @@ export function emitConversaAtualizada(conversa: unknown) {
 export function emitInstanciaAtualizada(instancia: unknown) {
   getIo().emit("instancia:atualizada", instancia);
 }
+
+export function emitCampanhaAtualizada(payload: unknown) {
+  getIo().emit("campanha:atualizada", payload);
+}

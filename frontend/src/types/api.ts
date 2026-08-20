@@ -82,3 +82,47 @@ export interface ResumoMetricas {
   percentualNaoRespondidas: number;
   tempoMedioSegundos: number;
 }
+
+export type StatusCampanha = "rascunho" | "em_andamento" | "pausada" | "concluida";
+export type StatusLigacao = "pendente" | "discando" | "atendeu" | "nao_atendeu" | "ocupado" | "erro";
+
+export interface CampanhaNumero {
+  id: string;
+  campanhaId: string;
+  numeroWhatsapp: string;
+  nomeContato: string | null;
+  statusLigacao: StatusLigacao;
+  apertou1: boolean;
+  hsmDisparado: boolean;
+  twilioCallSid: string | null;
+  iniciadoEm: string | null;
+  finalizadoEm: string | null;
+}
+
+export interface ResumoCampanha {
+  total: number;
+  pendente: number;
+  discando: number;
+  atendeu: number;
+  naoAtendeu: number;
+  ocupado: number;
+  erro: number;
+  convertido: number;
+}
+
+export interface Campanha {
+  id: string;
+  nome: string;
+  audioPath: string;
+  templateId: string;
+  instanciaId: string;
+  status: StatusCampanha;
+  totalNumeros: number;
+  criadoPor: string;
+  createdAt: string;
+  template: Template;
+  instancia: Instancia;
+  criador: { id: string; nome: string };
+  numeros?: CampanhaNumero[];
+  resumo?: ResumoCampanha;
+}

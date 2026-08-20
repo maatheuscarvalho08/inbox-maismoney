@@ -34,6 +34,22 @@ enum RemetenteTipo {
   operador
 }
 
+enum StatusCampanha {
+  rascunho
+  em_andamento
+  pausada
+  concluida
+}
+
+enum StatusLigacao {
+  pendente
+  discando
+  atendeu
+  nao_atendeu
+  ocupado
+  erro
+}
+
 model Usuario {
   id         String   @id @default(uuid())
   nome       String
@@ -45,6 +61,7 @@ model Usuario {
 
   conversas  Conversa[]  @relation("OperadorConversas")
   mensagens  Mensagem[]  @relation("OperadorMensagens")
+  campanhas  CampanhaDiscadora[]
 
   @@map("usuarios")
 }
@@ -62,6 +79,7 @@ model Instancia {
 
   templates          Template[]
   conversas          Conversa[]
+  campanhas          CampanhaDiscadora[]
 
   @@map("instancias")
 }
@@ -76,6 +94,7 @@ model Template {
   createdAt       DateTime @default(now()) @map("created_at")
 
   instancia       Instancia @relation(fields: [instanciaId], references: [id])
+  campanhas       CampanhaDiscadora[]
 
   @@map("templates")
 }
@@ -147,4 +166,40 @@ model Mensagem {
   operador      Usuario? @relation("OperadorMensagens", fields: [operadorId], references: [id])
 
   @@map("mensagens")
+}
+
+model CampanhaDiscadora {
+  id                 String          @id @default(uuid())
+  nome               String
+  audioPath          String          @map("audio_path")
+  templateId         String          @map("template_id")
+  instanciaId        String          @map("instancia_id")
+  status             StatusCampanha  @default(rascunho)
+  totalNumeros       Int             @default(0) @map("total_numeros")
+  criadoPor          String          @map("criado_por")
+  createdAt          DateTime        @default(now()) @map("created_at")
+
+  template           Template        @relation(fields: [templateId], references: [id])
+  instancia           Instancia      @relation(fields: [instanciaId], references: [id])
+  criador             Usuario        @relation(fields: [criadoPor], references: [id])
+  numeros             CampanhaNumero[]
+
+  @@map("campanhas_discadora")
+}
+
+model CampanhaNumero {
+  id             String        @id @default(uuid())
+  campanhaId     String        @map("campanha_id")
+  numeroWhatsapp String        @map("numero_whatsapp")
+  nomeContato    String?       @map("nome_contato")
+  statusLigacao  StatusLigacao @default(pendente) @map("status_ligacao")
+  apertou1       Boolean       @default(false) @map("apertou_1")
+  hsmDisparado   Boolean       @default(false) @map("hsm_disparado")
+  twilioCallSid  String?       @map("twilio_call_sid")
+  iniciadoEm     DateTime?     @map("iniciado_em")
+  finalizadoEm   DateTime?     @map("finalizado_em")
+
+  campanha       CampanhaDiscadora @relation(fields: [campanhaId], references: [id])
+
+  @@map("campanha_numeros")
 }
