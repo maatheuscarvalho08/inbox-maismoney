@@ -28,7 +28,7 @@ Uma plataforma web interna para centralizar e gerenciar todos os atendimentos vi
 - **Banco de dados:** PostgreSQL (self-hosted no VPS)
 - **WhatsApp API:** Evolution API (self-hosted, Docker) para atendimento receptivo + Meta Cloud API (oficial) para disparos
 - **Armazenamento de mídia:** Local no VPS (temporário, com deleção automática)
-- **Hospedagem:** VPS Hostinger KVM 2 (~2 vCPU / 4GB RAM)
+- **Hospedagem:** VPS Hostinger KVM 2 (2 vCPU / 8GB RAM, confirmado em produção), Docker + Traefik (com n8n já rodando na mesma VPS, não gerenciado por este projeto)
 - **Autenticação:** JWT com roles (admin / operador)
 
 ---
@@ -42,7 +42,7 @@ Uma plataforma web interna para centralizar e gerenciar todos os atendimentos vi
 | Número 3 | Evolution API (self-hosted) | Atendimento receptivo |
 | Número 4 | Evolution API (self-hosted) | Atendimento receptivo |
 
-**Meta Cloud API:** webhook já configurado — apenas apontar endpoint do backend da plataforma. Cada número tem 3 templates HSM aprovados pela Meta.
+**Meta Cloud API:** integração testada e funcional de ponta a ponta em produção — webhook configurado (`https://inbox.maismoney.org/api/webhooks/meta`), assinatura verificada, handshake e teste de payload confirmados via log real do Nginx. Número `+55 21 99311-2632` (App ID `1007205988508804`, WABA `1033046152722350`) tem 4 templates HSM aprovados. **Pendência:** esse número estava ligado ao WhatsApp Business App normal; a conta foi excluída do celular pra liberar a migração, a verificação por SMS foi concluída, mas o registro no Cloud API ficou em status "Pendente" por mais de 1h sem progredir — chamado aberto no suporte da Meta pra destravar. Sem esse registro completo, mensagens reais não chegam no webhook (confirmado via teste real: mensagem entregue no celular, nada no backend).
 
 **Evolution API:** self-hosted via Docker, cada número é uma instância separada.
 
@@ -60,39 +60,49 @@ Uma plataforma web interna para centralizar e gerenciar todos os atendimentos vi
 
 ---
 
-## 6. FUNCIONALIDADES OBRIGATÓRIAS — FASE 1
+## 6. FUNCIONALIDADES — ESTADO ATUAL (FASE 1)
 
 ### 6.1 — Atendimento
-- [ ] Visualizar todas as conversas ativas de todos os números em uma única tela
-- [ ] Abrir conversa e ver histórico de mensagens
-- [ ] Enviar mensagens de texto
-- [ ] Enviar áudios, fotos e outros arquivos de mídia
-- [ ] Registrar qual operador respondeu cada mensagem
-- [ ] Indicar status da conversa (aberta / em atendimento / aguardando / encerrada)
+- [x] Visualizar todas as conversas ativas de todos os números em uma única tela
+- [x] Abrir conversa e ver histórico de mensagens
+- [x] Enviar mensagens de texto
+- [x] Enviar áudios, fotos e outros arquivos de mídia
+- [x] Registrar qual operador respondeu cada mensagem
+- [x] Indicar status da conversa (aberta / em_atendimento / aguardando / encerrada)
 
 ### 6.2 — Métricas
-- [ ] Volume de mensagens por período (dia/semana/mês)
-- [ ] % de mensagens não respondidas
-- [ ] Volume de atendimentos por operador
-- [ ] Tempo médio de resposta (desejável)
+- [x] Volume de mensagens por período (dia/semana/mês)
+- [x] % de mensagens não respondidas
+- [x] Volume de atendimentos por operador
+- [x] Tempo médio de resposta
 
 ### 6.3 — Gestão de usuários
-- [ ] Criar/editar/desativar operadores
-- [ ] Definir role (admin / operador)
-- [ ] Login com e-mail e senha
+- [x] Criar/editar/desativar operadores
+- [x] Definir role (admin / operador)
+- [x] Login com e-mail e senha
 
-### 6.4 — Módulo de Disparos (Meta Cloud API)
-- [ ] Selecionar número de origem (dos 2 números oficiais)
-- [ ] Selecionar template HSM aprovado (3 por número)
-- [ ] Preencher variáveis do template
-- [ ] Inserir número(s) destinatário(s)
-- [ ] Enviar disparo e registrar no histórico
-- [ ] Receber e exibir respostas aos disparos na tela de conversas
+### 6.4 — Etiquetas
+- [x] Sistema livre de etiquetas — qualquer usuário cria etiqueta com nome próprio (até 40 caracteres), sem lista predefinida
+- [x] Etiqueta anexável em quantas conversas quiser
+- [x] Filtro dedicado por etiqueta na tela de Conversas
 
-### 6.5 — Conexão WhatsApp
-- [ ] Listar instâncias Evolution API conectadas
-- [ ] Status de cada número (conectado / desconectado)
-- [ ] QR Code para reconectar número (admin only)
+### 6.5 — Configurações
+- [x] Card de perfil (todos os usuários): editar nome e senha, com confirmação da senha atual
+- [x] Card de sistema (admin only, somente leitura): nome da empresa, dias de retenção de mídia, contadores
+
+### 6.6 — Módulo de Disparos (Meta Cloud API)
+- [x] Selecionar número de origem (dos 2 números oficiais)
+- [x] Selecionar template HSM aprovado (3 por número), com importação em massa via CSV
+- [x] Preencher variáveis do template
+- [x] Inserir número(s) destinatário(s)
+- [x] Enviar disparo e registrar no histórico
+- [x] Receber e exibir respostas aos disparos na tela de conversas
+- Código pronto e testado ponta a ponta; ver seção 4 sobre o status do número de produção
+
+### 6.7 — Conexão WhatsApp
+- [x] Listar instâncias Evolution API e Meta Cloud API cadastradas
+- [x] Status de cada número (conectado / desconectado)
+- [x] QR Code para reconectar número Evolution API (admin only)
 
 ---
 
@@ -213,15 +223,43 @@ mensagens (
 
 ---
 
-## 12. O QUE NÃO CONSTRUIR AGORA
+## 12. FASE 2 (PLANEJADO — NÃO CONSTRUIR AGORA): DISCADORA (Twilio Voice + IVR)
+
+### Fluxo
+1. Operador cria campanha: seleciona lista de números + áudio MP3 + template HSM de destino
+2. Sistema enfileira as ligações com concorrência controlada (5 simultâneas)
+3. Twilio disca o número → toca o áudio MP3 (TwiML `<Play>`)
+4. Sistema aguarda DTMF (`<Gather>`) — cliente aperta 1
+5. Webhook do Twilio recebe o DTMF → backend dispara o template HSM correspondente via Meta Cloud API
+6. Resultado da campanha registrado (atendeu / não atendeu / converteu)
+
+### Stack
+- **Twilio Voice API** — chamadas e captura de DTMF
+- **TwiML** — script da chamada (tocar áudio, aguardar input)
+- **BullMQ + Redis** — fila de discagem, controle de concorrência (5 simultâneas), retry
+- **Meta Cloud API** — já existente no projeto, dispara o HSM ao receber o DTMF
+
+### Volume estimado
+- ~50 ligações/dia, 5 simultâneas
+- Custo Twilio estimado: US$30–60/mês dependendo da proporção fixo/celular
+
+### Ressalva de compliance
+- Ligação automática com áudio pregravado (robocall) é regulada pela ANATEL (Resolução 692) no Brasil
+- Confirmado pelo responsável do negócio: base de clientes com consentimento via operação bancária
+- Recomendação: validar com jurídico se esse consentimento cobre especificamente contato automatizado por voz, não só contato geral — decisão de negócio, não bloqueia o desenvolvimento
+
+---
+
+## 13. O QUE NÃO CONSTRUIR AGORA
 
 - Multi-tenancy (SaaS) — fase futura
 - Bot de atendimento automático — fora do escopo desta fase
 - Integração com CorbanCRM — pode ser considerada depois
+- Discadora / Twilio Voice + IVR — ver seção 12, planejado para Fase 2
 
 ---
 
-## 13. PRIORIDADE DE BUILD
+## 14. PRIORIDADE DE BUILD
 
 1. Autenticação (login, JWT, roles)
 2. Conexão Evolution API + webhook receiver (atendimento receptivo)
@@ -233,11 +271,11 @@ mensagens (
 8. Gestão de usuários
 9. Job de deleção de mídia (cron) — regra dos 4 dias confirmada pelo dono do negócio, sem necessidade de aguardar validação BACEN antes de implementar
 
-**Status:** itens 1–9 implementados no backend **e** conectados ao frontend (ver README.md → Status para detalhes). Todas as telas usam dado real do Postgres, sem mock. Sistema pronto para deploy (ver [DEPLOY.md](./DEPLOY.md)): Dockerfile do backend, `docker-compose.prod.yml`, config de Nginx, hardening básico (helmet, rate limit no login, shutdown gracioso). Falta apenas configurar credenciais reais da Evolution API / Meta Cloud API para validar entrega de mensagens de verdade — sem elas, o envio salva localmente mas retorna "não entregue".
+**Status:** itens 1–9 implementados no backend **e** conectados ao frontend (ver README.md → Status para detalhes), com deploy real em produção em `https://inbox.maismoney.org` (VPS Hostinger, Docker + Traefik, Postgres, Evolution API). Todas as telas usam dado real do Postgres, sem mock. Hardening aplicado: helmet, rate limit (login + geral), shutdown gracioso, path traversal corrigido no upload de mídia, verificação de usuário ativo a cada request, webhook Meta com assinatura obrigatória (fail-closed). Único item pendente: migração de registro do número de produção Meta Cloud API travada no lado da Meta (ver seção 4) — sem ela, disparos/recebimento reais não funcionam, mas o código e a infraestrutura estão prontos e testados.
 
 ---
 
-## 14. OBSERVAÇÕES FINAIS
+## 15. OBSERVAÇÕES FINAIS
 
 - Projeto começa como uso interno, código deve estar organizado para escalar para SaaS depois (separar lógica de tenant desde o início, mesmo que com tenant único por ora)
 - Nenhuma mídia deve ser servida com URL pública permanente — sempre URL assinada ou rota autenticada

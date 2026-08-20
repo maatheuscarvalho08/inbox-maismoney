@@ -1,0 +1,27 @@
+Assunto: Migração de número para WhatsApp Cloud API travada em "Pendente" há mais de 1 hora
+
+Descrição:
+
+Estou migrando um número de telefone existente do WhatsApp Business App para a WhatsApp Business Platform (Cloud API) através do WhatsApp Manager.
+
+Dados do número e da conta:
+- Número: +55 21 99311-2632
+- WABA ID (antes da migração): 1033046152722350
+- Phone Number ID (antes da migração): 1215845881605291
+- App ID: 1007205988508804
+- Nome verificado: MaisMoney
+
+O que foi feito, em ordem:
+1. O número estava ativo no WhatsApp Business App (aplicativo móvel).
+2. Exclui a conta do WhatsApp Business App no celular para liberar o número.
+3. Retornei ao WhatsApp Manager e reenviei o código de verificação.
+4. Recebi o código por SMS e confirmei a verificação normalmente.
+5. Desde então, o número aparece com status "Pendente" no WhatsApp Manager.
+
+Problema:
+Já se passou mais de 1 hora desde a confirmação do código de verificação e o status continua "Pendente", sem mudança. Além disso, os IDs originais (WABA ID 1033046152722350 e Phone Number ID 1215845881605291) passaram a retornar erro "Object does not exist" na Graph API (código 100, subcode 33) para o mesmo token de sistema que tinha acesso normal a eles antes da migração — mesmo o token continuando válido para o app (confirmado via /debug_token).
+
+Tentei também chamar o endpoint POST /{phone-number-id}/register diretamente com PIN antes da migração pela interface, e recebi o erro "Register endpoint is not available for SMB businesses" (código 100) — por isso a migração foi feita pela interface gráfica do WhatsApp Manager em vez de via API.
+
+Solicito:
+Verificar por que a migração está travada em "Pendente" há mais de 1 hora e, se possível, forçar a finalização do provisionamento do número na Cloud API, ou informar um novo Phone Number ID / WABA ID caso já tenham sido recriados do lado de vocês.
