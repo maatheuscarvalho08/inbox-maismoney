@@ -10,7 +10,7 @@ import { assinarMidia } from "../../lib/signedUrl.js";
 import { criarMensagem, listMensagensPorConversa } from "./mensagens.service.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { enviarMidiaEvolution, enviarTextoEvolution } from "../../integrations/evolutionApi.js";
-import { enviarMidiaMeta, enviarTextoMeta } from "../../integrations/metaCloudApi.js";
+import { enviarMidiaMeta, enviarTextoMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
 import { converterParaOgg, precisaConverterAudio } from "../../lib/audioConvert.js";
 
 const router = Router();
@@ -127,8 +127,8 @@ router.post(
         }
       }
     } catch (err) {
-      erroEntrega = err instanceof Error ? err.message : "Falha ao enviar mensagem";
-      console.error("Falha ao entregar mensagem via WhatsApp:", err);
+      erroEntrega = mensagemErroMeta(err);
+      console.error("Falha ao entregar mensagem via WhatsApp:", erroEntrega);
     }
 
     // Guarda o wamid/key.id de retorno como externalId da própria mensagem — é isso que

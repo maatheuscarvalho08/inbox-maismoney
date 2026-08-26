@@ -1,6 +1,17 @@
 import axios from "axios";
 import { env } from "../config/env.js";
 
+// axios.isAxiosError não é suficiente sozinho pra extrair a mensagem real — por padrão
+// o console trunca err.response.data como [Object], escondendo o motivo de verdade
+// (ex.: "(#132001) Template name does not exist"). Usar isso em vez de err.message.
+export function mensagemErroMeta(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const erroApi = err.response?.data?.error;
+    if (erroApi?.message) return `${erroApi.message}${erroApi.error_subcode ? ` (${erroApi.error_subcode})` : ""}`;
+  }
+  return err instanceof Error ? err.message : "Falha ao enviar mensagem";
+}
+
 const client = axios.create({
   baseURL: `https://graph.facebook.com/${env.META_API_VERSION}`,
   headers: { Authorization: `Bearer ${env.META_ACCESS_TOKEN}` },

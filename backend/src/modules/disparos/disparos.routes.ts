@@ -6,7 +6,7 @@ import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { findOrCreateContato } from "../contatos/contatos.service.js";
 import { findOrCreateConversaAberta } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
-import { enviarTemplateMeta } from "../../integrations/metaCloudApi.js";
+import { enviarTemplateMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 
 const router = Router();
@@ -47,11 +47,13 @@ router.post(
     let entregue = false;
     let erroEntrega: string | undefined;
     try {
-      await enviarTemplateMeta(instancia.metaPhoneNumberId, numeroDestino, template.metaTemplateId, variaveis, template.idioma);
+      // A Meta identifica o template pelo NOME, não pelo ID numérico armazenado em
+      // metaTemplateId (esse serve só pra referência/exclusão via API de gestão).
+      await enviarTemplateMeta(instancia.metaPhoneNumberId, numeroDestino, template.nome, variaveis, template.idioma);
       entregue = true;
     } catch (err) {
-      erroEntrega = err instanceof Error ? err.message : "Falha ao enviar disparo";
-      console.error("Falha ao enviar disparo via Meta Cloud API:", err);
+      erroEntrega = mensagemErroMeta(err);
+      console.error("Falha ao enviar disparo via Meta Cloud API:", erroEntrega);
     }
 
     const mensagem = await criarMensagem({

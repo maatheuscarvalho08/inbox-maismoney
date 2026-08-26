@@ -5,7 +5,7 @@ import { prisma } from "../../db/prisma.js";
 import { env } from "../../config/env.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { verifyTwilioSignature } from "../../middleware/verifyTwilioSignature.js";
-import { enviarTemplateMeta } from "../../integrations/metaCloudApi.js";
+import { enviarTemplateMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
 import { emitirAtualizacaoCampanha } from "../../modules/campanhas/campanhas.service.js";
 import type { StatusLigacao } from "@prisma/client";
 
@@ -71,13 +71,13 @@ router.post(
           await enviarTemplateMeta(
             numero.campanha.instancia.metaPhoneNumberId,
             numero.numeroWhatsapp,
-            numero.campanha.template.metaTemplateId,
+            numero.campanha.template.nome,
             [],
             numero.campanha.template.idioma,
           );
           await prisma.campanhaNumero.update({ where: { id: numero.id }, data: { hsmDisparado: true } });
         } catch (err) {
-          console.error("Erro ao disparar HSM da discadora:", err);
+          console.error("Erro ao disparar HSM da discadora:", mensagemErroMeta(err));
         }
       }
 
