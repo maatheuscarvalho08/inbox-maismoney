@@ -126,7 +126,9 @@ export function ConversaDetalhePage() {
           conversaId={conversa.id}
           tipoConexao={conversa.instancia.tipoConexao}
           ultimaMensagemClienteEm={ultimaDoCliente?.timestamp ?? null}
-          onEnviada={(msg) => setMensagens((atual) => [...atual, msg])}
+          onEnviada={(msg) =>
+            setMensagens((atual) => (atual.some((m) => m.id === msg.id) ? atual : [...atual, msg]))
+          }
         />
       </div>
 
