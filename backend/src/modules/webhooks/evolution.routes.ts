@@ -52,20 +52,23 @@ router.post(
               conversaId: conversa.id,
               remetenteTipo: "cliente",
               conteudoTexto: texto ?? null,
+              externalId: msg?.key?.id ?? null,
               timestamp: msg?.messageTimestamp ? new Date(Number(msg.messageTimestamp) * 1000) : undefined,
             });
 
-            const conversaAtualizada = await prisma.conversa.findUnique({
-              where: { id: conversa.id },
-              include: {
-                contato: true,
-                instancia: { select: { id: true, nome: true, numero: true, tipoConexao: true } },
-                operador: { select: { id: true, nome: true } },
-              },
-            });
+            if (mensagem) {
+              const conversaAtualizada = await prisma.conversa.findUnique({
+                where: { id: conversa.id },
+                include: {
+                  contato: true,
+                  instancia: { select: { id: true, nome: true, numero: true, tipoConexao: true } },
+                  operador: { select: { id: true, nome: true } },
+                },
+              });
 
-            emitNovaMensagem(mensagem);
-            if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
+              emitNovaMensagem(mensagem);
+              if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
+            }
           }
         }
       }

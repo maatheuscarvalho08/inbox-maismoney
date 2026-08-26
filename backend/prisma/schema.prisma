@@ -159,6 +159,10 @@ model Mensagem {
   tipoMidia     String?       @map("tipo_midia")
   midiaPath     String?       @map("midia_path")
   midiaDeleted  Boolean       @default(false) @map("midia_deleted")
+  // ID da mensagem no provedor (wamid da Meta, key.id do Baileys/Evolution) — usado pra
+  // não duplicar quando o webhook reentrega o mesmo evento (a Meta garante "pelo menos
+  // uma vez", não "exatamente uma vez"). Nulo pra mensagens criadas pelo operador/sistema.
+  externalId    String?       @unique @map("external_id")
   timestamp     DateTime      @default(now())
   createdAt     DateTime      @default(now()) @map("created_at")
 

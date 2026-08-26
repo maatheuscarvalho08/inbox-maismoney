@@ -56,8 +56,13 @@ router.post(
               conversaId: conversa.id,
               remetenteTipo: "cliente",
               conteudoTexto: texto ?? null,
+              externalId: msg.id ?? null,
               timestamp: msg.timestamp ? new Date(Number(msg.timestamp) * 1000) : undefined,
             });
+
+            // null = a Meta reentregou um evento que já processamos (externalId duplicado);
+            // não emite de novo, já foi tratado da primeira vez.
+            if (!mensagem) continue;
 
             const conversaAtualizada = await prisma.conversa.findUnique({
               where: { id: conversa.id },
