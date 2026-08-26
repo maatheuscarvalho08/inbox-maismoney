@@ -12,6 +12,17 @@ function normalizarNumero(valor: string) {
   return valor.replace(/\D/g, "");
 }
 
+function aguardar(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function formatarDuracao(segundosTotais: number) {
+  const h = Math.floor(segundosTotais / 3600);
+  const m = Math.floor((segundosTotais % 3600) / 60);
+  if (h > 0) return `${h}h${m.toString().padStart(2, "0")}min`;
+  return `${m}min`;
+}
+
 export function DisparosPage() {
   const [instancias, setInstancias] = useState<Instancia[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -30,7 +41,11 @@ export function DisparosPage() {
   const [erroCsv, setErroCsv] = useState<string | null>(null);
   const inputCsvRef = useRef<HTMLInputElement>(null);
 
+  const [intervaloMin, setIntervaloMin] = useState(1);
+  const [intervaloSeg, setIntervaloSeg] = useState(30);
+
   const [enviando, setEnviando] = useState(false);
+  const [progresso, setProgresso] = useState<{ atual: number; total: number } | null>(null);
   const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null);
 
   useEffect(() => {
@@ -112,14 +127,17 @@ export function DisparosPage() {
         );
         setNumeroDestino("");
       } else {
+        const intervaloMs = (intervaloMin * 60 + intervaloSeg) * 1000;
         let sucesso = 0;
         let falha = 0;
-        for (const numero of numerosDetectados) {
+
+        for (let i = 0; i < numerosDetectados.length; i++) {
+          setProgresso({ atual: i + 1, total: numerosDetectados.length });
           try {
             const res = await api.post<{ entregue: boolean }>("/disparos", {
               instanciaId,
               templateId,
-              numeroDestino: numero,
+              numeroDestino: numerosDetectados[i],
               variaveis: variaveisLimpo,
             });
             if (res.entregue) sucesso++;
@@ -127,7 +145,12 @@ export function DisparosPage() {
           } catch {
             falha++;
           }
+          // Intervalo entre mensagens (padrão 1:30) — não espera depois da última.
+          if (i < numerosDetectados.length - 1 && intervaloMs > 0) {
+            await aguardar(intervaloMs);
+          }
         }
+        setProgresso(null);
         setResultado({
           ok: falha === 0,
           texto: `${sucesso} de ${numerosDetectados.length} disparo(s) entregue(s)${falha ? `, ${falha} falharam` : ""}.`,
@@ -139,6 +162,7 @@ export function DisparosPage() {
       setResultado({ ok: false, texto: err instanceof ApiError ? err.message : "Não foi possível enviar o disparo" });
     } finally {
       setEnviando(false);
+      setProgresso(null);
     }
   }
 
@@ -253,6 +277,36 @@ export function DisparosPage() {
             )}
           </div>
 
+          {modo === "csv" && numerosDetectados.length > 1 && (
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted">
+                Intervalo entre cada mensagem (evita bloqueio por envio em massa)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  value={intervaloMin}
+                  onChange={(e) => setIntervaloMin(Math.max(0, Number(e.target.value)))}
+                  className="w-16 rounded-md border border-border bg-bg/60 px-2 py-1.5 text-center text-sm text-white outline-none focus:border-primary"
+                />
+                <span className="text-xs text-muted">min</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={intervaloSeg}
+                  onChange={(e) => setIntervaloSeg(Math.min(59, Math.max(0, Number(e.target.value))))}
+                  className="w-16 rounded-md border border-border bg-bg/60 px-2 py-1.5 text-center text-sm text-white outline-none focus:border-primary"
+                />
+                <span className="text-xs text-muted">seg</span>
+              </div>
+              <p className="mt-1.5 text-xs text-muted">
+                Tempo estimado total: ~{formatarDuracao((intervaloMin * 60 + intervaloSeg) * (numerosDetectados.length - 1))}
+              </p>
+            </div>
+          )}
+
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <label className="text-xs font-medium text-muted">Variáveis do template</label>
@@ -286,6 +340,20 @@ export function DisparosPage() {
               ))}
             </div>
           </div>
+
+          {progresso && (
+            <div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-border">
+                <div
+                  className="h-full bg-primary transition-all duration-300 ease-out"
+                  style={{ width: `${(progresso.atual / progresso.total) * 100}%` }}
+                />
+              </div>
+              <p className="mt-1.5 text-xs text-muted">
+                Enviando {progresso.atual} de {progresso.total}...
+              </p>
+            </div>
+          )}
 
           {resultado && <p className="text-sm text-primary">{resultado.texto}</p>}
 

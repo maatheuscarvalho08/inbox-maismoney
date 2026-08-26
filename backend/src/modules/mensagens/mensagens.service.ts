@@ -1,4 +1,4 @@
-import type { RemetenteTipo } from "@prisma/client";
+import type { RemetenteTipo, StatusEntrega } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 
 export async function listMensagensPorConversa(conversaId: string) {
@@ -17,6 +17,7 @@ interface CriarMensagemInput {
   tipoMidia?: string | null;
   midiaPath?: string | null;
   externalId?: string | null;
+  statusEntrega?: StatusEntrega | null;
   timestamp?: Date;
 }
 

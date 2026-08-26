@@ -46,10 +46,11 @@ router.post(
 
     let entregue = false;
     let erroEntrega: string | undefined;
+    let idEnvio: string | undefined;
     try {
       // A Meta identifica o template pelo NOME, não pelo ID numérico armazenado em
       // metaTemplateId (esse serve só pra referência/exclusão via API de gestão).
-      await enviarTemplateMeta(instancia.metaPhoneNumberId, numeroDestino, template.nome, variaveis, template.idioma);
+      idEnvio = await enviarTemplateMeta(instancia.metaPhoneNumberId, numeroDestino, template.nome, variaveis, template.idioma);
       entregue = true;
     } catch (err) {
       erroEntrega = mensagemErroMeta(err);
@@ -61,6 +62,8 @@ router.post(
       remetenteTipo: "operador",
       operadorId: req.user!.id,
       conteudoTexto: `[Disparo · template "${template.nome}"] ${variaveis.join(", ")}`.trim(),
+      externalId: idEnvio ?? null,
+      statusEntrega: idEnvio ? "enviado" : "falhou",
     });
 
     const conversaAtualizada = await prisma.conversa.findUnique({
