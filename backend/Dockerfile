@@ -3,7 +3,9 @@ FROM node:22-alpine
 WORKDIR /app
 
 # Prisma precisa da libc real (não musl) para o motor de query no Alpine.
-RUN apk add --no-cache openssl libc6-compat
+# ffmpeg converte áudio gravado no navegador (webm/opus) pra ogg/opus, formato que a
+# Meta Cloud API aceita de verdade pra mensagem de voz (webm não está na lista dela).
+RUN apk add --no-cache openssl libc6-compat ffmpeg
 
 COPY package.json package-lock.json ./
 RUN npm ci

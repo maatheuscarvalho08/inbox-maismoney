@@ -11,6 +11,7 @@ import { criarMensagem, listMensagensPorConversa } from "./mensagens.service.js"
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { enviarMidiaEvolution, enviarTextoEvolution } from "../../integrations/evolutionApi.js";
 import { enviarMidiaMeta, enviarTextoMeta } from "../../integrations/metaCloudApi.js";
+import { converterParaOgg, precisaConverterAudio } from "../../lib/audioConvert.js";
 
 const router = Router();
 router.use(authenticate);
@@ -65,6 +66,15 @@ router.post(
     });
     if (!conversa) {
       return res.status(404).json({ error: "Conversa não encontrada" });
+    }
+
+    // Áudio gravado no navegador (webm/opus) não é aceito pela Meta como mensagem de
+    // áudio — remuxa pra ogg/opus antes de salvar, pra já guardar o arquivo que vai
+    // ser mandado de verdade (evita servir um arquivo diferente do que foi enviado).
+    if (req.file && precisaConverterAudio(req.file.mimetype)) {
+      const convertido = await converterParaOgg(req.file.path);
+      req.file.path = convertido.path;
+      req.file.mimetype = convertido.mimetype;
     }
 
     const midiaPath = req.file ? path.relative(process.cwd(), req.file.path).replace(/\\/g, "/") : null;
