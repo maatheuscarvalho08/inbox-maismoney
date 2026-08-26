@@ -39,6 +39,28 @@ export async function enviarTemplateMeta(
   return data;
 }
 
+export async function enviarMidiaMeta(
+  phoneNumberId: string,
+  numero: string,
+  tipo: "image" | "audio" | "video" | "document",
+  link: string,
+  opts: { caption?: string; filename?: string; voiceNote?: boolean } = {},
+) {
+  const media: Record<string, unknown> = { link };
+  // Legenda só é aceita pela Meta em image/video/document — áudio não suporta caption.
+  if (opts.caption && tipo !== "audio") media.caption = opts.caption;
+  if (opts.filename && tipo === "document") media.filename = opts.filename;
+  if (opts.voiceNote && tipo === "audio") media.voice = true;
+
+  const { data } = await client.post(`/${phoneNumberId}/messages`, {
+    messaging_product: "whatsapp",
+    to: numero,
+    type: tipo,
+    [tipo]: media,
+  });
+  return data;
+}
+
 export async function listarTemplatesMeta(wabaId: string) {
   const { data } = await client.get(`/${wabaId}/message_templates`);
   return data;
