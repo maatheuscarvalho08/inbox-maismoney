@@ -96,6 +96,7 @@ router.post(
 
     let entregue = false;
     let erroEntrega: string | undefined;
+    let idEnvio: string | undefined;
 
     try {
       if (req.file) {
@@ -106,10 +107,10 @@ router.post(
         const link = `${env.PUBLIC_API_URL}/midia/${mensagem.id}?exp=${exp}&sig=${sig}`;
 
         if (conversa.instancia.tipoConexao === "evolution" && conversa.instancia.evolutionInstanceId) {
-          await enviarMidiaEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, link, tipo, conteudoTexto);
+          idEnvio = await enviarMidiaEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, link, tipo, conteudoTexto);
           entregue = true;
         } else if (conversa.instancia.tipoConexao === "meta_cloud" && conversa.instancia.metaPhoneNumberId) {
-          await enviarMidiaMeta(conversa.instancia.metaPhoneNumberId, conversa.contato.numeroWhatsapp, tipo, link, {
+          idEnvio = await enviarMidiaMeta(conversa.instancia.metaPhoneNumberId, conversa.contato.numeroWhatsapp, tipo, link, {
             caption: conteudoTexto,
             filename: req.file.originalname,
             voiceNote: audioGravado,
@@ -118,16 +119,30 @@ router.post(
         }
       } else if (conteudoTexto) {
         if (conversa.instancia.tipoConexao === "evolution" && conversa.instancia.evolutionInstanceId) {
-          await enviarTextoEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, conteudoTexto);
+          idEnvio = await enviarTextoEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, conteudoTexto);
           entregue = true;
         } else if (conversa.instancia.tipoConexao === "meta_cloud" && conversa.instancia.metaPhoneNumberId) {
-          await enviarTextoMeta(conversa.instancia.metaPhoneNumberId, conversa.contato.numeroWhatsapp, conteudoTexto);
+          idEnvio = await enviarTextoMeta(conversa.instancia.metaPhoneNumberId, conversa.contato.numeroWhatsapp, conteudoTexto);
           entregue = true;
         }
       }
     } catch (err) {
       erroEntrega = err instanceof Error ? err.message : "Falha ao enviar mensagem";
       console.error("Falha ao entregar mensagem via WhatsApp:", err);
+    }
+
+    // Guarda o wamid/key.id de retorno como externalId da própria mensagem — é isso que
+    // o webhook "statuses" da Meta usa pra dizer "essa mensagem foi entregue/lida".
+    if (idEnvio || erroEntrega) {
+      await prisma.mensagem.update({
+        where: { id: mensagem.id },
+        data: {
+          externalId: idEnvio ?? undefined,
+          statusEntrega: idEnvio ? "enviado" : "falhou",
+        },
+      });
+      mensagem.externalId = idEnvio ?? null;
+      mensagem.statusEntrega = idEnvio ? "enviado" : "falhou";
     }
 
     const conversaAtualizada = await prisma.conversa.findUnique({

@@ -1,4 +1,5 @@
 import { MidiaMensagem } from "./MidiaMensagem";
+import { StatusEntregaIcone } from "./StatusEntregaIcone";
 import type { Mensagem } from "../../types/api";
 
 function formatarHorario(iso: string) {
@@ -27,7 +28,10 @@ export function MensagemBubble({ mensagem }: { mensagem: Mensagem }) {
 
         {mensagem.conteudoTexto && <p className="mt-1 text-sm text-white">{mensagem.conteudoTexto}</p>}
 
-        <p className="mt-1 text-right text-[10px] text-muted">{formatarHorario(mensagem.timestamp)}</p>
+        <div className="mt-1 flex items-center justify-end gap-1">
+          <p className="text-[10px] text-muted">{formatarHorario(mensagem.timestamp)}</p>
+          {doOperador && <StatusEntregaIcone status={mensagem.statusEntrega} />}
+        </div>
       </div>
     </div>
   );

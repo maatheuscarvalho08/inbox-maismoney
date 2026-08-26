@@ -3,6 +3,7 @@ export type TipoConexao = "evolution" | "meta_cloud";
 export type StatusInstancia = "conectado" | "desconectado";
 export type StatusConversa = "aberta" | "em_atendimento" | "aguardando" | "encerrada";
 export type RemetenteTipo = "cliente" | "operador";
+export type StatusEntrega = "enviado" | "entregue" | "lido" | "falhou";
 
 export interface Usuario {
   id: string;
@@ -50,6 +51,8 @@ export interface Mensagem {
   tipoMidia: string | null;
   midiaPath: string | null;
   midiaDeleted: boolean;
+  externalId: string | null;
+  statusEntrega: StatusEntrega | null;
   timestamp: string;
   createdAt: string;
   operador?: { id: string; nome: string } | null;

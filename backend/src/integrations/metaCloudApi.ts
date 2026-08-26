@@ -7,14 +7,18 @@ const client = axios.create({
   timeout: 15_000,
 });
 
+interface RespostaEnvioMeta {
+  messages?: { id: string }[];
+}
+
 export async function enviarTextoMeta(phoneNumberId: string, numero: string, texto: string) {
-  const { data } = await client.post(`/${phoneNumberId}/messages`, {
+  const { data } = await client.post<RespostaEnvioMeta>(`/${phoneNumberId}/messages`, {
     messaging_product: "whatsapp",
     to: numero,
     type: "text",
     text: { body: texto },
   });
-  return data;
+  return data.messages?.[0]?.id;
 }
 
 export async function enviarTemplateMeta(
@@ -24,7 +28,7 @@ export async function enviarTemplateMeta(
   variaveis: string[] = [],
   idioma = "pt_BR",
 ) {
-  const { data } = await client.post(`/${phoneNumberId}/messages`, {
+  const { data } = await client.post<RespostaEnvioMeta>(`/${phoneNumberId}/messages`, {
     messaging_product: "whatsapp",
     to: numero,
     type: "template",
@@ -36,7 +40,7 @@ export async function enviarTemplateMeta(
         : {}),
     },
   });
-  return data;
+  return data.messages?.[0]?.id;
 }
 
 export async function enviarMidiaMeta(
@@ -52,13 +56,13 @@ export async function enviarMidiaMeta(
   if (opts.filename && tipo === "document") media.filename = opts.filename;
   if (opts.voiceNote && tipo === "audio") media.voice = true;
 
-  const { data } = await client.post(`/${phoneNumberId}/messages`, {
+  const { data } = await client.post<RespostaEnvioMeta>(`/${phoneNumberId}/messages`, {
     messaging_product: "whatsapp",
     to: numero,
     type: tipo,
     [tipo]: media,
   });
-  return data;
+  return data.messages?.[0]?.id;
 }
 
 export async function listarTemplatesMeta(wabaId: string) {

@@ -37,3 +37,27 @@ body {
     color 0.15s ease-out,
     opacity 0.15s ease-out;
 }
+
+/* Barra de progresso do player de áudio (mensagens de voz) — o thumb nativo do
+   navegador não segue o design system, então fica reduzido a um círculo discreto. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  cursor: pointer;
+}

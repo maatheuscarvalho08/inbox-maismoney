@@ -34,6 +34,13 @@ enum RemetenteTipo {
   operador
 }
 
+enum StatusEntrega {
+  enviado
+  entregue
+  lido
+  falhou
+}
+
 enum StatusCampanha {
   rascunho
   em_andamento
@@ -163,6 +170,9 @@ model Mensagem {
   // não duplicar quando o webhook reentrega o mesmo evento (a Meta garante "pelo menos
   // uma vez", não "exatamente uma vez"). Nulo pra mensagens criadas pelo operador/sistema.
   externalId    String?       @unique @map("external_id")
+  // Só relevante pra mensagem enviada pelo operador — reflete o status reportado
+  // pelo webhook "statuses" da Meta (sent/delivered/read/failed).
+  statusEntrega StatusEntrega? @map("status_entrega")
   timestamp     DateTime      @default(now())
   createdAt     DateTime      @default(now()) @map("created_at")
 

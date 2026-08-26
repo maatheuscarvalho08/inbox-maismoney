@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
 import { carregarMidia } from "../../lib/midia";
+import { AudioPlayer } from "./AudioPlayer";
 
 export function MidiaMensagem({ mensagemId, tipoMidia }: { mensagemId: string; tipoMidia: string }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -37,7 +38,7 @@ export function MidiaMensagem({ mensagemId, tipoMidia }: { mensagemId: string; t
   }
 
   if (tipoMidia.startsWith("audio/")) {
-    return <audio src={url} controls className="max-w-64" />;
+    return <AudioPlayer src={url} />;
   }
 
   return (

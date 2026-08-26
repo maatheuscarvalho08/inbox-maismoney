@@ -7,8 +7,19 @@ import { findOrCreateContato } from "../contatos/contatos.service.js";
 import { findOrCreateConversaAberta } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
+import type { StatusEntrega } from "@prisma/client";
 
 const router = Router();
+
+const STATUS_META_MAP: Record<string, StatusEntrega> = {
+  sent: "enviado",
+  delivered: "entregue",
+  read: "lido",
+  failed: "falhou",
+};
+// Impede que um evento fora de ordem (ex.: "delivered" reentregue depois de "read")
+// regrida um status já mais avançado.
+const STATUS_RANK: Record<StatusEntrega, number> = { enviado: 1, entregue: 2, lido: 3, falhou: 1 };
 
 // Verificação inicial do webhook, exigida pela Meta ao configurar o endpoint.
 router.get("/meta", (req, res) => {
@@ -39,10 +50,27 @@ router.post(
           const value = change.value;
           const phoneNumberId: string | undefined = value?.metadata?.phone_number_id;
           const mensagens = value?.messages ?? [];
-          if (!phoneNumberId || mensagens.length === 0) continue;
+          const statuses = value?.statuses ?? [];
+          if (!phoneNumberId || (mensagens.length === 0 && statuses.length === 0)) continue;
 
           const instanciaDb = await prisma.instancia.findFirst({ where: { metaPhoneNumberId: phoneNumberId } });
           if (!instanciaDb) continue;
+
+          for (const status of statuses) {
+            const novoStatus = STATUS_META_MAP[status.status];
+            if (!novoStatus || !status.id) continue;
+
+            const mensagem = await prisma.mensagem.findUnique({ where: { externalId: status.id } });
+            if (!mensagem) continue;
+            if (mensagem.statusEntrega && STATUS_RANK[mensagem.statusEntrega] >= STATUS_RANK[novoStatus]) continue;
+
+            const atualizada = await prisma.mensagem.update({
+              where: { id: mensagem.id },
+              data: { statusEntrega: novoStatus },
+              include: { operador: { select: { id: true, nome: true } } },
+            });
+            emitNovaMensagem(atualizada);
+          }
 
           for (const msg of mensagens) {
             const numero: string = msg.from;

@@ -48,7 +48,11 @@ export function ConversaDetalhePage() {
 
   useSocketEvent<Mensagem>("mensagem:nova", (msg) => {
     if (msg.conversaId !== id) return;
-    setMensagens((atual) => (atual.some((m) => m.id === msg.id) ? atual : [...atual, msg]));
+    // Mesmo evento serve pra mensagem nova e pra atualização de status de entrega
+    // (enviado→entregue→lido) — se já existe, substitui em vez de ignorar.
+    setMensagens((atual) =>
+      atual.some((m) => m.id === msg.id) ? atual.map((m) => (m.id === msg.id ? msg : m)) : [...atual, msg],
+    );
   });
 
   useSocketEvent<Conversa>("conversa:atualizada", (c) => {

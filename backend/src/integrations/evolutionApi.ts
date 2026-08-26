@@ -7,12 +7,16 @@ const client = axios.create({
   timeout: 15_000,
 });
 
+interface RespostaEnvioEvolution {
+  key?: { id?: string };
+}
+
 export async function enviarTextoEvolution(instanceName: string, numero: string, texto: string) {
-  const { data } = await client.post(`/message/sendText/${instanceName}`, {
+  const { data } = await client.post<RespostaEnvioEvolution>(`/message/sendText/${instanceName}`, {
     number: numero,
     text: texto,
   });
-  return data;
+  return data.key?.id;
 }
 
 export async function enviarMidiaEvolution(
@@ -22,13 +26,13 @@ export async function enviarMidiaEvolution(
   mediatype: "image" | "video" | "audio" | "document",
   caption?: string,
 ) {
-  const { data } = await client.post(`/message/sendMedia/${instanceName}`, {
+  const { data } = await client.post<RespostaEnvioEvolution>(`/message/sendMedia/${instanceName}`, {
     number: numero,
     mediatype,
     media: mediaUrl,
     caption,
   });
-  return data;
+  return data.key?.id;
 }
 
 export async function obterQrCodeEvolution(instanceName: string) {
