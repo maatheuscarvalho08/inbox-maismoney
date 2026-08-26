@@ -67,7 +67,10 @@ export function DisparosPage() {
       header: true,
       skipEmptyLines: true,
       complete: (resultado) => {
-        if (resultado.errors.length > 0) {
+        // O Excel costuma exportar CSV com ; em vez de , e linhas com número de colunas
+        // ligeiramente diferente — Papa Parse sinaliza isso em "errors" mesmo quando
+        // consegue ler os dados normalmente, então só travar quando não sobrou nada útil.
+        if (resultado.data.length === 0) {
           setErroCsv("Não foi possível ler o CSV. Confira o formato do arquivo.");
           return;
         }

@@ -68,7 +68,7 @@ export function DiscadoraNovaPage() {
       header: true,
       skipEmptyLines: true,
       complete: (resultado) => {
-        if (resultado.errors.length > 0) {
+        if (resultado.data.length === 0) {
           setErroCsv("Não foi possível ler o CSV. Confira o formato do arquivo.");
           return;
         }
