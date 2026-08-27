@@ -122,8 +122,17 @@ router.post(
                   texto = texto ?? "[Mídia recebida, mas não foi possível baixar a tempo]";
                 }
               }
+            } else if (msg.type === "unsupported") {
+              // A Meta manda esse tipo pra mensagens que o Cloud API não consegue
+              // processar (enquete, mídia "visualização única", reação a mensagem
+              // antiga, etc.) — ela mesma explica o motivo em msg.errors.
+              const motivo = msg.errors?.[0]?.title || msg.errors?.[0]?.message;
+              texto = motivo
+                ? `[Mensagem não suportada pelo WhatsApp: ${motivo}]`
+                : `[Mensagem não suportada pelo WhatsApp — tipo não identificado pela Meta]`;
+              console.warn("Webhook Meta: mensagem 'unsupported' recebida", JSON.stringify(msg));
             } else {
-              // Localização, contato, resposta interativa, reação, etc. — ainda sem
+              // Localização, contato, resposta interativa, etc. — ainda sem
               // tratamento dedicado, mas pelo menos fica visível que algo chegou.
               texto = `[Mensagem do tipo "${msg.type}" ainda não suportada]`;
             }
