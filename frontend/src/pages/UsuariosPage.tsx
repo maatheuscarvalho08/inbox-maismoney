@@ -66,6 +66,21 @@ export function UsuariosPage() {
     }
   }
 
+  const [editandoEmailId, setEditandoEmailId] = useState<string | null>(null);
+  const [emailEditado, setEmailEditado] = useState("");
+
+  async function salvarEmail(u: Usuario) {
+    const novoEmail = emailEditado.trim().toLowerCase();
+    setEditandoEmailId(null);
+    if (!novoEmail || novoEmail === u.email) return;
+    try {
+      await api.patch(`/usuarios/${u.id}`, { email: novoEmail });
+      carregar();
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Não foi possível atualizar o e-mail");
+    }
+  }
+
   return (
     <div>
       <PageHeader
@@ -154,7 +169,33 @@ export function UsuariosPage() {
                 usuarios.map((u) => (
                   <tr key={u.id} className="border-t border-border">
                     <td className="px-5 py-3 font-medium text-white">{u.nome}</td>
-                    <td className="px-5 py-3 text-muted">{u.email}</td>
+                    <td className="px-5 py-3 text-muted">
+                      {editandoEmailId === u.id ? (
+                        <input
+                          autoFocus
+                          type="email"
+                          defaultValue={u.email}
+                          onChange={(e) => setEmailEditado(e.target.value)}
+                          onBlur={() => salvarEmail(u)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
+                            if (e.key === "Escape") setEditandoEmailId(null);
+                          }}
+                          className="w-full rounded border border-primary bg-bg/60 px-1.5 py-0.5 text-sm text-white outline-none"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setEmailEditado(u.email);
+                            setEditandoEmailId(u.id);
+                          }}
+                          className="hover:text-white hover:underline"
+                          title="Clique para editar"
+                        >
+                          {u.email}
+                        </button>
+                      )}
+                    </td>
                     <td className="px-5 py-3">
                       {u.id === usuarioLogado?.id ? (
                         <span className="capitalize text-muted">{u.role}</span>

@@ -90,6 +90,7 @@ router.post(
 
 const atualizarSchema = z.object({
   nome: z.string().trim().min(1).optional(),
+  email: z.string().trim().toLowerCase().email().optional(),
   role: z.enum(["admin", "operador"]).optional(),
   ativo: z.boolean().optional(),
   senha: z.string().min(8).optional(),
@@ -105,6 +106,13 @@ router.patch(
 
     if (req.params.id === req.user!.id && parsed.data.ativo === false) {
       return res.status(400).json({ error: "Você não pode desativar sua própria conta" });
+    }
+
+    if (parsed.data.email) {
+      const existente = await prisma.usuario.findUnique({ where: { email: parsed.data.email } });
+      if (existente && existente.id !== req.params.id) {
+        return res.status(409).json({ error: "Já existe um usuário com este e-mail" });
+      }
     }
 
     const { senha, ...resto } = parsed.data;
