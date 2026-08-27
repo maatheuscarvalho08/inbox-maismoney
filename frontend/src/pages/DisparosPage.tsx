@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { Plus, Send } from "lucide-react";
 import { api } from "../lib/api";
 import { PageHeader } from "../components/PageHeader";
+import { Modal } from "../components/Modal";
+import { NovoDisparoForm } from "../components/NovoDisparoForm";
 import { StatusEntregaIcone } from "../components/conversa/StatusEntregaIcone";
 import { useSocketEvent } from "../hooks/useSocketEvent";
-import type { Mensagem, StatusEntrega } from "../types/api";
+import type { StatusEntrega } from "../types/api";
 
-interface DisparoHistorico extends Mensagem {
-  conversa: {
-    id: string;
-    contato: { nome: string | null; numeroWhatsapp: string };
-    instancia: { id: string; nome: string; numero: string };
-  };
+interface DisparoAgrupado {
+  id: string;
+  totalNumeros: number;
+  contato: { nome: string | null; numeroWhatsapp: string } | null;
+  conteudoTexto: string | null;
+  instancia: { id: string; nome: string; numero: string };
+  operador: { id: string; nome: string } | null;
+  timestamp: string;
+  statusEntrega: StatusEntrega | null;
+  resumoStatus: { enviado: number; entregue: number; lido: number; falhou: number };
 }
 
 function extrairNomeTemplate(texto: string | null) {
@@ -31,12 +36,37 @@ function formatarData(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
+function ResumoStatusBadges({ resumo }: { resumo: DisparoAgrupado["resumoStatus"] }) {
+  const itens = (
+    [
+      { status: "entregue", qtd: resumo.entregue },
+      { status: "lido", qtd: resumo.lido },
+      { status: "enviado", qtd: resumo.enviado },
+      { status: "falhou", qtd: resumo.falhou },
+    ] satisfies { status: StatusEntrega; qtd: number }[]
+  ).filter((i) => i.qtd > 0);
+
+  if (itens.length === 0) return <span className="text-muted">—</span>;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {itens.map((i) => (
+        <span key={i.status} className="flex items-center gap-1 text-muted">
+          <StatusEntregaIcone status={i.status} />
+          {i.qtd}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function DisparosPage() {
-  const [disparos, setDisparos] = useState<DisparoHistorico[]>([]);
+  const [disparos, setDisparos] = useState<DisparoAgrupado[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [mostrarNovo, setMostrarNovo] = useState(false);
 
   function carregar() {
-    api.get<{ disparos: DisparoHistorico[] }>("/disparos").then((res) => {
+    api.get<{ disparos: DisparoAgrupado[] }>("/disparos").then((res) => {
       setDisparos(res.disparos);
       setCarregando(false);
     });
@@ -47,8 +77,7 @@ export function DisparosPage() {
   }, []);
 
   // Cada disparo (individual ou dentro de um CSV em andamento) emite mensagem:nova
-  // assim que é enviado — a lista atualiza sozinha em tempo real, sem precisar
-  // de um conceito separado de "campanha em andamento".
+  // assim que é enviado — a lista atualiza sozinha em tempo real.
   useSocketEvent("mensagem:nova", () => carregar());
 
   return (
@@ -57,12 +86,12 @@ export function DisparosPage() {
         title="Disparos"
         subtitle="Histórico de envios via templates aprovados (Meta Cloud API)"
         right={
-          <Link
-            to="/disparos/novo"
+          <button
+            onClick={() => setMostrarNovo(true)}
             className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-bg hover:opacity-90"
           >
             <Plus size={14} /> Novo disparo
-          </Link>
+          </button>
         }
       />
 
@@ -71,9 +100,9 @@ export function DisparosPage() {
           <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-16 text-center">
             <Send size={22} className="text-muted" />
             <p className="text-sm text-muted">Nenhum disparo enviado ainda.</p>
-            <Link to="/disparos/novo" className="text-xs font-medium text-primary hover:underline">
+            <button onClick={() => setMostrarNovo(true)} className="text-xs font-medium text-primary hover:underline">
               Enviar o primeiro disparo
-            </Link>
+            </button>
           </div>
         )}
 
@@ -82,7 +111,7 @@ export function DisparosPage() {
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead>
                 <tr>
-                  {["Número", "Template", "Origem", "Status", "Enviado por", "Quando"].map((col) => (
+                  {["Quantidade de números", "Template", "Origem", "Status", "Enviado por", "Quando"].map((col) => (
                     <th key={col} className="px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-muted">
                       {col}
                     </th>
@@ -93,15 +122,21 @@ export function DisparosPage() {
                 {disparos.map((d) => (
                   <tr key={d.id} className="border-t border-border">
                     <td className="px-5 py-3 font-medium text-white">
-                      {d.conversa.contato.nome ?? d.conversa.contato.numeroWhatsapp}
+                      {d.totalNumeros > 1
+                        ? `${d.totalNumeros} números`
+                        : (d.contato?.nome ?? d.contato?.numeroWhatsapp ?? "1 número")}
                     </td>
                     <td className="px-5 py-3 text-muted">{extrairNomeTemplate(d.conteudoTexto)}</td>
-                    <td className="px-5 py-3 text-muted">{d.conversa.instancia.numero}</td>
+                    <td className="px-5 py-3 text-muted">{d.instancia.numero}</td>
                     <td className="px-5 py-3">
-                      <span className="flex items-center gap-1.5 text-muted">
-                        <StatusEntregaIcone status={d.statusEntrega} />
-                        {d.statusEntrega ? STATUS_LABEL[d.statusEntrega] : "—"}
-                      </span>
+                      {d.totalNumeros > 1 ? (
+                        <ResumoStatusBadges resumo={d.resumoStatus} />
+                      ) : (
+                        <span className="flex items-center gap-1.5 text-muted">
+                          <StatusEntregaIcone status={d.statusEntrega} />
+                          {d.statusEntrega ? STATUS_LABEL[d.statusEntrega] : "—"}
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-3 text-muted">{d.operador?.nome ?? "—"}</td>
                     <td className="px-5 py-3 text-muted">{formatarData(d.timestamp)}</td>
@@ -112,6 +147,12 @@ export function DisparosPage() {
           </div>
         )}
       </div>
+
+      {mostrarNovo && (
+        <Modal onClose={() => setMostrarNovo(false)}>
+          <NovoDisparoForm onFechar={() => setMostrarNovo(false)} onEnviado={carregar} />
+        </Modal>
+      )}
     </div>
   );
 }

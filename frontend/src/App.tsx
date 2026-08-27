@@ -18,9 +18,6 @@ const ConversaDetalhePage = lazy(() =>
 const NumerosPage = lazy(() => import("./pages/NumerosPage").then((m) => ({ default: m.NumerosPage })));
 const UsuariosPage = lazy(() => import("./pages/UsuariosPage").then((m) => ({ default: m.UsuariosPage })));
 const DisparosPage = lazy(() => import("./pages/DisparosPage").then((m) => ({ default: m.DisparosPage })));
-const DisparosNovoPage = lazy(() =>
-  import("./pages/DisparosNovoPage").then((m) => ({ default: m.DisparosNovoPage })),
-);
 const ConfiguracoesPage = lazy(() =>
   import("./pages/ConfiguracoesPage").then((m) => ({ default: m.ConfiguracoesPage })),
 );
@@ -69,7 +66,6 @@ export default function App() {
               <Route path=":id" element={pagina(ConversaDetalhePage)} />
             </Route>
             <Route path="/disparos" element={pagina(DisparosPage)} />
-            <Route path="/disparos/novo" element={pagina(DisparosNovoPage)} />
             <Route path="/discadora" element={pagina(DiscadoraPage)} />
             <Route path="/discadora/nova" element={pagina(DiscadoraNovaPage)} />
             <Route path="/discadora/:id" element={pagina(DiscadoraDetalhePage)} />

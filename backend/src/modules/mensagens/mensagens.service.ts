@@ -18,6 +18,7 @@ interface CriarMensagemInput {
   midiaPath?: string | null;
   externalId?: string | null;
   statusEntrega?: StatusEntrega | null;
+  loteId?: string | null;
   timestamp?: Date;
 }
 

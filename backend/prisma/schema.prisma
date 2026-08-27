@@ -170,6 +170,9 @@ model Mensagem {
   // não duplicar quando o webhook reentrega o mesmo evento (a Meta garante "pelo menos
   // uma vez", não "exatamente uma vez"). Nulo pra mensagens criadas pelo operador/sistema.
   externalId    String?       @unique @map("external_id")
+  // Agrupa disparos enviados juntos num CSV em massa (gerado no front, um UUID por
+  // lote) — sem isso, um CSV de 50 números vira 50 linhas soltas no histórico.
+  loteId        String?       @map("lote_id")
   // Só relevante pra mensagem enviada pelo operador — reflete o status reportado
   // pelo webhook "statuses" da Meta (sent/delivered/read/failed).
   statusEntrega StatusEntrega? @map("status_entrega")

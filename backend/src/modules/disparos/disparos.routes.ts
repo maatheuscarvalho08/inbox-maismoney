@@ -15,10 +15,10 @@ router.use(authenticate);
 router.get(
   "/",
   asyncHandler(async (_req, res) => {
-    const disparos = await prisma.mensagem.findMany({
+    const mensagens = await prisma.mensagem.findMany({
       where: { conteudoTexto: { startsWith: "[Disparo" } },
       orderBy: { timestamp: "desc" },
-      take: 200,
+      take: 500,
       include: {
         operador: { select: { id: true, nome: true } },
         conversa: {
@@ -30,6 +30,40 @@ router.get(
         },
       },
     });
+
+    // Disparos de um mesmo CSV em massa compartilham loteId — agrupa numa linha só
+    // em vez de uma por número (um envio de 50 não deveria virar 50 linhas soltas).
+    const grupos = new Map<string, typeof mensagens>();
+    for (const m of mensagens) {
+      const chave = m.loteId ?? m.id;
+      const grupo = grupos.get(chave) ?? [];
+      grupo.push(m);
+      grupos.set(chave, grupo);
+    }
+
+    const disparos = Array.from(grupos.entries()).map(([chave, msgs]) => {
+      const primeira = msgs[0];
+      const resumoStatus = {
+        enviado: msgs.filter((m) => m.statusEntrega === "enviado").length,
+        entregue: msgs.filter((m) => m.statusEntrega === "entregue").length,
+        lido: msgs.filter((m) => m.statusEntrega === "lido").length,
+        falhou: msgs.filter((m) => m.statusEntrega === "falhou").length,
+      };
+      return {
+        id: chave,
+        totalNumeros: msgs.length,
+        contato: msgs.length === 1 ? primeira.conversa.contato : null,
+        conteudoTexto: primeira.conteudoTexto,
+        instancia: primeira.conversa.instancia,
+        operador: primeira.operador,
+        timestamp: primeira.timestamp,
+        statusEntrega: msgs.length === 1 ? primeira.statusEntrega : null,
+        resumoStatus,
+      };
+    });
+
+    disparos.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
     res.json({ disparos });
   }),
 );
@@ -39,6 +73,7 @@ const disparoSchema = z.object({
   templateId: z.string().uuid(),
   numeroDestino: z.string().min(8),
   variaveis: z.array(z.string()).default([]),
+  loteId: z.string().uuid().optional(),
 });
 
 router.post(
@@ -49,7 +84,7 @@ router.post(
       return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
     }
 
-    const { instanciaId, templateId, numeroDestino, variaveis } = parsed.data;
+    const { instanciaId, templateId, numeroDestino, variaveis, loteId } = parsed.data;
 
     const [instancia, template] = await Promise.all([
       prisma.instancia.findUnique({ where: { id: instanciaId } }),
@@ -86,6 +121,7 @@ router.post(
       conteudoTexto: `[Disparo · template "${template.nome}"] ${variaveis.join(", ")}`.trim(),
       externalId: idEnvio ?? null,
       statusEntrega: idEnvio ? "enviado" : "falhou",
+      loteId: loteId ?? null,
     });
 
     const conversaAtualizada = await prisma.conversa.findUnique({
