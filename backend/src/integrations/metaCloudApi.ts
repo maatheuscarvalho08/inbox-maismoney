@@ -80,3 +80,16 @@ export async function listarTemplatesMeta(wabaId: string) {
   const { data } = await client.get(`/${wabaId}/message_templates`);
   return data;
 }
+
+// Mídia recebida de cliente não vem no corpo do webhook — só um media id. É preciso
+// buscar a URL temporária (expira em minutos) e então baixar o arquivo com o mesmo
+// token, na sequência, antes que ela expire.
+export async function baixarMidiaMeta(mediaId: string): Promise<{ buffer: Buffer; mimetype: string }> {
+  const { data: info } = await client.get<{ url: string; mime_type: string }>(`/${mediaId}`);
+  const { data: buffer } = await axios.get<ArrayBuffer>(info.url, {
+    headers: { Authorization: `Bearer ${env.META_ACCESS_TOKEN}` },
+    responseType: "arraybuffer",
+    timeout: 20_000,
+  });
+  return { buffer: Buffer.from(buffer), mimetype: info.mime_type };
+}

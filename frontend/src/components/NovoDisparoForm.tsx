@@ -44,7 +44,6 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
   const [intervaloSeg, setIntervaloSeg] = useState(30);
 
   const [enviando, setEnviando] = useState(false);
-  const [progresso, setProgresso] = useState<{ atual: number; total: number } | null>(null);
   const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null);
 
   useEffect(() => {
@@ -128,39 +127,23 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
           onFechar();
         }
       } else {
-        const loteId = crypto.randomUUID();
+        // Roda no backend (fila), não num loop aqui no navegador — continua mesmo se
+        // você fechar essa aba. O andamento aparece ao vivo na lista de Disparos.
         const intervaloMs = (intervaloMin * 60 + intervaloSeg) * 1000;
-        let sucesso = 0;
-        let falha = 0;
-
-        for (let i = 0; i < numerosDetectados.length; i++) {
-          setProgresso({ atual: i + 1, total: numerosDetectados.length });
-          try {
-            const res = await api.post<{ entregue: boolean }>("/disparos", {
-              instanciaId,
-              templateId,
-              numeroDestino: numerosDetectados[i],
-              variaveis: variaveisLimpo,
-              loteId,
-            });
-            if (res.entregue) sucesso++;
-            else falha++;
-          } catch {
-            falha++;
-          }
-          onEnviado();
-          // Intervalo entre mensagens (padrão 1:30) — não espera depois da última.
-          if (i < numerosDetectados.length - 1 && intervaloMs > 0) {
-            await aguardar(intervaloMs);
-          }
-        }
-        setProgresso(null);
+        await api.post("/disparos/lote", {
+          instanciaId,
+          templateId,
+          numeros: numerosDetectados,
+          variaveis: variaveisLimpo,
+          intervaloMs,
+        });
         setResultado({
-          ok: falha === 0,
-          texto: `${sucesso} de ${numerosDetectados.length} disparo(s) entregue(s)${falha ? `, ${falha} falharam` : ""}.`,
+          ok: true,
+          texto: `Lote de ${numerosDetectados.length} disparo(s) enviado pra fila — acompanhe o andamento na lista.`,
         });
         limparCsv();
-        await aguardar(1500);
+        onEnviado();
+        await aguardar(1800);
         onFechar();
       }
       setVariaveis([]);
@@ -168,7 +151,6 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
       setResultado({ ok: false, texto: err instanceof ApiError ? err.message : "Não foi possível enviar o disparo" });
     } finally {
       setEnviando(false);
-      setProgresso(null);
     }
   }
 
@@ -354,20 +336,6 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
             ))}
           </div>
         </div>
-
-        {progresso && (
-          <div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-border">
-              <div
-                className="h-full bg-primary transition-all duration-300 ease-out"
-                style={{ width: `${(progresso.atual / progresso.total) * 100}%` }}
-              />
-            </div>
-            <p className="mt-1.5 text-xs text-muted">
-              Enviando {progresso.atual} de {progresso.total}...
-            </p>
-          </div>
-        )}
 
         {resultado && <p className="text-sm text-primary">{resultado.texto}</p>}
 

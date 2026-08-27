@@ -8,6 +8,7 @@ import { findOrCreateConversaAberta } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { enviarTemplateMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
+import { disparoLoteQueue } from "../../queues/disparoLoteQueue.js";
 
 const router = Router();
 router.use(authenticate);
@@ -137,6 +138,52 @@ router.post(
     if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
 
     res.status(201).json({ mensagem, entregue, erroEntrega });
+  }),
+);
+
+const loteSchema = z.object({
+  instanciaId: z.string().uuid(),
+  templateId: z.string().uuid(),
+  numeros: z.array(z.string().min(8)).min(1),
+  variaveis: z.array(z.string()).default([]),
+  intervaloMs: z.coerce.number().min(0).default(0),
+});
+
+// Envio em massa roda no backend (fila), não no navegador — sobrevive a fechar a
+// aba/atualizar a página, diferente do loop que existia antes só no front-end.
+router.post(
+  "/lote",
+  asyncHandler(async (req, res) => {
+    const parsed = loteSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
+    }
+
+    const { instanciaId, templateId, numeros, variaveis, intervaloMs } = parsed.data;
+
+    const [instancia, template] = await Promise.all([
+      prisma.instancia.findUnique({ where: { id: instanciaId } }),
+      prisma.template.findUnique({ where: { id: templateId } }),
+    ]);
+    if (!instancia || instancia.tipoConexao !== "meta_cloud" || !instancia.metaPhoneNumberId) {
+      return res.status(400).json({ error: "Instância inválida para disparos (precisa ser Meta Cloud API)" });
+    }
+    if (!template || template.instanciaId !== instanciaId) {
+      return res.status(400).json({ error: "Template inválido para esta instância" });
+    }
+
+    const loteId = crypto.randomUUID();
+    await disparoLoteQueue.add("lote", {
+      loteId,
+      instanciaId,
+      templateId,
+      numeros,
+      variaveis,
+      intervaloMs,
+      operadorId: req.user!.id,
+    });
+
+    res.status(202).json({ loteId, totalNumeros: numeros.length });
   }),
 );
 

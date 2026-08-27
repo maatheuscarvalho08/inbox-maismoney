@@ -1,8 +1,12 @@
+import fs from "fs";
+import path from "path";
 import { Router } from "express";
 import { prisma } from "../../db/prisma.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { verifyMetaSignature } from "../../middleware/verifyMetaSignature.js";
 import { env } from "../../config/env.js";
+import { uploadsRoot } from "../../middleware/upload.js";
+import { baixarMidiaMeta } from "../../integrations/metaCloudApi.js";
 import { findOrCreateContato } from "../contatos/contatos.service.js";
 import { findOrCreateConversaAberta } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
@@ -10,6 +14,25 @@ import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import type { StatusEntrega } from "@prisma/client";
 
 const router = Router();
+
+const TIPOS_COM_MIDIA = ["image", "audio", "video", "document", "sticker"];
+
+function extensaoDoMime(mime: string) {
+  return mime.split("/")[1]?.split(";")[0] || "bin";
+}
+
+// Mensagem de mídia do cliente só traz um media id no webhook, não o arquivo — é
+// preciso baixar da Meta e salvar localmente, igual mídia enviada pelo operador,
+// senão a mensagem chega vazia (sem texto, sem mídia, sem nada visível).
+async function baixarEArmazenarMidia(conversaId: string, tipo: string, mediaId: string) {
+  const { buffer, mimetype } = await baixarMidiaMeta(mediaId);
+  const dir = path.join(uploadsRoot, conversaId);
+  fs.mkdirSync(dir, { recursive: true });
+  const nomeArquivo = `${Date.now()}-whatsapp-${tipo}.${extensaoDoMime(mimetype)}`;
+  const caminhoAbsoluto = path.join(dir, nomeArquivo);
+  await fs.promises.writeFile(caminhoAbsoluto, buffer);
+  return { tipoMidia: mimetype, midiaPath: path.relative(process.cwd(), caminhoAbsoluto).replace(/\\/g, "/") };
+}
 
 const STATUS_META_MAP: Record<string, StatusEntrega> = {
   sent: "enviado",
@@ -35,8 +58,9 @@ router.get("/meta", (req, res) => {
 
 /**
  * Payload segue o formato oficial da WhatsApp Cloud API (entry[].changes[].value).
- * Trata apenas mensagens de texto recebidas; outros tipos (imagem, áudio, status de
- * entrega) chegam no mesmo webhook e podem ser adicionados aqui depois.
+ * Trata texto e mídia (imagem/áudio/vídeo/documento/figurinha) recebidos, além de
+ * status de entrega. Outros tipos (localização, contato, resposta interativa,
+ * reação) ainda não têm tratamento dedicado — ficam registrados como texto genérico.
  */
 router.post(
   "/meta",
@@ -75,15 +99,41 @@ router.post(
           for (const msg of mensagens) {
             const numero: string = msg.from;
             const nomeContato: string | undefined = value?.contacts?.[0]?.profile?.name;
-            const texto: string | undefined = msg.type === "text" ? msg.text?.body : undefined;
 
             const contato = await findOrCreateContato(numero, nomeContato);
             const conversa = await findOrCreateConversaAberta(instanciaDb.id, contato.id);
+
+            let texto: string | undefined;
+            let tipoMidia: string | null = null;
+            let midiaPath: string | null = null;
+
+            if (msg.type === "text") {
+              texto = msg.text?.body;
+            } else if (TIPOS_COM_MIDIA.includes(msg.type)) {
+              const midiaInfo = msg[msg.type as keyof typeof msg] as { id?: string; caption?: string } | undefined;
+              texto = midiaInfo?.caption;
+              if (midiaInfo?.id) {
+                try {
+                  const baixada = await baixarEArmazenarMidia(conversa.id, msg.type, midiaInfo.id);
+                  tipoMidia = baixada.tipoMidia;
+                  midiaPath = baixada.midiaPath;
+                } catch (err) {
+                  console.error("Falha ao baixar mídia recebida da Meta:", err);
+                  texto = texto ?? "[Mídia recebida, mas não foi possível baixar a tempo]";
+                }
+              }
+            } else {
+              // Localização, contato, resposta interativa, reação, etc. — ainda sem
+              // tratamento dedicado, mas pelo menos fica visível que algo chegou.
+              texto = `[Mensagem do tipo "${msg.type}" ainda não suportada]`;
+            }
 
             const mensagem = await criarMensagem({
               conversaId: conversa.id,
               remetenteTipo: "cliente",
               conteudoTexto: texto ?? null,
+              tipoMidia,
+              midiaPath,
               externalId: msg.id ?? null,
               timestamp: msg.timestamp ? new Date(Number(msg.timestamp) * 1000) : undefined,
             });
