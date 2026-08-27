@@ -123,7 +123,7 @@ export function ConversasSplitLayout() {
             icon={Smartphone}
             selecionado={instanciaFiltro}
             onSelecionar={setInstanciaFiltro}
-            itens={instancias.map((i) => ({ id: i.id, label: `${i.nome} (${i.numero})` }))}
+            itens={instancias.map((i) => ({ id: i.id, label: i.numero }))}
           />
 
           <FiltroDropdown
@@ -155,8 +155,12 @@ export function ConversasSplitLayout() {
                   <span className="shrink-0 text-[10px] text-muted">{tempoRelativo(c.lastMessageAt)}</span>
                 </div>
                 <p className="truncate text-xs text-muted">{ultimaMensagemPreview(c)}</p>
-                <div className="mt-1 flex items-center gap-1.5">
+                <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   <StatusBadge status={c.status} />
+                  <span className="flex items-center gap-1 rounded border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-accent-fg)]">
+                    <Smartphone size={9} />
+                    {c.instancia.numero}
+                  </span>
                   {c.operador && (
                     <span className="flex items-center gap-1 rounded border border-border bg-border/40 px-1.5 py-0.5 text-[10px] font-medium text-muted">
                       <User size={9} />

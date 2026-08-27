@@ -181,7 +181,7 @@ export function DisparosPage() {
               value={instanciaId}
               onChange={setInstanciaId}
               placeholder="Selecione..."
-              options={instancias.map((i) => ({ value: i.id, label: `${i.nome} (${i.numero})` }))}
+              options={instancias.map((i) => ({ value: i.id, label: i.numero }))}
             />
             {instanciaId === "" && instancias.length === 0 && (
               <p className="mt-1 text-xs text-muted">Nenhum número Meta Cloud API cadastrado ainda.</p>

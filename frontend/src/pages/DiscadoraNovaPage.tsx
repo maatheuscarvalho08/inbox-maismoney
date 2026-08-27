@@ -139,7 +139,7 @@ export function DiscadoraNovaPage() {
               value={instanciaId}
               onChange={setInstanciaId}
               placeholder="Selecione..."
-              options={instancias.map((i) => ({ value: i.id, label: `${i.nome} (${i.numero})` }))}
+              options={instancias.map((i) => ({ value: i.id, label: i.numero }))}
             />
           </div>
 
