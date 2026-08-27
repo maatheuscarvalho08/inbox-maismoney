@@ -57,6 +57,15 @@ export function UsuariosPage() {
     }
   }
 
+  async function alterarRole(u: Usuario, novoRole: Role) {
+    try {
+      await api.patch(`/usuarios/${u.id}`, { role: novoRole });
+      carregar();
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Não foi possível atualizar o papel do usuário");
+    }
+  }
+
   return (
     <div>
       <PageHeader
@@ -146,7 +155,20 @@ export function UsuariosPage() {
                   <tr key={u.id} className="border-t border-border">
                     <td className="px-5 py-3 font-medium text-white">{u.nome}</td>
                     <td className="px-5 py-3 text-muted">{u.email}</td>
-                    <td className="px-5 py-3 capitalize text-muted">{u.role}</td>
+                    <td className="px-5 py-3">
+                      {u.id === usuarioLogado?.id ? (
+                        <span className="capitalize text-muted">{u.role}</span>
+                      ) : (
+                        <Select
+                          value={u.role}
+                          onChange={(v) => alterarRole(u, v as Role)}
+                          options={[
+                            { value: "operador", label: "Operador" },
+                            { value: "admin", label: "Admin" },
+                          ]}
+                        />
+                      )}
+                    </td>
                     <td className="px-5 py-3">
                       <span
                         className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${
