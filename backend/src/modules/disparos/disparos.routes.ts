@@ -12,6 +12,28 @@ import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 const router = Router();
 router.use(authenticate);
 
+router.get(
+  "/",
+  asyncHandler(async (_req, res) => {
+    const disparos = await prisma.mensagem.findMany({
+      where: { conteudoTexto: { startsWith: "[Disparo" } },
+      orderBy: { timestamp: "desc" },
+      take: 200,
+      include: {
+        operador: { select: { id: true, nome: true } },
+        conversa: {
+          select: {
+            id: true,
+            contato: { select: { nome: true, numeroWhatsapp: true } },
+            instancia: { select: { id: true, nome: true, numero: true } },
+          },
+        },
+      },
+    });
+    res.json({ disparos });
+  }),
+);
+
 const disparoSchema = z.object({
   instanciaId: z.string().uuid(),
   templateId: z.string().uuid(),

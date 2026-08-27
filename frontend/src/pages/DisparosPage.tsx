@@ -1,375 +1,116 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import Papa from "papaparse";
-import { Plus, Send, Upload, X } from "lucide-react";
-import { api, ApiError } from "../lib/api";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Plus, Send } from "lucide-react";
+import { api } from "../lib/api";
 import { PageHeader } from "../components/PageHeader";
-import { Select } from "../components/Select";
-import type { Instancia, Template } from "../types/api";
+import { StatusEntregaIcone } from "../components/conversa/StatusEntregaIcone";
+import { useSocketEvent } from "../hooks/useSocketEvent";
+import type { Mensagem, StatusEntrega } from "../types/api";
 
-type ModoDestinatario = "unico" | "csv";
-
-function normalizarNumero(valor: string) {
-  return valor.replace(/\D/g, "");
+interface DisparoHistorico extends Mensagem {
+  conversa: {
+    id: string;
+    contato: { nome: string | null; numeroWhatsapp: string };
+    instancia: { id: string; nome: string; numero: string };
+  };
 }
 
-function aguardar(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function extrairNomeTemplate(texto: string | null) {
+  const match = texto?.match(/template "([^"]+)"/);
+  return match?.[1] ?? "—";
 }
 
-function formatarDuracao(segundosTotais: number) {
-  const h = Math.floor(segundosTotais / 3600);
-  const m = Math.floor((segundosTotais % 3600) / 60);
-  if (h > 0) return `${h}h${m.toString().padStart(2, "0")}min`;
-  return `${m}min`;
+const STATUS_LABEL: Record<StatusEntrega, string> = {
+  enviado: "Enviado",
+  entregue: "Entregue",
+  lido: "Lido",
+  falhou: "Falhou",
+};
+
+function formatarData(iso: string) {
+  return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
 export function DisparosPage() {
-  const [instancias, setInstancias] = useState<Instancia[]>([]);
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [disparos, setDisparos] = useState<DisparoHistorico[]>([]);
+  const [carregando, setCarregando] = useState(true);
 
-  const [instanciaId, setInstanciaId] = useState("");
-  const [templateId, setTemplateId] = useState("");
-  const [variaveis, setVariaveis] = useState<string[]>([]);
-
-  const [modo, setModo] = useState<ModoDestinatario>("unico");
-  const [numeroDestino, setNumeroDestino] = useState("");
-
-  const [colunasCsv, setColunasCsv] = useState<string[]>([]);
-  const [linhasCsv, setLinhasCsv] = useState<Record<string, string>[]>([]);
-  const [colunaTelefone, setColunaTelefone] = useState("");
-  const [nomeArquivo, setNomeArquivo] = useState("");
-  const [erroCsv, setErroCsv] = useState<string | null>(null);
-  const inputCsvRef = useRef<HTMLInputElement>(null);
-
-  const [intervaloMin, setIntervaloMin] = useState(1);
-  const [intervaloSeg, setIntervaloSeg] = useState(30);
-
-  const [enviando, setEnviando] = useState(false);
-  const [progresso, setProgresso] = useState<{ atual: number; total: number } | null>(null);
-  const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null);
+  function carregar() {
+    api.get<{ disparos: DisparoHistorico[] }>("/disparos").then((res) => {
+      setDisparos(res.disparos);
+      setCarregando(false);
+    });
+  }
 
   useEffect(() => {
-    api.get<{ instancias: Instancia[] }>("/instancias").then((res) => {
-      setInstancias(res.instancias.filter((i) => i.tipoConexao === "meta_cloud"));
-    });
+    carregar();
   }, []);
 
-  useEffect(() => {
-    setTemplateId("");
-    if (!instanciaId) {
-      setTemplates([]);
-      return;
-    }
-    api.get<{ templates: Template[] }>(`/templates?instanciaId=${instanciaId}`).then((res) => setTemplates(res.templates));
-  }, [instanciaId]);
-
-  const numerosDetectados = colunaTelefone
-    ? Array.from(
-        new Set(
-          linhasCsv
-            .map((linha) => normalizarNumero(linha[colunaTelefone] ?? ""))
-            .filter((numero) => numero.length >= 8),
-        ),
-      )
-    : [];
-
-  function handleArquivoCsv(file: File) {
-    setErroCsv(null);
-    setColunaTelefone("");
-    setNomeArquivo(file.name);
-
-    Papa.parse<Record<string, string>>(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (resultado) => {
-        // O Excel costuma exportar CSV com ; em vez de , e linhas com número de colunas
-        // ligeiramente diferente — Papa Parse sinaliza isso em "errors" mesmo quando
-        // consegue ler os dados normalmente, então só travar quando não sobrou nada útil.
-        if (resultado.data.length === 0) {
-          setErroCsv("Não foi possível ler o CSV. Confira o formato do arquivo.");
-          return;
-        }
-        setColunasCsv(resultado.meta.fields ?? []);
-        setLinhasCsv(resultado.data);
-      },
-      error: () => setErroCsv("Não foi possível ler o CSV."),
-    });
-  }
-
-  function limparCsv() {
-    setColunasCsv([]);
-    setLinhasCsv([]);
-    setColunaTelefone("");
-    setNomeArquivo("");
-    setErroCsv(null);
-    if (inputCsvRef.current) inputCsvRef.current.value = "";
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setEnviando(true);
-    setResultado(null);
-
-    const variaveisLimpo = variaveis.filter((v) => v.trim());
-
-    try {
-      if (modo === "unico") {
-        const res = await api.post<{ entregue: boolean; erroEntrega?: string }>("/disparos", {
-          instanciaId,
-          templateId,
-          numeroDestino: normalizarNumero(numeroDestino),
-          variaveis: variaveisLimpo,
-        });
-        setResultado(
-          res.entregue
-            ? { ok: true, texto: "Disparo enviado com sucesso." }
-            : { ok: false, texto: `Mensagem registrada, mas a entrega falhou: ${res.erroEntrega}` },
-        );
-        setNumeroDestino("");
-      } else {
-        const intervaloMs = (intervaloMin * 60 + intervaloSeg) * 1000;
-        let sucesso = 0;
-        let falha = 0;
-
-        for (let i = 0; i < numerosDetectados.length; i++) {
-          setProgresso({ atual: i + 1, total: numerosDetectados.length });
-          try {
-            const res = await api.post<{ entregue: boolean }>("/disparos", {
-              instanciaId,
-              templateId,
-              numeroDestino: numerosDetectados[i],
-              variaveis: variaveisLimpo,
-            });
-            if (res.entregue) sucesso++;
-            else falha++;
-          } catch {
-            falha++;
-          }
-          // Intervalo entre mensagens (padrão 1:30) — não espera depois da última.
-          if (i < numerosDetectados.length - 1 && intervaloMs > 0) {
-            await aguardar(intervaloMs);
-          }
-        }
-        setProgresso(null);
-        setResultado({
-          ok: falha === 0,
-          texto: `${sucesso} de ${numerosDetectados.length} disparo(s) entregue(s)${falha ? `, ${falha} falharam` : ""}.`,
-        });
-        limparCsv();
-      }
-      setVariaveis([]);
-    } catch (err) {
-      setResultado({ ok: false, texto: err instanceof ApiError ? err.message : "Não foi possível enviar o disparo" });
-    } finally {
-      setEnviando(false);
-      setProgresso(null);
-    }
-  }
-
-  const podeEnviar =
-    !!instanciaId && !!templateId && (modo === "unico" ? !!numeroDestino : numerosDetectados.length > 0);
+  // Cada disparo (individual ou dentro de um CSV em andamento) emite mensagem:nova
+  // assim que é enviado — a lista atualiza sozinha em tempo real, sem precisar
+  // de um conceito separado de "campanha em andamento".
+  useSocketEvent("mensagem:nova", () => carregar());
 
   return (
     <div>
-      <PageHeader title="Disparos" subtitle="Envio de campanhas via templates aprovados (Meta Cloud API)" />
-
-      <div className="flex justify-center p-8">
-        <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-4 rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted">Número de origem</label>
-            <Select
-              value={instanciaId}
-              onChange={setInstanciaId}
-              placeholder="Selecione..."
-              options={instancias.map((i) => ({ value: i.id, label: i.numero }))}
-            />
-            {instanciaId === "" && instancias.length === 0 && (
-              <p className="mt-1 text-xs text-muted">Nenhum número Meta Cloud API cadastrado ainda.</p>
-            )}
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted">Template aprovado</label>
-            <Select
-              disabled={!instanciaId}
-              value={templateId}
-              onChange={setTemplateId}
-              placeholder="Selecione..."
-              options={templates.map((t) => ({ value: t.id, label: t.nome }))}
-            />
-          </div>
-
-          <div>
-            <div className="mb-1.5 flex items-center gap-1 rounded-md border border-border p-0.5 text-xs">
-              <button
-                type="button"
-                onClick={() => setModo("unico")}
-                className={`flex-1 rounded px-2 py-1 font-medium transition-colors duration-150 ease-out ${
-                  modo === "unico" ? "bg-primary/15 text-primary" : "text-muted hover:text-white"
-                }`}
-              >
-                Número único
-              </button>
-              <button
-                type="button"
-                onClick={() => setModo("csv")}
-                className={`flex-1 rounded px-2 py-1 font-medium transition-colors duration-150 ease-out ${
-                  modo === "csv" ? "bg-primary/15 text-primary" : "text-muted hover:text-white"
-                }`}
-              >
-                Importar CSV
-              </button>
-            </div>
-
-            {modo === "unico" ? (
-              <input
-                placeholder="5521999999999"
-                value={numeroDestino}
-                onChange={(e) => setNumeroDestino(e.target.value)}
-                className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
-              />
-            ) : (
-              <div className="space-y-2">
-                {!nomeArquivo ? (
-                  <button
-                    type="button"
-                    onClick={() => inputCsvRef.current?.click()}
-                    className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-4 text-xs font-medium text-muted hover:border-primary hover:text-primary"
-                  >
-                    <Upload size={14} />
-                    Selecionar arquivo CSV
-                  </button>
-                ) : (
-                  <div className="flex items-center justify-between rounded-md border border-border bg-bg/40 px-3 py-2 text-xs">
-                    <span className="truncate text-white">{nomeArquivo}</span>
-                    <button type="button" onClick={limparCsv} className="text-muted hover:text-primary">
-                      <X size={14} />
-                    </button>
-                  </div>
-                )}
-                <input
-                  ref={inputCsvRef}
-                  type="file"
-                  accept=".csv"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleArquivoCsv(e.target.files[0])}
-                />
-
-                {erroCsv && <p className="text-xs text-primary">{erroCsv}</p>}
-
-                {colunasCsv.length > 0 && (
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted">Qual coluna é o telefone?</label>
-                    <Select
-                      value={colunaTelefone}
-                      onChange={setColunaTelefone}
-                      placeholder="Selecione a coluna..."
-                      options={colunasCsv.map((c) => ({ value: c, label: c }))}
-                    />
-                    {colunaTelefone && (
-                      <p className="mt-1.5 text-xs text-muted">
-                        {numerosDetectados.length} número(s) único(s) detectado(s) na coluna "{colunaTelefone}".
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {modo === "csv" && numerosDetectados.length > 1 && (
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-muted">
-                Intervalo entre cada mensagem (evita bloqueio por envio em massa)
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={0}
-                  value={intervaloMin}
-                  onChange={(e) => setIntervaloMin(Math.max(0, Number(e.target.value)))}
-                  className="w-16 rounded-md border border-border bg-bg/60 px-2 py-1.5 text-center text-sm text-white outline-none focus:border-primary"
-                />
-                <span className="text-xs text-muted">min</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={59}
-                  value={intervaloSeg}
-                  onChange={(e) => setIntervaloSeg(Math.min(59, Math.max(0, Number(e.target.value))))}
-                  className="w-16 rounded-md border border-border bg-bg/60 px-2 py-1.5 text-center text-sm text-white outline-none focus:border-primary"
-                />
-                <span className="text-xs text-muted">seg</span>
-              </div>
-              <p className="mt-1.5 text-xs text-muted">
-                Tempo estimado total: ~{formatarDuracao((intervaloMin * 60 + intervaloSeg) * (numerosDetectados.length - 1))}
-              </p>
-            </div>
-          )}
-
-          <div>
-            <div className="mb-1.5 flex items-center justify-between">
-              <label className="text-xs font-medium text-muted">Variáveis do template</label>
-              <button
-                type="button"
-                onClick={() => setVariaveis((v) => [...v, ""])}
-                className="flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                <Plus size={12} /> Adicionar
-              </button>
-            </div>
-            <div className="space-y-2">
-              {variaveis.map((v, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input
-                    value={v}
-                    onChange={(e) =>
-                      setVariaveis((atual) => atual.map((val, idx) => (idx === i ? e.target.value : val)))
-                    }
-                    placeholder={`Variável ${i + 1}`}
-                    className="flex-1 rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setVariaveis((atual) => atual.filter((_, idx) => idx !== i))}
-                    className="text-muted hover:text-primary"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {progresso && (
-            <div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-border">
-                <div
-                  className="h-full bg-primary transition-all duration-300 ease-out"
-                  style={{ width: `${(progresso.atual / progresso.total) * 100}%` }}
-                />
-              </div>
-              <p className="mt-1.5 text-xs text-muted">
-                Enviando {progresso.atual} de {progresso.total}...
-              </p>
-            </div>
-          )}
-
-          {resultado && <p className="text-sm text-primary">{resultado.texto}</p>}
-
-          <button
-            type="submit"
-            disabled={enviando || !podeEnviar}
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+      <PageHeader
+        title="Disparos"
+        subtitle="Histórico de envios via templates aprovados (Meta Cloud API)"
+        right={
+          <Link
+            to="/disparos/novo"
+            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-bg hover:opacity-90"
           >
-            <Send size={16} />
-            {enviando
-              ? "Enviando..."
-              : modo === "csv" && numerosDetectados.length > 0
-                ? `Enviar disparo para ${numerosDetectados.length}`
-                : "Enviar disparo"}
-          </button>
-        </form>
+            <Plus size={14} /> Novo disparo
+          </Link>
+        }
+      />
+
+      <div className="p-8">
+        {!carregando && disparos.length === 0 && (
+          <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-16 text-center">
+            <Send size={22} className="text-muted" />
+            <p className="text-sm text-muted">Nenhum disparo enviado ainda.</p>
+            <Link to="/disparos/novo" className="text-xs font-medium text-primary hover:underline">
+              Enviar o primeiro disparo
+            </Link>
+          </div>
+        )}
+
+        {disparos.length > 0 && (
+          <div className="overflow-x-auto rounded-lg border border-white/10 bg-surface/40 backdrop-blur-xl">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead>
+                <tr>
+                  {["Número", "Template", "Origem", "Status", "Enviado por", "Quando"].map((col) => (
+                    <th key={col} className="px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-muted">
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {disparos.map((d) => (
+                  <tr key={d.id} className="border-t border-border">
+                    <td className="px-5 py-3 font-medium text-white">
+                      {d.conversa.contato.nome ?? d.conversa.contato.numeroWhatsapp}
+                    </td>
+                    <td className="px-5 py-3 text-muted">{extrairNomeTemplate(d.conteudoTexto)}</td>
+                    <td className="px-5 py-3 text-muted">{d.conversa.instancia.numero}</td>
+                    <td className="px-5 py-3">
+                      <span className="flex items-center gap-1.5 text-muted">
+                        <StatusEntregaIcone status={d.statusEntrega} />
+                        {d.statusEntrega ? STATUS_LABEL[d.statusEntrega] : "—"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-muted">{d.operador?.nome ?? "—"}</td>
+                    <td className="px-5 py-3 text-muted">{formatarData(d.timestamp)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
