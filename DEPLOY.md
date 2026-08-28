@@ -29,6 +29,29 @@ apt install -y nodejs
 apt install -y nginx certbot python3-certbot-nginx
 ```
 
+### Swap (recomendado)
+
+Hostinger entrega a VPS sem swap. Sem ele, um pico de memória faz o kernel **matar
+um container** (OOM killer) em vez de degradar devagar — arriscado com Evolution API,
+onde cada número conectado é uma sessão do WhatsApp Web na memória.
+
+```bash
+fallocate -l 4G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+
+# Persistir no boot
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+systemctl daemon-reload
+
+# Swap como reserva de emergência, não uso rotineiro (Postgres/Redis sofrem com paginação)
+echo 'vm.swappiness=10' > /etc/sysctl.d/99-swappiness.conf
+sysctl -p /etc/sysctl.d/99-swappiness.conf
+```
+
+Para validar que sobrevive a reboot sem precisar reiniciar: `swapoff /swapfile && swapon -a && swapon --show`.
+
 ## 2. Apontar o domínio
 
 No painel da Hostinger (ou onde o domínio estiver registrado), crie um registro **A**
