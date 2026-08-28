@@ -86,7 +86,21 @@ router.post(
 
             const mensagem = await prisma.mensagem.findUnique({ where: { externalId: status.id } });
             if (!mensagem) continue;
-            if (mensagem.statusEntrega && STATUS_RANK[mensagem.statusEntrega] >= STATUS_RANK[novoStatus]) continue;
+            // "falhou" precisa sempre passar, mesmo chegando depois de "enviado" — é o caso
+            // real que travava aqui: mesmo rank (1) fazia esse evento ser descartado como
+            // "regressão", deixando a mensagem presa em "enviado" para sempre.
+            if (
+              novoStatus !== "falhou" &&
+              mensagem.statusEntrega &&
+              STATUS_RANK[mensagem.statusEntrega] >= STATUS_RANK[novoStatus]
+            ) {
+              continue;
+            }
+
+            const erro = status.errors?.[0];
+            if (novoStatus === "falhou" && erro) {
+              console.error(`Falha de entrega reportada pela Meta (mensagem ${mensagem.id}): ${erro.title ?? erro.message ?? JSON.stringify(erro)}`);
+            }
 
             const atualizada = await prisma.mensagem.update({
               where: { id: mensagem.id },
