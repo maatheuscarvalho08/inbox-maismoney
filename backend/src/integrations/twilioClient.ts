@@ -14,8 +14,12 @@ export async function discarNumero(numeroDestino: string, twimlUrl: string, stat
     throw new Error("Twilio não configurado (TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN ausentes)");
   }
 
+  // Números aqui vêm salvos sem "+" (mesmo formato usado pra Meta Cloud API), mas o
+  // Twilio Voice exige E.164 completo com "+" — sem isso toda ligação falha.
+  const to = numeroDestino.startsWith("+") ? numeroDestino : `+${numeroDestino}`;
+
   const call = await client.calls.create({
-    to: numeroDestino,
+    to,
     from: env.TWILIO_PHONE_NUMBER,
     url: twimlUrl,
     statusCallback: statusCallbackUrl,
