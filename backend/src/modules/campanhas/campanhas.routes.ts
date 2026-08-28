@@ -7,6 +7,7 @@ import { env } from "../../config/env.js";
 import { authenticate } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { uploadAudio } from "../../middleware/uploadAudio.js";
+import { normalizarNumeroBrasileiro } from "../../lib/telefone.js";
 import { criarCampanha, emitirAtualizacaoCampanha, getCampanhaComResumo, listCampanhas } from "./campanhas.service.js";
 import { enfileirarCampanha } from "../../queues/discadoraQueue.js";
 
@@ -117,7 +118,11 @@ router.post(
     }
 
     await prisma.campanhaNumero.createMany({
-      data: parsed.data.numeros.map((n) => ({ campanhaId: campanha.id, ...n })),
+      data: parsed.data.numeros.map((n) => ({
+        campanhaId: campanha.id,
+        ...n,
+        numeroWhatsapp: normalizarNumeroBrasileiro(n.numeroWhatsapp),
+      })),
     });
     const total = await prisma.campanhaNumero.count({ where: { campanhaId: campanha.id } });
     await prisma.campanhaDiscadora.update({ where: { id: campanha.id }, data: { totalNumeros: total } });
