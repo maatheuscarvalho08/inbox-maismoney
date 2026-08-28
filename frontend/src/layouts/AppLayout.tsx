@@ -47,15 +47,7 @@ export function AppLayout() {
 
   return (
     <div className="flex h-screen bg-bg text-white">
-      <div className="pointer-events-none fixed -left-40 -top-40 size-[560px] rounded-full bg-primary/15 blur-[130px]" />
-      <div className="pointer-events-none fixed -right-40 bottom-0 size-[480px] rounded-full bg-primary/10 blur-[130px]" />
-      <div className="pointer-events-none fixed left-1/2 top-16 size-[620px] -translate-x-1/2 rounded-full bg-primary/10 blur-[140px]" />
-      <div
-        className="pointer-events-none fixed inset-0 opacity-[0.12]"
-        style={{ backgroundImage: "radial-gradient(white 1px, transparent 1px)", backgroundSize: "28px 28px" }}
-      />
-
-      <aside className="relative z-10 flex w-64 shrink-0 flex-col border-r border-white/10 bg-surface/40 backdrop-blur-xl">
+      <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-surface">
         <div className="flex items-center gap-2 px-5 py-6">
           <img src="/logo.png" alt="MaisMoney" className="size-7 object-contain" />
           <span className="text-lg font-bold tracking-tight text-white">
@@ -121,7 +113,7 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <main className="relative z-10 flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-bg">
         <Outlet />
       </main>
     </div>
