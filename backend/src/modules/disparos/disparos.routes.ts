@@ -9,6 +9,7 @@ import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { enviarTemplateMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { disparoLoteQueue } from "../../queues/disparoLoteQueue.js";
+import { montarTextoDisparo } from "../../lib/template.js";
 
 const router = Router();
 router.use(authenticate);
@@ -17,7 +18,9 @@ router.get(
   "/",
   asyncHandler(async (_req, res) => {
     const mensagens = await prisma.mensagem.findMany({
-      where: { conteudoTexto: { startsWith: "[Disparo" } },
+      // templateNome preenchido = é um disparo (independente do texto, que agora é a
+      // mensagem real enviada, não mais um marcador "[Disparo..." fixo).
+      where: { OR: [{ templateNome: { not: null } }, { conteudoTexto: { startsWith: "[Disparo" } }] },
       orderBy: { timestamp: "desc" },
       take: 500,
       include: {
@@ -55,6 +58,7 @@ router.get(
         totalNumeros: msgs.length,
         contato: msgs.length === 1 ? primeira.conversa.contato : null,
         conteudoTexto: primeira.conteudoTexto,
+        templateNome: primeira.templateNome,
         instancia: primeira.conversa.instancia,
         operador: primeira.operador,
         timestamp: primeira.timestamp,
@@ -119,7 +123,8 @@ router.post(
       conversaId: conversa.id,
       remetenteTipo: "operador",
       operadorId: req.user!.id,
-      conteudoTexto: `[Disparo · template "${template.nome}"] ${variaveis.join(", ")}`.trim(),
+      conteudoTexto: montarTextoDisparo(template.nome, template.corpo, variaveis),
+      templateNome: template.nome,
       externalId: idEnvio ?? null,
       statusEntrega: idEnvio ? "enviado" : "falhou",
       loteId: loteId ?? null,

@@ -97,6 +97,9 @@ model Template {
   nome            String
   metaTemplateId  String   @map("meta_template_id")
   idioma          String   @default("pt_BR")
+  // Texto real do corpo aprovado na Meta (com {{1}}, {{2}}...) — usado pra mostrar a
+  // mensagem de verdade no histórico de disparos, em vez de só o nome do template.
+  corpo           String?
   variaveisSchema Json?    @map("variaveis_schema")
   createdAt       DateTime @default(now()) @map("created_at")
 
@@ -173,6 +176,10 @@ model Mensagem {
   // Agrupa disparos enviados juntos num CSV em massa (gerado no front, um UUID por
   // lote) — sem isso, um CSV de 50 números vira 50 linhas soltas no histórico.
   loteId        String?       @map("lote_id")
+  // Nome do template usado (só disparos) — guardado à parte porque conteudoTexto
+  // agora é a mensagem de verdade enviada, não dá mais pra "adivinhar" o template
+  // fazendo parsing do texto.
+  templateNome  String?       @map("template_nome")
   // Só relevante pra mensagem enviada pelo operador — reflete o status reportado
   // pelo webhook "statuses" da Meta (sent/delivered/read/failed).
   statusEntrega StatusEntrega? @map("status_entrega")

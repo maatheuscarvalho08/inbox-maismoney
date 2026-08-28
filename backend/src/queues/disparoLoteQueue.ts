@@ -6,6 +6,7 @@ import { findOrCreateConversaAberta } from "../modules/conversas/conversas.servi
 import { criarMensagem } from "../modules/mensagens/mensagens.service.js";
 import { enviarTemplateMeta, mensagemErroMeta } from "../integrations/metaCloudApi.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../ws/events.js";
+import { montarTextoDisparo } from "../lib/template.js";
 
 const connection = { url: env.REDIS_URL };
 
@@ -63,7 +64,8 @@ export function startDisparoLoteWorker() {
           conversaId: conversa.id,
           remetenteTipo: "operador",
           operadorId,
-          conteudoTexto: `[Disparo · template "${template.nome}"] ${variaveis.join(", ")}`.trim(),
+          conteudoTexto: montarTextoDisparo(template.nome, template.corpo, variaveis),
+          templateNome: template.nome,
           externalId: idEnvio ?? null,
           statusEntrega: idEnvio ? "enviado" : "falhou",
           loteId,

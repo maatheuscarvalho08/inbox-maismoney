@@ -19,6 +19,7 @@ interface CriarMensagemInput {
   externalId?: string | null;
   statusEntrega?: StatusEntrega | null;
   loteId?: string | null;
+  templateNome?: string | null;
   timestamp?: Date;
 }
 

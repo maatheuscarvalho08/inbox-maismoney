@@ -13,16 +13,12 @@ interface DisparoAgrupado {
   totalNumeros: number;
   contato: { nome: string | null; numeroWhatsapp: string } | null;
   conteudoTexto: string | null;
+  templateNome: string | null;
   instancia: { id: string; nome: string; numero: string };
   operador: { id: string; nome: string } | null;
   timestamp: string;
   statusEntrega: StatusEntrega | null;
   resumoStatus: { enviado: number; entregue: number; lido: number; falhou: number };
-}
-
-function extrairNomeTemplate(texto: string | null) {
-  const match = texto?.match(/template "([^"]+)"/);
-  return match?.[1] ?? "—";
 }
 
 const STATUS_LABEL: Record<StatusEntrega, string> = {
@@ -108,14 +104,16 @@ export function DisparosPage() {
 
         {disparos.length > 0 && (
           <div className="overflow-x-auto rounded-lg border border-white/10 bg-surface/40 backdrop-blur-xl">
-            <table className="w-full min-w-[720px] text-left text-sm">
+            <table className="w-full min-w-[880px] text-left text-sm">
               <thead>
                 <tr>
-                  {["Quantidade de números", "Template", "Origem", "Status", "Enviado por", "Quando"].map((col) => (
-                    <th key={col} className="px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-muted">
-                      {col}
-                    </th>
-                  ))}
+                  {["Quantidade de números", "Mensagem enviada", "Template", "Origem", "Status", "Enviado por", "Quando"].map(
+                    (col) => (
+                      <th key={col} className="px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-muted">
+                        {col}
+                      </th>
+                    ),
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -126,7 +124,10 @@ export function DisparosPage() {
                         ? `${d.totalNumeros} números`
                         : (d.contato?.nome ?? d.contato?.numeroWhatsapp ?? "1 número")}
                     </td>
-                    <td className="px-5 py-3 text-muted">{extrairNomeTemplate(d.conteudoTexto)}</td>
+                    <td className="max-w-xs truncate px-5 py-3 text-muted" title={d.conteudoTexto ?? undefined}>
+                      {d.conteudoTexto ?? "—"}
+                    </td>
+                    <td className="px-5 py-3 text-muted">{d.templateNome ?? "—"}</td>
                     <td className="px-5 py-3 text-muted">{d.instancia.numero}</td>
                     <td className="px-5 py-3">
                       {d.totalNumeros > 1 ? (

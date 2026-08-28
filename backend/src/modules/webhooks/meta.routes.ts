@@ -122,6 +122,13 @@ router.post(
                   texto = texto ?? "[Mídia recebida, mas não foi possível baixar a tempo]";
                 }
               }
+            } else if (msg.type === "button") {
+              // Resposta a um botão de template HSM (quick reply) — o texto do botão
+              // clicado vem em button.text, não em text.body.
+              texto = msg.button?.text;
+            } else if (msg.type === "interactive") {
+              // Resposta a lista/botão interativo (fluxo mais novo da Cloud API).
+              texto = msg.interactive?.button_reply?.title ?? msg.interactive?.list_reply?.title;
             } else if (msg.type === "unsupported") {
               // A Meta manda esse tipo pra mensagens que o Cloud API não consegue
               // processar (enquete, mídia "visualização única", reação a mensagem
