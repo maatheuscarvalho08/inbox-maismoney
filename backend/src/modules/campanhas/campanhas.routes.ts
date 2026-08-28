@@ -9,7 +9,7 @@ import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { uploadAudio } from "../../middleware/uploadAudio.js";
 import { normalizarNumeroBrasileiro } from "../../lib/telefone.js";
 import { criarCampanha, emitirAtualizacaoCampanha, getCampanhaComResumo, listCampanhas } from "./campanhas.service.js";
-import { enfileirarCampanha } from "../../queues/discadoraQueue.js";
+import { enfileirarCampanha, LIGACOES_SIMULTANEAS } from "../../queues/discadoraQueue.js";
 
 const router = Router();
 
@@ -34,6 +34,32 @@ router.get(
   asyncHandler(async (_req, res) => {
     const campanhas = await listCampanhas();
     res.json({ campanhas });
+  }),
+);
+
+// Precisa vir antes de "/:id", senão "discagens" seria capturado como um id de campanha.
+router.get(
+  "/discagens/ativas",
+  asyncHandler(async (_req, res) => {
+    // Em andamento = já discado e ainda sem evento terminal do Twilio.
+    const emAndamento = await prisma.campanhaNumero.findMany({
+      where: { statusLigacao: { in: ["discando", "atendeu"] }, finalizadoEm: null },
+      orderBy: { iniciadoEm: "asc" },
+      include: { campanha: { select: { id: true, nome: true } } },
+    });
+
+    const recentes = await prisma.campanhaNumero.findMany({
+      where: { finalizadoEm: { not: null } },
+      orderBy: { finalizadoEm: "desc" },
+      take: 30,
+      include: { campanha: { select: { id: true, nome: true } } },
+    });
+
+    const naFila = await prisma.campanhaNumero.count({
+      where: { statusLigacao: "pendente", campanha: { status: "em_andamento" } },
+    });
+
+    res.json({ limiteSimultaneas: LIGACOES_SIMULTANEAS, emAndamento, recentes, naFila });
   }),
 );
 

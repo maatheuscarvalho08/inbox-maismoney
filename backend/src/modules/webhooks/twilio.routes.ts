@@ -100,6 +100,11 @@ const STATUS_MAP: Record<string, StatusLigacao> = {
   canceled: "erro",
 };
 
+// "in-progress" significa atendida, não encerrada — a ligação continua rolando. Tratar
+// como terminal liberaria cedo demais o slot que segura o limite de simultâneas
+// (ver aguardarFimDaLigacao em queues/discadoraQueue.ts).
+const STATUS_TERMINAIS = new Set(["completed", "no-answer", "busy", "failed", "canceled"]);
+
 router.post(
   "/status",
   verifyTwilioSignature,
@@ -113,7 +118,7 @@ router.post(
 
     if (numero && callStatus) {
       const statusLigacao = STATUS_MAP[callStatus];
-      const ehTerminal = callStatus === "completed" || Boolean(statusLigacao);
+      const ehTerminal = STATUS_TERMINAIS.has(callStatus);
 
       await prisma.campanhaNumero.update({
         where: { id: numero.id },

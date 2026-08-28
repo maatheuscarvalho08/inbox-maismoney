@@ -3,8 +3,11 @@ import { Link } from "react-router-dom";
 import { Phone, Plus } from "lucide-react";
 import { api } from "../lib/api";
 import { PageHeader } from "../components/PageHeader";
+import { DiscagensAoVivo } from "../components/DiscagensAoVivo";
 import { useSocketEvent } from "../hooks/useSocketEvent";
 import type { Campanha, StatusCampanha } from "../types/api";
+
+type Aba = "campanhas" | "aovivo";
 
 const STATUS_LABEL: Record<StatusCampanha, string> = {
   rascunho: "Rascunho",
@@ -23,6 +26,7 @@ const STATUS_STYLE: Record<StatusCampanha, string> = {
 export function DiscadoraPage() {
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [aba, setAba] = useState<Aba>("campanhas");
 
   function carregar() {
     api.get<{ campanhas: Campanha[] }>("/campanhas").then((res) => {
@@ -53,34 +57,63 @@ export function DiscadoraPage() {
       />
 
       <div className="p-8">
-        {!carregando && campanhas.length === 0 && (
-          <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-16 text-center">
-            <Phone size={22} className="text-muted" />
-            <p className="text-sm text-muted">Nenhuma campanha criada ainda.</p>
-            <Link to="/discadora/nova" className="text-xs font-medium text-primary hover:underline">
-              Criar a primeira campanha
-            </Link>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {campanhas.map((c) => (
-            <Link
-              key={c.id}
-              to={`/discadora/${c.id}`}
-              className="rounded-lg border border-white/10 bg-surface/40 p-4 backdrop-blur-xl hover:border-primary/30"
+        <div className="mb-6 flex items-center gap-1 border-b border-border">
+          {(
+            [
+              { id: "campanhas", label: "Campanhas" },
+              { id: "aovivo", label: "Discagens ao vivo" },
+            ] satisfies { id: Aba; label: string }[]
+          ).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setAba(t.id)}
+              className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
+                aba === t.id ? "border-primary text-white" : "border-transparent text-muted hover:text-white"
+              }`}
             >
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-white">{c.nome}</p>
-                <span className={`shrink-0 rounded border px-2 py-0.5 text-[10px] font-medium ${STATUS_STYLE[c.status]}`}>
-                  {STATUS_LABEL[c.status]}
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-muted">{c.template?.nome} · {c.instancia?.numero}</p>
-              <p className="mt-3 text-xs text-muted">{c.totalNumeros} número(s) na lista</p>
-            </Link>
+              {t.label}
+            </button>
           ))}
         </div>
+
+        {aba === "aovivo" && <DiscagensAoVivo />}
+
+        {aba === "campanhas" && (
+          <>
+            {!carregando && campanhas.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-16 text-center">
+                <Phone size={22} className="text-muted" />
+                <p className="text-sm text-muted">Nenhuma campanha criada ainda.</p>
+                <Link to="/discadora/nova" className="text-xs font-medium text-primary hover:underline">
+                  Criar a primeira campanha
+                </Link>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {campanhas.map((c) => (
+                <Link
+                  key={c.id}
+                  to={`/discadora/${c.id}`}
+                  className="rounded-lg border border-border bg-surface p-4 hover:border-primary/40"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-semibold text-white">{c.nome}</p>
+                    <span
+                      className={`shrink-0 rounded border px-2 py-0.5 text-[10px] font-medium ${STATUS_STYLE[c.status]}`}
+                    >
+                      {STATUS_LABEL[c.status]}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted">
+                    {c.template?.nome} · {c.instancia?.numero}
+                  </p>
+                  <p className="mt-3 text-xs text-muted">{c.totalNumeros} número(s) na lista</p>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
