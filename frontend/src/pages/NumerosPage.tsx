@@ -236,6 +236,8 @@ export function NumerosPage() {
   const [instancias, setInstancias] = useState<Instancia[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erroQrCode, setErroQrCode] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<{ nome: string; base64: string } | null>(null);
+  const [gerandoQrCode, setGerandoQrCode] = useState<string | null>(null);
 
   async function carregar() {
     const res = await api.get<{ instancias: Instancia[] }>("/instancias");
@@ -249,16 +251,24 @@ export function NumerosPage() {
 
   useSocketEvent("instancia:atualizada", () => carregar());
 
-  async function reconectar(id: string) {
+  async function reconectar(inst: Instancia) {
     setErroQrCode(null);
+    setGerandoQrCode(inst.id);
     try {
-      await api.get(`/instancias/${id}/qrcode`);
+      const res = await api.get<{ qrcode: { base64?: string } }>(`/instancias/${inst.id}/qrcode`);
+      if (res.qrcode?.base64) {
+        setQrCode({ nome: inst.nome, base64: res.qrcode.base64 });
+      } else {
+        setErroQrCode("A Evolution API não retornou um QR Code — tente novamente em alguns segundos.");
+      }
     } catch (err) {
       setErroQrCode(
         err instanceof ApiError
           ? `Não foi possível gerar o QR Code: ${err.message}`
           : "Não foi possível gerar o QR Code",
       );
+    } finally {
+      setGerandoQrCode(null);
     }
   }
 
@@ -311,10 +321,11 @@ export function NumerosPage() {
 
                 {inst.tipoConexao === "evolution" && (
                   <button
-                    onClick={() => reconectar(inst.id)}
-                    className="mt-3 w-full rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10"
+                    onClick={() => reconectar(inst)}
+                    disabled={gerandoQrCode === inst.id}
+                    className="mt-3 w-full rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
                   >
-                    Reconectar (QR Code)
+                    {gerandoQrCode === inst.id ? "Gerando QR Code..." : "Reconectar (QR Code)"}
                   </button>
                 )}
 
@@ -324,6 +335,23 @@ export function NumerosPage() {
           </div>
         )}
       </div>
+
+      {qrCode && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-xs rounded-lg border border-border bg-surface p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-medium text-white">{qrCode.nome}</p>
+              <button onClick={() => setQrCode(null)} className="text-muted hover:text-white">
+                <X size={16} />
+              </button>
+            </div>
+            <img src={qrCode.base64} alt="QR Code de conexão" className="w-full rounded-md" />
+            <p className="mt-3 text-center text-xs text-muted">
+              Abra o WhatsApp no celular → Aparelhos conectados → Conectar um aparelho
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
