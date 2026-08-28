@@ -3,7 +3,12 @@ import { z } from "zod";
 import { prisma } from "../../db/prisma.js";
 import { authenticate, requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
-import { obterQrCodeEvolution } from "../../integrations/evolutionApi.js";
+import {
+  criarInstanciaEvolution,
+  instanciaExisteEvolution,
+  mensagemErroEvolution,
+  obterQrCodeEvolution,
+} from "../../integrations/evolutionApi.js";
 
 const router = Router();
 router.use(authenticate);
@@ -48,6 +53,22 @@ router.post(
       return res.status(409).json({ error: "Já existe uma instância cadastrada com este número" });
     }
 
+    // Evolution API precisa da instância criada do lado dele antes de qualquer QR Code —
+    // criar só a linha no banco deixaria o número inutilizável. Feito antes do insert
+    // pra não gravar um registro que nunca vai conseguir conectar.
+    if (parsed.data.tipoConexao === "evolution") {
+      const nomeInstancia = parsed.data.evolutionInstanceId!;
+      try {
+        if (!(await instanciaExisteEvolution(nomeInstancia))) {
+          await criarInstanciaEvolution(nomeInstancia);
+        }
+      } catch (err) {
+        const detalhe = mensagemErroEvolution(err);
+        console.error("Falha ao criar instância na Evolution API:", detalhe);
+        return res.status(502).json({ error: `Não foi possível criar a instância na Evolution API: ${detalhe}` });
+      }
+    }
+
     const instancia = await prisma.instancia.create({ data: parsed.data });
     res.status(201).json({ instancia });
   }),
@@ -88,8 +109,19 @@ router.get(
       return res.status(400).json({ error: "QR Code disponível apenas para instâncias Evolution API" });
     }
 
-    const qrcode = await obterQrCodeEvolution(instancia.evolutionInstanceId);
-    res.json({ qrcode });
+    try {
+      // Recria a instância se ela sumiu do lado do Evolution (registro antigo, volume
+      // do container recriado) — sem isso o QR Code falharia sem explicação.
+      if (!(await instanciaExisteEvolution(instancia.evolutionInstanceId))) {
+        await criarInstanciaEvolution(instancia.evolutionInstanceId);
+      }
+      const qrcode = await obterQrCodeEvolution(instancia.evolutionInstanceId);
+      res.json({ qrcode });
+    } catch (err) {
+      const detalhe = mensagemErroEvolution(err);
+      console.error("Falha ao obter QR Code na Evolution API:", detalhe);
+      res.status(502).json({ error: `Não foi possível obter o QR Code: ${detalhe}` });
+    }
   }),
 );
 
