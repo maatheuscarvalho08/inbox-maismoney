@@ -72,6 +72,8 @@ export interface Conversa {
   operadorId: string | null;
   lastMessageAt: string;
   createdAt: string;
+  origemDisparo: boolean;
+  respondida: boolean;
   contato: Contato;
   instancia: Pick<Instancia, "id" | "nome" | "numero" | "tipoConexao" | "status">;
   operador: { id: string; nome: string } | null;

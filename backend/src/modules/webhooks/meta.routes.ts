@@ -8,7 +8,7 @@ import { env } from "../../config/env.js";
 import { uploadsRoot } from "../../middleware/upload.js";
 import { baixarMidiaMeta } from "../../integrations/metaCloudApi.js";
 import { findOrCreateContato } from "../contatos/contatos.service.js";
-import { findOrCreateConversaAberta } from "../conversas/conversas.service.js";
+import { findOrCreateConversaAberta, marcarConversaRespondida } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import type { StatusEntrega } from "@prisma/client";
@@ -116,6 +116,9 @@ router.post(
 
             const contato = await findOrCreateContato(numero, nomeContato);
             const conversa = await findOrCreateConversaAberta(instanciaDb.id, contato.id);
+            // Resposta do cliente tira a conversa da aba "Disparos" (se veio de lá) sem
+            // apagar a etiqueta azul de origem — ver conversas.service.ts.
+            await marcarConversaRespondida(conversa.id);
 
             let texto: string | undefined;
             let tipoMidia: string | null = null;

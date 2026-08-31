@@ -16,11 +16,17 @@ router.use(authenticate);
 
 const statusEnum = z.enum(["aberta", "em_atendimento", "aguardando", "encerrada"]);
 
+const abaEnum = z.enum(["atendimento", "disparos"]);
+
 router.get(
   "/",
   asyncHandler(async (req, res) => {
     const statusParsed = statusEnum.safeParse(req.query.status);
-    const conversas = await listConversas(statusParsed.success ? statusParsed.data : undefined);
+    const abaParsed = abaEnum.safeParse(req.query.aba);
+    const conversas = await listConversas(
+      statusParsed.success ? statusParsed.data : undefined,
+      abaParsed.success ? abaParsed.data : undefined,
+    );
     res.json({ conversas });
   }),
 );

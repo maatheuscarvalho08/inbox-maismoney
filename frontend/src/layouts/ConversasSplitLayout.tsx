@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
-import { Search, Smartphone, User } from "lucide-react";
+import { Megaphone, Search, Smartphone, User } from "lucide-react";
 import { api } from "../lib/api";
 import { tempoRelativo } from "../lib/tempoRelativo";
 import { useSocketEvent } from "../hooks/useSocketEvent";
@@ -18,6 +18,8 @@ const FILTROS_STATUS: { label: string; status?: StatusConversa }[] = [
   { label: "Encerrada", status: "encerrada" },
 ];
 
+type Aba = "atendimento" | "disparos";
+
 function ultimaMensagemPreview(conversa: Conversa) {
   const ultima = conversa.mensagens?.[0];
   if (!ultima) return "—";
@@ -31,6 +33,7 @@ export function ConversasSplitLayout() {
   const { id: idAtivo } = useParams<{ id: string }>();
 
   const [busca, setBusca] = useState("");
+  const [aba, setAba] = useState<Aba>("atendimento");
   const [filtroStatus, setFiltroStatus] = useState<StatusConversa | undefined>(undefined);
   const [etiquetas, setEtiquetas] = useState<Etiqueta[]>([]);
   const [etiquetaFiltro, setEtiquetaFiltro] = useState<string | null>(null);
@@ -41,16 +44,18 @@ export function ConversasSplitLayout() {
   const [conversas, setConversas] = useState<Conversa[]>([]);
   const [carregando, setCarregando] = useState(true);
 
-  const carregar = useCallback(async (status?: StatusConversa) => {
-    const query = status ? `?status=${status}` : "";
-    const res = await api.get<{ conversas: Conversa[] }>(`/conversas${query}`);
+  const carregar = useCallback(async (status?: StatusConversa, abaAtual?: Aba) => {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    params.set("aba", abaAtual ?? "atendimento");
+    const res = await api.get<{ conversas: Conversa[] }>(`/conversas?${params.toString()}`);
     setConversas(res.conversas);
     setCarregando(false);
   }, []);
 
   useEffect(() => {
-    carregar(filtroStatus);
-  }, [filtroStatus, carregar]);
+    carregar(filtroStatus, aba);
+  }, [filtroStatus, aba, carregar]);
 
   useEffect(() => {
     api.get<{ etiquetas: Etiqueta[] }>("/etiquetas").then((res) => setEtiquetas(res.etiquetas));
@@ -58,8 +63,8 @@ export function ConversasSplitLayout() {
     api.get<{ usuarios: Usuario[] }>("/usuarios").then((res) => setVendedores(res.usuarios.filter((u) => u.ativo)));
   }, []);
 
-  useSocketEvent("mensagem:nova", () => carregar(filtroStatus));
-  useSocketEvent("conversa:atualizada", () => carregar(filtroStatus));
+  useSocketEvent("mensagem:nova", () => carregar(filtroStatus, aba));
+  useSocketEvent("conversa:atualizada", () => carregar(filtroStatus, aba));
 
   const conversasFiltradas = useMemo(() => {
     let lista = conversas;
@@ -93,6 +98,27 @@ export function ConversasSplitLayout() {
               placeholder="Buscar conversa..."
               className="w-full rounded-md border border-border bg-bg/60 py-1.5 pl-8 pr-3 text-xs text-white outline-none focus:border-primary"
             />
+          </div>
+
+          <div className="flex gap-1 rounded-md border border-border bg-bg/60 p-1">
+            <button
+              onClick={() => setAba("atendimento")}
+              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors duration-150 ease-out ${
+                aba === "atendimento" ? "bg-primary text-bg" : "text-muted hover:text-white"
+              }`}
+            >
+              Atendimento
+            </button>
+            <button
+              onClick={() => setAba("disparos")}
+              className={`flex flex-1 items-center justify-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors duration-150 ease-out ${
+                aba === "disparos"
+                  ? "bg-[var(--color-accent)] text-white"
+                  : "text-muted hover:text-white"
+              }`}
+            >
+              <Megaphone size={12} /> Disparos
+            </button>
           </div>
 
           <div className="flex flex-wrap gap-1">
@@ -157,7 +183,13 @@ export function ConversasSplitLayout() {
                 <p className="truncate text-xs text-muted">{ultimaMensagemPreview(c)}</p>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   <StatusBadge status={c.status} />
-                  <span className="flex items-center gap-1 rounded border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-accent-fg)]">
+                  {c.origemDisparo && (
+                    <span className="flex items-center gap-1 rounded border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-accent-fg)]">
+                      <Megaphone size={9} />
+                      Disparo
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1 rounded border border-border bg-border/40 px-1.5 py-0.5 text-[10px] font-medium text-muted">
                     <Smartphone size={9} />
                     {c.instancia.numero}
                   </span>

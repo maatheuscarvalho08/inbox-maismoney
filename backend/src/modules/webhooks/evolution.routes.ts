@@ -2,7 +2,7 @@ import { Router } from "express";
 import { prisma } from "../../db/prisma.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { findOrCreateContato } from "../contatos/contatos.service.js";
-import { findOrCreateConversaAberta } from "../conversas/conversas.service.js";
+import { findOrCreateConversaAberta, marcarConversaRespondida } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitInstanciaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 
@@ -47,6 +47,9 @@ router.post(
           if (instanciaDb && (texto || msg?.message)) {
             const contato = await findOrCreateContato(numero, msg?.pushName);
             const conversa = await findOrCreateConversaAberta(instanciaDb.id, contato.id);
+            // Resposta do cliente tira a conversa da aba "Disparos" (se veio de lá) sem
+            // apagar a etiqueta azul de origem — ver conversas.service.ts.
+            await marcarConversaRespondida(conversa.id);
 
             const mensagem = await criarMensagem({
               conversaId: conversa.id,

@@ -8,9 +8,16 @@ const INCLUDE_PADRAO = {
   etiquetas: { include: { etiqueta: true } },
 } as const;
 
-export async function listConversas(status?: StatusConversa) {
+export async function listConversas(status?: StatusConversa, aba?: "atendimento" | "disparos") {
   return prisma.conversa.findMany({
-    where: status ? { status } : undefined,
+    // "disparos" = nasceu de um disparo e o lead ainda não respondeu — some dessa aba
+    // assim que chega a primeira resposta (ver evolutionWebhook/metaWebhook marcando
+    // respondida:true). "atendimento" é tudo o resto, pra não poluir com disparo em massa.
+    where: {
+      ...(status ? { status } : {}),
+      ...(aba === "disparos" ? { origemDisparo: true, respondida: false } : {}),
+      ...(aba === "atendimento" ? { OR: [{ origemDisparo: false }, { respondida: true }] } : {}),
+    },
     orderBy: { lastMessageAt: "desc" },
     include: {
       ...INCLUDE_PADRAO,
@@ -47,6 +54,26 @@ export async function findOrCreateConversaAberta(instanciaId: string, contatoId:
   return prisma.conversa.create({
     data: { instanciaId, contatoId, status: "aberta" },
   });
+}
+
+// Usado só pelo módulo de disparos — se a conversa já existe (já é atendimento em
+// andamento, por exemplo), não mexe em origemDisparo/respondida, só reaproveita.
+export async function findOrCreateConversaDisparo(instanciaId: string, contatoId: string) {
+  const existente = await prisma.conversa.findFirst({
+    where: { instanciaId, contatoId, status: { not: "encerrada" } },
+    orderBy: { createdAt: "desc" },
+  });
+  if (existente) return existente;
+
+  return prisma.conversa.create({
+    data: { instanciaId, contatoId, status: "aberta", origemDisparo: true, respondida: false },
+  });
+}
+
+// Chamado quando chega uma mensagem do cliente — tira a conversa da aba "Disparos"
+// (se ela estava lá) sem apagar a etiqueta azul de origem.
+export async function marcarConversaRespondida(conversaId: string) {
+  await prisma.conversa.update({ where: { id: conversaId }, data: { respondida: true } });
 }
 
 export async function adicionarEtiqueta(conversaId: string, etiquetaId: string) {
