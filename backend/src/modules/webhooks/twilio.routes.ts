@@ -7,6 +7,11 @@ import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { verifyTwilioSignature } from "../../middleware/verifyTwilioSignature.js";
 import { enviarTemplateMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
 import { emitirAtualizacaoCampanha } from "../../modules/campanhas/campanhas.service.js";
+import { findOrCreateContato } from "../../modules/contatos/contatos.service.js";
+import { findOrCreateConversaDisparo } from "../../modules/conversas/conversas.service.js";
+import { criarMensagem } from "../../modules/mensagens/mensagens.service.js";
+import { montarTextoDisparo } from "../../lib/template.js";
+import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import type { StatusLigacao } from "@prisma/client";
 
 const { VoiceResponse } = twilio.twiml;
@@ -67,8 +72,10 @@ router.post(
 
       // Um HSM por conversão — nunca duplicar envio mesmo que o gather dispare mais de uma vez.
       if (numero.campanha.instancia.metaPhoneNumberId) {
+        let idEnvio: string | undefined;
+        let erroEntrega: string | undefined;
         try {
-          await enviarTemplateMeta(
+          idEnvio = await enviarTemplateMeta(
             numero.campanha.instancia.metaPhoneNumberId,
             numero.numeroWhatsapp,
             numero.campanha.template.nome,
@@ -77,7 +84,35 @@ router.post(
           );
           await prisma.campanhaNumero.update({ where: { id: numero.id }, data: { hsmDisparado: true } });
         } catch (err) {
-          console.error("Erro ao disparar HSM da discadora:", mensagemErroMeta(err));
+          erroEntrega = mensagemErroMeta(err);
+          console.error("Erro ao disparar HSM da discadora:", erroEntrega);
+        }
+
+        // Sem isso o HSM saía de verdade pela Meta mas nunca aparecia na tela de
+        // Conversas nem tinha o wamid guardado — impossível ver ou confirmar entrega
+        // depois. Reaproveita o mesmo fluxo do disparo manual (etiqueta azul incluída).
+        const contato = await findOrCreateContato(numero.numeroWhatsapp);
+        const conversa = await findOrCreateConversaDisparo(numero.campanha.instanciaId, contato.id);
+        const mensagem = await criarMensagem({
+          conversaId: conversa.id,
+          remetenteTipo: "operador",
+          conteudoTexto: montarTextoDisparo(numero.campanha.template.nome, numero.campanha.template.corpo, []),
+          templateNome: numero.campanha.template.nome,
+          externalId: idEnvio ?? null,
+          statusEntrega: idEnvio ? "enviado" : "falhou",
+        });
+
+        if (mensagem) {
+          emitNovaMensagem(mensagem);
+          const conversaAtualizada = await prisma.conversa.findUnique({
+            where: { id: conversa.id },
+            include: {
+              contato: true,
+              instancia: { select: { id: true, nome: true, numero: true, tipoConexao: true } },
+              operador: { select: { id: true, nome: true } },
+            },
+          });
+          if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
         }
       }
 
