@@ -26,11 +26,26 @@ export async function enviarMidiaEvolution(
   mediatype: "image" | "video" | "audio" | "document",
   caption?: string,
 ) {
+  // Áudio via /message/sendMedia trata o arquivo como anexo genérico — o Baileys
+  // recebe mas frequentemente não entrega/toca como mensagem de voz de verdade.
+  // A própria Evolution API tem um endpoint dedicado só pra isso.
+  if (mediatype === "audio") {
+    return enviarAudioEvolution(instanceName, numero, mediaUrl);
+  }
+
   const { data } = await client.post<RespostaEnvioEvolution>(`/message/sendMedia/${instanceName}`, {
     number: numero,
     mediatype,
     media: mediaUrl,
     caption,
+  });
+  return data.key?.id;
+}
+
+export async function enviarAudioEvolution(instanceName: string, numero: string, mediaUrl: string) {
+  const { data } = await client.post<RespostaEnvioEvolution>(`/message/sendWhatsAppAudio/${instanceName}`, {
+    number: numero,
+    audio: mediaUrl,
   });
   return data.key?.id;
 }
