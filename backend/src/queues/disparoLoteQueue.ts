@@ -2,7 +2,7 @@ import { Queue, Worker, type Job } from "bullmq";
 import { env } from "../config/env.js";
 import { prisma } from "../db/prisma.js";
 import { findOrCreateContato } from "../modules/contatos/contatos.service.js";
-import { findOrCreateConversaAberta } from "../modules/conversas/conversas.service.js";
+import { findOrCreateConversaDisparo } from "../modules/conversas/conversas.service.js";
 import { criarMensagem } from "../modules/mensagens/mensagens.service.js";
 import { enviarTemplateMeta, mensagemErroMeta } from "../integrations/metaCloudApi.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../ws/events.js";
@@ -58,7 +58,7 @@ export function startDisparoLoteWorker() {
         }
 
         const contato = await findOrCreateContato(numeroDestino);
-        const conversa = await findOrCreateConversaAberta(instanciaId, contato.id);
+        const conversa = await findOrCreateConversaDisparo(instanciaId, contato.id);
 
         const mensagem = await criarMensagem({
           conversaId: conversa.id,
