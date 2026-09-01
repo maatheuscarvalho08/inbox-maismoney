@@ -25,6 +25,17 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
+
+    // Sessão expirada/token inválido em qualquer chamada (menos o próprio login,
+    // onde 401 é só "senha errada") — sem isso a pessoa ficava presa numa tela morta
+    // vendo o erro sem entender que precisa entrar de novo.
+    if (res.status === 401 && path !== "/auth/login") {
+      localStorage.removeItem("token");
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+      }
+    }
+
     throw new ApiError(res.status, body.error ?? "Erro inesperado");
   }
 
