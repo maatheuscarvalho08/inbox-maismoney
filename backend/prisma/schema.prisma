@@ -112,6 +112,7 @@ model Template {
 model Contato {
   id             String   @id @default(uuid())
   nome           String?
+  cpf            String?
   numeroWhatsapp String   @unique @map("numero_whatsapp")
   createdAt      DateTime @default(now()) @map("created_at")
 

@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import { env } from "./config/env.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import conversasRoutes from "./modules/conversas/conversas.routes.js";
+import contatosRoutes from "./modules/contatos/contatos.routes.js";
 import mensagensRoutes from "./modules/mensagens/mensagens.routes.js";
 import instanciasRoutes from "./modules/instancias/instancias.routes.js";
 import templatesRoutes from "./modules/templates/templates.routes.js";
@@ -51,6 +52,7 @@ app.use("/api", apiRateLimit);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/conversas", conversasRoutes);
+app.use("/api/contatos", contatosRoutes);
 app.use("/api/mensagens", mensagensRoutes);
 app.use("/api/instancias", instanciasRoutes);
 app.use("/api/templates", templatesRoutes);

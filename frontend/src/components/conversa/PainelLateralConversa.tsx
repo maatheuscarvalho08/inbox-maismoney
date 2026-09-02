@@ -1,7 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { X, Tag as TagIcon, Smartphone } from "lucide-react";
+import { X, Tag as TagIcon, Smartphone, User } from "lucide-react";
 import { api, ApiError } from "../../lib/api";
-import type { Conversa, Etiqueta } from "../../types/api";
+import type { Conversa, Contato, Etiqueta } from "../../types/api";
+
+function formatarCpf(cpf: string) {
+  const d = cpf.replace(/\D/g, "");
+  if (d.length !== 11) return cpf;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
 
 const LABEL_CONEXAO: Record<string, string> = {
   evolution: "Evolution API",
@@ -20,9 +26,38 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
+  const [editandoContato, setEditandoContato] = useState(false);
+  const [nomeContato, setNomeContato] = useState(conversa.contato.nome ?? "");
+  const [cpfContato, setCpfContato] = useState(conversa.contato.cpf ?? "");
+  const [salvandoContato, setSalvandoContato] = useState(false);
+  const [erroContato, setErroContato] = useState<string | null>(null);
+
   useEffect(() => {
     api.get<{ etiquetas: Etiqueta[] }>("/etiquetas").then((res) => setEtiquetasDisponiveis(res.etiquetas));
   }, []);
+
+  useEffect(() => {
+    setNomeContato(conversa.contato.nome ?? "");
+    setCpfContato(conversa.contato.cpf ?? "");
+  }, [conversa.contato.id, conversa.contato.nome, conversa.contato.cpf]);
+
+  async function salvarContato(e: FormEvent) {
+    e.preventDefault();
+    setSalvandoContato(true);
+    setErroContato(null);
+    try {
+      const { contato } = await api.patch<{ contato: Contato }>(`/contatos/${conversa.contato.id}`, {
+        nome: nomeContato.trim() || null,
+        cpf: cpfContato.trim() || null,
+      });
+      onConversaAtualizada({ ...conversa, contato });
+      setEditandoContato(false);
+    } catch (err) {
+      setErroContato(err instanceof ApiError ? err.message : "Não foi possível salvar");
+    } finally {
+      setSalvandoContato(false);
+    }
+  }
 
   async function adicionarEtiqueta(e: FormEvent) {
     e.preventDefault();
@@ -61,6 +96,68 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
       </div>
 
       <div className="space-y-6 overflow-y-auto p-4">
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">
+              <User size={12} /> Contato
+            </p>
+            {!editandoContato && (
+              <button onClick={() => setEditandoContato(true)} className="text-xs text-primary hover:underline">
+                Editar
+              </button>
+            )}
+          </div>
+
+          {editandoContato ? (
+            <form onSubmit={salvarContato} className="space-y-2 rounded-md border border-border bg-bg/40 p-3">
+              <input
+                autoFocus
+                placeholder="Nome do cliente"
+                value={nomeContato}
+                onChange={(e) => setNomeContato(e.target.value)}
+                className="w-full rounded-md border border-border bg-bg/60 px-2.5 py-1.5 text-xs text-white outline-none focus:border-primary"
+              />
+              <input
+                placeholder="CPF (só números)"
+                value={cpfContato}
+                onChange={(e) => setCpfContato(e.target.value)}
+                className="w-full rounded-md border border-border bg-bg/60 px-2.5 py-1.5 text-xs text-white outline-none focus:border-primary"
+              />
+              {erroContato && <p className="text-xs text-primary">{erroContato}</p>}
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={salvandoContato}
+                  className="flex-1 rounded-md bg-primary py-1.5 text-xs font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+                >
+                  {salvandoContato ? "Salvando..." : "Salvar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditandoContato(false);
+                    setErroContato(null);
+                    setNomeContato(conversa.contato.nome ?? "");
+                    setCpfContato(conversa.contato.cpf ?? "");
+                  }}
+                  className="rounded-md border border-border px-3 py-1.5 text-xs text-muted hover:text-white"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="rounded-md border border-border bg-bg/40 p-3 text-xs">
+              <p className="text-muted">
+                Nome: <span className="text-white">{conversa.contato.nome ?? "—"}</span>
+              </p>
+              <p className="mt-1 text-muted">
+                CPF: <span className="text-white">{conversa.contato.cpf ? formatarCpf(conversa.contato.cpf) : "—"}</span>
+              </p>
+            </div>
+          )}
+        </div>
+
         <div>
           <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">
             <Smartphone size={12} /> Número

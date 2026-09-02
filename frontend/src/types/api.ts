@@ -38,6 +38,7 @@ export interface Template {
 export interface Contato {
   id: string;
   nome: string | null;
+  cpf: string | null;
   numeroWhatsapp: string;
   createdAt: string;
 }
