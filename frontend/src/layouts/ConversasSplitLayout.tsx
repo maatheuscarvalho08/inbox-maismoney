@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
-import { Megaphone, Search, Smartphone, User } from "lucide-react";
+import { Megaphone, Plus, Search, Smartphone, User } from "lucide-react";
 import { api } from "../lib/api";
 import { tempoRelativo } from "../lib/tempoRelativo";
 import { useSocketEvent } from "../hooks/useSocketEvent";
@@ -8,6 +8,7 @@ import { Avatar } from "../components/Avatar";
 import { StatusBadge } from "../components/StatusBadge";
 import { EtiquetaFiltroDropdown } from "../components/EtiquetaFiltroDropdown";
 import { FiltroDropdown } from "../components/FiltroDropdown";
+import { NovaConversaModal } from "../components/NovaConversaModal";
 import type { Conversa, Etiqueta, Instancia, StatusConversa, Usuario } from "../types/api";
 
 const FILTROS_STATUS: { label: string; status?: StatusConversa }[] = [
@@ -43,6 +44,7 @@ export function ConversasSplitLayout() {
   const [vendedorFiltro, setVendedorFiltro] = useState<string | null>(null);
   const [conversas, setConversas] = useState<Conversa[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [novaConversaAberta, setNovaConversaAberta] = useState(false);
 
   const carregar = useCallback(async (status?: StatusConversa, abaAtual?: Aba) => {
     const params = new URLSearchParams();
@@ -90,6 +92,13 @@ export function ConversasSplitLayout() {
     <div className="flex h-full bg-bg">
       <aside className="flex max-w-[20%] min-w-[300px] shrink-0 flex-col border-r border-border">
         <div className="space-y-2.5 border-b border-border p-3">
+          <button
+            onClick={() => setNovaConversaAberta(true)}
+            className="flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-bg hover:opacity-90"
+          >
+            <Plus size={14} /> Nova conversa
+          </button>
+
           <div className="relative">
             <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
             <input
@@ -209,6 +218,15 @@ export function ConversasSplitLayout() {
       <div className="min-w-0 flex-1">
         <Outlet />
       </div>
+
+      <NovaConversaModal
+        aberto={novaConversaAberta}
+        onFechar={() => setNovaConversaAberta(false)}
+        onCriada={(conversa) => {
+          carregar(filtroStatus, aba);
+          navigate(`/conversas/${conversa.id}`);
+        }}
+      />
     </div>
   );
 }
