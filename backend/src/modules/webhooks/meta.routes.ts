@@ -161,6 +161,14 @@ router.post(
               texto = `[Mensagem do tipo "${msg.type}" ainda não suportada]`;
             }
 
+            // Rede de segurança: mensagem "text" sem body, ou qualquer combinação que
+            // chegue aqui sem texto/mídia, virava uma bolha completamente vazia e
+            // invisível pro operador (achava que era bug de mídia, não era nada).
+            if (!texto && !tipoMidia) {
+              console.warn("Webhook Meta: mensagem sem conteúdo reconhecido", JSON.stringify(msg));
+              texto = "[Mensagem recebida sem conteúdo legível — provavelmente editada ou apagada pelo cliente]";
+            }
+
             const mensagem = await criarMensagem({
               conversaId: conversa.id,
               remetenteTipo: "cliente",
