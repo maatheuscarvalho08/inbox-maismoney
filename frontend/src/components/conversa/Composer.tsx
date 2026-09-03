@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Mic, Paperclip, Send, Square, X } from "lucide-react";
 import { api, ApiError } from "../../lib/api";
@@ -76,6 +76,19 @@ export function Composer({ conversaId, tipoConexao, ultimaMensagemClienteEm, onE
     setAudioGravado(false);
   }
 
+  // URL local só pra ouvir antes de enviar — nunca sai do navegador do operador.
+  // Recriada a cada áudio novo e revogada na troca/saída pra não vazar memória.
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!audioGravado || !arquivo) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(arquivo);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [audioGravado, arquivo]);
+
   const foraDaJanela =
     tipoConexao === "meta_cloud" &&
     ultimaMensagemClienteEm !== null &&
@@ -122,14 +135,29 @@ export function Composer({ conversaId, tipoConexao, ultimaMensagemClienteEm, onE
 
   return (
     <form onSubmit={handleSubmit} className="border-t border-border bg-surface/60 p-4">
-      {arquivo && (
-        <div className="mb-2 flex items-center gap-2 text-xs text-muted">
-          {audioGravado ? <Mic size={12} /> : <Paperclip size={12} />}
-          {audioGravado ? `Áudio gravado (${arquivo.name})` : arquivo.name}
-          <button type="button" onClick={cancelarAudio} className="text-primary hover:underline">
-            <X size={12} />
+      {arquivo && audioGravado && previewUrl ? (
+        <div className="mb-2 flex items-center gap-2 rounded-md border border-border bg-bg/40 px-3 py-2">
+          <Mic size={14} className="shrink-0 text-muted" />
+          <audio controls src={previewUrl} className="h-8 flex-1" style={{ maxWidth: "100%" }} />
+          <button
+            type="button"
+            onClick={cancelarAudio}
+            title="Descartar e gravar de novo"
+            className="shrink-0 text-muted hover:text-primary"
+          >
+            <X size={14} />
           </button>
         </div>
+      ) : (
+        arquivo && (
+          <div className="mb-2 flex items-center gap-2 text-xs text-muted">
+            <Paperclip size={12} />
+            {arquivo.name}
+            <button type="button" onClick={cancelarAudio} className="text-primary hover:underline">
+              <X size={12} />
+            </button>
+          </div>
+        )
       )}
 
       {erro && <p className="mb-2 text-xs text-primary">{erro}</p>}
