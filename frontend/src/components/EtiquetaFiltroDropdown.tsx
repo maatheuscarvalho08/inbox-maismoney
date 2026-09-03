@@ -54,11 +54,11 @@ export function EtiquetaFiltroDropdown({ etiquetas, selecionada, onSelecionar, o
             : "border-border text-muted hover:text-white"
         }`}
       >
-        <span className="flex items-center gap-1.5">
-          <Tag size={11} />
-          {etiquetaAtiva ? etiquetaAtiva.nome : "Etiquetas"}
+        <span className="flex min-w-0 items-center gap-1.5 truncate">
+          <Tag size={11} className="shrink-0" />
+          <span className="truncate">{etiquetaAtiva ? etiquetaAtiva.nome : "Etiquetas"}</span>
         </span>
-        <ChevronDown size={12} className={`transition-transform ${aberto ? "rotate-180" : ""}`} />
+        <ChevronDown size={12} className={`shrink-0 transition-transform ${aberto ? "rotate-180" : ""}`} />
       </button>
 
       {aberto && (

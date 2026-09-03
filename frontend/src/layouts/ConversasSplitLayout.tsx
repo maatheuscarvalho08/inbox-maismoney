@@ -91,25 +91,28 @@ export function ConversasSplitLayout() {
   return (
     <div className="flex h-full bg-bg">
       <aside className="flex max-w-[20%] min-w-[300px] shrink-0 flex-col border-r border-border">
-        <div className="space-y-2.5 border-b border-border p-3">
-          <button
-            onClick={() => setNovaConversaAberta(true)}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-bg hover:opacity-90"
-          >
-            <Plus size={14} /> Nova conversa
-          </button>
+        <div className="space-y-1.5 border-b border-border p-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setNovaConversaAberta(true)}
+              title="Nova conversa"
+              className="flex shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-bg hover:opacity-90"
+            >
+              <Plus size={13} />
+            </button>
 
-          <div className="relative">
-            <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
-            <input
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar conversa..."
-              className="w-full rounded-md border border-border bg-bg/60 py-1.5 pl-8 pr-3 text-xs text-white outline-none focus:border-primary"
-            />
+            <div className="relative flex-1">
+              <Search size={13} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Buscar conversa..."
+                className="w-full rounded-md border border-border bg-bg/60 py-1 pl-7 pr-3 text-xs text-white outline-none focus:border-primary"
+              />
+            </div>
           </div>
 
-          <div className="flex gap-1 rounded-md border border-border bg-bg/60 p-1">
+          <div className="flex gap-1 rounded-md border border-border bg-bg/60 p-0.5">
             <button
               onClick={() => setAba("atendimento")}
               className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors duration-150 ease-out ${
@@ -135,7 +138,7 @@ export function ConversasSplitLayout() {
               <button
                 key={f.label}
                 onClick={() => setFiltroStatus(f.status)}
-                className={`rounded-md border px-2 py-1 text-[11px] font-medium transition-colors duration-150 ease-out ${
+                className={`rounded-md border px-1.5 py-0.5 text-[11px] font-medium transition-colors duration-150 ease-out ${
                   filtroStatus === f.status
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border text-muted hover:text-white"
@@ -146,28 +149,36 @@ export function ConversasSplitLayout() {
             ))}
           </div>
 
-          <EtiquetaFiltroDropdown
-            etiquetas={etiquetas}
-            selecionada={etiquetaFiltro}
-            onSelecionar={setEtiquetaFiltro}
-            onCriada={(nova) => setEtiquetas((atual) => [...atual, nova])}
-          />
+          <div className="flex gap-1">
+            <div className="min-w-0 flex-1">
+              <EtiquetaFiltroDropdown
+                etiquetas={etiquetas}
+                selecionada={etiquetaFiltro}
+                onSelecionar={setEtiquetaFiltro}
+                onCriada={(nova) => setEtiquetas((atual) => [...atual, nova])}
+              />
+            </div>
 
-          <FiltroDropdown
-            label="Números"
-            icon={Smartphone}
-            selecionado={instanciaFiltro}
-            onSelecionar={setInstanciaFiltro}
-            itens={instancias.map((i) => ({ id: i.id, label: i.numero }))}
-          />
+            <div className="min-w-0 flex-1">
+              <FiltroDropdown
+                label="Números"
+                icon={Smartphone}
+                selecionado={instanciaFiltro}
+                onSelecionar={setInstanciaFiltro}
+                itens={instancias.map((i) => ({ id: i.id, label: i.numero }))}
+              />
+            </div>
 
-          <FiltroDropdown
-            label="Vendedores"
-            icon={User}
-            selecionado={vendedorFiltro}
-            onSelecionar={setVendedorFiltro}
-            itens={vendedores.map((v) => ({ id: v.id, label: v.nome }))}
-          />
+            <div className="min-w-0 flex-1">
+              <FiltroDropdown
+                label="Vendedores"
+                icon={User}
+                selecionado={vendedorFiltro}
+                onSelecionar={setVendedorFiltro}
+                itens={vendedores.map((v) => ({ id: v.id, label: v.nome }))}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -175,7 +186,11 @@ export function ConversasSplitLayout() {
           {!carregando && conversasFiltradas.length === 0 && (
             <p className="p-4 text-center text-xs text-muted">Nenhuma conversa encontrada.</p>
           )}
-          {conversasFiltradas.map((c) => (
+          {conversasFiltradas.map((c) => {
+            // Última mensagem é do cliente = ninguém da equipe respondeu ainda
+            // desde então — mesma lógica de "não lida" que o WhatsApp real usa.
+            const naoRespondida = c.mensagens?.[0]?.remetenteTipo === "cliente";
+            return (
             <button
               key={c.id}
               onClick={() => navigate(`/conversas/${c.id}`)}
@@ -187,9 +202,19 @@ export function ConversasSplitLayout() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-sm font-medium text-white">{c.contato.nome ?? "Sem nome"}</span>
-                  <span className="shrink-0 text-[10px] text-muted">{tempoRelativo(c.lastMessageAt)}</span>
+                  <span className="flex shrink-0 items-center gap-1.5 text-[10px] text-muted">
+                    {tempoRelativo(c.lastMessageAt)}
+                    {naoRespondida && (
+                      <span
+                        title="Cliente respondeu, aguardando retorno"
+                        className="size-2 rounded-full bg-[var(--color-accent)]"
+                      />
+                    )}
+                  </span>
                 </div>
-                <p className="truncate text-xs text-muted">{ultimaMensagemPreview(c)}</p>
+                <p className={`truncate text-xs ${naoRespondida ? "font-medium text-white" : "text-muted"}`}>
+                  {ultimaMensagemPreview(c)}
+                </p>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   <StatusBadge status={c.status} />
                   {c.origemDisparo && (
@@ -211,7 +236,8 @@ export function ConversasSplitLayout() {
                 </div>
               </div>
             </button>
-          ))}
+            );
+          })}
         </div>
       </aside>
 
