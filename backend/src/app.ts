@@ -27,8 +27,13 @@ app.set("trust proxy", 1);
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({ origin: env.CORS_ORIGIN }));
+// O webhook da Evolution API manda mídia (áudio/imagem/vídeo) embutida em base64
+// dentro do próprio JSON quando webhookBase64:true — o limite padrão de 100kb do
+// Express estourava toda vez que chegava uma mensagem de mídia, derrubando o
+// webhook com 500 (e a Evolution ficava reenviando sem sucesso).
 app.use(
   express.json({
+    limit: "50mb",
     verify: (req, _res, buf) => {
       (req as express.Request & { rawBody?: Buffer }).rawBody = buf;
     },
