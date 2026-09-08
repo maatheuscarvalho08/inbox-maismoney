@@ -9,7 +9,7 @@ import { env } from "../../config/env.js";
 import { assinarMidia } from "../../lib/signedUrl.js";
 import { criarMensagem, listMensagensPorConversa } from "./mensagens.service.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
-import { enviarMidiaEvolution, enviarTextoEvolution } from "../../integrations/evolutionApi.js";
+import { editarMensagemEvolution, enviarMidiaEvolution, enviarTextoEvolution } from "../../integrations/evolutionApi.js";
 import { enviarMidiaMeta, enviarTextoMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
 import { converterParaOgg, precisaConverterAudio } from "../../lib/audioConvert.js";
 
@@ -160,6 +160,59 @@ router.post(
     }
 
     res.status(201).json({ mensagem, entregue, erroEntrega });
+  }),
+);
+
+const editarSchema = z.object({
+  conteudoTexto: z.string().trim().min(1),
+});
+
+router.patch(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const parsed = editarSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
+    }
+
+    const mensagem = await prisma.mensagem.findUnique({
+      where: { id: req.params.id },
+      include: { conversa: { include: { contato: true, instancia: true } } },
+    });
+    if (!mensagem) {
+      return res.status(404).json({ error: "Mensagem não encontrada" });
+    }
+
+    const { conversa } = mensagem;
+    // Só dá pra editar mensagem enviada pelo próprio operador, sem mídia (edição
+    // troca o texto, não o arquivo), e só via Evolution — a Meta Cloud API não tem
+    // endpoint pra editar mensagem já entregue.
+    if (mensagem.remetenteTipo !== "operador" || mensagem.tipoMidia || !mensagem.externalId) {
+      return res.status(400).json({ error: "Essa mensagem não pode ser editada" });
+    }
+    if (conversa.instancia.tipoConexao !== "evolution" || !conversa.instancia.evolutionInstanceId) {
+      return res.status(400).json({ error: "Edição só é possível em números conectados via Evolution API" });
+    }
+
+    try {
+      await editarMensagemEvolution(
+        conversa.instancia.evolutionInstanceId,
+        conversa.contato.numeroWhatsapp,
+        mensagem.externalId,
+        parsed.data.conteudoTexto,
+      );
+    } catch (err) {
+      return res.status(502).json({ error: "Não foi possível editar no WhatsApp", detalhe: mensagemErroMeta(err) });
+    }
+
+    const atualizada = await prisma.mensagem.update({
+      where: { id: mensagem.id },
+      data: { conteudoTexto: parsed.data.conteudoTexto, editadaEm: new Date() },
+      include: { operador: { select: { id: true, nome: true } } },
+    });
+
+    emitNovaMensagem(atualizada);
+    res.json({ mensagem: atualizada });
   }),
 );
 

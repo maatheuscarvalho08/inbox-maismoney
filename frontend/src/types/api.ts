@@ -54,6 +54,7 @@ export interface Mensagem {
   midiaDeleted: boolean;
   externalId: string | null;
   statusEntrega: StatusEntrega | null;
+  editadaEm: string | null;
   timestamp: string;
   createdAt: string;
   operador?: { id: string; nome: string } | null;

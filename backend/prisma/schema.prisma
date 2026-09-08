@@ -190,6 +190,9 @@ model Mensagem {
   // Só relevante pra mensagem enviada pelo operador — reflete o status reportado
   // pelo webhook "statuses" da Meta (sent/delivered/read/failed).
   statusEntrega StatusEntrega? @map("status_entrega")
+  // Marca quando o operador editou o texto já enviado (só possível via Evolution
+  // API) — usado pra mostrar a tag "editada" igual o WhatsApp real.
+  editadaEm     DateTime?     @map("editada_em")
   timestamp     DateTime      @default(now())
   createdAt     DateTime      @default(now()) @map("created_at")
 

@@ -121,7 +121,14 @@ export function ConversaDetalhePage() {
         <div className="flex-1 space-y-3 overflow-y-auto p-8">
           {mensagens.length === 0 && <p className="text-center text-sm text-muted">Nenhuma mensagem ainda.</p>}
           {mensagens.map((m) => (
-            <MensagemBubble key={m.id} mensagem={m} />
+            <MensagemBubble
+              key={m.id}
+              mensagem={m}
+              podeEditar={conversa.instancia.tipoConexao === "evolution"}
+              onEditada={(atualizada) =>
+                setMensagens((atual) => atual.map((mm) => (mm.id === atualizada.id ? atualizada : mm)))
+              }
+            />
           ))}
           <div ref={fimDaListaRef} />
         </div>

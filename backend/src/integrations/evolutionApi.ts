@@ -19,6 +19,22 @@ export async function enviarTextoEvolution(instanceName: string, numero: string,
   return data.key?.id;
 }
 
+// Edição só existe no lado Evolution (WhatsApp Web) — a Meta Cloud API não tem
+// endpoint pra editar mensagem já enviada. O cliente ainda vê o texto antigo por
+// um instante até a edição chegar nele.
+export async function editarMensagemEvolution(
+  instanceName: string,
+  numero: string,
+  externalId: string,
+  novoTexto: string,
+) {
+  await client.post(`/chat/updateMessage/${instanceName}`, {
+    number: numero,
+    text: novoTexto,
+    key: { id: externalId, remoteJid: `${numero}@s.whatsapp.net`, fromMe: true },
+  });
+}
+
 export async function enviarMidiaEvolution(
   instanceName: string,
   numero: string,
