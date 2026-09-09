@@ -47,9 +47,22 @@ export function MensagemBubble({ mensagem, podeEditar, onEditada }: Props) {
   }
 
   return (
-    <div className={`flex ${doOperador ? "justify-end" : "justify-start"}`}>
+    <div className={`group flex items-center gap-1.5 ${doOperador ? "justify-end" : "justify-start"}`}>
+      {editavel && !editando && (
+        <button
+          onClick={() => {
+            setTexto(mensagem.conteudoTexto ?? "");
+            setEditando(true);
+          }}
+          title="Editar mensagem"
+          className="shrink-0 text-muted opacity-0 hover:text-primary group-hover:opacity-100"
+        >
+          <Pencil size={13} />
+        </button>
+      )}
+
       <div
-        className={`group relative max-w-[70%] rounded-lg border px-3 py-2 ${
+        className={`relative max-w-[70%] rounded-lg border px-3 py-2 ${
           doOperador ? "border-primary/20 bg-primary/10" : "border-white/10 bg-surface/60"
         }`}
       >
@@ -91,19 +104,6 @@ export function MensagemBubble({ mensagem, podeEditar, onEditada }: Props) {
           </div>
         ) : (
           mensagem.conteudoTexto && <p className="mt-1 whitespace-pre-wrap text-sm text-white">{mensagem.conteudoTexto}</p>
-        )}
-
-        {editavel && !editando && (
-          <button
-            onClick={() => {
-              setTexto(mensagem.conteudoTexto ?? "");
-              setEditando(true);
-            }}
-            title="Editar mensagem"
-            className="absolute -left-7 top-1.5 hidden text-muted hover:text-primary group-hover:block"
-          >
-            <Pencil size={13} />
-          </button>
         )}
 
         <div className="mt-1 flex items-center justify-end gap-1">
