@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { FileText } from "lucide-react";
-import { carregarMidia } from "../../lib/midia";
+import { Download, FileText } from "lucide-react";
+import { baixarFotoComoJpg, carregarMidia } from "../../lib/midia";
 import { AudioPlayer } from "./AudioPlayer";
 
 export function MidiaMensagem({ mensagemId, tipoMidia }: { mensagemId: string; tipoMidia: string }) {
@@ -30,7 +30,18 @@ export function MidiaMensagem({ mensagemId, tipoMidia }: { mensagemId: string; t
   }
 
   if (tipoMidia.startsWith("image/")) {
-    return <img src={url} alt="Mídia enviada" className="max-h-64 max-w-64 rounded-md object-cover" />;
+    return (
+      <div className="group relative inline-block">
+        <img src={url} alt="Mídia enviada" className="max-h-64 max-w-64 rounded-md object-cover" />
+        <button
+          onClick={() => baixarFotoComoJpg(mensagemId)}
+          title="Baixar como JPG"
+          className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-md bg-bg/70 text-white opacity-0 hover:bg-bg group-hover:opacity-100"
+        >
+          <Download size={14} />
+        </button>
+      </div>
+    );
   }
 
   if (tipoMidia.startsWith("video/")) {

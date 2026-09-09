@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import jwt from "jsonwebtoken";
+import sharp from "sharp";
 import { Router } from "express";
 import { prisma } from "../../db/prisma.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
@@ -43,6 +44,16 @@ router.get(
     const absPath = path.resolve(process.cwd(), mensagem.midiaPath);
     if (!fs.existsSync(absPath)) {
       return res.status(404).json({ error: "Arquivo não encontrado" });
+    }
+
+    // ?baixar=jpg força download como JPG mesmo que o original seja PNG/WEBP
+    // (sticker, print de tela) — o operador só precisa clicar em "Baixar" na
+    // conversa, sem se preocupar com o formato que o WhatsApp mandou de verdade.
+    if (req.query.baixar === "jpg" && mensagem.tipoMidia?.startsWith("image/")) {
+      const buffer = await sharp(absPath).flatten({ background: "#ffffff" }).jpeg({ quality: 92 }).toBuffer();
+      res.setHeader("Content-Disposition", `attachment; filename="${mensagemId}.jpg"`);
+      res.type("image/jpeg").send(buffer);
+      return;
     }
 
     res.sendFile(absPath);
