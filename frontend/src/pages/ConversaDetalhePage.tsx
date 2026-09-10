@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
 import { api } from "../lib/api";
+import { formatarTelefone } from "../lib/telefone";
 import { useSocketEvent } from "../hooks/useSocketEvent";
 import { Avatar } from "../components/Avatar";
 import { StatusBadge } from "../components/StatusBadge";
@@ -86,7 +87,7 @@ export function ConversaDetalhePage() {
             <div>
               <p className="text-sm font-semibold text-white">{conversa.contato.nome ?? "Sem nome"}</p>
               <p className="text-xs text-muted">
-                {conversa.contato.numeroWhatsapp} · {conversa.instancia.nome}
+                {formatarTelefone(conversa.contato.numeroWhatsapp)} · {conversa.instancia.nome}
               </p>
             </div>
           </div>

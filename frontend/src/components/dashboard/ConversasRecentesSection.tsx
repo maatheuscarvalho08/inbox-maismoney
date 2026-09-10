@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Avatar } from "../Avatar";
 import { StatusBadge } from "../StatusBadge";
 import { tempoRelativo } from "../../lib/tempoRelativo";
+import { formatarTelefone } from "../../lib/telefone";
 import type { Conversa } from "../../types/api";
 
 const COLUMNS = ["Contato", "Número", "Última mensagem", "Há quanto tempo", "Operador", "Status"];
@@ -69,7 +70,7 @@ export function ConversasRecentesSection({ conversas, carregando }: { conversas:
                     <span className="font-medium text-white">{c.contato.nome ?? "Sem nome"}</span>
                   </Link>
                 </td>
-                <td className="px-5 py-3 text-muted">{c.contato.numeroWhatsapp}</td>
+                <td className="px-5 py-3 text-muted">{formatarTelefone(c.contato.numeroWhatsapp)}</td>
                 <td className="max-w-[240px] truncate px-5 py-3 text-white">{ultimaMensagemPreview(c)}</td>
                 <td className="px-5 py-3 text-muted">{tempoRelativo(c.lastMessageAt)}</td>
                 <td className="px-5 py-3 text-muted">{c.operador?.nome ?? "—"}</td>
