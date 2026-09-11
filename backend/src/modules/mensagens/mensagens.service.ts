@@ -1,11 +1,16 @@
 import type { RemetenteTipo, StatusEntrega } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 
+const INCLUDE_RESPOSTA = {
+  operador: { select: { id: true, nome: true } },
+  respondeA: { select: { id: true, conteudoTexto: true, tipoMidia: true, remetenteTipo: true } },
+} as const;
+
 export async function listMensagensPorConversa(conversaId: string) {
   return prisma.mensagem.findMany({
     where: { conversaId },
     orderBy: { timestamp: "asc" },
-    include: { operador: { select: { id: true, nome: true } } },
+    include: INCLUDE_RESPOSTA,
   });
 }
 
@@ -20,6 +25,7 @@ interface CriarMensagemInput {
   statusEntrega?: StatusEntrega | null;
   loteId?: string | null;
   templateNome?: string | null;
+  respondeAId?: string | null;
   timestamp?: Date;
 }
 
@@ -33,7 +39,7 @@ export async function criarMensagem(input: CriarMensagemInput) {
 
   const mensagem = await prisma.mensagem.create({
     data: input,
-    include: { operador: { select: { id: true, nome: true } } },
+    include: INCLUDE_RESPOSTA,
   });
 
   await prisma.conversa.update({

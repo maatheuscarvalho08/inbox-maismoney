@@ -22,12 +22,18 @@ interface RespostaEnvioMeta {
   messages?: { id: string }[];
 }
 
-export async function enviarTextoMeta(phoneNumberId: string, numero: string, texto: string) {
+export async function enviarTextoMeta(
+  phoneNumberId: string,
+  numero: string,
+  texto: string,
+  contextMessageId?: string,
+) {
   const { data } = await client.post<RespostaEnvioMeta>(`/${phoneNumberId}/messages`, {
     messaging_product: "whatsapp",
     to: numero,
     type: "text",
     text: { body: texto },
+    ...(contextMessageId ? { context: { message_id: contextMessageId } } : {}),
   });
   return data.messages?.[0]?.id;
 }
@@ -59,7 +65,7 @@ export async function enviarMidiaMeta(
   numero: string,
   tipo: "image" | "audio" | "video" | "document",
   link: string,
-  opts: { caption?: string; filename?: string; voiceNote?: boolean } = {},
+  opts: { caption?: string; filename?: string; voiceNote?: boolean; contextMessageId?: string } = {},
 ) {
   const media: Record<string, unknown> = { link };
   // Legenda só é aceita pela Meta em image/video/document — áudio não suporta caption.
@@ -72,6 +78,7 @@ export async function enviarMidiaMeta(
     to: numero,
     type: tipo,
     [tipo]: media,
+    ...(opts.contextMessageId ? { context: { message_id: opts.contextMessageId } } : {}),
   });
   return data.messages?.[0]?.id;
 }

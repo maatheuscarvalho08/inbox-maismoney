@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Reply } from "lucide-react";
 import { api, ApiError } from "../../lib/api";
 import { MidiaMensagem } from "./MidiaMensagem";
 import { StatusEntregaIcone } from "./StatusEntregaIcone";
@@ -9,13 +9,23 @@ function formatarHorario(iso: string) {
   return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
+export function previewDaMensagem(m: { conteudoTexto: string | null; tipoMidia: string | null }) {
+  if (m.conteudoTexto) return m.conteudoTexto;
+  if (m.tipoMidia?.startsWith("image/")) return "📷 Foto";
+  if (m.tipoMidia?.startsWith("video/")) return "🎥 Vídeo";
+  if (m.tipoMidia?.startsWith("audio/")) return "🎵 Áudio";
+  if (m.tipoMidia) return "📎 Arquivo";
+  return "Mensagem";
+}
+
 interface Props {
   mensagem: Mensagem;
   podeEditar?: boolean;
   onEditada?: (mensagem: Mensagem) => void;
+  onResponder?: (mensagem: Mensagem) => void;
 }
 
-export function MensagemBubble({ mensagem, podeEditar, onEditada }: Props) {
+export function MensagemBubble({ mensagem, podeEditar, onEditada, onResponder }: Props) {
   const doOperador = mensagem.remetenteTipo === "operador";
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(mensagem.conteudoTexto ?? "");
@@ -48,18 +58,25 @@ export function MensagemBubble({ mensagem, podeEditar, onEditada }: Props) {
 
   return (
     <div className={`group flex items-center gap-1.5 ${doOperador ? "justify-end" : "justify-start"}`}>
-      {editavel && !editando && (
-        <button
-          onClick={() => {
-            setTexto(mensagem.conteudoTexto ?? "");
-            setEditando(true);
-          }}
-          title="Editar mensagem"
-          className="shrink-0 text-muted opacity-0 hover:text-primary group-hover:opacity-100"
-        >
-          <Pencil size={13} />
-        </button>
-      )}
+      <div className={`flex shrink-0 items-center gap-1.5 opacity-0 group-hover:opacity-100 ${doOperador ? "order-first" : "order-last"}`}>
+        {onResponder && (
+          <button onClick={() => onResponder(mensagem)} title="Responder" className="text-muted hover:text-primary">
+            <Reply size={13} />
+          </button>
+        )}
+        {editavel && !editando && (
+          <button
+            onClick={() => {
+              setTexto(mensagem.conteudoTexto ?? "");
+              setEditando(true);
+            }}
+            title="Editar mensagem"
+            className="text-muted hover:text-primary"
+          >
+            <Pencil size={13} />
+          </button>
+        )}
+      </div>
 
       <div
         className={`relative max-w-[70%] rounded-lg border px-3 py-2 ${
@@ -68,6 +85,15 @@ export function MensagemBubble({ mensagem, podeEditar, onEditada }: Props) {
       >
         {doOperador && mensagem.operador && (
           <p className="mb-0.5 text-[11px] font-medium text-primary">{mensagem.operador.nome}</p>
+        )}
+
+        {mensagem.respondeA && (
+          <div className="mb-1.5 rounded border-l-2 border-primary/60 bg-bg/30 px-2 py-1">
+            <p className="text-[11px] font-medium text-primary">
+              {mensagem.respondeA.remetenteTipo === "operador" ? "Você" : "Cliente"}
+            </p>
+            <p className="truncate text-xs text-muted">{previewDaMensagem(mensagem.respondeA)}</p>
+          </div>
         )}
 
         {mensagem.midiaDeleted ? (

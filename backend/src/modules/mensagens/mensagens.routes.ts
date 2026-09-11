@@ -44,6 +44,7 @@ const enviarSchema = z.object({
     .string()
     .optional()
     .transform((v) => v === "true"),
+  respondeAId: z.string().uuid().optional(),
 });
 
 router.post(
@@ -58,7 +59,7 @@ router.post(
       return res.status(400).json({ error: "Envie um texto ou um arquivo de mídia" });
     }
 
-    const { conversaId, conteudoTexto, audioGravado } = parsed.data;
+    const { conversaId, conteudoTexto, audioGravado, respondeAId } = parsed.data;
 
     const conversa = await prisma.conversa.findUnique({
       where: { id: conversaId },
@@ -67,6 +68,12 @@ router.post(
     if (!conversa) {
       return res.status(404).json({ error: "Conversa não encontrada" });
     }
+
+    // A citação só é usada aqui pra montar o payload de envio pra Evolution/Meta —
+    // respondeAId (sempre gravado se veio no body) é o que fica salvo de verdade.
+    const original = respondeAId
+      ? await prisma.mensagem.findFirst({ where: { id: respondeAId, conversaId } })
+      : null;
 
     // Áudio gravado no navegador (webm/opus) não é aceito pela Meta como mensagem de
     // áudio — remuxa pra ogg/opus antes de salvar, pra já guardar o arquivo que vai
@@ -89,6 +96,7 @@ router.post(
       conteudoTexto: conteudoTexto ?? null,
       tipoMidia,
       midiaPath,
+      respondeAId: original?.id ?? null,
     });
     if (!mensagem) {
       return res.status(500).json({ error: "Erro inesperado ao criar mensagem" });
@@ -97,6 +105,14 @@ router.post(
     let entregue = false;
     let erroEntrega: string | undefined;
     let idEnvio: string | undefined;
+
+    // Só dá pra citar se a original tiver o id que o provedor reconhece — mensagem
+    // recém-criada por um operador sem confirmação de envio ainda não tem isso.
+    const citacaoEvolution =
+      original?.externalId
+        ? { externalId: original.externalId, fromMe: original.remetenteTipo === "operador", conteudoTexto: original.conteudoTexto }
+        : undefined;
+    const citacaoMetaId = original?.externalId ?? undefined;
 
     try {
       if (req.file) {
@@ -107,22 +123,23 @@ router.post(
         const link = `${env.PUBLIC_API_URL}/midia/${mensagem.id}?exp=${exp}&sig=${sig}`;
 
         if (conversa.instancia.tipoConexao === "evolution" && conversa.instancia.evolutionInstanceId) {
-          idEnvio = await enviarMidiaEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, link, tipo, conteudoTexto);
+          idEnvio = await enviarMidiaEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, link, tipo, conteudoTexto, citacaoEvolution);
           entregue = true;
         } else if (conversa.instancia.tipoConexao === "meta_cloud" && conversa.instancia.metaPhoneNumberId) {
           idEnvio = await enviarMidiaMeta(conversa.instancia.metaPhoneNumberId, conversa.contato.numeroWhatsapp, tipo, link, {
             caption: conteudoTexto,
             filename: req.file.originalname,
             voiceNote: audioGravado,
+            contextMessageId: citacaoMetaId,
           });
           entregue = true;
         }
       } else if (conteudoTexto) {
         if (conversa.instancia.tipoConexao === "evolution" && conversa.instancia.evolutionInstanceId) {
-          idEnvio = await enviarTextoEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, conteudoTexto);
+          idEnvio = await enviarTextoEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, conteudoTexto, citacaoEvolution);
           entregue = true;
         } else if (conversa.instancia.tipoConexao === "meta_cloud" && conversa.instancia.metaPhoneNumberId) {
-          idEnvio = await enviarTextoMeta(conversa.instancia.metaPhoneNumberId, conversa.contato.numeroWhatsapp, conteudoTexto);
+          idEnvio = await enviarTextoMeta(conversa.instancia.metaPhoneNumberId, conversa.contato.numeroWhatsapp, conteudoTexto, citacaoMetaId);
           entregue = true;
         }
       }

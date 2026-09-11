@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Mic, Paperclip, Send, Square, X } from "lucide-react";
 import { api, ApiError } from "../../lib/api";
+import { previewDaMensagem } from "./MensagemBubble";
 import type { Mensagem, TipoConexao } from "../../types/api";
 
 function formatarTempo(segundos: number) {
@@ -17,9 +18,18 @@ interface ComposerProps {
   tipoConexao: TipoConexao;
   ultimaMensagemClienteEm: string | null;
   onEnviada: (mensagem: Mensagem) => void;
+  respondendoA: Mensagem | null;
+  onCancelarResposta: () => void;
 }
 
-export function Composer({ conversaId, tipoConexao, ultimaMensagemClienteEm, onEnviada }: ComposerProps) {
+export function Composer({
+  conversaId,
+  tipoConexao,
+  ultimaMensagemClienteEm,
+  onEnviada,
+  respondendoA,
+  onCancelarResposta,
+}: ComposerProps) {
   const [texto, setTexto] = useState("");
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [audioGravado, setAudioGravado] = useState(false);
@@ -106,12 +116,14 @@ export function Composer({ conversaId, tipoConexao, ultimaMensagemClienteEm, onE
       if (texto.trim()) form.append("conteudoTexto", texto.trim());
       if (arquivo) form.append("midia", arquivo);
       if (audioGravado) form.append("audioGravado", "true");
+      if (respondendoA) form.append("respondeAId", respondendoA.id);
 
       const res = await api.post<{ mensagem: Mensagem; entregue: boolean }>("/mensagens", form);
       onEnviada(res.mensagem);
       setTexto("");
       setArquivo(null);
       setAudioGravado(false);
+      onCancelarResposta();
       if (inputArquivoRef.current) inputArquivoRef.current.value = "";
     } catch (err) {
       setErro(err instanceof ApiError ? err.message : "Não foi possível enviar a mensagem");
@@ -135,6 +147,20 @@ export function Composer({ conversaId, tipoConexao, ultimaMensagemClienteEm, onE
 
   return (
     <form onSubmit={handleSubmit} className="border-t border-border bg-surface/60 p-4">
+      {respondendoA && (
+        <div className="mb-2 flex items-center gap-2 rounded-md border-l-2 border-primary bg-bg/40 px-3 py-1.5">
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium text-primary">
+              Respondendo a {respondendoA.remetenteTipo === "operador" ? "você mesmo" : "cliente"}
+            </p>
+            <p className="truncate text-xs text-muted">{previewDaMensagem(respondendoA)}</p>
+          </div>
+          <button type="button" onClick={onCancelarResposta} className="shrink-0 text-muted hover:text-primary">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {arquivo && audioGravado && previewUrl ? (
         <div className="mb-2 flex items-center gap-2 rounded-md border border-border bg-bg/40 px-3 py-2">
           <Mic size={14} className="shrink-0 text-muted" />

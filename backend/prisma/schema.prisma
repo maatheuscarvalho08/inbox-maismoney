@@ -193,11 +193,16 @@ model Mensagem {
   // Marca quando o operador editou o texto já enviado (só possível via Evolution
   // API) — usado pra mostrar a tag "editada" igual o WhatsApp real.
   editadaEm     DateTime?     @map("editada_em")
+  // Resposta citada (reply do WhatsApp) — aponta pra mensagem original dentro da
+  // mesma conversa. Nulo = mensagem normal, sem citação.
+  respondeAId   String?       @map("responde_a_id")
   timestamp     DateTime      @default(now())
   createdAt     DateTime      @default(now()) @map("created_at")
 
   conversa      Conversa @relation(fields: [conversaId], references: [id])
   operador      Usuario? @relation("OperadorMensagens", fields: [operadorId], references: [id])
+  respondeA     Mensagem?  @relation("RespostaMensagem", fields: [respondeAId], references: [id], onDelete: SetNull)
+  respostas     Mensagem[] @relation("RespostaMensagem")
 
   @@map("mensagens")
 }

@@ -55,6 +55,7 @@ export interface Mensagem {
   externalId: string | null;
   statusEntrega: StatusEntrega | null;
   editadaEm: string | null;
+  respondeA?: { id: string; conteudoTexto: string | null; tipoMidia: string | null; remetenteTipo: RemetenteTipo } | null;
   timestamp: string;
   createdAt: string;
   operador?: { id: string; nome: string } | null;

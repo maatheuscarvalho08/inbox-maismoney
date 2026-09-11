@@ -11,10 +11,32 @@ interface RespostaEnvioEvolution {
   key?: { id?: string };
 }
 
-export async function enviarTextoEvolution(instanceName: string, numero: string, texto: string) {
+// Dados da mensagem original pra citar numa resposta (reply do WhatsApp) — o
+// Baileys precisa saber quem mandou a original (fromMe) pra montar o key certo.
+export interface CitacaoEvolution {
+  externalId: string;
+  fromMe: boolean;
+  conteudoTexto?: string | null;
+}
+
+function montarQuoted(numero: string, citado?: CitacaoEvolution) {
+  if (!citado) return undefined;
+  return {
+    key: { id: citado.externalId, remoteJid: `${numero}@s.whatsapp.net`, fromMe: citado.fromMe },
+    message: { conversation: citado.conteudoTexto ?? "" },
+  };
+}
+
+export async function enviarTextoEvolution(
+  instanceName: string,
+  numero: string,
+  texto: string,
+  citado?: CitacaoEvolution,
+) {
   const { data } = await client.post<RespostaEnvioEvolution>(`/message/sendText/${instanceName}`, {
     number: numero,
     text: texto,
+    quoted: montarQuoted(numero, citado),
   });
   return data.key?.id;
 }
@@ -41,12 +63,13 @@ export async function enviarMidiaEvolution(
   mediaUrl: string,
   mediatype: "image" | "video" | "audio" | "document",
   caption?: string,
+  citado?: CitacaoEvolution,
 ) {
   // Áudio via /message/sendMedia trata o arquivo como anexo genérico — o Baileys
   // recebe mas frequentemente não entrega/toca como mensagem de voz de verdade.
   // A própria Evolution API tem um endpoint dedicado só pra isso.
   if (mediatype === "audio") {
-    return enviarAudioEvolution(instanceName, numero, mediaUrl);
+    return enviarAudioEvolution(instanceName, numero, mediaUrl, citado);
   }
 
   const { data } = await client.post<RespostaEnvioEvolution>(`/message/sendMedia/${instanceName}`, {
@@ -54,14 +77,21 @@ export async function enviarMidiaEvolution(
     mediatype,
     media: mediaUrl,
     caption,
+    quoted: montarQuoted(numero, citado),
   });
   return data.key?.id;
 }
 
-export async function enviarAudioEvolution(instanceName: string, numero: string, mediaUrl: string) {
+export async function enviarAudioEvolution(
+  instanceName: string,
+  numero: string,
+  mediaUrl: string,
+  citado?: CitacaoEvolution,
+) {
   const { data } = await client.post<RespostaEnvioEvolution>(`/message/sendWhatsAppAudio/${instanceName}`, {
     number: numero,
     audio: mediaUrl,
+    quoted: montarQuoted(numero, citado),
   });
   return data.key?.id;
 }

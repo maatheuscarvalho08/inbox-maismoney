@@ -22,6 +22,7 @@ export function ConversaDetalhePage() {
   const [vendedores, setVendedores] = useState<Usuario[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [painelAberto, setPainelAberto] = useState(false);
+  const [respondendoA, setRespondendoA] = useState<Mensagem | null>(null);
   const fimDaListaRef = useRef<HTMLDivElement>(null);
 
   const carregar = useCallback(async () => {
@@ -129,6 +130,7 @@ export function ConversaDetalhePage() {
               onEditada={(atualizada) =>
                 setMensagens((atual) => atual.map((mm) => (mm.id === atualizada.id ? atualizada : mm)))
               }
+              onResponder={setRespondendoA}
             />
           ))}
           <div ref={fimDaListaRef} />
@@ -138,6 +140,8 @@ export function ConversaDetalhePage() {
           conversaId={conversa.id}
           tipoConexao={conversa.instancia.tipoConexao}
           ultimaMensagemClienteEm={ultimaDoCliente?.timestamp ?? null}
+          respondendoA={respondendoA}
+          onCancelarResposta={() => setRespondendoA(null)}
           onEnviada={(msg) =>
             setMensagens((atual) => (atual.some((m) => m.id === msg.id) ? atual : [...atual, msg]))
           }
