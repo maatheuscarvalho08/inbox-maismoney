@@ -18,7 +18,9 @@ interface DisparoAgrupado {
   operador: { id: string; nome: string } | null;
   timestamp: string;
   statusEntrega: StatusEntrega | null;
+  erroEntrega: string | null;
   resumoStatus: { enviado: number; entregue: number; lido: number; falhou: number };
+  errosEntrega: string[];
 }
 
 const STATUS_LABEL: Record<StatusEntrega, string> = {
@@ -32,7 +34,7 @@ function formatarData(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
-function ResumoStatusBadges({ resumo }: { resumo: DisparoAgrupado["resumoStatus"] }) {
+function ResumoStatusBadges({ resumo, errosEntrega }: { resumo: DisparoAgrupado["resumoStatus"]; errosEntrega: string[] }) {
   const itens = (
     [
       { status: "entregue", qtd: resumo.entregue },
@@ -47,7 +49,11 @@ function ResumoStatusBadges({ resumo }: { resumo: DisparoAgrupado["resumoStatus"
   return (
     <div className="flex flex-wrap items-center gap-2">
       {itens.map((i) => (
-        <span key={i.status} className="flex items-center gap-1 text-muted">
+        <span
+          key={i.status}
+          className="flex items-center gap-1 text-muted"
+          title={i.status === "falhou" && errosEntrega.length > 0 ? errosEntrega.join(" | ") : undefined}
+        >
           <StatusEntregaIcone status={i.status} />
           {i.qtd}
         </span>
@@ -131,9 +137,12 @@ export function DisparosPage() {
                     <td className="px-5 py-3 text-muted">{d.instancia.numero}</td>
                     <td className="px-5 py-3">
                       {d.totalNumeros > 1 ? (
-                        <ResumoStatusBadges resumo={d.resumoStatus} />
+                        <ResumoStatusBadges resumo={d.resumoStatus} errosEntrega={d.errosEntrega} />
                       ) : (
-                        <span className="flex items-center gap-1.5 text-muted">
+                        <span
+                          className="flex items-center gap-1.5 text-muted"
+                          title={d.statusEntrega === "falhou" ? d.erroEntrega ?? undefined : undefined}
+                        >
                           <StatusEntregaIcone status={d.statusEntrega} />
                           {d.statusEntrega ? STATUS_LABEL[d.statusEntrega] : "—"}
                         </span>

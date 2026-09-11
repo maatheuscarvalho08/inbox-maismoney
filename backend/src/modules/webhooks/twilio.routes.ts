@@ -100,6 +100,7 @@ router.post(
           templateNome: numero.campanha.template.nome,
           externalId: idEnvio ?? null,
           statusEntrega: idEnvio ? "enviado" : "falhou",
+          erroEntrega: idEnvio ? null : erroEntrega ?? null,
         });
 
         if (mensagem) {

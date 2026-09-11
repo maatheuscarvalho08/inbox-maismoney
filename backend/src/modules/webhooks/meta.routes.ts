@@ -98,13 +98,14 @@ router.post(
             }
 
             const erro = status.errors?.[0];
-            if (novoStatus === "falhou" && erro) {
-              console.error(`Falha de entrega reportada pela Meta (mensagem ${mensagem.id}): ${erro.title ?? erro.message ?? JSON.stringify(erro)}`);
+            const erroTexto = erro ? String(erro.title ?? erro.message ?? JSON.stringify(erro)) : null;
+            if (novoStatus === "falhou" && erroTexto) {
+              console.error(`Falha de entrega reportada pela Meta (mensagem ${mensagem.id}): ${erroTexto}`);
             }
 
             const atualizada = await prisma.mensagem.update({
               where: { id: mensagem.id },
-              data: { statusEntrega: novoStatus },
+              data: { statusEntrega: novoStatus, ...(novoStatus === "falhou" ? { erroEntrega: erroTexto } : {}) },
               include: { operador: { select: { id: true, nome: true } } },
             });
             emitNovaMensagem(atualizada);

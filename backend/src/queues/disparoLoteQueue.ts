@@ -51,10 +51,12 @@ export function startDisparoLoteWorker() {
       for (let i = 0; i < numeros.length; i++) {
         const numeroDestino = numeros[i];
         let idEnvio: string | undefined;
+        let erroEnvio: string | undefined;
         try {
           idEnvio = await enviarTemplateMeta(instancia.metaPhoneNumberId, numeroDestino, template.nome, variaveis, template.idioma);
         } catch (err) {
-          console.error(`Falha ao enviar disparo do lote ${loteId} para ${numeroDestino}:`, mensagemErroMeta(err));
+          erroEnvio = mensagemErroMeta(err);
+          console.error(`Falha ao enviar disparo do lote ${loteId} para ${numeroDestino}:`, erroEnvio);
         }
 
         const contato = await findOrCreateContato(numeroDestino);
@@ -68,6 +70,7 @@ export function startDisparoLoteWorker() {
           templateNome: template.nome,
           externalId: idEnvio ?? null,
           statusEntrega: idEnvio ? "enviado" : "falhou",
+          erroEntrega: idEnvio ? null : erroEnvio ?? null,
           loteId,
         });
 

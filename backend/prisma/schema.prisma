@@ -193,6 +193,9 @@ model Mensagem {
   // Marca quando o operador editou o texto já enviado (só possível via Evolution
   // API) — usado pra mostrar a tag "editada" igual o WhatsApp real.
   editadaEm     DateTime?     @map("editada_em")
+  // Motivo real da falha reportado pela Meta/Evolution — gravado no banco porque
+  // os logs do container somem a cada deploy/restart (perdíamos o diagnóstico).
+  erroEntrega   String?       @map("erro_entrega")
   // Resposta citada (reply do WhatsApp) — aponta pra mensagem original dentro da
   // mesma conversa. Nulo = mensagem normal, sem citação.
   respondeAId   String?       @map("responde_a_id")

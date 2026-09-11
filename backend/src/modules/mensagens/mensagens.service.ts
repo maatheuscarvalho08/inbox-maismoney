@@ -23,6 +23,7 @@ interface CriarMensagemInput {
   midiaPath?: string | null;
   externalId?: string | null;
   statusEntrega?: StatusEntrega | null;
+  erroEntrega?: string | null;
   loteId?: string | null;
   templateNome?: string | null;
   respondeAId?: string | null;

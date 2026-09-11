@@ -53,6 +53,9 @@ router.get(
         lido: msgs.filter((m) => m.statusEntrega === "lido").length,
         falhou: msgs.filter((m) => m.statusEntrega === "falhou").length,
       };
+      // Motivos distintos de falha nesse lote, pra mostrar num tooltip em vez do
+      // operador precisar me pedir toda vez que quiser saber por que caiu.
+      const errosEntrega = Array.from(new Set(msgs.filter((m) => m.erroEntrega).map((m) => m.erroEntrega as string)));
       return {
         id: chave,
         totalNumeros: msgs.length,
@@ -63,7 +66,9 @@ router.get(
         operador: primeira.operador,
         timestamp: primeira.timestamp,
         statusEntrega: msgs.length === 1 ? primeira.statusEntrega : null,
+        erroEntrega: msgs.length === 1 ? primeira.erroEntrega : null,
         resumoStatus,
+        errosEntrega,
       };
     });
 
@@ -127,6 +132,7 @@ router.post(
       templateNome: template.nome,
       externalId: idEnvio ?? null,
       statusEntrega: idEnvio ? "enviado" : "falhou",
+      erroEntrega: idEnvio ? null : erroEntrega ?? null,
       loteId: loteId ?? null,
     });
 
