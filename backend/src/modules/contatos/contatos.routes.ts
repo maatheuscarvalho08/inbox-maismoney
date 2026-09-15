@@ -5,9 +5,7 @@ import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { prisma } from "../../db/prisma.js";
 import { emitConversaAtualizada } from "../../ws/events.js";
 import { getConversaById } from "../conversas/conversas.service.js";
-import { buscarFotoPerfilEvolution } from "../../integrations/evolutionApi.js";
-
-const FOTO_TTL_MS = 24 * 60 * 60 * 1000;
+import { garantirFotoContato } from "./contatos.service.js";
 
 const router = Router();
 router.use(authenticate);
@@ -71,21 +69,8 @@ router.post(
       return res.status(404).json({ error: "Contato não encontrado" });
     }
 
-    const { contato, instancia } = conversa;
-    const jaAtualizada =
-      contato.fotoAtualizadaEm && Date.now() - contato.fotoAtualizadaEm.getTime() < FOTO_TTL_MS;
-
-    if (jaAtualizada || instancia.tipoConexao !== "evolution" || !instancia.evolutionInstanceId) {
-      return res.json({ contato });
-    }
-
-    const fotoUrl = await buscarFotoPerfilEvolution(instancia.evolutionInstanceId, contato.numeroWhatsapp);
-    const atualizado = await prisma.contato.update({
-      where: { id: contato.id },
-      data: { fotoUrl, fotoAtualizadaEm: new Date() },
-    });
-
-    res.json({ contato: atualizado });
+    const atualizado = await garantirFotoContato(conversa.contato, conversa.instancia);
+    res.json({ contato: atualizado ?? conversa.contato });
   }),
 );
 

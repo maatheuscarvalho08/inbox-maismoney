@@ -3,8 +3,8 @@ import path from "path";
 import { Router } from "express";
 import { prisma } from "../../db/prisma.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
-import { findOrCreateContato } from "../contatos/contatos.service.js";
-import { findOrCreateConversaAberta, marcarConversaRespondida } from "../conversas/conversas.service.js";
+import { findOrCreateContato, garantirFotoContato } from "../contatos/contatos.service.js";
+import { findOrCreateConversaAberta, getConversaById, marcarConversaRespondida } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitInstanciaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { uploadsRoot } from "../../middleware/upload.js";
@@ -88,6 +88,16 @@ router.post(
             // Resposta do cliente tira a conversa da aba "Disparos" (se veio de lá) sem
             // apagar a etiqueta azul de origem — ver conversas.service.ts.
             await marcarConversaRespondida(conversa.id);
+
+            // Sem esperar: assim a foto aparece na lista de conversas sem precisar
+            // abrir cada uma primeiro, mas sem atrasar o processamento da mensagem.
+            garantirFotoContato(contato, instanciaDb)
+              .then(async (atualizado) => {
+                if (!atualizado) return;
+                const conversaAtualizada = await getConversaById(conversa.id);
+                if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
+              })
+              .catch((err) => console.error("Falha ao buscar foto de perfil:", err));
 
             const chaveMidia = Object.keys(CAMPOS_MIDIA).find((k) => msg?.message?.[k]);
             if (chaveMidia) {
