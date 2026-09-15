@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Pencil, Reply } from "lucide-react";
 import { api, ApiError } from "../../lib/api";
+import { Avatar } from "../Avatar";
+import { urlFotoOperador } from "../../lib/avatar";
 import { MidiaMensagem } from "./MidiaMensagem";
 import { StatusEntregaIcone } from "./StatusEntregaIcone";
 import type { Mensagem } from "../../types/api";
@@ -20,12 +22,14 @@ export function previewDaMensagem(m: { conteudoTexto: string | null; tipoMidia: 
 
 interface Props {
   mensagem: Mensagem;
+  contatoNome: string;
+  contatoFotoUrl?: string | null;
   podeEditar?: boolean;
   onEditada?: (mensagem: Mensagem) => void;
   onResponder?: (mensagem: Mensagem) => void;
 }
 
-export function MensagemBubble({ mensagem, podeEditar, onEditada, onResponder }: Props) {
+export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEditar, onEditada, onResponder }: Props) {
   const doOperador = mensagem.remetenteTipo === "operador";
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(mensagem.conteudoTexto ?? "");
@@ -56,27 +60,38 @@ export function MensagemBubble({ mensagem, podeEditar, onEditada, onResponder }:
     }
   }
 
+  const iconesAcao = (
+    <div className="flex shrink-0 items-center gap-1.5 opacity-0 group-hover:opacity-100">
+      {onResponder && (
+        <button onClick={() => onResponder(mensagem)} title="Responder" className="text-muted hover:text-primary">
+          <Reply size={13} />
+        </button>
+      )}
+      {editavel && !editando && (
+        <button
+          onClick={() => {
+            setTexto(mensagem.conteudoTexto ?? "");
+            setEditando(true);
+          }}
+          title="Editar mensagem"
+          className="text-muted hover:text-primary"
+        >
+          <Pencil size={13} />
+        </button>
+      )}
+    </div>
+  );
+
+  const avatar = doOperador ? (
+    <Avatar nome={mensagem.operador?.nome ?? "Operador"} fotoUrl={urlFotoOperador(mensagem.operador?.fotoPath, mensagem.operador?.id)} tamanho={24} />
+  ) : (
+    <Avatar nome={contatoNome} fotoUrl={contatoFotoUrl} tamanho={24} />
+  );
+
   return (
-    <div className={`group flex items-center gap-1.5 ${doOperador ? "justify-end" : "justify-start"}`}>
-      <div className={`flex shrink-0 items-center gap-1.5 opacity-0 group-hover:opacity-100 ${doOperador ? "order-first" : "order-last"}`}>
-        {onResponder && (
-          <button onClick={() => onResponder(mensagem)} title="Responder" className="text-muted hover:text-primary">
-            <Reply size={13} />
-          </button>
-        )}
-        {editavel && !editando && (
-          <button
-            onClick={() => {
-              setTexto(mensagem.conteudoTexto ?? "");
-              setEditando(true);
-            }}
-            title="Editar mensagem"
-            className="text-muted hover:text-primary"
-          >
-            <Pencil size={13} />
-          </button>
-        )}
-      </div>
+    <div className={`group flex items-end gap-1.5 ${doOperador ? "justify-end" : "justify-start"}`}>
+      {!doOperador && avatar}
+      {doOperador && iconesAcao}
 
       <div
         className={`relative max-w-[70%] rounded-lg border px-3 py-2 ${
@@ -138,6 +153,9 @@ export function MensagemBubble({ mensagem, podeEditar, onEditada, onResponder }:
           {doOperador && <StatusEntregaIcone status={mensagem.statusEntrega} />}
         </div>
       </div>
+
+      {!doOperador && iconesAcao}
+      {doOperador && avatar}
     </div>
   );
 }

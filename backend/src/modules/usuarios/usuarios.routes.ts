@@ -1,14 +1,39 @@
+import path from "path";
 import bcrypt from "bcryptjs";
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma.js";
 import { authenticate, requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
+import { upload } from "../../middleware/upload.js";
 
 const router = Router();
+
+// Precisa vir antes do authenticate: <img src> não manda o header Authorization,
+// igual o áudio de campanha em campanhas.routes.ts. Equipe interna de 3 pessoas
+// vendo foto uma da outra não tem o mesmo risco de privacidade de mídia de cliente.
+router.get(
+  "/:id/foto",
+  asyncHandler(async (req, res) => {
+    const usuario = await prisma.usuario.findUnique({ where: { id: req.params.id } });
+    if (!usuario?.fotoPath) {
+      return res.status(404).end();
+    }
+    res.sendFile(path.resolve(process.cwd(), usuario.fotoPath));
+  }),
+);
+
 router.use(authenticate);
 
-const SELECT_PUBLICO = { id: true, nome: true, email: true, role: true, ativo: true, createdAt: true } as const;
+const SELECT_PUBLICO = {
+  id: true,
+  nome: true,
+  email: true,
+  role: true,
+  ativo: true,
+  fotoPath: true,
+  createdAt: true,
+} as const;
 
 // Listagem básica fica disponível para qualquer operador (usada nos filtros de Conversas
 // e na atribuição de vendedor). Criar/editar usuário continua restrito ao admin.
@@ -52,6 +77,28 @@ router.patch(
     }
 
     const usuario = await prisma.usuario.update({ where: { id: req.user!.id }, data, select: SELECT_PUBLICO });
+    res.json({ usuario });
+  }),
+);
+
+// Avatar próprio — mesmo espírito do nome/senha em /me, sem precisar de admin.
+router.post(
+  "/me/foto",
+  upload.single("foto"),
+  asyncHandler(async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "Envie um arquivo de imagem" });
+    }
+    if (!req.file.mimetype.startsWith("image/")) {
+      return res.status(400).json({ error: "O avatar precisa ser uma imagem" });
+    }
+
+    const fotoPath = path.relative(process.cwd(), req.file.path).replace(/\\/g, "/");
+    const usuario = await prisma.usuario.update({
+      where: { id: req.user!.id },
+      data: { fotoPath },
+      select: SELECT_PUBLICO,
+    });
     res.json({ usuario });
   }),
 );

@@ -11,6 +11,7 @@ export interface Usuario {
   email: string;
   role: Role;
   ativo: boolean;
+  fotoPath: string | null;
   createdAt: string;
 }
 
@@ -40,6 +41,7 @@ export interface Contato {
   nome: string | null;
   cpf: string | null;
   numeroWhatsapp: string;
+  fotoUrl: string | null;
   createdAt: string;
 }
 
@@ -58,7 +60,7 @@ export interface Mensagem {
   respondeA?: { id: string; conteudoTexto: string | null; tipoMidia: string | null; remetenteTipo: RemetenteTipo } | null;
   timestamp: string;
   createdAt: string;
-  operador?: { id: string; nome: string } | null;
+  operador?: { id: string; nome: string; fotoPath: string | null } | null;
 }
 
 export interface Etiqueta {
@@ -79,7 +81,7 @@ export interface Conversa {
   respondida: boolean;
   contato: Contato;
   instancia: Pick<Instancia, "id" | "nome" | "numero" | "tipoConexao" | "status">;
-  operador: { id: string; nome: string } | null;
+  operador: { id: string; nome: string; fotoPath: string | null } | null;
   mensagens?: Mensagem[];
   etiquetas: { etiqueta: Etiqueta }[];
 }

@@ -8,6 +8,7 @@ declare global {
         role: Role;
         nome: string;
         email: string;
+        fotoPath: string | null;
       };
       rawBody?: Buffer;
     }

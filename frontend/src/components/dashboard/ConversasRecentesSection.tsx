@@ -66,7 +66,7 @@ export function ConversasRecentesSection({ conversas, carregando }: { conversas:
               >
                 <td className="px-5 py-3">
                   <Link to={`/conversas/${c.id}`} className="flex items-center gap-2.5" onClick={(e) => e.stopPropagation()}>
-                    <Avatar nome={c.contato.nome ?? c.contato.numeroWhatsapp} />
+                    <Avatar nome={c.contato.nome ?? c.contato.numeroWhatsapp} fotoUrl={c.contato.fotoUrl} />
                     <span className="font-medium text-white">{c.contato.nome ?? "Sem nome"}</span>
                   </Link>
                 </td>

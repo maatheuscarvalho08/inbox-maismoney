@@ -24,7 +24,7 @@ router.get(
       orderBy: { timestamp: "desc" },
       take: 500,
       include: {
-        operador: { select: { id: true, nome: true } },
+        operador: { select: { id: true, nome: true, fotoPath: true } },
         conversa: {
           select: {
             id: true,
@@ -141,7 +141,7 @@ router.post(
       include: {
         contato: true,
         instancia: { select: { id: true, nome: true, numero: true, tipoConexao: true } },
-        operador: { select: { id: true, nome: true } },
+        operador: { select: { id: true, nome: true, fotoPath: true } },
       },
     });
 

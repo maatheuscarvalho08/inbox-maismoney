@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { MoreVertical } from "lucide-react";
-import { api } from "../lib/api";
+import { Check, MoreVertical, Pencil, X } from "lucide-react";
+import { api, ApiError } from "../lib/api";
 import { formatarTelefone } from "../lib/telefone";
 import { useSocketEvent } from "../hooks/useSocketEvent";
 import { Avatar } from "../components/Avatar";
@@ -10,7 +10,7 @@ import { Select } from "../components/Select";
 import { MensagemBubble } from "../components/conversa/MensagemBubble";
 import { Composer } from "../components/conversa/Composer";
 import { PainelLateralConversa } from "../components/conversa/PainelLateralConversa";
-import type { Conversa, Mensagem, StatusConversa, Usuario } from "../types/api";
+import type { Contato, Conversa, Mensagem, StatusConversa, Usuario } from "../types/api";
 
 const STATUS_OPCOES: StatusConversa[] = ["aberta", "em_atendimento", "aguardando", "encerrada"];
 
@@ -23,7 +23,28 @@ export function ConversaDetalhePage() {
   const [carregando, setCarregando] = useState(true);
   const [painelAberto, setPainelAberto] = useState(false);
   const [respondendoA, setRespondendoA] = useState<Mensagem | null>(null);
+  const [editandoNome, setEditandoNome] = useState(false);
+  const [nomeEditado, setNomeEditado] = useState("");
+  const [salvandoNome, setSalvandoNome] = useState(false);
+  const [erroNome, setErroNome] = useState<string | null>(null);
   const fimDaListaRef = useRef<HTMLDivElement>(null);
+
+  async function salvarNomeContato() {
+    if (!conversa) return;
+    setSalvandoNome(true);
+    setErroNome(null);
+    try {
+      const { contato } = await api.patch<{ contato: Contato }>(`/contatos/${conversa.contato.id}`, {
+        nome: nomeEditado.trim() || null,
+      });
+      setConversa({ ...conversa, contato });
+      setEditandoNome(false);
+    } catch (err) {
+      setErroNome(err instanceof ApiError ? err.message : "Não foi possível salvar o nome");
+    } finally {
+      setSalvandoNome(false);
+    }
+  }
 
   const carregar = useCallback(async () => {
     if (!id) return;
@@ -34,6 +55,14 @@ export function ConversaDetalhePage() {
     setConversa(conversaRes.conversa);
     setMensagens(mensagensRes.mensagens);
     setCarregando(false);
+
+    // Busca sob demanda ao abrir a conversa (só existe pra números Evolution, e o
+    // backend já cacheia por 24h — ver contatos.routes.ts) em vez de trazer isso
+    // em toda listagem, que bateria na Evolution API pra cada contato à toa.
+    api
+      .post<{ contato: Contato }>(`/contatos/${conversaRes.conversa.contato.id}/atualizar-foto`)
+      .then(({ contato }) => setConversa((atual) => (atual ? { ...atual, contato } : atual)))
+      .catch(() => {});
   }, [id]);
 
   useEffect(() => {
@@ -84,12 +113,50 @@ export function ConversaDetalhePage() {
       <div className="flex h-full flex-1 flex-col">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-8 py-4">
           <div className="flex items-center gap-3">
-            <Avatar nome={conversa.contato.nome ?? conversa.contato.numeroWhatsapp} />
+            <Avatar
+              nome={conversa.contato.nome ?? conversa.contato.numeroWhatsapp}
+              fotoUrl={conversa.contato.fotoUrl}
+              tamanho={40}
+            />
             <div>
-              <p className="text-sm font-semibold text-white">{conversa.contato.nome ?? "Sem nome"}</p>
+              {editandoNome ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    autoFocus
+                    value={nomeEditado}
+                    onChange={(e) => setNomeEditado(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") salvarNomeContato();
+                      if (e.key === "Escape") setEditandoNome(false);
+                    }}
+                    placeholder="Nome do cliente"
+                    className="rounded border border-primary bg-bg/60 px-1.5 py-0.5 text-sm text-white outline-none"
+                  />
+                  <button onClick={salvarNomeContato} disabled={salvandoNome} className="text-primary hover:text-white">
+                    <Check size={14} />
+                  </button>
+                  <button onClick={() => setEditandoNome(false)} className="text-muted hover:text-white">
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setNomeEditado(conversa.contato.nome ?? "");
+                    setErroNome(null);
+                    setEditandoNome(true);
+                  }}
+                  className="group flex items-center gap-1.5 text-sm font-semibold text-white"
+                  title="Editar nome do cliente"
+                >
+                  {conversa.contato.nome ?? "Sem nome"}
+                  <Pencil size={11} className="text-muted opacity-0 group-hover:opacity-100" />
+                </button>
+              )}
               <p className="text-xs text-muted">
                 {formatarTelefone(conversa.contato.numeroWhatsapp)} · {conversa.instancia.nome}
               </p>
+              {erroNome && <p className="text-[11px] text-primary">{erroNome}</p>}
             </div>
           </div>
 
@@ -126,6 +193,8 @@ export function ConversaDetalhePage() {
             <MensagemBubble
               key={m.id}
               mensagem={m}
+              contatoNome={conversa.contato.nome ?? conversa.contato.numeroWhatsapp}
+              contatoFotoUrl={conversa.contato.fotoUrl}
               podeEditar={conversa.instancia.tipoConexao === "evolution"}
               onEditada={(atualizada) =>
                 setMensagens((atual) => atual.map((mm) => (mm.id === atualizada.id ? atualizada : mm)))

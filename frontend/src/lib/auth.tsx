@@ -9,6 +9,7 @@ export interface Usuario {
   nome: string;
   email: string;
   role: Role;
+  fotoPath: string | null;
 }
 
 interface LoginResponse {

@@ -28,7 +28,13 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     if (!usuario || !usuario.ativo) {
       return res.status(401).json({ error: "Token inválido ou expirado" });
     }
-    req.user = { id: usuario.id, role: usuario.role, nome: usuario.nome, email: usuario.email };
+    req.user = {
+      id: usuario.id,
+      role: usuario.role,
+      nome: usuario.nome,
+      email: usuario.email,
+      fotoPath: usuario.fotoPath,
+    };
     next();
   } catch {
     return res.status(401).json({ error: "Token inválido ou expirado" });

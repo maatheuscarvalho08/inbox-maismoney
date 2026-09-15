@@ -2,7 +2,7 @@ import type { RemetenteTipo, StatusEntrega } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 
 const INCLUDE_RESPOSTA = {
-  operador: { select: { id: true, nome: true } },
+  operador: { select: { id: true, nome: true, fotoPath: true } },
   respondeA: { select: { id: true, conteudoTexto: true, tipoMidia: true, remetenteTipo: true } },
 } as const;
 

@@ -4,7 +4,7 @@ import { prisma } from "../../db/prisma.js";
 const INCLUDE_PADRAO = {
   contato: true,
   instancia: { select: { id: true, nome: true, numero: true, tipoConexao: true, status: true } },
-  operador: { select: { id: true, nome: true } },
+  operador: { select: { id: true, nome: true, fotoPath: true } },
   etiquetas: { include: { etiqueta: true } },
 } as const;
 

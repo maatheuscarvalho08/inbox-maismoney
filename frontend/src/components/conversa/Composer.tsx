@@ -36,6 +36,7 @@ export function Composer({
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const inputArquivoRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [gravando, setGravando] = useState(false);
   const [tempoGravacao, setTempoGravacao] = useState(0);
@@ -125,6 +126,7 @@ export function Composer({
       setAudioGravado(false);
       onCancelarResposta();
       if (inputArquivoRef.current) inputArquivoRef.current.value = "";
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
     } catch (err) {
       setErro(err instanceof ApiError ? err.message : "Não foi possível enviar a mensagem");
     } finally {
@@ -229,12 +231,25 @@ export function Composer({
               <Mic size={16} />
             </button>
 
-            <input
-              type="text"
+            <textarea
+              ref={textareaRef}
+              rows={1}
               value={texto}
-              onChange={(e) => setTexto(e.target.value)}
+              onChange={(e) => {
+                setTexto(e.target.value);
+                const el = e.target;
+                el.style.height = "auto";
+                el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+              }}
+              onKeyDown={(e) => {
+                // Enter sozinho manda; Shift+Enter quebra parágrafo, igual WhatsApp.
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  (e.currentTarget.form as HTMLFormElement | null)?.requestSubmit();
+                }
+              }}
               placeholder="Digite uma mensagem..."
-              className="flex-1 rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+              className="max-h-[120px] flex-1 resize-none rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
             />
 
             <button

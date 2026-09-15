@@ -167,7 +167,7 @@ router.post(
       include: {
         contato: true,
         instancia: { select: { id: true, nome: true, numero: true, tipoConexao: true } },
-        operador: { select: { id: true, nome: true } },
+        operador: { select: { id: true, nome: true, fotoPath: true } },
       },
     });
 
@@ -225,7 +225,7 @@ router.patch(
     const atualizada = await prisma.mensagem.update({
       where: { id: mensagem.id },
       data: { conteudoTexto: parsed.data.conteudoTexto, editadaEm: new Date() },
-      include: { operador: { select: { id: true, nome: true } } },
+      include: { operador: { select: { id: true, nome: true, fotoPath: true } } },
     });
 
     emitNovaMensagem(atualizada);

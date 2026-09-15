@@ -5,6 +5,9 @@ import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { prisma } from "../../db/prisma.js";
 import { emitConversaAtualizada } from "../../ws/events.js";
 import { getConversaById } from "../conversas/conversas.service.js";
+import { buscarFotoPerfilEvolution } from "../../integrations/evolutionApi.js";
+
+const FOTO_TTL_MS = 24 * 60 * 60 * 1000;
 
 const router = Router();
 router.use(authenticate);
@@ -48,6 +51,39 @@ router.patch(
       const atualizada = await getConversaById(c.id);
       if (atualizada) emitConversaAtualizada(atualizada);
     }
+
+    res.json({ contato: atualizado });
+  }),
+);
+
+// Chamado pelo front ao abrir uma conversa — busca sob demanda em vez de em toda
+// listagem, pra não bater na Evolution API pra cada contato só de olhar a lista.
+// A URL da Meta/WhatsApp expira, então recacheia depois de 24h.
+router.post(
+  "/:id/atualizar-foto",
+  asyncHandler(async (req, res) => {
+    const conversa = await prisma.conversa.findFirst({
+      where: { contatoId: req.params.id },
+      include: { contato: true, instancia: true },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!conversa) {
+      return res.status(404).json({ error: "Contato não encontrado" });
+    }
+
+    const { contato, instancia } = conversa;
+    const jaAtualizada =
+      contato.fotoAtualizadaEm && Date.now() - contato.fotoAtualizadaEm.getTime() < FOTO_TTL_MS;
+
+    if (jaAtualizada || instancia.tipoConexao !== "evolution" || !instancia.evolutionInstanceId) {
+      return res.json({ contato });
+    }
+
+    const fotoUrl = await buscarFotoPerfilEvolution(instancia.evolutionInstanceId, contato.numeroWhatsapp);
+    const atualizado = await prisma.contato.update({
+      where: { id: contato.id },
+      data: { fotoUrl, fotoAtualizadaEm: new Date() },
+    });
 
     res.json({ contato: atualizado });
   }),

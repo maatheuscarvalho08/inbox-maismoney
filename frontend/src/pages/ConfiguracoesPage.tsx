@@ -1,7 +1,10 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Camera } from "lucide-react";
 import { api, ApiError } from "../lib/api";
 import { useAuth, type Usuario } from "../lib/auth";
 import { PageHeader } from "../components/PageHeader";
+import { Avatar } from "../components/Avatar";
+import { urlFotoOperador } from "../lib/avatar";
 
 interface ConfigSistema {
   empresa: { nome: string; cnpj: string; setor: string };
@@ -17,6 +20,24 @@ function CardPerfil() {
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
+  const inputFotoRef = useRef<HTMLInputElement>(null);
+
+  async function trocarFoto(arquivo: File) {
+    setEnviandoFoto(true);
+    setErro(null);
+    try {
+      const form = new FormData();
+      form.append("foto", arquivo);
+      const res = await api.post<{ usuario: Usuario }>("/usuarios/me/foto", form);
+      atualizarUsuario(res.usuario);
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.message : "Não foi possível trocar a foto");
+    } finally {
+      setEnviandoFoto(false);
+      if (inputFotoRef.current) inputFotoRef.current.value = "";
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -45,9 +66,37 @@ function CardPerfil() {
       onSubmit={handleSubmit}
       className="w-full max-w-md space-y-4 rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl"
     >
-      <div>
-        <h2 className="text-sm font-semibold text-white">Meu perfil</h2>
-        <p className="mt-0.5 text-xs text-muted">{usuario?.email}</p>
+      <div className="flex items-center gap-3">
+        <div className="group relative">
+          <Avatar
+            nome={usuario?.nome ?? "?"}
+            fotoUrl={urlFotoOperador(usuario?.fotoPath, usuario?.id)}
+            tamanho={48}
+          />
+          <input
+            ref={inputFotoRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const arquivo = e.target.files?.[0];
+              if (arquivo) trocarFoto(arquivo);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => inputFotoRef.current?.click()}
+            disabled={enviandoFoto}
+            title="Trocar foto"
+            className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100"
+          >
+            <Camera size={16} />
+          </button>
+        </div>
+        <div>
+          <h2 className="text-sm font-semibold text-white">Meu perfil</h2>
+          <p className="mt-0.5 text-xs text-muted">{usuario?.email}</p>
+        </div>
       </div>
 
       <div>

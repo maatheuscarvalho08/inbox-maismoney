@@ -96,6 +96,20 @@ export async function enviarAudioEvolution(
   return data.key?.id;
 }
 
+// Retorna null se o contato não tiver foto de perfil ou tiver privacidade
+// restrita — não é erro, é estado normal do WhatsApp.
+export async function buscarFotoPerfilEvolution(instanceName: string, numero: string): Promise<string | null> {
+  try {
+    const { data } = await client.post<{ profilePictureUrl?: string }>(
+      `/chat/fetchProfilePictureUrl/${instanceName}`,
+      { number: numero },
+    );
+    return data.profilePictureUrl ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function obterQrCodeEvolution(instanceName: string) {
   const { data } = await client.get(`/instance/connect/${instanceName}`);
   return data;

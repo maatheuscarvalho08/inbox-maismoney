@@ -198,7 +198,7 @@ export function ConversasSplitLayout() {
                 c.id === idAtivo ? "bg-primary/10" : ""
               }`}
             >
-              <Avatar nome={c.contato.nome ?? c.contato.numeroWhatsapp} />
+              <Avatar nome={c.contato.nome ?? c.contato.numeroWhatsapp} fotoUrl={c.contato.fotoUrl} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-sm font-medium text-white">{c.contato.nome ?? "Sem nome"}</span>

@@ -64,6 +64,9 @@ model Usuario {
   senhaHash  String   @map("senha_hash")
   role       Role
   ativo      Boolean  @default(true)
+  // Caminho local do avatar (upload próprio) — aparece na bolha de mensagem e no
+  // topo da conversa, pra ficar mais "vivo" em vez de só a inicial do nome.
+  fotoPath   String?  @map("foto_path")
   createdAt  DateTime @default(now()) @map("created_at")
 
   conversas  Conversa[]  @relation("OperadorConversas")
@@ -114,6 +117,11 @@ model Contato {
   nome           String?
   cpf            String?
   numeroWhatsapp String   @unique @map("numero_whatsapp")
+  // Foto de perfil do WhatsApp — só disponível via Evolution API (Baileys/WhatsApp
+  // Web); a Meta Cloud API não expõe foto de contato por privacidade. Cacheada
+  // porque a URL da Meta/WhatsApp expira; buscarFotoContato() atualiza sob demanda.
+  fotoUrl        String?  @map("foto_url")
+  fotoAtualizadaEm DateTime? @map("foto_atualizada_em")
   createdAt      DateTime @default(now()) @map("created_at")
 
   conversas      Conversa[]

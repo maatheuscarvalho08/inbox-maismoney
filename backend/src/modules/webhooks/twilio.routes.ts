@@ -110,7 +110,7 @@ router.post(
             include: {
               contato: true,
               instancia: { select: { id: true, nome: true, numero: true, tipoConexao: true } },
-              operador: { select: { id: true, nome: true } },
+              operador: { select: { id: true, nome: true, fotoPath: true } },
             },
           });
           if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);

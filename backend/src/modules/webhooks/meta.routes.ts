@@ -106,7 +106,7 @@ router.post(
             const atualizada = await prisma.mensagem.update({
               where: { id: mensagem.id },
               data: { statusEntrega: novoStatus, ...(novoStatus === "falhou" ? { erroEntrega: erroTexto } : {}) },
-              include: { operador: { select: { id: true, nome: true } } },
+              include: { operador: { select: { id: true, nome: true, fotoPath: true } } },
             });
             emitNovaMensagem(atualizada);
           }
@@ -189,7 +189,7 @@ router.post(
               include: {
                 contato: true,
                 instancia: { select: { id: true, nome: true, numero: true, tipoConexao: true } },
-                operador: { select: { id: true, nome: true } },
+                operador: { select: { id: true, nome: true, fotoPath: true } },
               },
             });
 
