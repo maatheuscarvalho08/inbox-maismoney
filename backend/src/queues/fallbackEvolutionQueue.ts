@@ -20,9 +20,31 @@ interface FallbackJob {
 export const fallbackEvolutionQueue = new Queue<FallbackJob>("fallback-evolution", { connection });
 
 const INTERVALO_MS = 2 * 60 * 1000;
+// Teto por número de atendimento: mandar disparo demais por um WhatsApp normal
+// arrisca a reputação desse número também — 15/dia por número é o combinado.
+const LIMITE_POR_INSTANCIA_DIA = 15;
 
 function aguardar(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function inicioDoDia() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+// Mensagem de fallback é identificável sem precisar de campo novo: é a única
+// forma de disparo (templateNome preenchido) que existe numa instância Evolution
+// — disparo em lote de verdade só roda em número Meta.
+async function contarFallbackHoje(instanciaId: string) {
+  return prisma.mensagem.count({
+    where: {
+      templateNome: { not: null },
+      timestamp: { gte: inicioDoDia() },
+      conversa: { instanciaId },
+    },
+  });
 }
 
 let worker: Worker<FallbackJob> | undefined;
@@ -55,12 +77,25 @@ export function startFallbackEvolutionWorker() {
         return;
       }
 
-      // Alterna entre os números de atendimento a cada reenvio.
-      const instancia = atendimento[proximoIndice % atendimento.length];
-      proximoIndice++;
+      // Alterna a partir de onde parou, mas pula qualquer número que já bateu o
+      // teto do dia — só desiste de vez se TODOS os números de atendimento
+      // estiverem no limite.
+      let instancia = null;
+      for (let tentativa = 0; tentativa < atendimento.length; tentativa++) {
+        const candidata = atendimento[(proximoIndice + tentativa) % atendimento.length];
+        if (!candidata.evolutionInstanceId) continue;
+        const usadosHoje = await contarFallbackHoje(candidata.id);
+        if (usadosHoje < LIMITE_POR_INSTANCIA_DIA) {
+          instancia = candidata;
+          proximoIndice += tentativa + 1;
+          break;
+        }
+      }
 
-      if (!instancia.evolutionInstanceId) {
-        console.error(`Fallback: instância ${instancia.nome} sem evolutionInstanceId`);
+      if (!instancia) {
+        console.warn(
+          `Fallback: todos os números de atendimento já bateram o limite de ${LIMITE_POR_INSTANCIA_DIA}/dia — mensagem ${job.data.mensagemOriginalId} não foi reenviada`,
+        );
         return;
       }
 
@@ -68,7 +103,7 @@ export function startFallbackEvolutionWorker() {
       let idEnvio: string | undefined;
       let erroEnvio: string | undefined;
       try {
-        idEnvio = await enviarTextoEvolution(instancia.evolutionInstanceId, numeroDestino, original.conteudoTexto);
+        idEnvio = await enviarTextoEvolution(instancia.evolutionInstanceId!, numeroDestino, original.conteudoTexto);
       } catch (err) {
         erroEnvio = mensagemErroEvolution(err);
         console.error(`Falha no reenvio de fallback pra ${numeroDestino}:`, erroEnvio);
