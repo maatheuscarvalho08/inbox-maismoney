@@ -99,7 +99,7 @@ export function DashboardPage() {
           </MetricCard>
 
           <MetricCard
-            label="Tempo médio de resposta"
+            label="Tempo típico de resposta"
             value={carregando ? "—" : formatarSegundos(resumo?.tempoMedioSegundos ?? 0)}
             deltaLabel={deltaTempo ? `${formatarSegundos(Math.abs(deltaTempo.diff))} vs ontem` : undefined}
             deltaDirection={deltaTempo?.direction}

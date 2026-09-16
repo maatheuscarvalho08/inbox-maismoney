@@ -17,6 +17,17 @@ function chaveDia(data: Date) {
   return data.toISOString().slice(0, 10);
 }
 
+// Média simples é péssima pra "tempo de resposta": uma única conversa fechada
+// horas depois (propaganda ignorada, cliente que recusou, contato duplicado em
+// outro número) pesa tanto quanto dezenas de respostas rápidas de verdade.
+// Mediana ignora esses poucos extremos e reflete o atendimento típico.
+function mediana(valores: number[]) {
+  if (valores.length === 0) return 0;
+  const ordenados = [...valores].sort((a, b) => a - b);
+  const meio = Math.floor(ordenados.length / 2);
+  return ordenados.length % 2 === 0 ? (ordenados[meio - 1] + ordenados[meio]) / 2 : ordenados[meio];
+}
+
 async function calcularDeltasResposta(desde: Date) {
   const mensagens = await prisma.mensagem.findMany({
     where: { timestamp: { gte: desde } },
@@ -58,9 +69,7 @@ export async function resumoMetricas() {
   const percentualNaoRespondidas = conversasEmAberto.length
     ? Math.round((naoRespondidas / conversasEmAberto.length) * 1000) / 10
     : 0;
-  const tempoMedioSegundos = deltas.length
-    ? Math.round(deltas.reduce((a, b) => a + b.segundos, 0) / deltas.length)
-    : 0;
+  const tempoMedioSegundos = Math.round(mediana(deltas.map((d) => d.segundos)));
   const percentualRespondidasEm1h = deltas.length
     ? Math.round((deltas.filter((d) => d.segundos <= 3600).length / deltas.length) * 100)
     : 100;
@@ -107,14 +116,9 @@ export async function historicoDiario(dias = 8) {
     calcularDeltasResposta(desde),
   ]);
 
-  const somaTempoPorDia = new Map(diasArr.map((d) => [d, { soma: 0, n: 0 }]));
+  const segundosPorDia = new Map(diasArr.map((d) => [d, [] as number[]]));
   for (const delta of deltas) {
-    const chave = chaveDia(delta.timestamp);
-    const atual = somaTempoPorDia.get(chave);
-    if (atual) {
-      atual.soma += delta.segundos;
-      atual.n += 1;
-    }
+    segundosPorDia.get(chaveDia(delta.timestamp))?.push(delta.segundos);
   }
 
   return {
@@ -122,10 +126,7 @@ export async function historicoDiario(dias = 8) {
     mensagens: bucket(mensagens),
     conversasAbertas: bucket(conversasNovas),
     atendimentosConcluidos: bucket(conversasEncerradas),
-    tempoMedioSegundos: diasArr.map((d) => {
-      const { soma, n } = somaTempoPorDia.get(d)!;
-      return n ? Math.round(soma / n) : 0;
-    }),
+    tempoMedioSegundos: diasArr.map((d) => Math.round(mediana(segundosPorDia.get(d)!))),
   };
 }
 

@@ -82,7 +82,7 @@ export function MetricasPage() {
 
   const metas: MetaProgresso[] = [
     {
-      label: "Tempo médio de resposta",
+      label: "Tempo típico de resposta",
       atual: formatarSegundos(resumo.tempoMedioSegundos),
       meta: `${META_TEMPO_RESPOSTA_SEGUNDOS / 60} min`,
       percentual: resumo.tempoMedioSegundos > 0
@@ -105,9 +105,9 @@ export function MetricasPage() {
 
   const insight =
     resumo.tempoMedioSegundos > 0 && resumo.tempoMedioSegundos <= META_TEMPO_RESPOSTA_SEGUNDOS
-      ? `Tempo médio de resposta em ${formatarSegundos(resumo.tempoMedioSegundos)}, dentro da meta de ${META_TEMPO_RESPOSTA_SEGUNDOS / 60} min. ${resumo.percentualRespondidasEm1h}% das respostas saem em até 1h.`
+      ? `Tempo típico de resposta em ${formatarSegundos(resumo.tempoMedioSegundos)}, dentro da meta de ${META_TEMPO_RESPOSTA_SEGUNDOS / 60} min. ${resumo.percentualRespondidasEm1h}% das respostas saem em até 1h.`
       : resumo.tempoMedioSegundos > META_TEMPO_RESPOSTA_SEGUNDOS
-        ? `Tempo médio de resposta em ${formatarSegundos(resumo.tempoMedioSegundos)}, acima da meta de ${META_TEMPO_RESPOSTA_SEGUNDOS / 60} min. Vale reforçar o time nos horários de pico.`
+        ? `Tempo típico de resposta em ${formatarSegundos(resumo.tempoMedioSegundos)}, acima da meta de ${META_TEMPO_RESPOSTA_SEGUNDOS / 60} min. Vale reforçar o time nos horários de pico.`
         : "Ainda sem dados suficientes de resposta este mês para gerar um resumo.";
 
   return (
@@ -141,7 +141,7 @@ export function MetricasPage() {
           <StatCard icon={Percent} label="Não respondidas" value={`${resumo.percentualNaoRespondidas}%`} />
           <StatCard
             icon={Clock}
-            label="Tempo médio de resposta"
+            label="Tempo típico de resposta"
             value={formatarSegundos(resumo.tempoMedioSegundos)}
             trendLabel={deltaTempo ? `${formatarSegundos(Math.abs(deltaTempo.diff))} vs ontem` : undefined}
             trendDirection={deltaTempo?.direction}

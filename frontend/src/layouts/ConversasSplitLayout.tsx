@@ -189,7 +189,10 @@ export function ConversasSplitLayout() {
           {conversasFiltradas.map((c) => {
             // Última mensagem é do cliente = ninguém da equipe respondeu ainda
             // desde então — mesma lógica de "não lida" que o WhatsApp real usa.
-            const naoRespondida = c.mensagens?.[0]?.remetenteTipo === "cliente";
+            // Encerrada não conta, mesmo com última msg do cliente: quem fechou já
+            // viu e decidiu que não precisa responder (recusa, propaganda, etc.) —
+            // sem isso a bolinha ficava acesa pra sempre nesses casos.
+            const naoRespondida = c.status !== "encerrada" && c.mensagens?.[0]?.remetenteTipo === "cliente";
             return (
             <button
               key={c.id}
