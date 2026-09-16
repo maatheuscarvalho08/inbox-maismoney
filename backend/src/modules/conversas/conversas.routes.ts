@@ -63,6 +63,11 @@ router.post(
     if (!instancia) {
       return res.status(404).json({ error: "Instância não encontrada" });
     }
+    // Mesma regra do frontend, reforçada aqui: a Meta Cloud API rejeita texto
+    // livre pra um contato que nunca respondeu — só dá pra iniciar via Evolution.
+    if (instancia.tipoConexao !== "evolution") {
+      return res.status(400).json({ error: "Só é possível iniciar conversa nova pelos números de atendimento (Evolution API)" });
+    }
 
     const contato = await findOrCreateContato(parsed.data.numeroWhatsapp, parsed.data.nomeContato);
     // Reaproveita se já existir uma conversa aberta com esse contato nessa instância —

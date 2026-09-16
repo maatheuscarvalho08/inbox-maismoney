@@ -21,8 +21,11 @@ export function NovaConversaModal({ aberto, onFechar, onCriada }: Props) {
   useEffect(() => {
     if (!aberto) return;
     api.get<{ instancias: Instancia[] }>("/instancias").then((res) => {
-      setInstancias(res.instancias);
-      setInstanciaId((atual) => atual || res.instancias[0]?.id || "");
+      // Só os números de atendimento (Evolution) — a Meta Cloud API não deixa
+      // começar conversa nova com texto livre, só via template de Disparos.
+      const atendimento = res.instancias.filter((i) => i.tipoConexao === "evolution");
+      setInstancias(atendimento);
+      setInstanciaId((atual) => atual || atendimento[0]?.id || "");
     });
   }, [aberto]);
 
