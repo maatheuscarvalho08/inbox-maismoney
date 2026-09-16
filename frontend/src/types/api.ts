@@ -84,6 +84,9 @@ export interface Conversa {
   operador: { id: string; nome: string; fotoPath: string | null } | null;
   mensagens?: Mensagem[];
   etiquetas: { etiqueta: Etiqueta }[];
+  // Ids de quem da equipe já abriu essa conversa desde a última mensagem do
+  // cliente — zerada assim que chega mensagem nova dele.
+  visualizacoes: { usuarioId: string }[];
 }
 
 export interface ResumoMetricas {

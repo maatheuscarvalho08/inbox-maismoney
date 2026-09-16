@@ -72,6 +72,7 @@ model Usuario {
   conversas  Conversa[]  @relation("OperadorConversas")
   mensagens  Mensagem[]  @relation("OperadorMensagens")
   campanhas  CampanhaDiscadora[]
+  visualizacoes ConversaVisualizacao[]
 
   @@map("usuarios")
 }
@@ -149,8 +150,26 @@ model Conversa {
   operador      Usuario?   @relation("OperadorConversas", fields: [operadorId], references: [id])
   mensagens     Mensagem[]
   etiquetas     ConversaEtiqueta[]
+  visualizacoes ConversaVisualizacao[]
 
   @@map("conversas")
+}
+
+// Quem da equipe já abriu essa conversa desde a última mensagem do cliente —
+// zerada (deleteMany) toda vez que chega mensagem nova dele. A bolinha de "não
+// respondida" some só pra quem está na lista, mas continua acesa pros colegas
+// que ainda não abriram, até alguém responder de verdade.
+model ConversaVisualizacao {
+  id         String   @id @default(uuid())
+  conversaId String   @map("conversa_id")
+  usuarioId  String   @map("usuario_id")
+  vistoEm    DateTime @default(now()) @map("visto_em")
+
+  conversa   Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([conversaId, usuarioId])
+  @@map("conversa_visualizacoes")
 }
 
 model Etiqueta {

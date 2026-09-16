@@ -6,6 +6,10 @@ const INCLUDE_PADRAO = {
   instancia: { select: { id: true, nome: true, numero: true, tipoConexao: true, status: true } },
   operador: { select: { id: true, nome: true, fotoPath: true } },
   etiquetas: { include: { etiqueta: true } },
+  // Ids de quem da equipe já abriu essa conversa desde a última mensagem do
+  // cliente — o front decide, com o próprio usuário logado, se a bolinha de
+  // "não respondida" já pode sumir pra ele especificamente.
+  visualizacoes: { select: { usuarioId: true } },
 } as const;
 
 export async function listConversas(status?: StatusConversa, aba?: "atendimento" | "disparos") {
@@ -71,9 +75,22 @@ export async function findOrCreateConversaDisparo(instanciaId: string, contatoId
 }
 
 // Chamado quando chega uma mensagem do cliente — tira a conversa da aba "Disparos"
-// (se ela estava lá) sem apagar a etiqueta azul de origem.
+// (se ela estava lá) sem apagar a etiqueta azul de origem, e zera quem já tinha
+// visto a conversa (mensagem nova = todo mundo precisa olhar de novo).
 export async function marcarConversaRespondida(conversaId: string) {
   await prisma.conversa.update({ where: { id: conversaId }, data: { respondida: true } });
+  await prisma.conversaVisualizacao.deleteMany({ where: { conversaId } });
+}
+
+// Chamado quando um operador abre a conversa — a bolinha de "não respondida" some
+// só pra ele; continua acesa pros colegas que ainda não abriram, até alguém
+// responder de verdade (aí a checagem de remetenteTipo já resolve sozinha).
+export async function marcarConversaVisualizada(conversaId: string, usuarioId: string) {
+  await prisma.conversaVisualizacao.upsert({
+    where: { conversaId_usuarioId: { conversaId, usuarioId } },
+    update: { vistoEm: new Date() },
+    create: { conversaId, usuarioId },
+  });
 }
 
 export async function adicionarEtiqueta(conversaId: string, etiquetaId: string) {

@@ -10,6 +10,7 @@ import {
   findOrCreateConversaAberta,
   getConversaById,
   listConversas,
+  marcarConversaVisualizada,
   removerEtiqueta,
 } from "./conversas.service.js";
 import { emitConversaAtualizada } from "../../ws/events.js";
@@ -41,7 +42,14 @@ router.get(
     if (!conversa) {
       return res.status(404).json({ error: "Conversa não encontrada" });
     }
-    res.json({ conversa });
+
+    // Abrir a conversa é o próprio sinal de "eu vi" — sem isso a bolinha de "não
+    // respondida" nunca sumiria pra quem está lendo agora mesmo.
+    await marcarConversaVisualizada(req.params.id, req.user!.id);
+    const atualizada = await getConversaById(req.params.id);
+    emitConversaAtualizada(atualizada);
+
+    res.json({ conversa: atualizada });
   }),
 );
 

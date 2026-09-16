@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { Megaphone, Plus, Search, Smartphone, User } from "lucide-react";
 import { api } from "../lib/api";
+import { useAuth } from "../lib/auth";
 import { tempoRelativo } from "../lib/tempoRelativo";
 import { useSocketEvent } from "../hooks/useSocketEvent";
 import { Avatar } from "../components/Avatar";
@@ -32,6 +33,7 @@ function ultimaMensagemPreview(conversa: Conversa) {
 export function ConversasSplitLayout() {
   const navigate = useNavigate();
   const { id: idAtivo } = useParams<{ id: string }>();
+  const { usuario } = useAuth();
 
   const [busca, setBusca] = useState("");
   const [aba, setAba] = useState<Aba>("atendimento");
@@ -191,8 +193,12 @@ export function ConversasSplitLayout() {
             // desde então — mesma lógica de "não lida" que o WhatsApp real usa.
             // Encerrada não conta, mesmo com última msg do cliente: quem fechou já
             // viu e decidiu que não precisa responder (recusa, propaganda, etc.) —
-            // sem isso a bolinha ficava acesa pra sempre nesses casos.
-            const naoRespondida = c.status !== "encerrada" && c.mensagens?.[0]?.remetenteTipo === "cliente";
+            // sem isso a bolinha ficava acesa pra sempre nesses casos. Some pra mim
+            // assim que eu abro a conversa, mas continua acesa pros colegas que
+            // ainda não abriram — só desaparece de vez pra todos quando alguém
+            // manda uma resposta de verdade (aí o remetenteTipo já resolve sozinho).
+            const euJaVi = usuario ? c.visualizacoes.some((v) => v.usuarioId === usuario.id) : false;
+            const naoRespondida = c.status !== "encerrada" && c.mensagens?.[0]?.remetenteTipo === "cliente" && !euJaVi;
             return (
             <button
               key={c.id}
