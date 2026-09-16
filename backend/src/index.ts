@@ -5,6 +5,7 @@ import { initSocket } from "./ws/socket.js";
 import { startMediaCleanupJob } from "./jobs/mediaCleanup.js";
 import { startDiscadoraWorker } from "./queues/discadoraQueue.js";
 import { startDisparoLoteWorker } from "./queues/disparoLoteQueue.js";
+import { startFallbackEvolutionWorker } from "./queues/fallbackEvolutionQueue.js";
 import { prisma } from "./db/prisma.js";
 
 const server = http.createServer(app);
@@ -12,6 +13,7 @@ initSocket(server);
 startMediaCleanupJob();
 startDiscadoraWorker();
 startDisparoLoteWorker();
+startFallbackEvolutionWorker();
 
 server.listen(env.PORT, () => {
   console.log(`Backend rodando em http://localhost:${env.PORT}`);

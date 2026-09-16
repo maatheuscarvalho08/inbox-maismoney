@@ -11,7 +11,13 @@ import { findOrCreateContato } from "../contatos/contatos.service.js";
 import { findOrCreateConversaAberta, marcarConversaRespondida } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
+import { fallbackEvolutionQueue } from "../../queues/fallbackEvolutionQueue.js";
 import type { StatusEntrega } from "@prisma/client";
+
+// Texto exato que a Meta manda quando bloqueia por reputação da conta, não por
+// número inválido — só esse caso justifica reenviar por outro canal, porque o
+// número em si está correto (só a Meta que não está entregando agora).
+const ERRO_HEALTHY_ECOSYSTEM = "This message was not delivered to maintain healthy ecosystem engagement.";
 
 const router = Router();
 
@@ -109,6 +115,14 @@ router.post(
               include: { operador: { select: { id: true, nome: true, fotoPath: true } } },
             });
             emitNovaMensagem(atualizada);
+
+            // Pedido do dono do negócio: disparo barrado por reputação da conta (não
+            // número inválido) é reenviado como WhatsApp normal via Evolution, pra não
+            // perder o lead. "mensagem.erroEntrega !== erroTexto" evita reenviar de novo
+            // se a Meta reentregar o mesmo webhook (ela garante "ao menos uma vez").
+            if (novoStatus === "falhou" && erroTexto === ERRO_HEALTHY_ECOSYSTEM && mensagem.templateNome && mensagem.erroEntrega !== erroTexto) {
+              await fallbackEvolutionQueue.add("fallback", { mensagemOriginalId: mensagem.id });
+            }
           }
 
           for (const msg of mensagens) {
