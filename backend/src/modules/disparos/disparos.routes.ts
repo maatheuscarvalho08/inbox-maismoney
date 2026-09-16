@@ -155,7 +155,15 @@ router.post(
 const loteSchema = z.object({
   instanciaId: z.string().uuid(),
   templateId: z.string().uuid(),
-  numeros: z.array(z.string().min(8)).min(1),
+  destinatarios: z
+    .array(
+      z.object({
+        numeroWhatsapp: z.string().min(8),
+        numeroWhatsappAlternativo: z.string().min(8).optional(),
+        nomeContato: z.string().trim().optional(),
+      }),
+    )
+    .min(1),
   variaveis: z.array(z.string()).default([]),
   intervaloMs: z.coerce.number().min(0).default(0),
 });
@@ -170,7 +178,7 @@ router.post(
       return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
     }
 
-    const { instanciaId, templateId, numeros, variaveis, intervaloMs } = parsed.data;
+    const { instanciaId, templateId, destinatarios, variaveis, intervaloMs } = parsed.data;
 
     const [instancia, template] = await Promise.all([
       prisma.instancia.findUnique({ where: { id: instanciaId } }),
@@ -188,13 +196,13 @@ router.post(
       loteId,
       instanciaId,
       templateId,
-      numeros,
+      destinatarios,
       variaveis,
       intervaloMs,
       operadorId: req.user!.id,
     });
 
-    res.status(202).json({ loteId, totalNumeros: numeros.length });
+    res.status(202).json({ loteId, totalNumeros: destinatarios.length });
   }),
 );
 

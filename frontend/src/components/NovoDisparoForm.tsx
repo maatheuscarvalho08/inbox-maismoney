@@ -36,6 +36,8 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
   const [colunasCsv, setColunasCsv] = useState<string[]>([]);
   const [linhasCsv, setLinhasCsv] = useState<Record<string, string>[]>([]);
   const [colunaTelefone, setColunaTelefone] = useState("");
+  const [colunaNome, setColunaNome] = useState("");
+  const [colunaTelefoneAlt, setColunaTelefoneAlt] = useState("");
   const [nomeArquivo, setNomeArquivo] = useState("");
   const [erroCsv, setErroCsv] = useState<string | null>(null);
   const inputCsvRef = useRef<HTMLInputElement>(null);
@@ -61,19 +63,30 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
     api.get<{ templates: Template[] }>(`/templates?instanciaId=${instanciaId}`).then((res) => setTemplates(res.templates));
   }, [instanciaId]);
 
-  const numerosDetectados = colunaTelefone
+  const destinatarios = colunaTelefone
     ? Array.from(
-        new Set(
-          linhasCsv
-            .map((linha) => normalizarNumero(linha[colunaTelefone] ?? ""))
-            .filter((numero) => numero.length >= 8),
-        ),
+        linhasCsv.reduce((mapa, linha) => {
+          const numeroWhatsapp = normalizarNumero(linha[colunaTelefone] ?? "");
+          if (numeroWhatsapp.length < 8) return mapa;
+          if (!mapa.has(numeroWhatsapp)) {
+            const nomeContato = colunaNome ? linha[colunaNome]?.trim() : undefined;
+            const alt = colunaTelefoneAlt ? normalizarNumero(linha[colunaTelefoneAlt] ?? "") : "";
+            mapa.set(numeroWhatsapp, {
+              numeroWhatsapp,
+              nomeContato: nomeContato || undefined,
+              numeroWhatsappAlternativo: alt.length >= 8 ? alt : undefined,
+            });
+          }
+          return mapa;
+        }, new Map<string, { numeroWhatsapp: string; nomeContato?: string; numeroWhatsappAlternativo?: string }>()).values(),
       )
     : [];
 
   function handleArquivoCsv(file: File) {
     setErroCsv(null);
     setColunaTelefone("");
+    setColunaNome("");
+    setColunaTelefoneAlt("");
     setNomeArquivo(file.name);
 
     Papa.parse<Record<string, string>>(file, {
@@ -95,6 +108,8 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
     setColunasCsv([]);
     setLinhasCsv([]);
     setColunaTelefone("");
+    setColunaNome("");
+    setColunaTelefoneAlt("");
     setNomeArquivo("");
     setErroCsv(null);
     if (inputCsvRef.current) inputCsvRef.current.value = "";
@@ -133,13 +148,13 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
         await api.post("/disparos/lote", {
           instanciaId,
           templateId,
-          numeros: numerosDetectados,
+          destinatarios,
           variaveis: variaveisLimpo,
           intervaloMs,
         });
         setResultado({
           ok: true,
-          texto: `Lote de ${numerosDetectados.length} disparo(s) enviado pra fila — acompanhe o andamento na lista.`,
+          texto: `Lote de ${destinatarios.length} disparo(s) enviado pra fila — acompanhe o andamento na lista.`,
         });
         limparCsv();
         onEnviado();
@@ -155,7 +170,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
   }
 
   const podeEnviar =
-    !!instanciaId && !!templateId && (modo === "unico" ? !!numeroDestino : numerosDetectados.length > 0);
+    !!instanciaId && !!templateId && (modo === "unico" ? !!numeroDestino : destinatarios.length > 0);
 
   return (
     <div>
@@ -254,17 +269,44 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
               {erroCsv && <p className="text-xs text-primary">{erroCsv}</p>}
 
               {colunasCsv.length > 0 && (
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted">Qual coluna é o telefone?</label>
-                  <Select
-                    value={colunaTelefone}
-                    onChange={setColunaTelefone}
-                    placeholder="Selecione a coluna..."
-                    options={colunasCsv.map((c) => ({ value: c, label: c }))}
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted">Qual coluna é o telefone?</label>
+                    <Select
+                      value={colunaTelefone}
+                      onChange={setColunaTelefone}
+                      placeholder="Selecione a coluna..."
+                      options={colunasCsv.map((c) => ({ value: c, label: c }))}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted">
+                      Qual coluna é o nome do lead? (opcional)
+                    </label>
+                    <Select
+                      value={colunaNome}
+                      onChange={setColunaNome}
+                      placeholder="Nenhuma — usar nome do WhatsApp"
+                      options={colunasCsv.map((c) => ({ value: c, label: c }))}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted">
+                      Coluna com um segundo telefone? (opcional — usado se o primeiro falhar)
+                    </label>
+                    <Select
+                      value={colunaTelefoneAlt}
+                      onChange={setColunaTelefoneAlt}
+                      placeholder="Nenhuma"
+                      options={colunasCsv.map((c) => ({ value: c, label: c }))}
+                    />
+                  </div>
+
                   {colunaTelefone && (
-                    <p className="mt-1.5 text-xs text-muted">
-                      {numerosDetectados.length} número(s) único(s) detectado(s) na coluna "{colunaTelefone}".
+                    <p className="text-xs text-muted">
+                      {destinatarios.length} número(s) único(s) detectado(s) na coluna "{colunaTelefone}".
                     </p>
                   )}
                 </div>
@@ -273,7 +315,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
           )}
         </div>
 
-        {modo === "csv" && numerosDetectados.length > 1 && (
+        {modo === "csv" && destinatarios.length > 1 && (
           <div>
             <label className="mb-1.5 block text-xs font-medium text-muted">
               Intervalo entre cada mensagem (evita bloqueio por envio em massa)
@@ -298,7 +340,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
               <span className="text-xs text-muted">seg</span>
             </div>
             <p className="mt-1.5 text-xs text-muted">
-              Tempo estimado total: ~{formatarDuracao((intervaloMin * 60 + intervaloSeg) * (numerosDetectados.length - 1))}
+              Tempo estimado total: ~{formatarDuracao((intervaloMin * 60 + intervaloSeg) * (destinatarios.length - 1))}
             </p>
           </div>
         )}
@@ -347,8 +389,8 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
           <Send size={16} />
           {enviando
             ? "Enviando..."
-            : modo === "csv" && numerosDetectados.length > 0
-              ? `Enviar disparo para ${numerosDetectados.length}`
+            : modo === "csv" && destinatarios.length > 0
+              ? `Enviar disparo para ${destinatarios.length}`
               : "Enviar disparo"}
         </button>
       </form>

@@ -15,7 +15,7 @@ interface LoteDisparoJob {
   loteId: string;
   instanciaId: string;
   templateId: string;
-  numeros: string[];
+  destinatarios: { numeroWhatsapp: string; numeroWhatsappAlternativo?: string; nomeContato?: string }[];
   variaveis: string[];
   intervaloMs: number;
   operadorId: string;
@@ -38,7 +38,7 @@ export function startDisparoLoteWorker() {
   worker = new Worker<LoteDisparoJob>(
     "disparo-lote",
     async (job: Job<LoteDisparoJob>) => {
-      const { loteId, instanciaId, templateId, numeros, variaveis, intervaloMs, operadorId } = job.data;
+      const { loteId, instanciaId, templateId, destinatarios, variaveis, intervaloMs, operadorId } = job.data;
 
       const [instancia, template] = await Promise.all([
         prisma.instancia.findUnique({ where: { id: instanciaId } }),
@@ -54,14 +54,28 @@ export function startDisparoLoteWorker() {
       // escrito como "61991128608" numa linha e "5561991128608" noutra passa
       // batido de lá e vira dois disparos pro mesmo contato aqui. Normaliza igual
       // o resto do sistema (normalizarNumeroBrasileiro) e deduplica de novo, na
-      // fonte da verdade, antes de processar.
-      const numerosUnicos = Array.from(new Set(numeros.map(normalizarNumeroBrasileiro)));
-      if (numerosUnicos.length < numeros.length) {
-        console.warn(`Lote ${loteId}: ${numeros.length - numerosUnicos.length} número(s) duplicado(s) removido(s) antes de disparar`);
+      // fonte da verdade, antes de processar — mantendo o primeiro nome visto
+      // pra cada número.
+      const porNumero = new Map<string, { nomeContato?: string; numeroWhatsappAlternativo?: string }>();
+      for (const d of destinatarios) {
+        const numero = normalizarNumeroBrasileiro(d.numeroWhatsapp);
+        if (!porNumero.has(numero)) {
+          porNumero.set(numero, {
+            nomeContato: d.nomeContato,
+            numeroWhatsappAlternativo: d.numeroWhatsappAlternativo
+              ? normalizarNumeroBrasileiro(d.numeroWhatsappAlternativo)
+              : undefined,
+          });
+        }
+      }
+      const destinatariosUnicos = Array.from(porNumero, ([numeroWhatsapp, dados]) => ({ numeroWhatsapp, ...dados }));
+      if (destinatariosUnicos.length < destinatarios.length) {
+        console.warn(`Lote ${loteId}: ${destinatarios.length - destinatariosUnicos.length} número(s) duplicado(s) removido(s) antes de disparar`);
       }
 
-      for (let i = 0; i < numerosUnicos.length; i++) {
-        const numeroDestino = numerosUnicos[i];
+      for (let i = 0; i < destinatariosUnicos.length; i++) {
+        const { numeroWhatsapp, numeroWhatsappAlternativo, nomeContato } = destinatariosUnicos[i];
+        let numeroDestino = numeroWhatsapp;
         let idEnvio: string | undefined;
         let erroEnvio: string | undefined;
         try {
@@ -69,9 +83,33 @@ export function startDisparoLoteWorker() {
         } catch (err) {
           erroEnvio = mensagemErroMeta(err);
           console.error(`Falha ao enviar disparo do lote ${loteId} para ${numeroDestino}:`, erroEnvio);
+
+          // Leads de bancos/promotoras às vezes chegam com um segundo WhatsApp
+          // cadastrado — se o primeiro número falhar, tenta o alternativo antes
+          // de desistir do lead.
+          if (numeroWhatsappAlternativo) {
+            try {
+              idEnvio = await enviarTemplateMeta(
+                instancia.metaPhoneNumberId,
+                numeroWhatsappAlternativo,
+                template.nome,
+                variaveis,
+                template.idioma,
+              );
+              numeroDestino = numeroWhatsappAlternativo;
+              erroEnvio = undefined;
+            } catch (err2) {
+              const erroAlternativo = mensagemErroMeta(err2);
+              console.error(
+                `Falha ao enviar disparo do lote ${loteId} para número alternativo ${numeroWhatsappAlternativo}:`,
+                erroAlternativo,
+              );
+              erroEnvio = `Principal: ${erroEnvio} | Alternativo: ${erroAlternativo}`;
+            }
+          }
         }
 
-        const contato = await findOrCreateContato(numeroDestino);
+        const contato = await findOrCreateContato(numeroDestino, nomeContato);
         const conversa = await findOrCreateConversaDisparo(instanciaId, contato.id);
 
         const mensagem = await criarMensagem({
@@ -99,9 +137,9 @@ export function startDisparoLoteWorker() {
           if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
         }
 
-        await job.updateProgress(Math.round(((i + 1) / numerosUnicos.length) * 100));
+        await job.updateProgress(Math.round(((i + 1) / destinatariosUnicos.length) * 100));
 
-        if (i < numerosUnicos.length - 1 && intervaloMs > 0) {
+        if (i < destinatariosUnicos.length - 1 && intervaloMs > 0) {
           await aguardar(intervaloMs);
         }
       }
