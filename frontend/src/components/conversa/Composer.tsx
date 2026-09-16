@@ -107,6 +107,11 @@ export function Composer({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    // Enter dispara requestSubmit() direto, passando por cima do disabled do
+    // botão — sem essa trava, apertar rápido (ou segurar, com repetição
+    // automática do teclado) mandava a mesma mensagem várias vezes antes do
+    // primeiro envio terminar.
+    if (enviando) return;
     if (!texto.trim() && !arquivo) return;
 
     setEnviando(true);
