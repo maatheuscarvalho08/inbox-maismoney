@@ -7,6 +7,7 @@ import { criarMensagem } from "../modules/mensagens/mensagens.service.js";
 import { enviarTemplateMeta, mensagemErroMeta } from "../integrations/metaCloudApi.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../ws/events.js";
 import { montarTextoDisparo } from "../lib/template.js";
+import { normalizarNumeroBrasileiro } from "../lib/telefone.js";
 
 const connection = { url: env.REDIS_URL };
 
@@ -48,8 +49,19 @@ export function startDisparoLoteWorker() {
         return;
       }
 
-      for (let i = 0; i < numeros.length; i++) {
-        const numeroDestino = numeros[i];
+      // O front dedup a lista antes de mandar, mas com uma normalização mais simples
+      // (só tira não-dígito, sem completar o "55") — um CSV com o mesmo número
+      // escrito como "61991128608" numa linha e "5561991128608" noutra passa
+      // batido de lá e vira dois disparos pro mesmo contato aqui. Normaliza igual
+      // o resto do sistema (normalizarNumeroBrasileiro) e deduplica de novo, na
+      // fonte da verdade, antes de processar.
+      const numerosUnicos = Array.from(new Set(numeros.map(normalizarNumeroBrasileiro)));
+      if (numerosUnicos.length < numeros.length) {
+        console.warn(`Lote ${loteId}: ${numeros.length - numerosUnicos.length} número(s) duplicado(s) removido(s) antes de disparar`);
+      }
+
+      for (let i = 0; i < numerosUnicos.length; i++) {
+        const numeroDestino = numerosUnicos[i];
         let idEnvio: string | undefined;
         let erroEnvio: string | undefined;
         try {
@@ -87,9 +99,9 @@ export function startDisparoLoteWorker() {
           if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
         }
 
-        await job.updateProgress(Math.round(((i + 1) / numeros.length) * 100));
+        await job.updateProgress(Math.round(((i + 1) / numerosUnicos.length) * 100));
 
-        if (i < numeros.length - 1 && intervaloMs > 0) {
+        if (i < numerosUnicos.length - 1 && intervaloMs > 0) {
           await aguardar(intervaloMs);
         }
       }
