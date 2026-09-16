@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Send } from "lucide-react";
+import { Plus, Send, X } from "lucide-react";
 import { api } from "../lib/api";
 import { PageHeader } from "../components/PageHeader";
 import { Modal } from "../components/Modal";
@@ -34,7 +34,15 @@ function formatarData(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
-function ResumoStatusBadges({ resumo, errosEntrega }: { resumo: DisparoAgrupado["resumoStatus"]; errosEntrega: string[] }) {
+function ResumoStatusBadges({
+  resumo,
+  errosEntrega,
+  onVerMotivos,
+}: {
+  resumo: DisparoAgrupado["resumoStatus"];
+  errosEntrega: string[];
+  onVerMotivos: () => void;
+}) {
   const itens = (
     [
       { status: "entregue", qtd: resumo.entregue },
@@ -48,17 +56,46 @@ function ResumoStatusBadges({ resumo, errosEntrega }: { resumo: DisparoAgrupado[
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {itens.map((i) => (
-        <span
-          key={i.status}
-          className="flex items-center gap-1 text-muted"
-          title={i.status === "falhou" && errosEntrega.length > 0 ? errosEntrega.join(" | ") : undefined}
-        >
-          <StatusEntregaIcone status={i.status} />
-          {i.qtd}
-        </span>
-      ))}
+      {itens.map((i) =>
+        i.status === "falhou" && errosEntrega.length > 0 ? (
+          <button
+            key={i.status}
+            onClick={onVerMotivos}
+            className="flex items-center gap-1 text-primary hover:underline"
+          >
+            <StatusEntregaIcone status={i.status} />
+            {i.qtd}
+          </button>
+        ) : (
+          <span key={i.status} className="flex items-center gap-1 text-muted">
+            <StatusEntregaIcone status={i.status} />
+            {i.qtd}
+          </span>
+        ),
+      )}
     </div>
+  );
+}
+
+function ModalMotivosFalha({ motivos, onClose }: { motivos: string[]; onClose: () => void }) {
+  return (
+    <Modal onClose={onClose}>
+      <div className="w-full max-w-md space-y-3 p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-white">Por que falhou</h2>
+          <button onClick={onClose} className="text-muted hover:text-white">
+            <X size={16} />
+          </button>
+        </div>
+        <ul className="space-y-2">
+          {motivos.map((m, i) => (
+            <li key={i} className="rounded-md border border-border bg-bg/40 px-3 py-2 text-sm text-white">
+              {m}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Modal>
   );
 }
 
@@ -66,6 +103,7 @@ export function DisparosPage() {
   const [disparos, setDisparos] = useState<DisparoAgrupado[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [mostrarNovo, setMostrarNovo] = useState(false);
+  const [motivosFalha, setMotivosFalha] = useState<string[] | null>(null);
 
   function carregar() {
     api.get<{ disparos: DisparoAgrupado[] }>("/disparos").then((res) => {
@@ -137,12 +175,21 @@ export function DisparosPage() {
                     <td className="px-5 py-3 text-muted">{d.instancia.numero}</td>
                     <td className="px-5 py-3">
                       {d.totalNumeros > 1 ? (
-                        <ResumoStatusBadges resumo={d.resumoStatus} errosEntrega={d.errosEntrega} />
-                      ) : (
-                        <span
-                          className="flex items-center gap-1.5 text-muted"
-                          title={d.statusEntrega === "falhou" ? d.erroEntrega ?? undefined : undefined}
+                        <ResumoStatusBadges
+                          resumo={d.resumoStatus}
+                          errosEntrega={d.errosEntrega}
+                          onVerMotivos={() => setMotivosFalha(d.errosEntrega)}
+                        />
+                      ) : d.statusEntrega === "falhou" && d.erroEntrega ? (
+                        <button
+                          onClick={() => setMotivosFalha([d.erroEntrega as string])}
+                          className="flex items-center gap-1.5 text-primary hover:underline"
                         >
+                          <StatusEntregaIcone status={d.statusEntrega} />
+                          {STATUS_LABEL[d.statusEntrega]}
+                        </button>
+                      ) : (
+                        <span className="flex items-center gap-1.5 text-muted">
                           <StatusEntregaIcone status={d.statusEntrega} />
                           {d.statusEntrega ? STATUS_LABEL[d.statusEntrega] : "—"}
                         </span>
@@ -163,6 +210,8 @@ export function DisparosPage() {
           <NovoDisparoForm onFechar={() => setMostrarNovo(false)} onEnviado={carregar} />
         </Modal>
       )}
+
+      {motivosFalha && <ModalMotivosFalha motivos={motivosFalha} onClose={() => setMotivosFalha(null)} />}
     </div>
   );
 }
