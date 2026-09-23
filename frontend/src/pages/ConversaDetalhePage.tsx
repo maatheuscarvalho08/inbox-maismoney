@@ -14,6 +14,17 @@ import type { Contato, Conversa, Mensagem, StatusConversa, Usuario } from "../ty
 
 const STATUS_OPCOES: StatusConversa[] = ["aberta", "em_atendimento", "aguardando", "encerrada"];
 
+function rotuloDia(data: Date) {
+  const hoje = new Date();
+  const ontem = new Date();
+  ontem.setDate(hoje.getDate() - 1);
+  const mesmodia = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  if (mesmodia(data, hoje)) return "Hoje";
+  if (mesmodia(data, ontem)) return "Ontem";
+  return data.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+}
+
 export function ConversaDetalhePage() {
   const { id } = useParams<{ id: string }>();
 
@@ -189,19 +200,37 @@ export function ConversaDetalhePage() {
 
         <div className="flex-1 space-y-3 overflow-y-auto p-8">
           {mensagens.length === 0 && <p className="text-center text-sm text-muted">Nenhuma mensagem ainda.</p>}
-          {mensagens.map((m) => (
-            <MensagemBubble
-              key={m.id}
-              mensagem={m}
-              contatoNome={conversa.contato.nome ?? conversa.contato.numeroWhatsapp}
-              contatoFotoUrl={conversa.contato.fotoUrl}
-              podeEditar={conversa.instancia.tipoConexao === "evolution"}
-              onEditada={(atualizada) =>
-                setMensagens((atual) => atual.map((mm) => (mm.id === atualizada.id ? atualizada : mm)))
-              }
-              onResponder={setRespondendoA}
-            />
-          ))}
+          {mensagens.map((m, i) => {
+            const dataAtual = new Date(m.timestamp);
+            const dataAnterior = i > 0 ? new Date(mensagens[i - 1].timestamp) : null;
+            const mudouDia =
+              !dataAnterior ||
+              dataAtual.getFullYear() !== dataAnterior.getFullYear() ||
+              dataAtual.getMonth() !== dataAnterior.getMonth() ||
+              dataAtual.getDate() !== dataAnterior.getDate();
+
+            return (
+              <div key={m.id}>
+                {mudouDia && (
+                  <div className="my-3 flex items-center justify-center">
+                    <span className="rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-medium text-muted">
+                      {rotuloDia(dataAtual)}
+                    </span>
+                  </div>
+                )}
+                <MensagemBubble
+                  mensagem={m}
+                  contatoNome={conversa.contato.nome ?? conversa.contato.numeroWhatsapp}
+                  contatoFotoUrl={conversa.contato.fotoUrl}
+                  podeEditar={conversa.instancia.tipoConexao === "evolution"}
+                  onEditada={(atualizada) =>
+                    setMensagens((atual) => atual.map((mm) => (mm.id === atualizada.id ? atualizada : mm)))
+                  }
+                  onResponder={setRespondendoA}
+                />
+              </div>
+            );
+          })}
           <div ref={fimDaListaRef} />
         </div>
 
