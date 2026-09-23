@@ -3,13 +3,21 @@
 // Evolution) sempre trazem o "from" completo, então sem isso o mesmo número vira dois
 // registros diferentes, ou (no caso do Twilio) um número inválido ao prefixar "+".
 export function normalizarNumeroBrasileiro(numero: string): string {
-  const digitos = numero.replace(/\D/g, "");
+  let digitos = numero.replace(/\D/g, "");
 
-  if (digitos.startsWith("55") && (digitos.length === 12 || digitos.length === 13)) {
-    return digitos;
-  }
   if (digitos.length === 10 || digitos.length === 11) {
-    return `55${digitos}`;
+    digitos = `55${digitos}`;
   }
+
+  // WhatsApp às vezes entrega/aceita o formato antigo de 12 dígitos
+  // (55 + DDD + 8 dígitos), sem o "9" obrigatório em celular desde 2016.
+  // Sem completar aqui, o mesmo cliente vira dois contatos diferentes
+  // dependendo de qual formato chegou primeiro (webhook Evolution vs.
+  // CSV de disparo, por exemplo) — mesmo bug que já existia só na exibição
+  // (ver frontend/src/lib/telefone.ts), agora corrigido na origem.
+  if (digitos.startsWith("55") && digitos.length === 12 && /^[6-9]/.test(digitos.slice(4))) {
+    digitos = `${digitos.slice(0, 4)}9${digitos.slice(4)}`;
+  }
+
   return digitos;
 }
