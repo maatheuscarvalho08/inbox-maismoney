@@ -103,11 +103,11 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
         )}
 
         {mensagem.respondeA && (
-          <div className="mb-1.5 rounded border-l-2 border-primary/60 bg-bg/30 px-2 py-1">
+          <div className="mb-2 rounded border-l-2 border-primary/60 bg-bg/30 px-2 py-1">
             <p className="text-[11px] font-medium text-primary">
               {mensagem.respondeA.remetenteTipo === "operador" ? "Você" : "Cliente"}
             </p>
-            <p className="truncate text-xs text-muted">{previewDaMensagem(mensagem.respondeA)}</p>
+            <p className="line-clamp-2 text-xs text-muted">{previewDaMensagem(mensagem.respondeA)}</p>
           </div>
         )}
 
@@ -144,7 +144,9 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
             </div>
           </div>
         ) : (
-          mensagem.conteudoTexto && <p className="mt-1 whitespace-pre-wrap text-sm text-white">{mensagem.conteudoTexto}</p>
+          mensagem.conteudoTexto && (
+            <p className="whitespace-pre-wrap text-sm text-white">{mensagem.conteudoTexto}</p>
+          )
         )}
 
         <div className="mt-1 flex items-center justify-end gap-1">
