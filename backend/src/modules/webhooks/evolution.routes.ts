@@ -3,6 +3,7 @@ import path from "path";
 import { Router } from "express";
 import { prisma } from "../../db/prisma.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
+import { verifyEvolutionToken } from "../../middleware/verifyEvolutionToken.js";
 import { findOrCreateContato, garantirFotoContato } from "../contatos/contatos.service.js";
 import { findOrCreateConversaAberta, getConversaById, marcarConversaRespondida } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
@@ -51,6 +52,7 @@ async function baixarEArmazenarMidiaEvolution(
  */
 router.post(
   "/evolution",
+  verifyEvolutionToken,
   asyncHandler(async (req, res) => {
     try {
       const { event, instance, data } = req.body ?? {};

@@ -183,6 +183,44 @@ cd frontend && npm install && npm run build && cd ..
 systemctl reload nginx
 ```
 
+### Atualizar sem derrubar
+
+O `up -d --build` acima apaga `frontend/dist` durante o build (tela branca por alguns
+segundos) e só troca o container depois de buildar a imagem. Para minimizar a janela:
+
+```bash
+cd /var/www/maismoney-inbox
+git pull
+
+# Backend: builda a imagem nova com o antigo ainda no ar; a troca leva poucos segundos.
+# Meta e Evolution reenviam webhooks que falharem nesse intervalo.
+docker compose -f docker-compose.prod.yml build backend
+docker compose -f docker-compose.prod.yml up -d --no-deps backend
+
+# Frontend: builda numa pasta separada e troca de uma vez.
+cd frontend && npm install && npx vite build --outDir dist-novo --emptyOutDir \
+  && mv dist dist-antigo && mv dist-novo dist && rm -rf dist-antigo && cd ..
+```
+
+### Token do webhook Evolution (`EVOLUTION_WEBHOOK_TOKEN`)
+
+Sem a variável, o webhook aceita qualquer chamada (modo de transição, com aviso no
+log). Para ativar sem recusar nenhuma mensagem, nesta ordem:
+
+```bash
+TOKEN=$(openssl rand -hex 32)
+
+# 1. Reaponta o webhook das instâncias já com o token. O backend ainda aceita sem ele.
+docker compose -f docker-compose.prod.yml exec -e EVOLUTION_WEBHOOK_TOKEN=$TOKEN \
+  backend node dist/scripts/sincronizarWebhooksEvolution.js
+
+# 2. Só se o passo 1 mostrar todas as instâncias OK: grava e passa a exigir o token.
+echo "EVOLUTION_WEBHOOK_TOKEN=$TOKEN" >> backend/.env
+docker compose -f docker-compose.prod.yml up -d --no-deps backend
+
+# 3. Mande uma mensagem de teste pro número de atendimento e confira que chega.
+```
+
 ## Segurança — revisão feita antes do deploy (2026-08-14)
 
 Revisei o código em busca de vulnerabilidades antes de liberar o deploy. Corrigidos direto no código: path traversal no upload de mídia (usuário conseguia escrever arquivo fora de `uploads/` via `conversaId` malicioso), sessão de usuário desativado/rebaixado que continuava válida até o token expirar (até 8h), verificação de assinatura do webhook Meta que "falhava aberta" quando `META_APP_SECRET` não estava configurado, reuso do `JWT_SECRET` como chave de assinatura de mídia, e falta de rate limit geral na API.

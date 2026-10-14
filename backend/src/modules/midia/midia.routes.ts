@@ -16,16 +16,21 @@ router.get(
     const { mensagemId } = req.params;
     const { exp, sig } = req.query;
 
-    let autorizado =
+    // URL assinada = Meta/Evolution buscando a mídia pra entregar ao cliente.
+    const viaAssinatura =
       typeof exp === "string" && typeof sig === "string" && validarAssinaturaMidia(mensagemId, Number(exp), sig);
+    let autorizado = viaAssinatura;
 
     if (!autorizado) {
       const header = req.headers.authorization;
       const token = header?.startsWith("Bearer ") ? header.slice("Bearer ".length) : undefined;
       if (token) {
         try {
-          jwt.verify(token, env.JWT_SECRET);
-          autorizado = true;
+          const payload = jwt.verify(token, env.JWT_SECRET) as { sub?: string };
+          // Mesma regra do middleware authenticate: usuário desativado perde o acesso
+          // na hora, não só quando o token expirar.
+          const usuario = payload.sub ? await prisma.usuario.findUnique({ where: { id: payload.sub } }) : null;
+          autorizado = Boolean(usuario?.ativo);
         } catch {
           autorizado = false;
         }
@@ -53,6 +58,23 @@ router.get(
       const buffer = await sharp(absPath).flatten({ background: "#ffffff" }).jpeg({ quality: 92 }).toBuffer();
       res.setHeader("Content-Disposition", `attachment; filename="${mensagemId}.jpg"`);
       res.type("image/jpeg").send(buffer);
+      return;
+    }
+
+    // Documento mandado pelo cliente pode ser qualquer coisa (ex.: um .html com
+    // script). Servido com o tipo original, abrir no navegador rodaria o script na
+    // origem do app e roubaria o token do operador — então, pro navegador, só
+    // imagem/áudio/vídeo saem com o tipo real; o resto sai como download binário.
+    // SVG é imagem, mas pode carregar script, então entra na regra do download.
+    // Meta/Evolution (URL assinada) continuam recebendo o tipo real, que elas usam
+    // pra validar o anexo — o sandbox impede script se alguém abrir esse link.
+    res.setHeader("Content-Security-Policy", "sandbox");
+    const tipo = mensagem.tipoMidia ?? "";
+    const exibivel = /^(image|audio|video)\//.test(tipo) && !tipo.startsWith("image/svg");
+    if (!exibivel && !viaAssinatura) {
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader("Content-Disposition", `attachment; filename="${mensagemId}${path.extname(absPath)}"`);
+      fs.createReadStream(absPath).pipe(res);
       return;
     }
 

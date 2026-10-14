@@ -123,17 +123,32 @@ export async function statusInstanciaEvolution(instanceName: string) {
 // Cria a instância no Evolution API já apontando o webhook pro nosso backend. Sem
 // isso a instância existe mas as mensagens recebidas não chegam em lugar nenhum —
 // só os dois eventos que o receptor em webhooks/evolution.routes.ts realmente trata.
+// Token vai na URL e no header — ver middleware/verifyEvolutionToken.ts.
+function configWebhookEvolution() {
+  const token = env.EVOLUTION_WEBHOOK_TOKEN;
+  return {
+    url: `${env.PUBLIC_API_URL}/webhooks/evolution${token ? `?token=${encodeURIComponent(token)}` : ""}`,
+    ...(token ? { headers: { "x-webhook-token": token } } : {}),
+    byEvents: false,
+    base64: true,
+    events: ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
+  };
+}
+
 export async function criarInstanciaEvolution(instanceName: string) {
   const { data } = await client.post("/instance/create", {
     instanceName,
     integration: "WHATSAPP-BAILEYS",
     qrcode: true,
-    webhook: {
-      url: `${env.PUBLIC_API_URL}/webhooks/evolution`,
-      byEvents: false,
-      base64: true,
-      events: ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
-    },
+    webhook: configWebhookEvolution(),
+  });
+  return data;
+}
+
+// Reaponta o webhook de uma instância já existente (ex.: depois de trocar o token).
+export async function configurarWebhookEvolution(instanceName: string) {
+  const { data } = await client.post(`/webhook/set/${instanceName}`, {
+    webhook: { enabled: true, ...configWebhookEvolution() },
   });
   return data;
 }

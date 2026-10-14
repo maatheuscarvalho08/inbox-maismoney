@@ -6,6 +6,7 @@ import { prisma } from "../../db/prisma.js";
 import { authenticate, requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { upload } from "../../middleware/upload.js";
+import { desconectarUsuario } from "../../ws/socket.js";
 
 const router = Router();
 
@@ -166,6 +167,7 @@ router.patch(
     const data = senha ? { ...resto, senhaHash: await bcrypt.hash(senha, 10) } : resto;
 
     const usuario = await prisma.usuario.update({ where: { id: req.params.id }, data, select: SELECT_PUBLICO });
+    if (!usuario.ativo) desconectarUsuario(usuario.id);
     res.json({ usuario });
   }),
 );

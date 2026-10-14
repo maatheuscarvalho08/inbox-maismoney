@@ -12,6 +12,9 @@ const envSchema = z.object({
   // Evolution API (self-hosted) — servidor único, instâncias identificadas por nome
   EVOLUTION_API_URL: z.string().default(""),
   EVOLUTION_API_KEY: z.string().default(""),
+  // Segredo que a Evolution manda de volta em todo webhook — sem ele qualquer um na
+  // internet conseguia injetar mensagens falsas em /api/webhooks/evolution.
+  EVOLUTION_WEBHOOK_TOKEN: z.string().default(""),
 
   // Meta Cloud API (oficial)
   META_ACCESS_TOKEN: z.string().default(""),

@@ -53,14 +53,15 @@ export function MidiaMensagem({ mensagemId, tipoMidia }: { mensagemId: string; t
   }
 
   return (
+    // download em vez de abrir em nova aba: o blob herda a origem do app, e um
+    // documento malicioso do cliente (ex.: .html) rodaria script com acesso ao token.
     <a
       href={url}
-      target="_blank"
-      rel="noreferrer"
+      download
       className="flex items-center gap-2 rounded-md border border-border bg-bg/40 px-3 py-2 text-xs text-white hover:border-primary"
     >
       <FileText size={14} />
-      Abrir arquivo
+      Baixar arquivo
     </a>
   );
 }
