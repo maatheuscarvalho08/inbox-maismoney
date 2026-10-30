@@ -9,7 +9,13 @@ import { env } from "../../config/env.js";
 import { assinarMidia } from "../../lib/signedUrl.js";
 import { criarMensagem, listMensagensPorConversa } from "./mensagens.service.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
-import { editarMensagemEvolution, enviarMidiaEvolution, enviarTextoEvolution } from "../../integrations/evolutionApi.js";
+import type { Mensagem, Prisma } from "@prisma/client";
+import {
+  editarMensagemEvolution,
+  enviarMidiaEvolution,
+  enviarTextoEvolution,
+  mensagemErroEvolution,
+} from "../../integrations/evolutionApi.js";
 import { enviarMidiaMeta, enviarTextoMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
 import { converterParaOgg, precisaConverterAudio } from "../../lib/audioConvert.js";
 
@@ -23,6 +29,84 @@ function tipoMidiaWhatsapp(mimetype: string): TipoMidiaWhatsapp {
   if (mimetype.startsWith("audio/")) return "audio";
   if (mimetype.startsWith("video/")) return "video";
   return "document";
+}
+
+type ConversaComEnvio = Prisma.ConversaGetPayload<{ include: { contato: true; instancia: true } }>;
+
+// Manda pro WhatsApp uma mensagem de operador já salva no banco e grava o
+// resultado nela. Usado no envio normal e no botão "Reenviar".
+async function entregarMensagem(
+  mensagem: Mensagem,
+  conversa: ConversaComEnvio,
+  original: Mensagem | null,
+  opts: { filename?: string; voiceNote?: boolean } = {},
+) {
+  const { instancia, contato } = conversa;
+  const texto = mensagem.conteudoTexto ?? undefined;
+  let entregue = false;
+  let erroEntrega: string | undefined;
+  let idEnvio: string | undefined;
+
+  // Só dá pra citar se a original tiver o id que o provedor reconhece — mensagem
+  // recém-criada por um operador sem confirmação de envio ainda não tem isso.
+  const citacaoEvolution =
+    original?.externalId
+      ? { externalId: original.externalId, fromMe: original.remetenteTipo === "operador", conteudoTexto: original.conteudoTexto }
+      : undefined;
+  const citacaoMetaId = original?.externalId ?? undefined;
+
+  try {
+    if (mensagem.midiaPath && mensagem.tipoMidia) {
+      // Mídia (e legenda, se houver) viajam juntas numa mensagem só — igual ao
+      // comportamento normal do WhatsApp ao anexar arquivo com texto.
+      const tipo = tipoMidiaWhatsapp(mensagem.tipoMidia);
+      const { exp, sig } = assinarMidia(mensagem.id, 600);
+      const link = `${env.PUBLIC_API_URL}/midia/${mensagem.id}?exp=${exp}&sig=${sig}`;
+
+      if (instancia.tipoConexao === "evolution" && instancia.evolutionInstanceId) {
+        idEnvio = await enviarMidiaEvolution(instancia.evolutionInstanceId, contato.numeroWhatsapp, link, tipo, texto, citacaoEvolution);
+        entregue = true;
+      } else if (instancia.tipoConexao === "meta_cloud" && instancia.metaPhoneNumberId) {
+        idEnvio = await enviarMidiaMeta(instancia.metaPhoneNumberId, contato.numeroWhatsapp, tipo, link, {
+          caption: texto,
+          filename: opts.filename ?? path.basename(mensagem.midiaPath),
+          voiceNote: opts.voiceNote,
+          contextMessageId: citacaoMetaId,
+        });
+        entregue = true;
+      }
+    } else if (texto) {
+      if (instancia.tipoConexao === "evolution" && instancia.evolutionInstanceId) {
+        idEnvio = await enviarTextoEvolution(instancia.evolutionInstanceId, contato.numeroWhatsapp, texto, citacaoEvolution);
+        entregue = true;
+      } else if (instancia.tipoConexao === "meta_cloud" && instancia.metaPhoneNumberId) {
+        idEnvio = await enviarTextoMeta(instancia.metaPhoneNumberId, contato.numeroWhatsapp, texto, citacaoMetaId);
+        entregue = true;
+      }
+    }
+  } catch (err) {
+    erroEntrega = instancia.tipoConexao === "evolution" ? mensagemErroEvolution(err) : mensagemErroMeta(err);
+    console.error("Falha ao entregar mensagem via WhatsApp:", erroEntrega);
+  }
+
+  // Guarda o wamid/key.id de retorno como externalId da própria mensagem — é isso que
+  // o webhook "statuses" da Meta usa pra dizer "essa mensagem foi entregue/lida".
+  // O motivo da falha fica salvo pro operador ver no ícone da mensagem.
+  if (idEnvio || erroEntrega) {
+    await prisma.mensagem.update({
+      where: { id: mensagem.id },
+      data: {
+        externalId: idEnvio ?? undefined,
+        statusEntrega: idEnvio ? "enviado" : "falhou",
+        erroEntrega: idEnvio ? null : erroEntrega,
+      },
+    });
+    mensagem.externalId = idEnvio ?? null;
+    mensagem.statusEntrega = idEnvio ? "enviado" : "falhou";
+    mensagem.erroEntrega = idEnvio ? null : erroEntrega ?? null;
+  }
+
+  return { entregue, erroEntrega };
 }
 
 router.get(
@@ -102,65 +186,10 @@ router.post(
       return res.status(500).json({ error: "Erro inesperado ao criar mensagem" });
     }
 
-    let entregue = false;
-    let erroEntrega: string | undefined;
-    let idEnvio: string | undefined;
-
-    // Só dá pra citar se a original tiver o id que o provedor reconhece — mensagem
-    // recém-criada por um operador sem confirmação de envio ainda não tem isso.
-    const citacaoEvolution =
-      original?.externalId
-        ? { externalId: original.externalId, fromMe: original.remetenteTipo === "operador", conteudoTexto: original.conteudoTexto }
-        : undefined;
-    const citacaoMetaId = original?.externalId ?? undefined;
-
-    try {
-      if (req.file) {
-        // Mídia (e legenda, se houver) viajam juntas numa mensagem só — igual ao
-        // comportamento normal do WhatsApp ao anexar arquivo com texto.
-        const tipo = tipoMidiaWhatsapp(req.file.mimetype);
-        const { exp, sig } = assinarMidia(mensagem.id, 600);
-        const link = `${env.PUBLIC_API_URL}/midia/${mensagem.id}?exp=${exp}&sig=${sig}`;
-
-        if (conversa.instancia.tipoConexao === "evolution" && conversa.instancia.evolutionInstanceId) {
-          idEnvio = await enviarMidiaEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, link, tipo, conteudoTexto, citacaoEvolution);
-          entregue = true;
-        } else if (conversa.instancia.tipoConexao === "meta_cloud" && conversa.instancia.metaPhoneNumberId) {
-          idEnvio = await enviarMidiaMeta(conversa.instancia.metaPhoneNumberId, conversa.contato.numeroWhatsapp, tipo, link, {
-            caption: conteudoTexto,
-            filename: req.file.originalname,
-            voiceNote: audioGravado,
-            contextMessageId: citacaoMetaId,
-          });
-          entregue = true;
-        }
-      } else if (conteudoTexto) {
-        if (conversa.instancia.tipoConexao === "evolution" && conversa.instancia.evolutionInstanceId) {
-          idEnvio = await enviarTextoEvolution(conversa.instancia.evolutionInstanceId, conversa.contato.numeroWhatsapp, conteudoTexto, citacaoEvolution);
-          entregue = true;
-        } else if (conversa.instancia.tipoConexao === "meta_cloud" && conversa.instancia.metaPhoneNumberId) {
-          idEnvio = await enviarTextoMeta(conversa.instancia.metaPhoneNumberId, conversa.contato.numeroWhatsapp, conteudoTexto, citacaoMetaId);
-          entregue = true;
-        }
-      }
-    } catch (err) {
-      erroEntrega = mensagemErroMeta(err);
-      console.error("Falha ao entregar mensagem via WhatsApp:", erroEntrega);
-    }
-
-    // Guarda o wamid/key.id de retorno como externalId da própria mensagem — é isso que
-    // o webhook "statuses" da Meta usa pra dizer "essa mensagem foi entregue/lida".
-    if (idEnvio || erroEntrega) {
-      await prisma.mensagem.update({
-        where: { id: mensagem.id },
-        data: {
-          externalId: idEnvio ?? undefined,
-          statusEntrega: idEnvio ? "enviado" : "falhou",
-        },
-      });
-      mensagem.externalId = idEnvio ?? null;
-      mensagem.statusEntrega = idEnvio ? "enviado" : "falhou";
-    }
+    const { entregue, erroEntrega } = await entregarMensagem(mensagem, conversa, original, {
+      filename: req.file?.originalname,
+      voiceNote: audioGravado,
+    });
 
     const conversaAtualizada = await prisma.conversa.findUnique({
       where: { id: conversaId },
@@ -177,6 +206,40 @@ router.post(
     }
 
     res.status(201).json({ mensagem, entregue, erroEntrega });
+  }),
+);
+
+// Tenta de novo a mesma mensagem que falhou, sem criar outra no histórico.
+router.post(
+  "/:id/reenviar",
+  asyncHandler(async (req, res) => {
+    const mensagem = await prisma.mensagem.findUnique({
+      where: { id: req.params.id },
+      include: {
+        conversa: { include: { contato: true, instancia: true } },
+        operador: { select: { id: true, nome: true, fotoPath: true } },
+        respondeA: { select: { id: true, conteudoTexto: true, tipoMidia: true, remetenteTipo: true } },
+      },
+    });
+    if (!mensagem) {
+      return res.status(404).json({ error: "Mensagem não encontrada" });
+    }
+    if (mensagem.remetenteTipo !== "operador" || mensagem.statusEntrega !== "falhou") {
+      return res.status(400).json({ error: "Só mensagens que falharam podem ser reenviadas" });
+    }
+    if (mensagem.midiaDeleted) {
+      return res.status(400).json({ error: "A mídia dessa mensagem já foi removida" });
+    }
+
+    const { conversa, ...resto } = mensagem;
+    const original = mensagem.respondeAId
+      ? await prisma.mensagem.findUnique({ where: { id: mensagem.respondeAId } })
+      : null;
+
+    const { erroEntrega } = await entregarMensagem(resto, conversa, original);
+
+    emitNovaMensagem(resto);
+    res.json({ mensagem: resto, erroEntrega });
   }),
 );
 
@@ -219,7 +282,7 @@ router.patch(
         parsed.data.conteudoTexto,
       );
     } catch (err) {
-      return res.status(502).json({ error: "Não foi possível editar no WhatsApp", detalhe: mensagemErroMeta(err) });
+      return res.status(502).json({ error: "Não foi possível editar no WhatsApp", detalhe: mensagemErroEvolution(err) });
     }
 
     const atualizada = await prisma.mensagem.update({

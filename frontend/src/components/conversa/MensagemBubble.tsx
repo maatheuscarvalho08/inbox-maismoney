@@ -60,6 +60,23 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
     }
   }
 
+  const [reenviando, setReenviando] = useState(false);
+  const [erroReenvio, setErroReenvio] = useState<string | null>(null);
+
+  async function reenviar() {
+    setReenviando(true);
+    setErroReenvio(null);
+    try {
+      const res = await api.post<{ mensagem: Mensagem; erroEntrega?: string }>(`/mensagens/${mensagem.id}/reenviar`, {});
+      onEditada?.(res.mensagem);
+      if (res.erroEntrega) setErroReenvio("Falhou de novo");
+    } catch (err) {
+      setErroReenvio(err instanceof ApiError ? err.message : "Não foi possível reenviar");
+    } finally {
+      setReenviando(false);
+    }
+  }
+
   const iconesAcao = (
     <div className="flex shrink-0 items-center gap-1.5 opacity-0 group-hover:opacity-100">
       {onResponder && (
@@ -152,8 +169,21 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
         <div className="mt-1 flex items-center justify-end gap-1">
           {mensagem.editadaEm && <p className="text-[10px] italic text-muted">editada</p>}
           <p className="text-[10px] text-muted">{formatarHorario(mensagem.timestamp)}</p>
-          {doOperador && <StatusEntregaIcone status={mensagem.statusEntrega} />}
+          {doOperador && (
+            <span title={mensagem.statusEntrega === "falhou" ? `Não enviada: ${mensagem.erroEntrega ?? "motivo não registrado"}` : undefined}>
+              <StatusEntregaIcone status={mensagem.statusEntrega} />
+            </span>
+          )}
         </div>
+
+        {doOperador && mensagem.statusEntrega === "falhou" && (
+          <div className="mt-1 flex items-center justify-end gap-2 text-[11px]">
+            {erroReenvio && <span className="text-primary">{erroReenvio}</span>}
+            <button onClick={reenviar} disabled={reenviando} className="font-medium text-primary hover:underline disabled:opacity-50">
+              {reenviando ? "Reenviando..." : "Reenviar"}
+            </button>
+          </div>
+        )}
       </div>
 
       {!doOperador && iconesAcao}
