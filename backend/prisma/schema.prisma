@@ -44,6 +44,21 @@ enum EtapaFunil {
   proposta_paga
 }
 
+enum ResultadoSimulacao {
+  com_saldo
+  sem_saldo
+  erro
+}
+
+enum StatusProposta {
+  digitada
+  em_analise
+  aprovada
+  paga
+  recusada
+  cancelada
+}
+
 enum StatusConversa {
   aberta
   em_atendimento
@@ -95,6 +110,8 @@ model Usuario {
   mensagens  Mensagem[]  @relation("OperadorMensagens")
   campanhas  CampanhaDiscadora[]
   visualizacoes ConversaVisualizacao[]
+  propostas  Proposta[] @relation("PropostasOperador")
+  simulacoes Simulacao[] @relation("SimulacoesOperador")
 
   @@map("usuarios")
 }
@@ -183,8 +200,52 @@ model Conversa {
   etiquetas     ConversaEtiqueta[]
   visualizacoes ConversaVisualizacao[]
   eventosFunil  FunilEvento[]
+  propostas     Proposta[]
+  simulacoes    Simulacao[]
 
   @@map("conversas")
+}
+
+model Simulacao {
+  id            String             @id @default(uuid())
+  conversaId    String             @map("conversa_id")
+  operadorId    String?            @map("operador_id")
+  banco         String
+  convenio      Convenio?
+  resultado     ResultadoSimulacao
+  valorCentavos Int?               @map("valor_centavos")
+  motivo        String?
+  createdAt     DateTime           @default(now()) @map("created_at")
+
+  conversa      Conversa           @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  operador      Usuario?           @relation("SimulacoesOperador", fields: [operadorId], references: [id])
+
+  @@index([conversaId])
+  @@index([createdAt])
+  @@map("simulacoes")
+}
+
+model Proposta {
+  id              String         @id @default(uuid())
+  conversaId      String         @map("conversa_id")
+  operadorId      String?        @map("operador_id")
+  banco           String
+  convenio        Convenio?
+  valorCentavos   Int            @map("valor_centavos")
+  parcelaCentavos Int?           @map("parcela_centavos")
+  prazoMeses      Int?           @map("prazo_meses")
+  numeroContrato  String?        @map("numero_contrato")
+  status          StatusProposta @default(digitada)
+  motivoRecusa    String?        @map("motivo_recusa")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  conversa        Conversa       @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  operador        Usuario?       @relation("PropostasOperador", fields: [operadorId], references: [id])
+
+  @@index([conversaId])
+  @@index([status, createdAt])
+  @@map("propostas")
 }
 
 // Quando cada conversa chegou em cada etapa do funil.

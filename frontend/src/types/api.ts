@@ -5,6 +5,8 @@ export type StatusConversa = "aberta" | "em_atendimento" | "aguardando" | "encer
 export type RemetenteTipo = "cliente" | "operador";
 export type Convenio = "inss" | "clt" | "siape" | "servidor_prefeitura" | "marinha" | "militar" | "conta_de_luz" | "loas" | "credito_pessoal" | "fgts";
 export type EtapaFunil = "lead" | "dados_coletados" | "simulacao" | "simulacao_com_saldo" | "proposta_digitada" | "proposta_paga";
+export type ResultadoSimulacao = "com_saldo" | "sem_saldo" | "erro";
+export type StatusProposta = "digitada" | "em_analise" | "aprovada" | "paga" | "recusada" | "cancelada";
 export type StatusEntrega = "enviado" | "entregue" | "lido" | "falhou";
 
 export interface Usuario {
@@ -65,6 +67,35 @@ export interface Mensagem {
   timestamp: string;
   createdAt: string;
   operador?: { id: string; nome: string; fotoPath: string | null } | null;
+}
+
+export interface Simulacao {
+  id: string;
+  conversaId: string;
+  banco: string;
+  convenio: Convenio | null;
+  resultado: ResultadoSimulacao;
+  valorCentavos: number | null;
+  motivo: string | null;
+  createdAt: string;
+  conversa: { id: string; contato: { id: string; nome: string | null; numeroWhatsapp: string } };
+  operador: { id: string; nome: string } | null;
+}
+
+export interface Proposta {
+  id: string;
+  conversaId: string;
+  banco: string;
+  convenio: Convenio | null;
+  valorCentavos: number;
+  parcelaCentavos: number | null;
+  prazoMeses: number | null;
+  numeroContrato: string | null;
+  status: StatusProposta;
+  motivoRecusa: string | null;
+  createdAt: string;
+  conversa: { id: string; contato: { id: string; nome: string | null; numeroWhatsapp: string } };
+  operador: { id: string; nome: string } | null;
 }
 
 export interface Etiqueta {

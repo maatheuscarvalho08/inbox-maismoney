@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../lib/api";
+import { api, ORIGIN_URL } from "../lib/api";
+import { Download } from "../components/icones";
 import { PageHeader } from "../components/PageHeader";
 import { Select } from "../components/Select";
 import { LABEL_ETAPA, OPCOES_CONVENIO } from "../lib/funil";
@@ -40,12 +41,37 @@ export function FunilPage() {
   const [dias, setDias] = useState(30);
   const [convenio, setConvenio] = useState("");
   const [etapas, setEtapas] = useState<LinhaFunil[] | null>(null);
+  const [exportando, setExportando] = useState(false);
+  const [erroExportar, setErroExportar] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams({ dias: String(dias) });
     if (convenio) params.set("convenio", convenio);
     api.get<{ etapas: LinhaFunil[] }>(`/funil?${params.toString()}`).then((res) => setEtapas(res.etapas));
   }, [dias, convenio]);
+
+  async function exportar() {
+    setExportando(true);
+    setErroExportar(null);
+    try {
+      const params = new URLSearchParams({ dias: String(dias) });
+      if (convenio) params.set("convenio", convenio);
+      const res = await fetch(`${ORIGIN_URL}/api/conversas/exportar?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (!res.ok) throw new Error();
+      const url = URL.createObjectURL(await res.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `atendimentos-${dias}-dias.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setErroExportar("Não foi possível exportar. Tente novamente.");
+    } finally {
+      setExportando(false);
+    }
+  }
 
   // A etapa em que mais leads se perdem é a primeira coisa que vale olhar.
   const maiorPerda = useMemo(() => {
@@ -60,6 +86,14 @@ export function FunilPage() {
         subtitle="Até onde chegam os leads que entraram no período"
         right={
           <div className="flex items-center gap-2">
+            <button
+              onClick={exportar}
+              disabled={exportando}
+              className="flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-semibold text-ink hover:border-accent disabled:opacity-50"
+            >
+              <Download size={14} />
+              {exportando ? "Exportando..." : "Exportar atendimentos"}
+            </button>
             <Select
               value={convenio}
               onChange={setConvenio}
@@ -81,6 +115,7 @@ export function FunilPage() {
       />
 
       <div className="p-8">
+        {erroExportar && <p role="alert" className="mb-4 text-sm font-medium text-accent">{erroExportar}</p>}
         {!etapas && <p className="text-sm text-muted">Carregando...</p>}
 
         {etapas && etapas[0].total === 0 && (

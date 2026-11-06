@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate } from "../../middleware/auth.js";
+import { authenticate, requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { prisma } from "../../db/prisma.js";
 import { findOrCreateContato } from "../contatos/contatos.service.js";
@@ -34,6 +34,56 @@ router.get(
       contarAbas(),
     ]);
     res.json({ conversas, contagens });
+  }),
+);
+
+const CONVENIOS = ["inss", "clt", "siape", "servidor_prefeitura", "marinha", "militar", "conta_de_luz", "loas", "credito_pessoal", "fgts"] as const;
+
+// Aspas para a planilha, e apóstrofo antes de =, +, - e @ para o Excel não executar
+// como fórmula um nome digitado pelo próprio cliente no WhatsApp.
+function celulaCsv(valor: string | null | undefined) {
+  const texto = valor ?? "";
+  const seguro = /^[=+\-@\t\r]/.test(texto) ? `'${texto}` : texto;
+  return `"${seguro.replace(/"/g, '""')}"`;
+}
+
+// Sem CPF de propósito: planilha circula fora do sistema. Precisa vir antes de /:id.
+router.get(
+  "/exportar",
+  requireRole("admin"),
+  asyncHandler(async (req, res) => {
+    const dias = z.coerce.number().int().min(1).max(365).catch(30).parse(req.query.dias);
+    const convenio = z.enum(CONVENIOS).safeParse(req.query.convenio);
+    const conversas = await prisma.conversa.findMany({
+      where: {
+        lastMessageAt: { gte: new Date(Date.now() - dias * 24 * 60 * 60 * 1000) },
+        ...(convenio.success ? { convenio: convenio.data } : {}),
+      },
+      orderBy: { lastMessageAt: "desc" },
+      include: { contato: true, instancia: { select: { nome: true } }, operador: { select: { nome: true } } },
+    });
+
+    console.info(`Exportação de atendimentos: usuário ${req.user!.id}, ${conversas.length} linhas`);
+
+    const linhas = conversas.map((c) =>
+      [
+        c.contato.nome,
+        c.contato.numeroWhatsapp,
+        c.instancia.nome,
+        c.convenio,
+        c.etapaFunil,
+        c.status,
+        c.operador?.nome,
+        c.lastMessageAt.toISOString(),
+      ]
+        .map(celulaCsv)
+        .join(";"),
+    );
+    const cabecalho = "Nome;WhatsApp;Número;Convênio;Etapa;Status;Responsável;Última mensagem";
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="atendimentos-${dias}-dias.csv"`);
+    // BOM para o Excel abrir os acentos corretamente.
+    res.send(`\uFEFF${[cabecalho, ...linhas].join("\r\n")}`);
   }),
 );
 

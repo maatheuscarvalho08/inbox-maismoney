@@ -16,6 +16,8 @@ const ConversasVazio = lazy(() => import("./pages/ConversasVazio").then((m) => (
 const ConversaDetalhePage = lazy(() =>
   import("./pages/ConversaDetalhePage").then((m) => ({ default: m.ConversaDetalhePage })),
 );
+const SimulacoesPage = lazy(() => import("./pages/SimulacoesPage").then((m) => ({ default: m.SimulacoesPage })));
+const PropostasPage = lazy(() => import("./pages/PropostasPage").then((m) => ({ default: m.PropostasPage })));
 const FunilPage = lazy(() => import("./pages/FunilPage").then((m) => ({ default: m.FunilPage })));
 const NumerosPage = lazy(() => import("./pages/NumerosPage").then((m) => ({ default: m.NumerosPage })));
 const UsuariosPage = lazy(() => import("./pages/UsuariosPage").then((m) => ({ default: m.UsuariosPage })));
@@ -68,6 +70,8 @@ export default function App() {
               <Route index element={pagina(ConversasVazio)} />
               <Route path=":id" element={pagina(ConversaDetalhePage)} />
             </Route>
+            <Route path="/simulacoes" element={pagina(SimulacoesPage)} />
+            <Route path="/propostas" element={pagina(PropostasPage)} />
             <Route path="/disparos" element={pagina(DisparosPage)} />
             <Route path="/discadora" element={pagina(DiscadoraPage)} />
             <Route path="/discadora/nova" element={pagina(DiscadoraNovaPage)} />

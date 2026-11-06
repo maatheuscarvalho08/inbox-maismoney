@@ -3,6 +3,8 @@ import { Filter, X, Tag as TagIcon, Smartphone, User } from "../icones";
 import { api, ApiError } from "../../lib/api";
 import { OPCOES_CONVENIO, OPCOES_ETAPA } from "../../lib/funil";
 import { Select } from "../Select";
+import { PropostasDaConversa } from "./PropostasDaConversa";
+import { SimulacoesDaConversa } from "./SimulacoesDaConversa";
 import type { Conversa, Contato, Etiqueta } from "../../types/api";
 
 function formatarCpf(cpf: string) {
@@ -120,6 +122,10 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
             />
           </div>
         </div>
+
+        <SimulacoesDaConversa conversa={conversa} onConversaAtualizada={onConversaAtualizada} />
+
+        <PropostasDaConversa conversa={conversa} />
 
         <div>
           <div className="mb-2 flex items-center justify-between">

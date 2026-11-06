@@ -23,6 +23,7 @@ export const ArrowLeft = criar(P.ArrowLeft, true);
 export const ArrowUp = criar(P.ArrowUp, true);
 export const BarChart2 = criar(P.ChartBar);
 export const Bot = criar(P.Robot);
+export const Calculator = criar(P.Calculator);
 export const Camera = criar(P.Camera);
 export const Check = criar(P.Check, true);
 export const CheckCheck = criar(P.Checks, true);

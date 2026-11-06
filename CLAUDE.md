@@ -167,6 +167,9 @@ Sobre o laranja, use índigo: branco dá só 2,8:1. Índigo puro não serve como
 /disparos               → Módulo de disparos (Meta Cloud API, seção 6.4)
 /numeros                → Status das instâncias WhatsApp (admin only)
 /metricas               → Dashboard de métricas detalhadas (admin only)
+/funil                  → Funil de leads por etapa e convênio (admin only)
+/simulacoes             → Simulações por banco e motivos de recusa
+/propostas              → Propostas, da digitação ao pagamento
 /usuarios               → Gestão de operadores (admin only)
 /configuracoes          → Configurações gerais (admin only)
 ```

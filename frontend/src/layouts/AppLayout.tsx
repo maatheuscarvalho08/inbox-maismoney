@@ -7,10 +7,11 @@ import {
   Send,
   Phone,
   BarChart2,
+  Calculator,
+  FileText,
   Filter,
   Users,
   Settings,
-  Search,
   type Icone,
 } from "../components/icones";
 import { useAuth } from "../lib/auth";
@@ -28,6 +29,8 @@ const NAV_GROUPS: { label: string; adminOnly?: boolean; items: NavItem[] }[] = [
     items: [
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { to: "/conversas", label: "Conversas", icon: MessageSquare },
+      { to: "/simulacoes", label: "Simulações", icon: Calculator },
+      { to: "/propostas", label: "Propostas", icon: FileText },
       { to: "/disparos", label: "Disparos", icon: Send },
       { to: "/discadora", label: "Discadora", icon: Phone },
       { to: "/configuracoes", label: "Configurações", icon: Settings },
@@ -65,15 +68,7 @@ export function AppLayout() {
           <LogoMaisMoney variante="branca" className="block w-32" />
         </div>
 
-        <div className="px-4">
-          <div className="flex items-center gap-2 rounded-md border border-ink/10 bg-bg/40 px-3 py-2">
-            <Search size={14} className="text-muted" />
-            <span className="flex-1 text-sm text-muted">Buscar</span>
-            <kbd className="rounded border border-ink/10 px-1.5 py-0.5 text-[10px] text-muted">⌘K</kbd>
-          </div>
-        </div>
-
-        <nav ref={navRef} className="relative mx-3 mt-6 flex-1 space-y-6 overflow-y-auto">
+        <nav ref={navRef} className="relative mx-3 mt-2 flex-1 space-y-6 overflow-y-auto">
           {pilula && (
             <span
               aria-hidden="true"
