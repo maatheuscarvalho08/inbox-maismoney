@@ -221,6 +221,44 @@ docker compose -f docker-compose.prod.yml up -d --no-deps backend
 # 3. Mande uma mensagem de teste pro número de atendimento e confira que chega.
 ```
 
+## Ambiente de preview
+
+Cópia separada do sistema para testar mudanças sem afetar o atendimento. Tem clone,
+containers, banco, Redis, Evolution, frontend e subdomínio próprios. Use só o número de
+teste e deixe os campos `META_*` vazios: um número ou app da Meta manda webhook para um
+único destino, então usar os reais no preview desviaria mensagens da produção.
+
+Pré-requisito: registro **A** do subdomínio apontando para o IP da VPS.
+
+```bash
+git clone -b preview SEU_REPOSITORIO /var/www/maismoney-preview
+cd /var/www/maismoney-preview
+cp .env.example .env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+```
+
+Preencha os arquivos como no passo 4, com **senhas e chaves novas**, nunca as da produção,
+e com as URLs do subdomínio em `EVOLUTION_SERVER_URL`, `CORS_ORIGIN`, `PUBLIC_API_URL` e
+`VITE_API_URL`. Depois:
+
+```bash
+# -p é obrigatório: sem ele, o Compose pode mexer nos containers da produção.
+docker compose -p maismoney-preview -f docker-compose.preview.yml up -d --build
+docker compose -p maismoney-preview -f docker-compose.preview.yml exec backend npm run seed
+
+cd frontend && npm install && npm run build && cd ..
+
+cp deploy/nginx.preview.conf /etc/nginx/sites-available/maismoney-preview
+nano /etc/nginx/sites-available/maismoney-preview   # troque SEU_DOMINIO_PREVIEW
+ln -s /etc/nginx/sites-available/maismoney-preview /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+certbot --nginx -d SEU_DOMINIO_PREVIEW
+```
+
+Confira com `docker compose -p maismoney-preview -f docker-compose.preview.yml ps` e
+acompanhe a memória da VPS com `free -h`.
+
 ## Segurança — revisão feita antes do deploy (2026-08-14)
 
 Revisei o código em busca de vulnerabilidades antes de liberar o deploy. Corrigidos direto no código: path traversal no upload de mídia (usuário conseguia escrever arquivo fora de `uploads/` via `conversaId` malicioso), sessão de usuário desativado/rebaixado que continuava válida até o token expirar (até 8h), verificação de assinatura do webhook Meta que "falhava aberta" quando `META_APP_SECRET` não estava configurado, reuso do `JWT_SECRET` como chave de assinatura de mídia, e falta de rate limit geral na API.

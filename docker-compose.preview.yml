@@ -1,0 +1,82 @@
+# Ambiente de preview: mesma stack da produção, totalmente separada. Rode sempre em
+# outro clone do repositório e com outro nome de projeto, senão o Compose reaproveita
+# os containers e volumes da produção (ver DEPLOY.md):
+#   docker compose -p maismoney-preview -f docker-compose.preview.yml up -d --build
+#
+# Os limites de memória protegem a produção, que divide a mesma VPS.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-maismoney}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-maismoney_inbox}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./deploy/postgres-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-maismoney}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    mem_limit: 768m
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    environment:
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - backend_uploads:/app/uploads
+    ports:
+      # Porta diferente da produção (3333).
+      - "127.0.0.1:3334:3333"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    mem_limit: 256m
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Evolution própria do preview: só conecta o número de teste, nunca os de atendimento.
+  evolution-api:
+    image: evoapicloud/evolution-api:latest
+    restart: unless-stopped
+    mem_limit: 1g
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:?defina EVOLUTION_API_KEY no .env}
+      SERVER_URL: ${EVOLUTION_SERVER_URL:?defina EVOLUTION_SERVER_URL no .env}
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: "postgresql"
+      DATABASE_CONNECTION_URI: "postgresql://${POSTGRES_USER:-maismoney}:${POSTGRES_PASSWORD}@db:5432/evolution_api?schema=public"
+      CACHE_REDIS_ENABLED: "false"
+      CACHE_LOCAL_ENABLED: "true"
+    volumes:
+      - evolution_data:/evolution/instances
+    ports:
+      # Porta diferente da produção (8080).
+      - "127.0.0.1:8081:8080"
+
+volumes:
+  db_data:
+  backend_uploads:
+  evolution_data:
+  redis_data:
