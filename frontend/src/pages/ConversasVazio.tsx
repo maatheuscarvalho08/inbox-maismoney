@@ -1,4 +1,4 @@
-import { MessageSquare } from "lucide-react";
+import { MessageSquare } from "../components/icones";
 
 export function ConversasVazio() {
   return (

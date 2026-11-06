@@ -15,6 +15,7 @@ import {
   removerEtiqueta,
 } from "./conversas.service.js";
 import { emitConversaAtualizada } from "../../ws/events.js";
+import { definirEtapa } from "../funil/funil.service.js";
 
 const router = Router();
 router.use(authenticate);
@@ -93,6 +94,13 @@ const updateSchema = z.object({
   status: statusEnum.optional(),
   operadorId: z.string().uuid().nullable().optional(),
   comMaisa: z.boolean().optional(),
+  convenio: z
+    .enum(["inss", "clt", "siape", "servidor_prefeitura", "marinha", "militar", "conta_de_luz", "loas", "credito_pessoal", "fgts"])
+    .nullable()
+    .optional(),
+  etapaFunil: z
+    .enum(["lead", "dados_coletados", "simulacao", "simulacao_com_saldo", "proposta_digitada", "proposta_paga"])
+    .optional(),
 });
 
 router.patch(
@@ -103,7 +111,9 @@ router.patch(
       return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
     }
 
-    const data = { ...parsed.data };
+    const { etapaFunil, ...data } = parsed.data;
+    if (etapaFunil) await definirEtapa(req.params.id, etapaFunil);
+    if (data.convenio !== undefined) Object.assign(data, { convenioOrigem: "operador" });
     if (data.comMaisa) {
       const atual = await prisma.conversa.findUnique({ where: { id: req.params.id }, include: { instancia: true } });
       if (!atual?.instancia.maisaAtiva) {

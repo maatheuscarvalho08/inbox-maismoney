@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ChevronDown, Plus, Tag } from "lucide-react";
+import { ChevronDown, Plus, Tag } from "./icones";
 import { api, ApiError } from "../lib/api";
 import type { Etiqueta } from "../types/api";
 

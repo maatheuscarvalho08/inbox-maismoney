@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Papa from "papaparse";
-import { ArrowLeft, Plus, Send, Upload, X } from "lucide-react";
+import { ArrowLeft, Plus, Send, Upload, X } from "./icones";
 import { api, ApiError } from "../lib/api";
 import { Select } from "./Select";
 import type { Instancia, Template } from "../types/api";

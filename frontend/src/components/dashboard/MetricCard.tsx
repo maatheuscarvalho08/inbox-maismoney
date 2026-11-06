@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown } from "../icones";
 
 interface MetricCardProps {
   label: string;

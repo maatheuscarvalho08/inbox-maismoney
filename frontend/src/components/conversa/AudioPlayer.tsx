@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play } from "../icones";
 
 function formatarTempo(segundos: number) {
   if (!Number.isFinite(segundos)) return "0:00";
@@ -65,7 +65,7 @@ export function AudioPlayer({ src }: { src: string }) {
         onClick={alternar}
         className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-marca-indigo hover:opacity-90"
       >
-        {tocando ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+        {tocando ? <Pause size={14} weight="fill" /> : <Play size={14} weight="fill" className="ml-0.5" />}
       </button>
 
       <div className="flex flex-1 flex-col gap-1">

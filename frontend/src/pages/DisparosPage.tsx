@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Send, X } from "lucide-react";
+import { Plus, Send, X } from "../components/icones";
 import { api } from "../lib/api";
 import { PageHeader } from "../components/PageHeader";
 import { Modal } from "../components/Modal";

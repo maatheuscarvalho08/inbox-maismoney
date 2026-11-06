@@ -7,8 +7,48 @@ if (!/@(localhost|127\.0\.0\.1)[:/]/.test(env.DATABASE_URL)) {
   throw new Error("seedPreview só roda com banco local");
 }
 
+// Leads encerrados em dois períodos, para o funil ter o que comparar.
+async function funilFicticio(operadorId: string) {
+  const instancia = await prisma.instancia.findFirst({ where: { numero: "+55 21 90000-0002" } });
+  if (!instancia || (await prisma.funilEvento.count({ where: { etapa: "simulacao" } })) > 0) return;
+
+  const etapas = ["lead", "dados_coletados", "simulacao", "simulacao_com_saldo", "proposta_digitada", "proposta_paga"] as const;
+  // Quantos leads, de cada lote, chegam até cada etapa.
+  const lotes = [
+    { diasAtras: 10, chegam: [120, 64, 62, 5, 3, 1] },
+    { diasAtras: 40, chegam: [100, 70, 66, 6, 2, 1] },
+  ];
+  let n = 0;
+  for (const lote of lotes) {
+    const data = new Date(Date.now() - lote.diasAtras * 24 * 60 * 60 * 1000);
+    for (let i = 0; i < lote.chegam[0]; i++) {
+      n++;
+      const alcancadas = etapas.filter((_, indice) => i < lote.chegam[indice]);
+      const contato = await prisma.contato.create({
+        data: { nome: `Lead Fictício ${n}`, numeroWhatsapp: `55219100${String(10000 + n)}` },
+      });
+      await prisma.conversa.create({
+        data: {
+          instanciaId: instancia.id,
+          contatoId: contato.id,
+          operadorId,
+          status: "encerrada",
+          convenio: i % 5 === 0 ? "inss" : "clt",
+          etapaFunil: alcancadas[alcancadas.length - 1],
+          createdAt: data,
+          lastMessageAt: data,
+          eventosFunil: { create: alcancadas.map((etapa) => ({ etapa, createdAt: data })) },
+        },
+      });
+    }
+  }
+}
+
 async function main() {
   const atendente = await prisma.usuario.findFirstOrThrow({ where: { email: "barbara@preview.local" } });
+
+  await funilFicticio(atendente.id);
+  if (await prisma.instancia.findFirst({ where: { numero: "+55 21 90000-0001" } })) return;
 
   const atendimento = await prisma.instancia.create({
     data: { nome: "Atendimento", numero: "+55 21 90000-0001", tipoConexao: "evolution", evolutionInstanceId: "preview-atendimento", status: "conectado" },

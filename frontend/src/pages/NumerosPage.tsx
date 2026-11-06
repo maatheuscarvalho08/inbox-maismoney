@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Plus, Smartphone, X } from "lucide-react";
+import { Plus, Smartphone, X } from "../components/icones";
 import { api, ApiError } from "../lib/api";
 import { useSocketEvent } from "../hooks/useSocketEvent";
 import { PageHeader } from "../components/PageHeader";

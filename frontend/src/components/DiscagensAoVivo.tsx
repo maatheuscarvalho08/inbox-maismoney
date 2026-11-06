@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { PhoneCall } from "lucide-react";
+import { PhoneCall } from "./icones";
 import { api } from "../lib/api";
 import { useSocketEvent } from "../hooks/useSocketEvent";
 import type { StatusLigacao } from "../types/api";

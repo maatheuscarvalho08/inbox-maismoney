@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, type LucideIcon } from "lucide-react";
+import { ChevronDown, type Icone } from "./icones";
 
 interface FiltroDropdownProps {
   label: string;
-  icon: LucideIcon;
+  icon: Icone;
   itens: { id: string; label: string }[];
   selecionado: string | null;
   onSelecionar: (id: string | null) => void;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Reply } from "lucide-react";
+import { Pencil, Reply } from "../icones";
 import { api, ApiError } from "../../lib/api";
 import { Avatar } from "../Avatar";
 import { urlFotoOperador } from "../../lib/avatar";

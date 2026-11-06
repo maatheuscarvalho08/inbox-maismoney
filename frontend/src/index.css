@@ -82,6 +82,15 @@ body {
 .conversa-entra {
   animation: conversa-entra 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
+.funil-barra {
+  animation: funil-barra 500ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  transform-origin: left;
+}
+@keyframes funil-barra {
+  from {
+    transform: scaleX(0);
+  }
+}
 button:not(:disabled):active,
 .nav-item:active {
   transform: scale(0.98);
@@ -173,7 +182,8 @@ button:not(:disabled):active,
   .login-forma,
   .saudacao-texto,
   .pagina-entra,
-  .conversa-entra {
+  .conversa-entra,
+  .funil-barra {
     animation: none;
   }
   .nav-pilula,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Phone, Plus } from "lucide-react";
+import { Phone, Plus } from "../components/icones";
 import { api } from "../lib/api";
 import { PageHeader } from "../components/PageHeader";
 import { DiscagensAoVivo } from "../components/DiscagensAoVivo";

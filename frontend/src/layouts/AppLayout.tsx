@@ -7,18 +7,19 @@ import {
   Send,
   Phone,
   BarChart2,
+  Filter,
   Users,
   Settings,
   Search,
-  type LucideIcon,
-} from "lucide-react";
+  type Icone,
+} from "../components/icones";
 import { useAuth } from "../lib/auth";
 import { LogoMaisMoney } from "../components/LogoMaisMoney";
 
 interface NavItem {
   to: string;
   label: string;
-  icon: LucideIcon;
+  icon: Icone;
 }
 
 const NAV_GROUPS: { label: string; adminOnly?: boolean; items: NavItem[] }[] = [
@@ -37,6 +38,7 @@ const NAV_GROUPS: { label: string; adminOnly?: boolean; items: NavItem[] }[] = [
     adminOnly: true,
     items: [
       { to: "/numeros", label: "Números", icon: Smartphone },
+      { to: "/funil", label: "Funil", icon: Filter },
       { to: "/metricas", label: "Métricas", icon: BarChart2 },
       { to: "/usuarios", label: "Usuários", icon: Users },
     ],
@@ -102,7 +104,7 @@ export function AppLayout() {
                               isActive ? "bg-primary text-marca-indigo" : "bg-ink/5 text-muted"
                             }`}
                           >
-                            <Icon size={14} strokeWidth={2} />
+                            <Icon size={15} weight={isActive ? "fill" : "duotone"} />
                           </span>
                           {item.label}
                         </>

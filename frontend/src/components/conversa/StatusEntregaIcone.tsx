@@ -1,4 +1,4 @@
-import { Check, CheckCheck, Clock, TriangleAlert } from "lucide-react";
+import { Check, CheckCheck, Clock, TriangleAlert } from "../icones";
 import type { StatusEntrega } from "../../types/api";
 
 export function StatusEntregaIcone({ status }: { status: StatusEntrega | null }) {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import Papa from "papaparse";
-import { Upload, X } from "lucide-react";
+import { Upload, X } from "../components/icones";
 import { api, ApiError } from "../lib/api";
 import { PageHeader } from "../components/PageHeader";
 import { Select } from "../components/Select";

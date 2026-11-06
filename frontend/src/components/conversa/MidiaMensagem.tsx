@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText } from "../icones";
 import { baixarFotoComoJpg, carregarMidia } from "../../lib/midia";
 import { AudioPlayer } from "./AudioPlayer";
 

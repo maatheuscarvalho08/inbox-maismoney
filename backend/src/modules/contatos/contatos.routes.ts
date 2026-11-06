@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { avancarEtapa } from "../funil/funil.service.js";
 import { z } from "zod";
 import { authenticate } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
@@ -41,6 +42,16 @@ router.patch(
         ...(parsed.data.cpf !== undefined ? { cpf: parsed.data.cpf || null } : {}),
       },
     });
+
+    // CPF cadastrado é o que define "Dados coletados" no funil.
+    if (atualizado.cpf) {
+      const emAberto = await prisma.conversa.findMany({
+        where: { contatoId: atualizado.id, status: { not: "encerrada" }, etapaFunil: { not: null } },
+      });
+      for (const conversa of emAberto) {
+        await avancarEtapa(conversa.id, "dados_coletados", conversa.etapaFunil);
+      }
+    }
 
     // Um contato pode ter conversas em mais de uma instância — avisa todas por
     // socket pra quem estiver com a tela aberta ver o nome/CPF novo na hora.

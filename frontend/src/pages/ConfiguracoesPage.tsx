@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Camera } from "lucide-react";
+import { Camera } from "../components/icones";
 import { api, ApiError } from "../lib/api";
 import { useAuth, type Usuario } from "../lib/auth";
 import { PageHeader } from "../components/PageHeader";

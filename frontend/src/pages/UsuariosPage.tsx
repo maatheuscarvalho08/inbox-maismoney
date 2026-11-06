@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Plus } from "lucide-react";
+import { Plus } from "../components/icones";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { PageHeader } from "../components/PageHeader";

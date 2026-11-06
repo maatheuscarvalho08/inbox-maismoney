@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play } from "../components/icones";
 import { api, ApiError } from "../lib/api";
 import { PageHeader } from "../components/PageHeader";
 import { useSocketEvent } from "../hooks/useSocketEvent";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Bot, Check, MoreVertical, Pencil, X } from "lucide-react";
+import { Bot, Check, MoreVertical, Pencil, X } from "../components/icones";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { formatarTelefone } from "../lib/telefone";

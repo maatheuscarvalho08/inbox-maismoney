@@ -1,5 +1,6 @@
-import type { StatusConversa } from "@prisma/client";
+import type { Convenio, StatusConversa } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
+import { avancarEtapa } from "../funil/funil.service.js";
 
 const INCLUDE_PADRAO = {
   contato: true,
@@ -68,7 +69,7 @@ export async function getConversaById(id: string) {
 
 export async function atualizarConversa(
   id: string,
-  data: { status?: StatusConversa; operadorId?: string | null; comMaisa?: boolean },
+  data: { status?: StatusConversa; operadorId?: string | null; comMaisa?: boolean; convenio?: Convenio | null; convenioOrigem?: string },
 ) {
   return prisma.conversa.update({
     where: { id },
@@ -118,6 +119,8 @@ export async function marcarConversaRespondida(conversaId: string) {
     where: { id: conversaId },
     data: { respondida: true, ...(entraComMaisa ? { comMaisa: true } : {}) },
   });
+  // Cliente escreveu: a conversa passa a contar como lead no funil.
+  if (conversa) await avancarEtapa(conversaId, "lead", conversa.etapaFunil);
   await prisma.conversaVisualizacao.deleteMany({ where: { conversaId } });
 }
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
-import { Bot, CircleDot, Inbox, Megaphone, Plus, Search, Smartphone, User, UserCheck, type LucideIcon } from "lucide-react";
+import { Bot, CircleDot, Inbox, Megaphone, Plus, Search, Smartphone, User, UserCheck, type Icone } from "../components/icones";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { tempoRelativo } from "../lib/tempoRelativo";
@@ -10,6 +10,7 @@ import { StatusBadge } from "../components/StatusBadge";
 import { EtiquetaFiltroDropdown } from "../components/EtiquetaFiltroDropdown";
 import { FiltroDropdown } from "../components/FiltroDropdown";
 import { NovaConversaModal } from "../components/NovaConversaModal";
+import { LABEL_CONVENIO } from "../lib/funil";
 import type { Conversa, Etiqueta, Instancia, StatusConversa, Usuario } from "../types/api";
 
 const FILTROS_STATUS: { id: StatusConversa; label: string }[] = [
@@ -21,7 +22,7 @@ const FILTROS_STATUS: { id: StatusConversa; label: string }[] = [
 
 type Aba = "maisa" | "sem_atendente" | "atribuidas" | "disparos";
 
-const ABAS: { id: Aba; label: string; icon: LucideIcon; descricao: string; vazio: string }[] = [
+const ABAS: { id: Aba; label: string; icon: Icone; descricao: string; vazio: string }[] = [
   {
     id: "maisa",
     label: "Maisa",
@@ -270,6 +271,11 @@ export function ConversasSplitLayout() {
                 </p>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   <StatusBadge status={c.status} />
+                  {c.convenio && (
+                    <span className="rounded border border-indigo-claro/30 bg-indigo-claro/10 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-claro">
+                      {LABEL_CONVENIO[c.convenio]}
+                    </span>
+                  )}
                   {c.origemDisparo && (
                     <span className="flex items-center gap-1 rounded border border-indigo-claro/30 bg-indigo-claro/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-claro">
                       <Megaphone size={9} />

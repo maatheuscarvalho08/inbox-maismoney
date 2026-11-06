@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { X } from "lucide-react";
+import { X } from "./icones";
 import { api, ApiError } from "../lib/api";
 import { Select } from "./Select";
 import type { Conversa, Instancia } from "../types/api";

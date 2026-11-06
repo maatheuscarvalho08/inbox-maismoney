@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { MessageSquare, CheckCircle2, Percent, Clock } from "lucide-react";
+import { MessageSquare, CheckCircle2, Percent, Clock } from "../components/icones";
 import { api } from "../lib/api";
 import { formatarSegundos } from "../lib/tempoRelativo";
 import { calcularDelta } from "../lib/metricasDelta";

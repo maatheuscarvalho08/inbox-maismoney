@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { CircleAlert, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { CircleAlert, Eye, EyeOff, Loader2, Lock, Mail } from "../components/icones";
 import { useAuth, ApiError } from "../lib/auth";
 import { FundoMarca } from "../components/FundoMarca";
 import { LogoMaisMoney } from "../components/LogoMaisMoney";

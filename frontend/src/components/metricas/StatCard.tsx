@@ -1,8 +1,8 @@
-import { ArrowUp, ArrowDown, type LucideIcon } from "lucide-react";
+import { ArrowUp, ArrowDown, type Icone } from "../icones";
 import { SparklineLine } from "../dashboard/Sparkline";
 
 interface StatCardProps {
-  icon: LucideIcon;
+  icon: Icone;
   label: string;
   value: string;
   trendLabel?: string;

@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { X, Tag as TagIcon, Smartphone, User } from "lucide-react";
+import { Filter, X, Tag as TagIcon, Smartphone, User } from "../icones";
 import { api, ApiError } from "../../lib/api";
+import { OPCOES_CONVENIO, OPCOES_ETAPA } from "../../lib/funil";
+import { Select } from "../Select";
 import type { Conversa, Contato, Etiqueta } from "../../types/api";
 
 function formatarCpf(cpf: string) {
@@ -40,6 +42,11 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
     setNomeContato(conversa.contato.nome ?? "");
     setCpfContato(conversa.contato.cpf ?? "");
   }, [conversa.contato.id, conversa.contato.nome, conversa.contato.cpf]);
+
+  async function atualizarFunil(dados: { convenio?: string | null; etapaFunil?: string }) {
+    const res = await api.patch<{ conversa: Conversa }>(`/conversas/${conversa.id}`, dados);
+    onConversaAtualizada(res.conversa);
+  }
 
   async function salvarContato(e: FormEvent) {
     e.preventDefault();
@@ -96,6 +103,24 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
       </div>
 
       <div className="space-y-6 overflow-y-auto p-4">
+        <div>
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">
+            <Filter size={12} /> Funil
+          </p>
+          <div className="space-y-2">
+            <Select
+              value={conversa.convenio ?? ""}
+              onChange={(v) => atualizarFunil({ convenio: v || null })}
+              options={[{ value: "", label: "Sem convênio" }, ...OPCOES_CONVENIO]}
+            />
+            <Select
+              value={conversa.etapaFunil ?? ""}
+              onChange={(v) => atualizarFunil({ etapaFunil: v })}
+              options={conversa.etapaFunil ? OPCOES_ETAPA : [{ value: "", label: "Ainda não é lead" }, ...OPCOES_ETAPA]}
+            />
+          </div>
+        </div>
+
         <div>
           <div className="mb-2 flex items-center justify-between">
             <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">

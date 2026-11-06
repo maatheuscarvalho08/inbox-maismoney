@@ -3,6 +3,8 @@ export type TipoConexao = "evolution" | "meta_cloud";
 export type StatusInstancia = "conectado" | "desconectado";
 export type StatusConversa = "aberta" | "em_atendimento" | "aguardando" | "encerrada";
 export type RemetenteTipo = "cliente" | "operador";
+export type Convenio = "inss" | "clt" | "siape" | "servidor_prefeitura" | "marinha" | "militar" | "conta_de_luz" | "loas" | "credito_pessoal" | "fgts";
+export type EtapaFunil = "lead" | "dados_coletados" | "simulacao" | "simulacao_com_saldo" | "proposta_digitada" | "proposta_paga";
 export type StatusEntrega = "enviado" | "entregue" | "lido" | "falhou";
 
 export interface Usuario {
@@ -82,6 +84,8 @@ export interface Conversa {
   origemDisparo: boolean;
   respondida: boolean;
   comMaisa: boolean;
+  convenio: Convenio | null;
+  etapaFunil: EtapaFunil | null;
   contato: Contato;
   instancia: Pick<Instancia, "id" | "nome" | "numero" | "tipoConexao" | "status" | "maisaAtiva">;
   operador: { id: string; nome: string; fotoPath: string | null } | null;

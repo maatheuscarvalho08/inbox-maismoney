@@ -16,6 +16,7 @@ const ConversasVazio = lazy(() => import("./pages/ConversasVazio").then((m) => (
 const ConversaDetalhePage = lazy(() =>
   import("./pages/ConversaDetalhePage").then((m) => ({ default: m.ConversaDetalhePage })),
 );
+const FunilPage = lazy(() => import("./pages/FunilPage").then((m) => ({ default: m.FunilPage })));
 const NumerosPage = lazy(() => import("./pages/NumerosPage").then((m) => ({ default: m.NumerosPage })));
 const UsuariosPage = lazy(() => import("./pages/UsuariosPage").then((m) => ({ default: m.UsuariosPage })));
 const DisparosPage = lazy(() => import("./pages/DisparosPage").then((m) => ({ default: m.DisparosPage })));
@@ -76,6 +77,7 @@ export default function App() {
             <Route element={<ProtectedRoute allow={["admin"]} />}>
               <Route path="/numeros" element={pagina(NumerosPage)} />
               <Route path="/metricas" element={pagina(MetricasPage)} />
+              <Route path="/funil" element={pagina(FunilPage)} />
               <Route path="/usuarios" element={pagina(UsuariosPage)} />
             </Route>
           </Route>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Mic, Paperclip, Send, Square, X } from "lucide-react";
+import { Mic, Paperclip, Send, Square, X } from "../icones";
 import { api, ApiError } from "../../lib/api";
 import { previewDaMensagem } from "./MensagemBubble";
 import type { Mensagem, TipoConexao } from "../../types/api";

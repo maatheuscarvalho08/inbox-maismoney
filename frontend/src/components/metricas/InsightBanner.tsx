@@ -1,4 +1,4 @@
-import { TrendingUp } from "lucide-react";
+import { TrendingUp } from "../icones";
 
 export function InsightBanner({ mensagem }: { mensagem: string }) {
   return (
