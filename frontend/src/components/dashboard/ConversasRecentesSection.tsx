@@ -19,12 +19,12 @@ export function ConversasRecentesSection({ conversas, carregando }: { conversas:
   const navigate = useNavigate();
 
   return (
-    <div className="rounded-lg border border-white/10 bg-surface/40 backdrop-blur-xl">
+    <div className="rounded-lg border border-ink/10 bg-surface">
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
-        <h2 className="text-sm font-semibold text-white">Conversas recentes</h2>
+        <h2 className="text-sm font-semibold text-ink">Conversas recentes</h2>
         <Link
           to="/conversas"
-          className="rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-primary transition-colors duration-150 ease-out hover:bg-primary/10"
+          className="rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-accent transition-colors duration-150 ease-out hover:bg-primary/10"
         >
           Ver todas
         </Link>
@@ -62,16 +62,16 @@ export function ConversasRecentesSection({ conversas, carregando }: { conversas:
               <tr
                 key={c.id}
                 onClick={() => navigate(`/conversas/${c.id}`)}
-                className="cursor-pointer border-t border-border transition-colors duration-150 ease-out hover:bg-white/[0.03]"
+                className="cursor-pointer border-t border-border transition-colors duration-150 ease-out hover:bg-ink/[0.03]"
               >
                 <td className="px-5 py-3">
                   <Link to={`/conversas/${c.id}`} className="flex items-center gap-2.5" onClick={(e) => e.stopPropagation()}>
                     <Avatar nome={c.contato.nome ?? c.contato.numeroWhatsapp} fotoUrl={c.contato.fotoUrl} />
-                    <span className="font-medium text-white">{c.contato.nome ?? "Sem nome"}</span>
+                    <span className="font-medium text-ink">{c.contato.nome ?? "Sem nome"}</span>
                   </Link>
                 </td>
                 <td className="px-5 py-3 text-muted">{formatarTelefone(c.contato.numeroWhatsapp)}</td>
-                <td className="max-w-[240px] truncate px-5 py-3 text-white">{ultimaMensagemPreview(c)}</td>
+                <td className="max-w-[240px] truncate px-5 py-3 text-ink">{ultimaMensagemPreview(c)}</td>
                 <td className="px-5 py-3 text-muted">{tempoRelativo(c.lastMessageAt)}</td>
                 <td className="px-5 py-3 text-muted">{c.operador?.nome ?? "—"}</td>
                 <td className="px-5 py-3">

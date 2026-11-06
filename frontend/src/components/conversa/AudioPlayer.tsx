@@ -63,7 +63,7 @@ export function AudioPlayer({ src }: { src: string }) {
       <button
         type="button"
         onClick={alternar}
-        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-bg hover:opacity-90"
+        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-marca-indigo hover:opacity-90"
       >
         {tocando ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
       </button>

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Check, MoreVertical, Pencil, X } from "lucide-react";
+import { Bot, Check, MoreVertical, Pencil, X } from "lucide-react";
 import { api, ApiError } from "../lib/api";
+import { useAuth } from "../lib/auth";
 import { formatarTelefone } from "../lib/telefone";
 import { useSocketEvent } from "../hooks/useSocketEvent";
 import { Avatar } from "../components/Avatar";
@@ -26,6 +27,7 @@ function rotuloDia(data: Date) {
 }
 
 export function ConversaDetalhePage() {
+  const { usuario } = useAuth();
   const { id } = useParams<{ id: string }>();
 
   const [conversa, setConversa] = useState<Conversa | null>(null);
@@ -101,6 +103,17 @@ export function ConversaDetalhePage() {
     if (c.id === id) setConversa(c);
   });
 
+  async function assumirConversa() {
+    if (!usuario) return;
+    await atualizarVendedor(usuario.id);
+  }
+
+  async function devolverParaMaisa() {
+    if (!id) return;
+    const res = await api.patch<{ conversa: Conversa }>(`/conversas/${id}`, { comMaisa: true });
+    setConversa(res.conversa);
+  }
+
   async function atualizarStatus(status: StatusConversa) {
     if (!id) return;
     const res = await api.patch<{ conversa: Conversa }>(`/conversas/${id}`, { status });
@@ -141,12 +154,12 @@ export function ConversaDetalhePage() {
                       if (e.key === "Escape") setEditandoNome(false);
                     }}
                     placeholder="Nome do cliente"
-                    className="rounded border border-primary bg-bg/60 px-1.5 py-0.5 text-sm text-white outline-none"
+                    className="rounded border border-primary bg-bg/60 px-1.5 py-0.5 text-sm text-ink outline-none"
                   />
-                  <button onClick={salvarNomeContato} disabled={salvandoNome} className="text-primary hover:text-white">
+                  <button onClick={salvarNomeContato} disabled={salvandoNome} className="text-accent hover:text-ink">
                     <Check size={14} />
                   </button>
-                  <button onClick={() => setEditandoNome(false)} className="text-muted hover:text-white">
+                  <button onClick={() => setEditandoNome(false)} className="text-muted hover:text-ink">
                     <X size={14} />
                   </button>
                 </div>
@@ -157,7 +170,7 @@ export function ConversaDetalhePage() {
                     setErroNome(null);
                     setEditandoNome(true);
                   }}
-                  className="group flex items-center gap-1.5 text-sm font-semibold text-white"
+                  className="group flex items-center gap-1.5 text-sm font-semibold text-ink"
                   title="Editar nome do cliente"
                 >
                   {conversa.contato.nome ?? "Sem nome"}
@@ -167,12 +180,37 @@ export function ConversaDetalhePage() {
               <p className="text-xs text-muted">
                 {formatarTelefone(conversa.contato.numeroWhatsapp)} · {conversa.instancia.nome}
               </p>
-              {erroNome && <p className="text-[11px] text-primary">{erroNome}</p>}
+              {erroNome && <p className="text-[11px] text-accent">{erroNome}</p>}
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={conversa.status} />
+
+            {conversa.comMaisa && (
+              <span className="inline-flex items-center gap-1 rounded border border-indigo-claro/30 bg-indigo-claro/10 px-2 py-0.5 text-xs font-semibold text-indigo-claro">
+                <Bot size={13} aria-hidden="true" />
+                Maisa atendendo
+              </span>
+            )}
+
+            {(conversa.comMaisa || !conversa.operadorId) && (
+              <button
+                onClick={assumirConversa}
+                className="h-8 rounded-md bg-primary px-3 text-xs font-semibold text-marca-indigo hover:opacity-90"
+              >
+                Assumir conversa
+              </button>
+            )}
+
+            {!conversa.comMaisa && conversa.instancia.maisaAtiva && conversa.status !== "encerrada" && (
+              <button
+                onClick={devolverParaMaisa}
+                className="h-8 rounded-md border border-indigo-claro/30 px-3 text-xs font-semibold text-indigo-claro hover:bg-indigo-claro/10"
+              >
+                Devolver para a Maisa
+              </button>
+            )}
 
             <Select
               value={conversa.operadorId ?? ""}
@@ -190,7 +228,7 @@ export function ConversaDetalhePage() {
               onClick={() => setPainelAberto((v) => !v)}
               title="Mais opções"
               className={`flex size-8 items-center justify-center rounded-md border ${
-                painelAberto ? "border-primary bg-primary/10 text-primary" : "border-border text-muted hover:text-white"
+                painelAberto ? "border-primary bg-primary/10 text-accent" : "border-border text-muted hover:text-ink"
               }`}
             >
               <MoreVertical size={16} />
@@ -233,6 +271,12 @@ export function ConversaDetalhePage() {
           })}
           <div ref={fimDaListaRef} />
         </div>
+
+        {conversa.comMaisa && (
+          <p className="border-t border-border bg-indigo-claro/10 px-8 py-2 text-xs font-medium text-indigo-claro">
+            A Maisa está atendendo. Se você responder, ela para e a conversa passa para você.
+          </p>
+        )}
 
         <Composer
           conversaId={conversa.id}

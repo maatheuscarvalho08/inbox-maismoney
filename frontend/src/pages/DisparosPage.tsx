@@ -61,7 +61,7 @@ function ResumoStatusBadges({
           <button
             key={i.status}
             onClick={onVerMotivos}
-            className="flex items-center gap-1 text-primary hover:underline"
+            className="flex items-center gap-1 text-accent hover:underline"
           >
             <StatusEntregaIcone status={i.status} />
             {i.qtd}
@@ -82,14 +82,14 @@ function ModalMotivosFalha({ motivos, onClose }: { motivos: string[]; onClose: (
     <Modal onClose={onClose}>
       <div className="w-full max-w-md space-y-3 p-5">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white">Por que falhou</h2>
-          <button onClick={onClose} className="text-muted hover:text-white">
+          <h2 className="text-sm font-semibold text-ink">Por que falhou</h2>
+          <button onClick={onClose} className="text-muted hover:text-ink">
             <X size={16} />
           </button>
         </div>
         <ul className="space-y-2">
           {motivos.map((m, i) => (
-            <li key={i} className="rounded-md border border-border bg-bg/40 px-3 py-2 text-sm text-white">
+            <li key={i} className="rounded-md border border-border bg-bg/40 px-3 py-2 text-sm text-ink">
               {m}
             </li>
           ))}
@@ -128,7 +128,7 @@ export function DisparosPage() {
         right={
           <button
             onClick={() => setMostrarNovo(true)}
-            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-bg hover:opacity-90"
+            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-marca-indigo hover:opacity-90"
           >
             <Plus size={14} /> Novo disparo
           </button>
@@ -140,14 +140,14 @@ export function DisparosPage() {
           <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-16 text-center">
             <Send size={22} className="text-muted" />
             <p className="text-sm text-muted">Nenhum disparo enviado ainda.</p>
-            <button onClick={() => setMostrarNovo(true)} className="text-xs font-medium text-primary hover:underline">
+            <button onClick={() => setMostrarNovo(true)} className="text-xs font-medium text-accent hover:underline">
               Enviar o primeiro disparo
             </button>
           </div>
         )}
 
         {disparos.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border border-white/10 bg-surface/40 backdrop-blur-xl">
+          <div className="overflow-x-auto rounded-lg border border-ink/10 bg-surface">
             <table className="w-full min-w-[880px] text-left text-sm">
               <thead>
                 <tr>
@@ -163,7 +163,7 @@ export function DisparosPage() {
               <tbody>
                 {disparos.map((d) => (
                   <tr key={d.id} className="border-t border-border">
-                    <td className="px-5 py-3 font-medium text-white">
+                    <td className="px-5 py-3 font-medium text-ink">
                       {d.totalNumeros > 1
                         ? `${d.totalNumeros} números`
                         : (d.contato?.nome ?? d.contato?.numeroWhatsapp ?? "1 número")}
@@ -183,7 +183,7 @@ export function DisparosPage() {
                       ) : d.statusEntrega === "falhou" && d.erroEntrega ? (
                         <button
                           onClick={() => setMotivosFalha([d.erroEntrega as string])}
-                          className="flex items-center gap-1.5 text-primary hover:underline"
+                          className="flex items-center gap-1.5 text-accent hover:underline"
                         >
                           <StatusEntregaIcone status={d.statusEntrega} />
                           {STATUS_LABEL[d.statusEntrega]}

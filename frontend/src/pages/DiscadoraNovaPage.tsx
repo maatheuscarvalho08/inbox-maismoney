@@ -122,14 +122,14 @@ export function DiscadoraNovaPage() {
       <PageHeader title="Nova campanha" subtitle="Discadora — ligação automática com IVR" />
 
       <div className="flex justify-center p-8">
-        <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-4 rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl">
+        <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-4 rounded-lg border border-ink/10 bg-surface p-5">
           <div>
             <label className="mb-1.5 block text-xs font-medium text-muted">Nome da campanha</label>
             <input
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Ex.: Consignado INSS — agosto"
-              className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+              className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
           </div>
 
@@ -160,15 +160,15 @@ export function DiscadoraNovaPage() {
               <button
                 type="button"
                 onClick={() => audioRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-4 text-xs font-medium text-muted hover:border-primary hover:text-primary"
+                className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-4 text-xs font-medium text-muted hover:border-primary hover:text-accent"
               >
                 <Upload size={14} />
                 Selecionar arquivo MP3
               </button>
             ) : (
               <div className="flex items-center justify-between rounded-md border border-border bg-bg/40 px-3 py-2 text-xs">
-                <span className="truncate text-white">{audio.name}</span>
-                <button type="button" onClick={() => setAudio(null)} className="text-muted hover:text-primary">
+                <span className="truncate text-ink">{audio.name}</span>
+                <button type="button" onClick={() => setAudio(null)} className="text-muted hover:text-accent">
                   <X size={14} />
                 </button>
               </div>
@@ -188,15 +188,15 @@ export function DiscadoraNovaPage() {
               <button
                 type="button"
                 onClick={() => csvRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-4 text-xs font-medium text-muted hover:border-primary hover:text-primary"
+                className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-4 text-xs font-medium text-muted hover:border-primary hover:text-accent"
               >
                 <Upload size={14} />
                 Selecionar arquivo CSV
               </button>
             ) : (
               <div className="flex items-center justify-between rounded-md border border-border bg-bg/40 px-3 py-2 text-xs">
-                <span className="truncate text-white">{nomeArquivo}</span>
-                <button type="button" onClick={limparCsv} className="text-muted hover:text-primary">
+                <span className="truncate text-ink">{nomeArquivo}</span>
+                <button type="button" onClick={limparCsv} className="text-muted hover:text-accent">
                   <X size={14} />
                 </button>
               </div>
@@ -208,7 +208,7 @@ export function DiscadoraNovaPage() {
               className="hidden"
               onChange={(e) => e.target.files?.[0] && handleCsv(e.target.files[0])}
             />
-            {erroCsv && <p className="mt-1.5 text-xs text-primary">{erroCsv}</p>}
+            {erroCsv && <p className="mt-1.5 text-xs text-accent">{erroCsv}</p>}
 
             {colunasCsv.length > 0 && (
               <div className="mt-2 space-y-2">
@@ -237,12 +237,12 @@ export function DiscadoraNovaPage() {
             )}
           </div>
 
-          {erro && <p className="text-sm text-primary">{erro}</p>}
+          {erro && <p className="text-sm text-accent">{erro}</p>}
 
           <button
             type="submit"
             disabled={enviando || !podeEnviar}
-            className="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+            className="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-marca-indigo hover:opacity-90 disabled:opacity-50"
           >
             {enviando ? "Criando..." : "Criar campanha"}
           </button>

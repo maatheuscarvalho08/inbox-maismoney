@@ -48,28 +48,28 @@ export function EtiquetaFiltroDropdown({ etiquetas, selecionada, onSelecionar, o
     <div ref={containerRef} className="relative">
       <button
         onClick={() => setAberto((v) => !v)}
-        className={`flex w-full items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors duration-150 ease-out ${
+        className={`flex w-full items-center justify-between gap-2 rounded-md border h-8 px-2.5 text-xs font-medium transition-colors duration-150 ease-out ${
           selecionada || aberto
-            ? "border-primary bg-primary/10 text-primary"
-            : "border-border text-muted hover:text-white"
+            ? "border-primary bg-primary/10 text-accent"
+            : "border-border text-muted hover:text-ink"
         }`}
       >
         <span className="flex min-w-0 items-center gap-1.5 truncate">
-          <Tag size={11} className="shrink-0" />
+          <Tag size={13} className="shrink-0" />
           <span className="truncate">{etiquetaAtiva ? etiquetaAtiva.nome : "Etiquetas"}</span>
         </span>
         <ChevronDown size={12} className={`shrink-0 transition-transform ${aberto ? "rotate-180" : ""}`} />
       </button>
 
       {aberto && (
-        <div className="absolute left-0 top-full z-20 mt-1 w-56 rounded-md border border-white/10 bg-surface p-2 shadow-xl">
+        <div className="absolute left-0 top-full z-20 mt-1 w-56 rounded-md border border-ink/10 bg-surface p-2 shadow-xl">
           <button
             onClick={() => {
               onSelecionar(null);
               setAberto(false);
             }}
             className={`flex w-full items-center rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors duration-150 ease-out ${
-              selecionada === null ? "bg-primary/10 text-primary" : "text-white hover:bg-white/5"
+              selecionada === null ? "bg-primary/10 text-accent" : "text-ink hover:bg-ink/5"
             }`}
           >
             Todas etiquetas
@@ -83,7 +83,7 @@ export function EtiquetaFiltroDropdown({ etiquetas, selecionada, onSelecionar, o
                 setAberto(false);
               }}
               className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors duration-150 ease-out ${
-                selecionada === et.id ? "bg-primary/10 text-primary" : "text-white hover:bg-white/5"
+                selecionada === et.id ? "bg-primary/10 text-accent" : "text-ink hover:bg-ink/5"
               }`}
             >
               <span className="size-1.5 shrink-0 rounded-full bg-primary" />
@@ -99,14 +99,14 @@ export function EtiquetaFiltroDropdown({ etiquetas, selecionada, onSelecionar, o
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Nome da etiqueta"
-                  className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
+                  className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-ink outline-none focus:border-accent"
                 />
-                {erro && <p className="mt-1 text-[10px] text-primary">{erro}</p>}
+                {erro && <p className="mt-1 text-[10px] text-accent">{erro}</p>}
               </form>
             ) : (
               <button
                 onClick={() => setCriando(true)}
-                className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-xs font-medium text-primary hover:bg-primary/10"
+                className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-xs font-medium text-accent hover:bg-primary/10"
               >
                 <Plus size={12} /> Nova etiqueta
               </button>

@@ -178,11 +178,11 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
         <button
           type="button"
           onClick={onFechar}
-          className="flex items-center gap-1.5 text-xs font-medium text-muted hover:text-white"
+          className="flex items-center gap-1.5 text-xs font-medium text-muted hover:text-ink"
         >
           <ArrowLeft size={14} /> Voltar
         </button>
-        <span className="ml-1 text-sm font-semibold text-white">Novo disparo</span>
+        <span className="ml-1 text-sm font-semibold text-ink">Novo disparo</span>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 p-5">
@@ -216,7 +216,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
               type="button"
               onClick={() => setModo("unico")}
               className={`flex-1 rounded px-2 py-1 font-medium transition-colors duration-150 ease-out ${
-                modo === "unico" ? "bg-primary/15 text-primary" : "text-muted hover:text-white"
+                modo === "unico" ? "bg-primary/15 text-accent" : "text-muted hover:text-ink"
               }`}
             >
               Número único
@@ -225,7 +225,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
               type="button"
               onClick={() => setModo("csv")}
               className={`flex-1 rounded px-2 py-1 font-medium transition-colors duration-150 ease-out ${
-                modo === "csv" ? "bg-primary/15 text-primary" : "text-muted hover:text-white"
+                modo === "csv" ? "bg-primary/15 text-accent" : "text-muted hover:text-ink"
               }`}
             >
               Importar CSV
@@ -237,7 +237,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
               placeholder="5521999999999"
               value={numeroDestino}
               onChange={(e) => setNumeroDestino(e.target.value)}
-              className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+              className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
           ) : (
             <div className="space-y-2">
@@ -245,15 +245,15 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
                 <button
                   type="button"
                   onClick={() => inputCsvRef.current?.click()}
-                  className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-4 text-xs font-medium text-muted hover:border-primary hover:text-primary"
+                  className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-4 text-xs font-medium text-muted hover:border-primary hover:text-accent"
                 >
                   <Upload size={14} />
                   Selecionar arquivo CSV
                 </button>
               ) : (
                 <div className="flex items-center justify-between rounded-md border border-border bg-bg/40 px-3 py-2 text-xs">
-                  <span className="truncate text-white">{nomeArquivo}</span>
-                  <button type="button" onClick={limparCsv} className="text-muted hover:text-primary">
+                  <span className="truncate text-ink">{nomeArquivo}</span>
+                  <button type="button" onClick={limparCsv} className="text-muted hover:text-accent">
                     <X size={14} />
                   </button>
                 </div>
@@ -266,7 +266,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
                 onChange={(e) => e.target.files?.[0] && handleArquivoCsv(e.target.files[0])}
               />
 
-              {erroCsv && <p className="text-xs text-primary">{erroCsv}</p>}
+              {erroCsv && <p className="text-xs text-accent">{erroCsv}</p>}
 
               {colunasCsv.length > 0 && (
                 <div className="space-y-3">
@@ -326,7 +326,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
                 min={0}
                 value={intervaloMin}
                 onChange={(e) => setIntervaloMin(Math.max(0, Number(e.target.value)))}
-                className="w-16 rounded-md border border-border bg-bg/60 px-2 py-1.5 text-center text-sm text-white outline-none focus:border-primary"
+                className="w-16 rounded-md border border-border bg-bg/60 px-2 py-1.5 text-center text-sm text-ink outline-none focus:border-accent"
               />
               <span className="text-xs text-muted">min</span>
               <input
@@ -335,7 +335,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
                 max={59}
                 value={intervaloSeg}
                 onChange={(e) => setIntervaloSeg(Math.min(59, Math.max(0, Number(e.target.value))))}
-                className="w-16 rounded-md border border-border bg-bg/60 px-2 py-1.5 text-center text-sm text-white outline-none focus:border-primary"
+                className="w-16 rounded-md border border-border bg-bg/60 px-2 py-1.5 text-center text-sm text-ink outline-none focus:border-accent"
               />
               <span className="text-xs text-muted">seg</span>
             </div>
@@ -351,7 +351,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
             <button
               type="button"
               onClick={() => setVariaveis((v) => [...v, ""])}
-              className="flex items-center gap-1 text-xs text-primary hover:underline"
+              className="flex items-center gap-1 text-xs text-accent hover:underline"
             >
               <Plus size={12} /> Adicionar
             </button>
@@ -365,12 +365,12 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
                     setVariaveis((atual) => atual.map((val, idx) => (idx === i ? e.target.value : val)))
                   }
                   placeholder={`Variável ${i + 1}`}
-                  className="flex-1 rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                  className="flex-1 rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
                 />
                 <button
                   type="button"
                   onClick={() => setVariaveis((atual) => atual.filter((_, idx) => idx !== i))}
-                  className="text-muted hover:text-primary"
+                  className="text-muted hover:text-accent"
                 >
                   <X size={14} />
                 </button>
@@ -379,12 +379,12 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
           </div>
         </div>
 
-        {resultado && <p className="text-sm text-primary">{resultado.texto}</p>}
+        {resultado && <p className="text-sm text-accent">{resultado.texto}</p>}
 
         <button
           type="submit"
           disabled={enviando || !podeEnviar}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 text-sm font-semibold text-marca-indigo hover:opacity-90 disabled:opacity-50"
         >
           <Send size={16} />
           {enviando

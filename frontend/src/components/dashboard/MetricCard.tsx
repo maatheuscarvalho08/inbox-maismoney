@@ -13,15 +13,15 @@ export function MetricCard({ label, value, deltaLabel, deltaDirection, children 
   const ArrowIcon = deltaDirection === "down" ? ArrowDown : ArrowUp;
 
   return (
-    <div className="group rounded-lg border border-white/10 bg-surface/40 p-4 backdrop-blur-xl transition-[border-color,box-shadow] duration-150 ease-out hover:border-primary hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary)_15%,transparent)]">
+    <div className="group rounded-lg border border-ink/10 bg-surface p-4 transition-[border-color,box-shadow] duration-150 ease-out hover:border-primary hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary)_15%,transparent)]">
       <p className="text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
 
       <div className="mt-2 flex items-baseline gap-2">
-        <p className="text-[2rem] font-bold leading-none text-white">{value}</p>
+        <p className="text-[2rem] font-bold leading-none text-ink">{value}</p>
       </div>
 
       {deltaLabel && (
-        <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-primary">
+        <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-accent">
           <ArrowIcon size={12} strokeWidth={2.5} />
           {deltaLabel}
         </p>

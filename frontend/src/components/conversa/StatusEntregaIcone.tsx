@@ -5,7 +5,7 @@ export function StatusEntregaIcone({ status }: { status: StatusEntrega | null })
   if (!status) return <Clock size={12} className="text-muted" />;
 
   if (status === "falhou") {
-    return <TriangleAlert size={12} className="text-primary" />;
+    return <TriangleAlert size={12} className="text-accent" />;
   }
 
   if (status === "enviado") {
@@ -14,6 +14,6 @@ export function StatusEntregaIcone({ status }: { status: StatusEntrega | null })
 
   // entregue = dois tiques cinza, lido = dois tiques na cor de destaque (padrão do WhatsApp).
   return (
-    <CheckCheck size={13} className={status === "lido" ? "text-[var(--color-accent-fg)]" : "text-muted"} />
+    <CheckCheck size={13} className={status === "lido" ? "text-accent" : "text-muted"} />
   );
 }

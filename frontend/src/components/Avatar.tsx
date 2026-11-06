@@ -28,7 +28,7 @@ export function Avatar({ nome, fotoUrl, tamanho = 32 }: Props) {
   return (
     <span
       style={estilo}
-      className="flex shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-bg"
+      className="flex shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-marca-indigo"
     >
       {inicial}
     </span>

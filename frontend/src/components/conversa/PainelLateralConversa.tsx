@@ -87,10 +87,10 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
   }
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col border-l border-white/10 bg-surface/40 backdrop-blur-xl">
+    <aside className="flex w-72 shrink-0 flex-col border-l border-ink/10 bg-surface">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <p className="text-sm font-semibold text-white">Mais opções</p>
-        <button onClick={onFechar} className="text-muted hover:text-white">
+        <p className="text-sm font-semibold text-ink">Mais opções</p>
+        <button onClick={onFechar} className="text-muted hover:text-ink">
           <X size={16} />
         </button>
       </div>
@@ -102,7 +102,7 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
               <User size={12} /> Contato
             </p>
             {!editandoContato && (
-              <button onClick={() => setEditandoContato(true)} className="text-xs text-primary hover:underline">
+              <button onClick={() => setEditandoContato(true)} className="text-xs text-accent hover:underline">
                 Editar
               </button>
             )}
@@ -115,20 +115,20 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
                 placeholder="Nome do cliente"
                 value={nomeContato}
                 onChange={(e) => setNomeContato(e.target.value)}
-                className="w-full rounded-md border border-border bg-bg/60 px-2.5 py-1.5 text-xs text-white outline-none focus:border-primary"
+                className="w-full rounded-md border border-border bg-bg/60 px-2.5 py-1.5 text-xs text-ink outline-none focus:border-accent"
               />
               <input
                 placeholder="CPF (só números)"
                 value={cpfContato}
                 onChange={(e) => setCpfContato(e.target.value)}
-                className="w-full rounded-md border border-border bg-bg/60 px-2.5 py-1.5 text-xs text-white outline-none focus:border-primary"
+                className="w-full rounded-md border border-border bg-bg/60 px-2.5 py-1.5 text-xs text-ink outline-none focus:border-accent"
               />
-              {erroContato && <p className="text-xs text-primary">{erroContato}</p>}
+              {erroContato && <p className="text-xs text-accent">{erroContato}</p>}
               <div className="flex gap-2">
                 <button
                   type="submit"
                   disabled={salvandoContato}
-                  className="flex-1 rounded-md bg-primary py-1.5 text-xs font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+                  className="flex-1 rounded-md bg-primary py-1.5 text-xs font-semibold text-marca-indigo hover:opacity-90 disabled:opacity-50"
                 >
                   {salvandoContato ? "Salvando..." : "Salvar"}
                 </button>
@@ -140,7 +140,7 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
                     setNomeContato(conversa.contato.nome ?? "");
                     setCpfContato(conversa.contato.cpf ?? "");
                   }}
-                  className="rounded-md border border-border px-3 py-1.5 text-xs text-muted hover:text-white"
+                  className="rounded-md border border-border px-3 py-1.5 text-xs text-muted hover:text-ink"
                 >
                   Cancelar
                 </button>
@@ -149,10 +149,10 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
           ) : (
             <div className="rounded-md border border-border bg-bg/40 p-3 text-xs">
               <p className="text-muted">
-                Nome: <span className="text-white">{conversa.contato.nome ?? "—"}</span>
+                Nome: <span className="text-ink">{conversa.contato.nome ?? "—"}</span>
               </p>
               <p className="mt-1 text-muted">
-                CPF: <span className="text-white">{conversa.contato.cpf ? formatarCpf(conversa.contato.cpf) : "—"}</span>
+                CPF: <span className="text-ink">{conversa.contato.cpf ? formatarCpf(conversa.contato.cpf) : "—"}</span>
               </p>
             </div>
           )}
@@ -163,7 +163,7 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
             <Smartphone size={12} /> Número
           </p>
           <div className="rounded-md border border-border bg-bg/40 p-3">
-            <p className="text-sm font-medium text-white">{conversa.instancia.nome}</p>
+            <p className="text-sm font-medium text-ink">{conversa.instancia.nome}</p>
             <p className="mt-0.5 text-xs text-muted">{conversa.instancia.numero}</p>
             <div className="mt-2 flex items-center justify-between text-xs">
               <span className="text-muted">{LABEL_CONEXAO[conversa.instancia.tipoConexao]}</span>
@@ -189,10 +189,10 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
             {conversa.etiquetas.map(({ etiqueta }) => (
               <span
                 key={etiqueta.id}
-                className="flex items-center gap-1 rounded border border-primary/30 bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary"
+                className="flex items-center gap-1 rounded border border-primary/30 bg-primary/15 px-2 py-0.5 text-xs font-medium text-accent"
               >
                 {etiqueta.nome}
-                <button onClick={() => removerEtiqueta(etiqueta.id)} className="hover:text-white">
+                <button onClick={() => removerEtiqueta(etiqueta.id)} className="hover:text-ink">
                   <X size={10} />
                 </button>
               </span>
@@ -205,18 +205,18 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
               value={novaEtiqueta}
               onChange={(e) => setNovaEtiqueta(e.target.value)}
               placeholder="Nova etiqueta..."
-              className="w-full rounded-md border border-border bg-bg/60 px-3 py-1.5 text-xs text-white outline-none focus:border-primary"
+              className="w-full rounded-md border border-border bg-bg/60 px-3 py-1.5 text-xs text-ink outline-none focus:border-accent"
             />
             <datalist id="etiquetas-existentes">
               {etiquetasDisponiveis.map((et) => (
                 <option key={et.id} value={et.nome} />
               ))}
             </datalist>
-            {erro && <p className="mt-1 text-xs text-primary">{erro}</p>}
+            {erro && <p className="mt-1 text-xs text-accent">{erro}</p>}
             <button
               type="submit"
               disabled={enviando || !novaEtiqueta.trim()}
-              className="mt-2 w-full rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
+              className="mt-2 w-full rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-accent hover:bg-primary/10 disabled:opacity-50"
             >
               Adicionar
             </button>

@@ -8,7 +8,7 @@ export function Modal({ onClose, children }: { onClose: () => void; children: Re
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg rounded-lg border border-white/10 bg-surface shadow-2xl"
+        className="w-full max-w-lg rounded-lg border border-ink/10 bg-surface shadow-2xl"
       >
         {children}
       </div>

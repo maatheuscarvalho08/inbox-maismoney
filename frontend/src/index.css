@@ -1,36 +1,38 @@
 @import "tailwindcss";
-@import "@fontsource/inter/latin-400.css";
-@import "@fontsource/inter/latin-500.css";
-@import "@fontsource/inter/latin-600.css";
-@import "@fontsource/inter/latin-700.css";
+@import "@fontsource/plus-jakarta-sans/latin-400.css";
+@import "@fontsource/plus-jakarta-sans/latin-500.css";
+@import "@fontsource/plus-jakarta-sans/latin-600.css";
+@import "@fontsource/plus-jakarta-sans/latin-700.css";
 
 @theme {
-  --color-primary: oklch(74.61% 0.179 56.15); /* #ff8910 */
-  --color-accent: oklch(48.12% 0.2749 266.12); /* #1b36f5 */
-  --color-white: oklch(100% 0 0); /* #ffffff */
-  --color-bg: oklch(16.86% 0.011 268.03); /* #0d0f14 */
-  --color-surface: oklch(20.14% 0.0187 270.32); /* #13161f */
-  --color-border: oklch(25.19% 0.0288 275.4); /* #1e2130 */
-  --color-muted: oklch(55.1% 0.0234 264.36); /* #6b7280 */
+  /* Identidade visual 2026 em tema escuro. Sobre o laranja, o texto é índigo (5,3:1).
+     O índigo puro some no grafite: como texto, usa-se o tint --color-indigo-claro. */
+  --color-marca-laranja: #f87500;
+  --color-marca-indigo: #270b7c;
+  --color-marca-creme: #fff4ea;
+  --font-marca: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-}
 
-/*
- * --color-accent (#1b36f5) is 2.49:1 on --color-surface — fails the 4.5:1 text
- * contrast floor. It stays reserved for fills/borders/large surfaces; this tint
- * is the same hue lightened for small text and icons on dark backgrounds.
- */
-:root {
-  --color-accent-fg: color-mix(in oklab, var(--color-accent) 60%, white);
+  --color-primary: #f87500;
+  --color-accent: #f87500;
+  --color-white: #ffffff;
+  --color-ink: #ffffff;
+  --color-bg: #1d1b22;
+  /* Derivados do grafite e do índigo: a marca não define tons para o tema escuro. */
+  --color-surface: #27252e;
+  --color-border: #38353f;
+  --color-muted: #aaa6b4;
+  --color-indigo-claro: #b7a6f7;
+
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  @apply bg-bg text-white antialiased;
+  @apply bg-bg text-ink antialiased;
   font-family: var(--font-sans);
 }
 
-/* Barra de rolagem no tema escuro em vez da barra clara padrão do navegador —
+/* Barra de rolagem fina nas cores do tema, em vez da barra padrão do navegador —
    vale pra qualquer lista com scroll (Usuários, Conversas, etc.), não só uma tela. */
 * {
   scrollbar-width: thin;
@@ -57,7 +59,136 @@ body {
     background-color 0.15s ease-out,
     border-color 0.15s ease-out,
     color 0.15s ease-out,
-    opacity 0.15s ease-out;
+    opacity 0.15s ease-out,
+    transform 0.12s ease-out;
+}
+
+/* Navegação: a pílula desliza até a seção clicada e o conteúdo entra rápido,
+   sem fazer ninguém esperar. Fora de camada de propósito, como o resto do arquivo. */
+.nav-pilula {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  transition:
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.aba-pilula {
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pagina-entra {
+  animation: pagina-entra 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.conversa-entra {
+  animation: conversa-entra 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+button:not(:disabled):active,
+.nav-item:active {
+  transform: scale(0.98);
+}
+@keyframes pagina-entra {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes conversa-entra {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}
+
+/* Login: o sorriso, elemento mais reconhecível da marca, é o momento da abertura. */
+.logo-animada .logo-animada .logo-mais {
+  animation: logo-mais 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.logo-animada .logo-animada .logo-palavra {
+  animation: subir-suave 500ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
+}
+.logo-animada .logo-animada .logo-sorriso {
+  animation: sorriso-desenha 750ms cubic-bezier(0.65, 0, 0.2, 1) 280ms both;
+}
+.login-campo {
+  animation: subir-suave 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.login-forma {
+  animation: forma-assenta 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.login-saindo {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+.login-campo-input:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-marca-indigo);
+  box-shadow: inset 0 0 0 100px var(--color-marca-creme);
+}
+
+/* Saudação: o painel laranja sobe com a borda em forma de sorriso e revela o sistema. */
+.saudacao-texto {
+  animation: saudacao-sobe 650ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+}
+.saudacao-painel-saindo {
+  transform: translateY(calc(-100% - 14vh));
+  transition: transform 650ms cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+@keyframes logo-mais {
+  from {
+    transform: scale(0.3) rotate(-90deg);
+  }
+}
+@keyframes subir-suave {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes sorriso-desenha {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes forma-assenta {
+  from {
+    transform: translateY(32px) scale(1.04);
+  }
+}
+@keyframes saudacao-sobe {
+  from {
+    transform: translateY(110%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-animada .logo-mais,
+  .logo-animada .logo-palavra,
+  .logo-animada .logo-sorriso,
+  .login-campo,
+  .login-forma,
+  .saudacao-texto,
+  .pagina-entra,
+  .conversa-entra {
+    animation: none;
+  }
+  .nav-pilula,
+  .aba-pilula {
+    transition: none;
+  }
+  button:not(:disabled):active,
+  .nav-item:active {
+    transform: none;
+  }
+  .saudacao-painel-saindo {
+    opacity: 0;
+    transform: none;
+    transition: opacity 200ms ease-out;
+  }
 }
 
 /* Barra de progresso do player de áudio (mensagens de voz) — o thumb nativo do

@@ -17,17 +17,17 @@ const LIGACAO_LABEL: Record<StatusLigacao, string> = {
 
 const LIGACAO_STYLE: Record<StatusLigacao, string> = {
   pendente: "text-muted",
-  discando: "text-[var(--color-accent-fg)]",
-  atendeu: "text-primary",
+  discando: "text-accent",
+  atendeu: "text-accent",
   nao_atendeu: "text-muted",
   ocupado: "text-muted",
-  erro: "text-primary",
+  erro: "text-accent",
 };
 
 function Card({ label, valor }: { label: string; valor: number }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-surface/40 p-4 backdrop-blur-xl">
-      <p className="text-2xl font-bold text-white">{valor}</p>
+    <div className="rounded-lg border border-ink/10 bg-surface p-4">
+      <p className="text-2xl font-bold text-ink">{valor}</p>
       <p className="mt-0.5 text-xs text-muted">{label}</p>
     </div>
   );
@@ -98,7 +98,7 @@ export function DiscadoraDetalhePage() {
               <button
                 onClick={iniciar}
                 disabled={processando || campanha.totalNumeros === 0}
-                className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-marca-indigo hover:opacity-90 disabled:opacity-50"
               >
                 <Play size={14} /> {campanha.status === "pausada" ? "Retomar" : "Iniciar"}
               </button>
@@ -107,7 +107,7 @@ export function DiscadoraDetalhePage() {
               <button
                 onClick={pausar}
                 disabled={processando}
-                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-white hover:border-primary disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-ink hover:border-primary disabled:opacity-50"
               >
                 <Pause size={14} /> Pausar
               </button>
@@ -117,7 +117,7 @@ export function DiscadoraDetalhePage() {
       />
 
       <div className="p-8">
-        {erro && <p className="mb-4 text-sm text-primary">{erro}</p>}
+        {erro && <p className="mb-4 text-sm text-accent">{erro}</p>}
 
         {resumo && (
           <>
@@ -137,7 +137,7 @@ export function DiscadoraDetalhePage() {
           </>
         )}
 
-        <div className="mt-6 overflow-hidden rounded-lg border border-white/10 bg-surface/40 backdrop-blur-xl">
+        <div className="mt-6 overflow-hidden rounded-lg border border-ink/10 bg-surface">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs font-medium uppercase tracking-wide text-muted">
@@ -151,7 +151,7 @@ export function DiscadoraDetalhePage() {
             <tbody>
               {campanha.numeros?.map((n) => (
                 <tr key={n.id} className="border-b border-border/60 last:border-0">
-                  <td className="px-4 py-2.5 text-white">{n.numeroWhatsapp}</td>
+                  <td className="px-4 py-2.5 text-ink">{n.numeroWhatsapp}</td>
                   <td className="px-4 py-2.5 text-muted">{n.nomeContato ?? "—"}</td>
                   <td className={`px-4 py-2.5 font-medium ${LIGACAO_STYLE[n.statusLigacao]}`}>{LIGACAO_LABEL[n.statusLigacao]}</td>
                   <td className="px-4 py-2.5 text-muted">{n.apertou1 ? "Sim" : "Não"}</td>

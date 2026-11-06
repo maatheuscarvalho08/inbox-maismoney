@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { api, ApiError } from "./api";
 import { conectarSocket, desconectarSocket } from "./socket";
 
@@ -23,6 +23,9 @@ interface AuthContextValue {
   login: (email: string, senha: string) => Promise<void>;
   logout: () => void;
   atualizarUsuario: (usuario: Usuario) => void;
+  saudacao: { origemLogo: DOMRect } | null;
+  iniciarSaudacao: (origemLogo: DOMRect) => void;
+  concluirSaudacao: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -30,6 +33,9 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [saudacao, setSaudacao] = useState<{ origemLogo: DOMRect } | null>(null);
+  const iniciarSaudacao = useCallback((origemLogo: DOMRect) => setSaudacao({ origemLogo }), []);
+  const concluirSaudacao = useCallback(() => setSaudacao(null), []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -66,7 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ usuario, carregando, login, logout, atualizarUsuario: setUsuario }}>
+    <AuthContext.Provider
+      value={{ usuario, carregando, login, logout, atualizarUsuario: setUsuario, saudacao, iniciarSaudacao, concluirSaudacao }}
+    >
       {children}
     </AuthContext.Provider>
   );

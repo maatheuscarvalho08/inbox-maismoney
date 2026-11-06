@@ -35,11 +35,11 @@ const LIGACAO_LABEL: Record<StatusLigacao, string> = {
 
 const LIGACAO_STYLE: Record<StatusLigacao, string> = {
   pendente: "text-muted",
-  discando: "text-[var(--color-accent-fg)]",
-  atendeu: "text-primary",
+  discando: "text-accent",
+  atendeu: "text-accent",
   nao_atendeu: "text-muted",
   ocupado: "text-muted",
-  erro: "text-primary",
+  erro: "text-accent",
 };
 
 function horario(iso: string | null) {
@@ -50,7 +50,7 @@ function horario(iso: string | null) {
 function Indicador({ valor, label }: { valor: string | number; label: string }) {
   return (
     <div className="rounded-lg border border-border bg-surface p-4">
-      <p className="text-2xl font-bold text-white">{valor}</p>
+      <p className="text-2xl font-bold text-ink">{valor}</p>
       <p className="mt-0.5 text-xs text-muted">{label}</p>
     </div>
   );
@@ -90,7 +90,7 @@ export function DiscagensAoVivo() {
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold text-white">Em andamento</h2>
+        <h2 className="mb-2 text-sm font-semibold text-ink">Em andamento</h2>
         {emAndamento.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-10 text-center">
             <PhoneCall size={20} className="text-muted" />
@@ -111,9 +111,9 @@ export function DiscagensAoVivo() {
               <tbody>
                 {emAndamento.map((d) => (
                   <tr key={d.id} className="border-t border-border">
-                    <td className="px-5 py-3 font-medium text-white">{d.nomeContato ?? d.numeroWhatsapp}</td>
+                    <td className="px-5 py-3 font-medium text-ink">{d.nomeContato ?? d.numeroWhatsapp}</td>
                     <td className="px-5 py-3 text-muted">
-                      <Link to={`/discadora/${d.campanha.id}`} className="hover:text-primary hover:underline">
+                      <Link to={`/discadora/${d.campanha.id}`} className="hover:text-accent hover:underline">
                         {d.campanha.nome}
                       </Link>
                     </td>
@@ -130,7 +130,7 @@ export function DiscagensAoVivo() {
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold text-white">Encerradas recentemente</h2>
+        <h2 className="mb-2 text-sm font-semibold text-ink">Encerradas recentemente</h2>
         {recentes.length === 0 ? (
           <p className="rounded-lg border border-dashed border-border py-10 text-center text-sm text-muted">
             Nenhuma ligação encerrada ainda.
@@ -150,9 +150,9 @@ export function DiscagensAoVivo() {
               <tbody>
                 {recentes.map((d) => (
                   <tr key={d.id} className="border-t border-border">
-                    <td className="px-5 py-3 font-medium text-white">{d.nomeContato ?? d.numeroWhatsapp}</td>
+                    <td className="px-5 py-3 font-medium text-ink">{d.nomeContato ?? d.numeroWhatsapp}</td>
                     <td className="px-5 py-3 text-muted">
-                      <Link to={`/discadora/${d.campanha.id}`} className="hover:text-primary hover:underline">
+                      <Link to={`/discadora/${d.campanha.id}`} className="hover:text-accent hover:underline">
                         {d.campanha.nome}
                       </Link>
                     </td>

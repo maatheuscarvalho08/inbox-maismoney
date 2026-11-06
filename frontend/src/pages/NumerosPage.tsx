@@ -53,7 +53,7 @@ function FormNovoNumero({ onCriado }: { onCriado: () => void }) {
     return (
       <button
         onClick={() => setAberto(true)}
-        className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-bg hover:opacity-90"
+        className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-marca-indigo hover:opacity-90"
       >
         <Plus size={14} /> Novo número
       </button>
@@ -63,21 +63,21 @@ function FormNovoNumero({ onCriado }: { onCriado: () => void }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mb-6 grid grid-cols-1 gap-3 rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl sm:grid-cols-2"
+      className="mb-6 grid grid-cols-1 gap-3 rounded-lg border border-ink/10 bg-surface p-5 sm:grid-cols-2"
     >
       <input
         required
         placeholder="Nome (ex. Atendimento 1)"
         value={nome}
         onChange={(e) => setNome(e.target.value)}
-        className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+        className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
       />
       <input
         required
         placeholder="Número (5521999999999)"
         value={numero}
         onChange={(e) => setNumero(e.target.value)}
-        className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+        className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
       />
 
       <Select
@@ -95,7 +95,7 @@ function FormNovoNumero({ onCriado }: { onCriado: () => void }) {
           placeholder="Nome da instância na Evolution API"
           value={evolutionInstanceId}
           onChange={(e) => setEvolutionInstanceId(e.target.value)}
-          className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+          className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
         />
       ) : (
         <div className="flex gap-2">
@@ -104,32 +104,32 @@ function FormNovoNumero({ onCriado }: { onCriado: () => void }) {
             placeholder="Phone Number ID"
             value={metaPhoneNumberId}
             onChange={(e) => setMetaPhoneNumberId(e.target.value)}
-            className="w-1/2 rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+            className="w-1/2 rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
           />
           <input
             required
             placeholder="WABA ID"
             value={metaWabaId}
             onChange={(e) => setMetaWabaId(e.target.value)}
-            className="w-1/2 rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+            className="w-1/2 rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
           />
         </div>
       )}
 
-      {erro && <p className="text-xs text-primary sm:col-span-2">{erro}</p>}
+      {erro && <p className="text-xs text-accent sm:col-span-2">{erro}</p>}
 
       <div className="flex gap-2 sm:col-span-2">
         <button
           type="submit"
           disabled={enviando}
-          className="flex-1 rounded-md bg-primary py-2 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+          className="flex-1 rounded-md bg-primary py-2 text-sm font-semibold text-marca-indigo hover:opacity-90 disabled:opacity-50"
         >
           {enviando ? "Cadastrando..." : "Cadastrar número"}
         </button>
         <button
           type="button"
           onClick={() => setAberto(false)}
-          className="rounded-md border border-border px-4 py-2 text-sm text-muted hover:text-white"
+          className="rounded-md border border-border px-4 py-2 text-sm text-muted hover:text-ink"
         >
           Cancelar
         </button>
@@ -179,7 +179,7 @@ function TemplatesDaInstancia({ instanciaId }: { instanciaId: string }) {
     <div className="mt-3 border-t border-border pt-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">Templates</p>
-        <button onClick={() => setAdicionando((v) => !v)} className="text-muted hover:text-primary">
+        <button onClick={() => setAdicionando((v) => !v)} className="text-muted hover:text-accent">
           {adicionando ? <X size={12} /> : <Plus size={12} />}
         </button>
       </div>
@@ -189,10 +189,10 @@ function TemplatesDaInstancia({ instanciaId }: { instanciaId: string }) {
         {templates.map((t) => (
           <span
             key={t.id}
-            className="flex items-center gap-1 rounded border border-primary/30 bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+            className="flex items-center gap-1 rounded border border-primary/30 bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-accent"
           >
             {t.nome}
-            <button onClick={() => remover(t.id)} className="hover:text-white">
+            <button onClick={() => remover(t.id)} className="hover:text-ink">
               <X size={9} />
             </button>
           </span>
@@ -206,24 +206,24 @@ function TemplatesDaInstancia({ instanciaId }: { instanciaId: string }) {
             placeholder="Nome do template"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
+            className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-ink outline-none focus:border-accent"
           />
           <input
             required
             placeholder="ID aprovado na Meta"
             value={metaTemplateId}
             onChange={(e) => setMetaTemplateId(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
+            className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-ink outline-none focus:border-accent"
           />
           <input
             required
             placeholder="Idioma (ex. pt_BR, en)"
             value={idioma}
             onChange={(e) => setIdioma(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-white outline-none focus:border-primary"
+            className="w-full rounded-md border border-border bg-bg/60 px-2 py-1.5 text-xs text-ink outline-none focus:border-accent"
           />
-          {erro && <p className="text-[10px] text-primary">{erro}</p>}
-          <button type="submit" className="w-full rounded-md border border-primary py-1 text-xs font-medium text-primary hover:bg-primary/10">
+          {erro && <p className="text-[10px] text-accent">{erro}</p>}
+          <button type="submit" className="w-full rounded-md border border-primary py-1 text-xs font-medium text-accent hover:bg-primary/10">
             Adicionar
           </button>
         </form>
@@ -250,6 +250,11 @@ export function NumerosPage() {
   }, []);
 
   useSocketEvent("instancia:atualizada", () => carregar());
+
+  async function alternarMaisa(inst: Instancia) {
+    const res = await api.patch<{ instancia: Instancia }>(`/instancias/${inst.id}`, { maisaAtiva: !inst.maisaAtiva });
+    setInstancias((atual) => atual.map((i) => (i.id === inst.id ? res.instancia : i)));
+  }
 
   async function reconectar(inst: Instancia) {
     setErroQrCode(null);
@@ -278,7 +283,7 @@ export function NumerosPage() {
 
       <div className="p-8">
         {erroQrCode && (
-          <p className="mb-4 rounded-md border border-primary/30 bg-primary/10 px-4 py-2 text-sm text-primary">
+          <p className="mb-4 rounded-md border border-primary/30 bg-primary/10 px-4 py-2 text-sm text-accent">
             {erroQrCode}
           </p>
         )}
@@ -292,13 +297,13 @@ export function NumerosPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {instancias.map((inst) => (
-              <div key={inst.id} className="rounded-lg border border-white/10 bg-surface/40 p-4 backdrop-blur-xl">
+              <div key={inst.id} className="rounded-lg border border-ink/10 bg-surface p-4">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-accent">
                     <Smartphone size={16} />
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-white">{inst.nome}</p>
+                    <p className="text-sm font-medium text-ink">{inst.nome}</p>
                     <p className="text-xs text-muted">{inst.numero}</p>
                   </div>
                 </div>
@@ -308,7 +313,7 @@ export function NumerosPage() {
                   <span
                     className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 font-medium ${
                       inst.status === "conectado"
-                        ? "border-primary/30 bg-primary/15 text-primary"
+                        ? "border-primary/30 bg-primary/15 text-accent"
                         : "border-border bg-border/60 text-muted"
                     }`}
                   >
@@ -319,11 +324,32 @@ export function NumerosPage() {
                   </span>
                 </div>
 
+                <div className="mt-3 flex items-start justify-between gap-3 border-t border-border pt-3">
+                  <div>
+                    <p className="text-xs font-semibold text-ink">Maisa neste número</p>
+                    <p className="mt-0.5 text-xs text-muted">
+                      Novos clientes vão para a seção da Maisa. Ela ainda não responde sozinha.
+                    </p>
+                  </div>
+                  <button
+                    role="switch"
+                    aria-checked={inst.maisaAtiva}
+                    aria-label={`Maisa no número ${inst.nome}`}
+                    onClick={() => alternarMaisa(inst)}
+                    className={`relative h-5 w-9 shrink-0 rounded-full ${inst.maisaAtiva ? "bg-primary" : "bg-muted/40"}`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow-sm ${inst.maisaAtiva ? "translate-x-4" : ""}`}
+                    />
+                  </button>
+                </div>
+
                 {inst.tipoConexao === "evolution" && (
                   <button
                     onClick={() => reconectar(inst)}
                     disabled={gerandoQrCode === inst.id}
-                    className="mt-3 w-full rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
+                    className="mt-3 w-full rounded-md border border-primary px-3 py-1.5 text-xs font-medium text-accent hover:bg-primary/10 disabled:opacity-50"
                   >
                     {gerandoQrCode === inst.id ? "Gerando QR Code..." : "Reconectar (QR Code)"}
                   </button>
@@ -337,11 +363,11 @@ export function NumerosPage() {
       </div>
 
       {qrCode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-xs rounded-lg border border-border bg-surface p-5">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-medium text-white">{qrCode.nome}</p>
-              <button onClick={() => setQrCode(null)} className="text-muted hover:text-white">
+              <p className="text-sm font-medium text-ink">{qrCode.nome}</p>
+              <button onClick={() => setQrCode(null)} className="text-muted hover:text-ink">
                 <X size={16} />
               </button>
             </div>

@@ -14,18 +14,18 @@ export function StatCard({ icon: Icon, label, value, trendLabel, trendDirection,
   const ArrowIcon = trendDirection === "down" ? ArrowDown : ArrowUp;
 
   return (
-    <div className="rounded-lg border border-white/10 bg-surface/40 p-4 backdrop-blur-xl">
+    <div className="rounded-lg border border-ink/10 bg-surface p-4">
       <div className="flex items-center gap-2">
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-accent">
           <Icon size={14} strokeWidth={2} />
         </span>
         <p className="text-xs font-medium text-muted">{label}</p>
       </div>
 
-      <p className="mt-3 text-2xl font-bold text-white">{value}</p>
+      <p className="mt-3 text-2xl font-bold text-ink">{value}</p>
 
       {trendLabel && (
-        <p className="mt-1 flex items-center gap-1 text-xs font-medium text-primary">
+        <p className="mt-1 flex items-center gap-1 text-xs font-medium text-accent">
           <ArrowIcon size={11} strokeWidth={2.5} />
           {trendLabel}
         </p>

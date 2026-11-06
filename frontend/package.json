@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "lucide-react": "^1.31.0",
     "papaparse": "^5.6.0",

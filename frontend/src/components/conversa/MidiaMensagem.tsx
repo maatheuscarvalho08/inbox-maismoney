@@ -36,7 +36,7 @@ export function MidiaMensagem({ mensagemId, tipoMidia }: { mensagemId: string; t
         <button
           onClick={() => baixarFotoComoJpg(mensagemId)}
           title="Baixar como JPG"
-          className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-md bg-bg/70 text-white opacity-0 hover:bg-bg group-hover:opacity-100"
+          className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-md bg-bg/70 text-ink opacity-0 hover:bg-bg group-hover:opacity-100"
         >
           <Download size={14} />
         </button>
@@ -58,7 +58,7 @@ export function MidiaMensagem({ mensagemId, tipoMidia }: { mensagemId: string; t
     <a
       href={url}
       download
-      className="flex items-center gap-2 rounded-md border border-border bg-bg/40 px-3 py-2 text-xs text-white hover:border-primary"
+      className="flex items-center gap-2 rounded-md border border-border bg-bg/40 px-3 py-2 text-xs text-ink hover:border-primary"
     >
       <FileText size={14} />
       Baixar arquivo

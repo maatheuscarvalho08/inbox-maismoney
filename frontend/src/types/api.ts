@@ -24,6 +24,7 @@ export interface Instancia {
   metaPhoneNumberId: string | null;
   metaWabaId: string | null;
   status: StatusInstancia;
+  maisaAtiva: boolean;
   createdAt: string;
 }
 
@@ -80,8 +81,9 @@ export interface Conversa {
   createdAt: string;
   origemDisparo: boolean;
   respondida: boolean;
+  comMaisa: boolean;
   contato: Contato;
-  instancia: Pick<Instancia, "id" | "nome" | "numero" | "tipoConexao" | "status">;
+  instancia: Pick<Instancia, "id" | "nome" | "numero" | "tipoConexao" | "status" | "maisaAtiva">;
   operador: { id: string; nome: string; fotoPath: string | null } | null;
   mensagens?: Mensagem[];
   etiquetas: { etiqueta: Etiqueta }[];

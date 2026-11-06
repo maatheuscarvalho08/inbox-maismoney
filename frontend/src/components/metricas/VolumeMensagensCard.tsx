@@ -12,11 +12,11 @@ export function VolumeMensagensCard({ dados }: { dados: { mes: string; total: nu
   const chartData = dados.map((d) => ({ mes: formatarMes(d.mes), total: d.total }));
 
   return (
-    <div className="rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl">
+    <div className="rounded-lg border border-ink/10 bg-surface p-5">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-white">Volume de mensagens</h2>
-          <p className="mt-1 text-xl font-bold text-white">{total.toLocaleString("pt-BR")}</p>
+          <h2 className="text-sm font-semibold text-ink">Volume de mensagens</h2>
+          <p className="mt-1 text-xl font-bold text-ink">{total.toLocaleString("pt-BR")}</p>
         </div>
         <span className="rounded-md border border-border px-2.5 py-1 text-xs text-muted">Últimos 12 meses</span>
       </div>
@@ -40,7 +40,7 @@ export function VolumeMensagensCard({ dados }: { dados: { mes: string; total: nu
                 fontSize: 12,
               }}
               labelStyle={{ color: "var(--color-muted)" }}
-              itemStyle={{ color: "var(--color-white)" }}
+              itemStyle={{ color: "var(--color-ink)" }}
               formatter={(value) => [Number(value).toLocaleString("pt-BR"), "Mensagens"]}
             />
             <Bar dataKey="total" fill="var(--color-primary)" radius={[4, 4, 0, 0]} maxBarSize={28} />

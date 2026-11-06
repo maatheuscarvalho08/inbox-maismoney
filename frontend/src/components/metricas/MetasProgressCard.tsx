@@ -7,14 +7,14 @@ export interface MetaProgresso {
 
 export function MetasProgressCard({ dados }: { dados: MetaProgresso[] }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl">
-      <h2 className="text-sm font-semibold text-white">Metas do time</h2>
+    <div className="rounded-lg border border-ink/10 bg-surface p-5">
+      <h2 className="text-sm font-semibold text-ink">Metas do time</h2>
 
       <div className="mt-4 space-y-4">
         {dados.map((meta) => (
           <div key={meta.label}>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-white">{meta.label}</span>
+              <span className="text-ink">{meta.label}</span>
               <span className="text-muted">
                 {meta.atual} / {meta.meta}
               </span>

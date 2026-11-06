@@ -57,11 +57,11 @@ export function NovaConversaModal({ aberto, onFechar, onCriada }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-sm rounded-lg border border-border bg-surface p-5">
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm font-medium text-white">Nova conversa</p>
-          <button onClick={onFechar} className="text-muted hover:text-white">
+          <p className="text-sm font-medium text-ink">Nova conversa</p>
+          <button onClick={onFechar} className="text-muted hover:text-ink">
             <X size={16} />
           </button>
         </div>
@@ -79,22 +79,22 @@ export function NovaConversaModal({ aberto, onFechar, onCriada }: Props) {
             placeholder="Número (5521999999999)"
             value={numero}
             onChange={(e) => setNumero(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+            className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
           />
 
           <input
             placeholder="Nome do contato (opcional)"
             value={nomeContato}
             onChange={(e) => setNomeContato(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+            className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
           />
 
-          {erro && <p className="text-xs text-primary">{erro}</p>}
+          {erro && <p className="text-xs text-accent">{erro}</p>}
 
           <button
             type="submit"
             disabled={enviando}
-            className="w-full rounded-md bg-primary py-2 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+            className="w-full rounded-md bg-primary py-2 text-sm font-semibold text-marca-indigo hover:opacity-90 disabled:opacity-50"
           >
             {enviando ? "Criando..." : "Iniciar conversa"}
           </button>

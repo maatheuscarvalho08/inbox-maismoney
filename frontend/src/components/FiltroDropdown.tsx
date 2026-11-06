@@ -29,28 +29,28 @@ export function FiltroDropdown({ label, icon: Icon, itens, selecionado, onSeleci
     <div ref={containerRef} className="relative">
       <button
         onClick={() => setAberto((v) => !v)}
-        className={`flex w-full items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors duration-150 ease-out ${
+        className={`flex w-full items-center justify-between gap-2 rounded-md border h-8 px-2.5 text-xs font-medium transition-colors duration-150 ease-out ${
           selecionado || aberto
-            ? "border-primary bg-primary/10 text-primary"
-            : "border-border text-muted hover:text-white"
+            ? "border-primary bg-primary/10 text-accent"
+            : "border-border text-muted hover:text-ink"
         }`}
       >
-        <span className="flex items-center gap-1.5 truncate">
-          <Icon size={11} />
-          {itemAtivo ? itemAtivo.label : label}
+        <span className="flex min-w-0 items-center gap-1.5">
+          <Icon size={13} className="shrink-0" />
+          <span className="truncate">{itemAtivo ? itemAtivo.label : label}</span>
         </span>
         <ChevronDown size={12} className={`shrink-0 transition-transform ${aberto ? "rotate-180" : ""}`} />
       </button>
 
       {aberto && (
-        <div className="absolute left-0 top-full z-20 mt-1 max-h-64 w-56 overflow-y-auto rounded-md border border-white/10 bg-surface p-2 shadow-xl">
+        <div className="absolute left-0 top-full z-20 mt-1 max-h-64 w-56 overflow-y-auto rounded-md border border-ink/10 bg-surface p-2 shadow-xl">
           <button
             onClick={() => {
               onSelecionar(null);
               setAberto(false);
             }}
             className={`flex w-full items-center rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors duration-150 ease-out ${
-              selecionado === null ? "bg-primary/10 text-primary" : "text-white hover:bg-white/5"
+              selecionado === null ? "bg-primary/10 text-accent" : "text-ink hover:bg-ink/5"
             }`}
           >
             Todos
@@ -66,7 +66,7 @@ export function FiltroDropdown({ label, icon: Icon, itens, selecionado, onSeleci
                 setAberto(false);
               }}
               className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors duration-150 ease-out ${
-                selecionado === item.id ? "bg-primary/10 text-primary" : "text-white hover:bg-white/5"
+                selecionado === item.id ? "bg-primary/10 text-accent" : "text-ink hover:bg-ink/5"
               }`}
             >
               <span className="size-1.5 shrink-0 rounded-full bg-primary" />

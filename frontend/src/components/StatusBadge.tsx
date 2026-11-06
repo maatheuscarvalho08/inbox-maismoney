@@ -8,10 +8,10 @@ const LABELS: Record<StatusConversa, string> = {
 };
 
 const STYLES: Record<StatusConversa, string> = {
-  aberta: "border-primary/30 bg-primary/15 text-primary",
-  em_atendimento: "border-accent/30 bg-accent/15 text-[var(--color-accent-fg)]",
+  aberta: "border-primary/30 bg-primary/15 text-accent",
+  em_atendimento: "border-indigo-claro/30 bg-indigo-claro/15 text-indigo-claro",
   encerrada: "border-border bg-border/60 text-muted",
-  aguardando: "border-primary bg-transparent text-primary",
+  aguardando: "border-primary bg-transparent text-accent",
 };
 
 export function StatusBadge({ status }: { status: StatusConversa }) {

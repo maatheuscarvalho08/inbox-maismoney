@@ -89,7 +89,7 @@ export function UsuariosPage() {
         right={
           <button
             onClick={() => setMostrarForm((v) => !v)}
-            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-bg hover:opacity-90"
+            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-marca-indigo hover:opacity-90"
           >
             <Plus size={14} /> Novo usuário
           </button>
@@ -100,14 +100,14 @@ export function UsuariosPage() {
         {mostrarForm && (
           <form
             onSubmit={handleSubmit}
-            className="mb-6 grid grid-cols-1 gap-3 rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4"
+            className="mb-6 grid grid-cols-1 gap-3 rounded-lg border border-ink/10 bg-surface p-5 sm:grid-cols-2 lg:grid-cols-4"
           >
             <input
               required
               placeholder="Nome"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+              className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
             <input
               required
@@ -115,7 +115,7 @@ export function UsuariosPage() {
               placeholder="E-mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+              className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
             <input
               required
@@ -123,7 +123,7 @@ export function UsuariosPage() {
               placeholder="Senha (mín. 8 caracteres)"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+              className="rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
             <Select
               value={role}
@@ -134,19 +134,19 @@ export function UsuariosPage() {
               ]}
             />
 
-            {erro && <p className="sm:col-span-2 lg:col-span-4 text-xs text-primary">{erro}</p>}
+            {erro && <p className="sm:col-span-2 lg:col-span-4 text-xs text-accent">{erro}</p>}
 
             <button
               type="submit"
               disabled={enviando}
-              className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50 sm:col-span-2 lg:col-span-4"
+              className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-marca-indigo hover:opacity-90 disabled:opacity-50 sm:col-span-2 lg:col-span-4"
             >
               {enviando ? "Criando..." : "Criar usuário"}
             </button>
           </form>
         )}
 
-        <div className="overflow-x-auto rounded-lg border border-white/10 bg-surface/40 backdrop-blur-xl">
+        <div className="overflow-x-auto rounded-lg border border-ink/10 bg-surface">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead>
               <tr>
@@ -168,7 +168,7 @@ export function UsuariosPage() {
               {!carregando &&
                 usuarios.map((u) => (
                   <tr key={u.id} className="border-t border-border">
-                    <td className="px-5 py-3 font-medium text-white">{u.nome}</td>
+                    <td className="px-5 py-3 font-medium text-ink">{u.nome}</td>
                     <td className="px-5 py-3 text-muted">
                       {editandoEmailId === u.id ? (
                         <input
@@ -181,7 +181,7 @@ export function UsuariosPage() {
                             if (e.key === "Enter") e.currentTarget.blur();
                             if (e.key === "Escape") setEditandoEmailId(null);
                           }}
-                          className="w-full rounded border border-primary bg-bg/60 px-1.5 py-0.5 text-sm text-white outline-none"
+                          className="w-full rounded border border-primary bg-bg/60 px-1.5 py-0.5 text-sm text-ink outline-none"
                         />
                       ) : (
                         <button
@@ -189,7 +189,7 @@ export function UsuariosPage() {
                             setEmailEditado(u.email);
                             setEditandoEmailId(u.id);
                           }}
-                          className="hover:text-white hover:underline"
+                          className="hover:text-ink hover:underline"
                           title="Clique para editar"
                         >
                           {u.email}
@@ -213,7 +213,7 @@ export function UsuariosPage() {
                     <td className="px-5 py-3">
                       <span
                         className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${
-                          u.ativo ? "border-primary/30 bg-primary/15 text-primary" : "border-border bg-border/60 text-muted"
+                          u.ativo ? "border-primary/30 bg-primary/15 text-accent" : "border-border bg-border/60 text-muted"
                         }`}
                       >
                         {u.ativo ? "Ativo" : "Inativo"}
@@ -221,7 +221,7 @@ export function UsuariosPage() {
                     </td>
                     <td className="px-5 py-3 text-right">
                       {u.id !== usuarioLogado?.id && (
-                        <button onClick={() => alternarAtivo(u)} className="text-xs text-primary hover:underline">
+                        <button onClick={() => alternarAtivo(u)} className="text-xs text-accent hover:underline">
                           {u.ativo ? "Desativar" : "Ativar"}
                         </button>
                       )}

@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useLayoutEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   MessageSquare,
@@ -12,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import { LogoMaisMoney } from "../components/LogoMaisMoney";
 
 interface NavItem {
   to: string;
@@ -44,26 +46,39 @@ const NAV_GROUPS: { label: string; adminOnly?: boolean; items: NavItem[] }[] = [
 export function AppLayout() {
   const { usuario, logout } = useAuth();
   const grupos = NAV_GROUPS.filter((grupo) => !grupo.adminOnly || usuario?.role === "admin");
+  const { pathname } = useLocation();
+  const navRef = useRef<HTMLElement>(null);
+  const [pilula, setPilula] = useState<{ y: number; altura: number } | null>(null);
+
+  // A pílula é uma só e desliza entre os itens, em vez de cada item pintar o próprio fundo.
+  useLayoutEffect(() => {
+    const ativo = navRef.current?.querySelector<HTMLElement>('[aria-current="page"]');
+    setPilula(ativo ? { y: ativo.offsetTop, altura: ativo.offsetHeight } : null);
+  }, [pathname, usuario?.role]);
 
   return (
-    <div className="flex h-screen bg-bg text-white">
+    <div className="flex h-screen bg-bg text-ink">
       <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-surface">
-        <div className="flex items-center gap-2 px-5 py-6">
-          <img src="/logo.png" alt="MaisMoney" className="size-7 object-contain" />
-          <span className="text-lg font-bold tracking-tight text-white">
-            Mais<span className="text-primary">Money</span>
-          </span>
+        <div className="px-5 py-5">
+          <LogoMaisMoney variante="branca" className="block w-32" />
         </div>
 
         <div className="px-4">
-          <div className="flex items-center gap-2 rounded-md border border-white/10 bg-bg/40 px-3 py-2">
+          <div className="flex items-center gap-2 rounded-md border border-ink/10 bg-bg/40 px-3 py-2">
             <Search size={14} className="text-muted" />
             <span className="flex-1 text-sm text-muted">Buscar</span>
-            <kbd className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] text-muted">⌘K</kbd>
+            <kbd className="rounded border border-ink/10 px-1.5 py-0.5 text-[10px] text-muted">⌘K</kbd>
           </div>
         </div>
 
-        <nav className="mt-6 flex-1 space-y-6 overflow-y-auto px-3">
+        <nav ref={navRef} className="relative mx-3 mt-6 flex-1 space-y-6 overflow-y-auto">
+          {pilula && (
+            <span
+              aria-hidden="true"
+              className="nav-pilula rounded-lg bg-primary/15"
+              style={{ height: pilula.altura, transform: `translateY(${pilula.y}px)` }}
+            />
+          )}
           {grupos.map((grupo) => (
             <div key={grupo.label}>
               <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-muted">{grupo.label}</p>
@@ -75,10 +90,8 @@ export function AppLayout() {
                       key={item.to}
                       to={item.to}
                       className={({ isActive }) =>
-                        `flex items-center gap-2.5 rounded-lg border px-2.5 py-2 text-sm font-medium ${
-                          isActive
-                            ? "border-primary/20 bg-primary/10 text-white"
-                            : "border-transparent text-muted hover:bg-white/5 hover:text-white"
+                        `nav-item relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium ${
+                          isActive ? "font-semibold text-ink" : "text-muted hover:bg-ink/5 hover:text-ink"
                         }`
                       }
                     >
@@ -86,7 +99,7 @@ export function AppLayout() {
                         <>
                           <span
                             className={`flex size-6 shrink-0 items-center justify-center rounded-md ${
-                              isActive ? "bg-primary/20 text-primary" : "bg-white/5 text-muted"
+                              isActive ? "bg-primary text-marca-indigo" : "bg-ink/5 text-muted"
                             }`}
                           >
                             <Icon size={14} strokeWidth={2} />
@@ -103,10 +116,10 @@ export function AppLayout() {
         </nav>
 
         <div className="p-3">
-          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-            <p className="truncate text-sm font-medium text-white">{usuario?.nome}</p>
+          <div className="rounded-lg border border-ink/10 bg-ink/[0.03] p-3">
+            <p className="truncate text-sm font-medium text-ink">{usuario?.nome}</p>
             <p className="truncate text-xs capitalize text-muted">{usuario?.role}</p>
-            <button onClick={logout} className="mt-2 text-xs font-semibold text-primary hover:underline">
+            <button onClick={logout} className="mt-2 text-xs font-semibold text-accent hover:underline">
               Sair
             </button>
           </div>
@@ -114,7 +127,10 @@ export function AppLayout() {
       </aside>
 
       <main className="flex-1 overflow-y-auto bg-bg">
-        <Outlet />
+        {/* Muda só entre seções: trocar de conversa não remonta a lista. */}
+        <div key={pathname.split("/")[1]} className="pagina-entra h-full">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

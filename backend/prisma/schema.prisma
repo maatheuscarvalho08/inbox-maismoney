@@ -86,6 +86,8 @@ model Instancia {
   metaPhoneNumberId  String?          @map("meta_phone_number_id")
   metaWabaId         String?          @map("meta_waba_id")
   status             StatusInstancia  @default(desconectado)
+  // Liga a Maisa (IA) neste número. Conversas novas de clientes começam com ela.
+  maisaAtiva         Boolean          @default(false) @map("maisa_ativa")
   createdAt          DateTime         @default(now()) @map("created_at")
 
   templates          Template[]
@@ -144,6 +146,9 @@ model Conversa {
   // Vira true no primeiro reply do cliente — é o que tira a conversa da aba "Disparos"
   // e joga pra aba "Atendimento" sem precisar reclassificar origemDisparo.
   respondida    Boolean         @default(true) @map("respondida")
+  // true = a Maisa está conduzindo. false = fora dela: sem operadorId fica em
+  // "Na fila", com operadorId fica em "Atribuídas".
+  comMaisa      Boolean         @default(false) @map("com_maisa")
 
   instancia     Instancia  @relation(fields: [instanciaId], references: [id])
   contato       Contato    @relation(fields: [contatoId], references: [id])
@@ -234,6 +239,7 @@ model Mensagem {
   respondeA     Mensagem?  @relation("RespostaMensagem", fields: [respondeAId], references: [id], onDelete: SetNull)
   respostas     Mensagem[] @relation("RespostaMensagem")
 
+  @@index([loteId])
   @@map("mensagens")
 }
 
@@ -270,5 +276,7 @@ model CampanhaNumero {
 
   campanha       CampanhaDiscadora @relation(fields: [campanhaId], references: [id])
 
+  @@index([campanhaId])
+  @@index([twilioCallSid])
   @@map("campanha_numeros")
 }

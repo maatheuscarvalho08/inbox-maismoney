@@ -64,7 +64,7 @@ function CardPerfil() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-md space-y-4 rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl"
+      className="w-full max-w-md space-y-4 rounded-lg border border-ink/10 bg-surface p-5"
     >
       <div className="flex items-center gap-3">
         <div className="group relative">
@@ -94,7 +94,7 @@ function CardPerfil() {
           </button>
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-white">Meu perfil</h2>
+          <h2 className="text-sm font-semibold text-ink">Meu perfil</h2>
           <p className="mt-0.5 text-xs text-muted">{usuario?.email}</p>
         </div>
       </div>
@@ -104,7 +104,7 @@ function CardPerfil() {
         <input
           value={nome}
           onChange={(e) => setNome(e.target.value)}
-          className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+          className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
         />
       </div>
 
@@ -116,25 +116,25 @@ function CardPerfil() {
             placeholder="Senha atual"
             value={senhaAtual}
             onChange={(e) => setSenhaAtual(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+            className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
           />
           <input
             type="password"
             placeholder="Nova senha (mín. 8 caracteres)"
             value={novaSenha}
             onChange={(e) => setNovaSenha(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+            className="w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
           />
         </div>
       </div>
 
-      {erro && <p className="text-xs text-primary">{erro}</p>}
-      {sucesso && <p className="text-xs text-primary">Perfil atualizado.</p>}
+      {erro && <p className="text-xs text-accent">{erro}</p>}
+      {sucesso && <p className="text-xs text-accent">Perfil atualizado.</p>}
 
       <button
         type="submit"
         disabled={enviando}
-        className="w-full rounded-md bg-primary py-2 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+        className="w-full rounded-md bg-primary py-2 text-sm font-semibold text-marca-indigo hover:opacity-90 disabled:opacity-50"
       >
         {enviando ? "Salvando..." : "Salvar alterações"}
       </button>
@@ -152,12 +152,12 @@ function CardSistema() {
   if (!config) return null;
 
   return (
-    <div className="w-full max-w-md space-y-4 rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl">
-      <h2 className="text-sm font-semibold text-white">Sistema</h2>
+    <div className="w-full max-w-md space-y-4 rounded-lg border border-ink/10 bg-surface p-5">
+      <h2 className="text-sm font-semibold text-ink">Sistema</h2>
 
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-muted">Empresa</p>
-        <p className="mt-1 text-sm text-white">{config.empresa.nome}</p>
+        <p className="mt-1 text-sm text-ink">{config.empresa.nome}</p>
         <p className="text-xs text-muted">
           {config.empresa.cnpj} · {config.empresa.setor}
         </p>
@@ -165,7 +165,7 @@ function CardSistema() {
 
       <div className="border-t border-border pt-4">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">Retenção de mídia</p>
-        <p className="mt-1 text-sm text-white">
+        <p className="mt-1 text-sm text-ink">
           Arquivos são apagados após {config.midia.retencaoDias} dias de inatividade na conversa
         </p>
       </div>
@@ -174,13 +174,13 @@ function CardSistema() {
         <p className="text-xs font-medium uppercase tracking-wide text-muted">Números e equipe</p>
         <div className="mt-2 grid grid-cols-2 gap-3">
           <div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-lg font-bold text-ink">
               {config.contadores.instanciasConectadas}/{config.contadores.totalInstancias}
             </p>
             <p className="text-xs text-muted">números conectados</p>
           </div>
           <div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-lg font-bold text-ink">
               {config.contadores.usuariosAtivos}/{config.contadores.totalUsuarios}
             </p>
             <p className="text-xs text-muted">usuários ativos</p>

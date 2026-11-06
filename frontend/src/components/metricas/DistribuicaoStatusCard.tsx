@@ -9,7 +9,7 @@ const LABELS: Record<StatusConversa, string> = {
 
 const DOT_COLOR: Record<StatusConversa, string> = {
   aberta: "bg-primary",
-  em_atendimento: "bg-accent",
+  em_atendimento: "bg-indigo-claro",
   aguardando: "bg-primary",
   encerrada: "bg-muted",
 };
@@ -18,8 +18,8 @@ export function DistribuicaoStatusCard({ dados }: { dados: { status: StatusConve
   const total = dados.reduce((acc, s) => acc + s.total, 0);
 
   return (
-    <div className="rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl">
-      <h2 className="text-sm font-semibold text-white">Distribuição por status</h2>
+    <div className="rounded-lg border border-ink/10 bg-surface p-5">
+      <h2 className="text-sm font-semibold text-ink">Distribuição por status</h2>
 
       {total === 0 ? (
         <div className="mt-4 rounded-md border border-dashed border-border p-6 text-center text-sm text-muted">
@@ -29,7 +29,7 @@ export function DistribuicaoStatusCard({ dados }: { dados: { status: StatusConve
         <div className="mt-4 space-y-3">
           {dados.map((s) => (
             <div key={s.status} className="flex items-center justify-between text-sm">
-              <span className="flex items-center gap-2 text-white">
+              <span className="flex items-center gap-2 text-ink">
                 <span className={`size-2 rounded-full ${DOT_COLOR[s.status]}`} />
                 {LABELS[s.status]}
               </span>

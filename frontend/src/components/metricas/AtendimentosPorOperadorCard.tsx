@@ -16,9 +16,9 @@ export function AtendimentosPorOperadorCard({ dados }: { dados: OperadorAtendime
   const total = dados.reduce((acc, o) => acc + o.total, 0);
 
   return (
-    <div className="rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl">
+    <div className="rounded-lg border border-ink/10 bg-surface p-5">
       <div className="flex items-start justify-between">
-        <h2 className="text-sm font-semibold text-white">Atendimentos por operador</h2>
+        <h2 className="text-sm font-semibold text-ink">Atendimentos por operador</h2>
         <span className="rounded-md border border-border px-2.5 py-1 text-xs text-muted">Total</span>
       </div>
 
@@ -52,12 +52,12 @@ export function AtendimentosPorOperadorCard({ dados }: { dados: OperadorAtendime
                     fontSize: 12,
                   }}
                   labelStyle={{ color: "var(--color-muted)" }}
-                  itemStyle={{ color: "var(--color-white)" }}
+                  itemStyle={{ color: "var(--color-ink)" }}
                 />
               </PieChart>
             </ResponsiveContainer>
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-bold text-white">{total}</span>
+              <span className="text-xl font-bold text-ink">{total}</span>
               <span className="text-[10px] text-muted">Total</span>
             </div>
           </div>
@@ -65,7 +65,7 @@ export function AtendimentosPorOperadorCard({ dados }: { dados: OperadorAtendime
           <div className="flex-1 space-y-3">
             {dados.map((op, i) => (
               <div key={op.operadorId ?? op.nome} className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-white">
+                <span className="flex items-center gap-2 text-ink">
                   <span className="size-2 rounded-full" style={{ backgroundColor: CORES[i % CORES.length] }} />
                   {op.nome}
                 </span>

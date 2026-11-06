@@ -141,10 +141,10 @@ export function Composer({
 
   if (foraDaJanela) {
     return (
-      <div className="border-t border-border bg-surface/60 p-4 text-center text-sm text-muted">
+      <div className="border-t border-border bg-surface p-4 text-center text-sm text-muted">
         Fora da janela de 24h desde a última mensagem do cliente — a Meta Cloud API só permite reenviar através de um
         template aprovado. Use a tela de{" "}
-        <Link to="/disparos" className="text-primary hover:underline">
+        <Link to="/disparos" className="text-accent hover:underline">
           Disparos
         </Link>
         .
@@ -153,16 +153,16 @@ export function Composer({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-border bg-surface/60 p-4">
+    <form onSubmit={handleSubmit} className="border-t border-border bg-surface p-4">
       {respondendoA && (
         <div className="mb-2 flex items-center gap-2 rounded-md border-l-2 border-primary bg-bg/40 px-3 py-1.5">
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-medium text-primary">
+            <p className="text-[11px] font-medium text-accent">
               Respondendo a {respondendoA.remetenteTipo === "operador" ? "você mesmo" : "cliente"}
             </p>
             <p className="truncate text-xs text-muted">{previewDaMensagem(respondendoA)}</p>
           </div>
-          <button type="button" onClick={onCancelarResposta} className="shrink-0 text-muted hover:text-primary">
+          <button type="button" onClick={onCancelarResposta} className="shrink-0 text-muted hover:text-accent">
             <X size={14} />
           </button>
         </div>
@@ -176,7 +176,7 @@ export function Composer({
             type="button"
             onClick={cancelarAudio}
             title="Descartar e gravar de novo"
-            className="shrink-0 text-muted hover:text-primary"
+            className="shrink-0 text-muted hover:text-accent"
           >
             <X size={14} />
           </button>
@@ -186,24 +186,24 @@ export function Composer({
           <div className="mb-2 flex items-center gap-2 text-xs text-muted">
             <Paperclip size={12} />
             {arquivo.name}
-            <button type="button" onClick={cancelarAudio} className="text-primary hover:underline">
+            <button type="button" onClick={cancelarAudio} className="text-accent hover:underline">
               <X size={12} />
             </button>
           </div>
         )
       )}
 
-      {erro && <p className="mb-2 text-xs text-primary">{erro}</p>}
+      {erro && <p className="mb-2 text-xs text-accent">{erro}</p>}
 
       <div className="flex items-center gap-2">
         {gravando ? (
           <div className="flex flex-1 items-center gap-2 rounded-md border border-primary bg-bg/60 px-3 py-2 text-sm">
             <span className="size-2 shrink-0 animate-pulse rounded-full bg-primary" />
-            <span className="flex-1 text-white">Gravando... {formatarTempo(tempoGravacao)}</span>
+            <span className="flex-1 text-ink">Gravando... {formatarTempo(tempoGravacao)}</span>
             <button
               type="button"
               onClick={pararGravacao}
-              className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+              className="flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
             >
               <Square size={12} /> Parar
             </button>
@@ -222,7 +222,7 @@ export function Composer({
             <button
               type="button"
               onClick={() => inputArquivoRef.current?.click()}
-              className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted hover:border-primary hover:text-primary"
+              className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted hover:border-primary hover:text-accent"
             >
               <Paperclip size={16} />
             </button>
@@ -231,7 +231,7 @@ export function Composer({
               type="button"
               onClick={iniciarGravacao}
               title="Gravar áudio"
-              className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted hover:border-primary hover:text-primary"
+              className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted hover:border-primary hover:text-accent"
             >
               <Mic size={16} />
             </button>
@@ -254,13 +254,13 @@ export function Composer({
                 }
               }}
               placeholder="Digite uma mensagem..."
-              className="max-h-[120px] flex-1 resize-none rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-white outline-none focus:border-primary"
+              className="max-h-[120px] flex-1 resize-none rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
 
             <button
               type="submit"
               disabled={enviando || (!texto.trim() && !arquivo)}
-              className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-bg hover:opacity-90 disabled:opacity-50"
+              className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-marca-indigo hover:opacity-90 disabled:opacity-50"
             >
               <Send size={16} />
             </button>

@@ -1,27 +1,55 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { CircleAlert, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { useAuth, ApiError } from "../lib/auth";
+import { FundoMarca } from "../components/FundoMarca";
+import { LogoMaisMoney } from "../components/LogoMaisMoney";
+
+const SAIDA_DO_FORMULARIO_MS = 220;
+
+const classeCampo =
+  "login-campo-input h-12 w-full rounded-lg bg-marca-creme pl-11 text-base font-medium text-marca-indigo placeholder:text-marca-indigo/70 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-indigo";
 
 export function LoginPage() {
-  const { usuario, login } = useAuth();
+  const { usuario, carregando, login, iniciarSaudacao } = useAuth();
+  const logoRef = useRef<HTMLDivElement>(null);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  // Segura o redirecionamento só no login feito aqui; quem já tem sessão vai direto.
+  const [entrando, setEntrando] = useState(false);
+  const [saindo, setSaindo] = useState(false);
+  const [podeIr, setPodeIr] = useState(false);
 
-  if (usuario) {
+  if (usuario && (!entrando || podeIr)) {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  // Evita mostrar o login por um instante enquanto a sessão salva é verificada.
+  if (carregando) {
+    return <div className="h-dvh bg-marca-laranja" />;
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setErro(null);
     setEnviando(true);
+    setEntrando(true);
     try {
       await login(email, senha);
+      setSaindo(true);
+      const reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      setTimeout(
+        () => {
+          if (logoRef.current) iniciarSaudacao(logoRef.current.getBoundingClientRect());
+          setPodeIr(true);
+        },
+        reduzido ? 0 : SAIDA_DO_FORMULARIO_MS,
+      );
     } catch (err) {
+      setEntrando(false);
       setErro(err instanceof ApiError ? err.message : "Não foi possível fazer login");
     } finally {
       setEnviando(false);
@@ -29,86 +57,85 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative flex h-screen items-center justify-center overflow-hidden bg-bg px-6">
-      <div className="pointer-events-none absolute -left-48 -top-48 size-[560px] rounded-full bg-primary/25 blur-[120px]" />
-      <div className="pointer-events-none absolute -right-40 bottom-0 size-[420px] rounded-full bg-primary/15 blur-[100px]" />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 size-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/30 blur-[110px]" />
+    <main className="font-marca relative flex min-h-dvh items-center justify-center overflow-hidden bg-marca-laranja px-6 py-10 text-marca-indigo">
+      <FundoMarca />
 
-      <form
-        onSubmit={handleSubmit}
-        className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/10 bg-surface/30 p-8 shadow-2xl shadow-black/50 backdrop-blur-2xl"
-      >
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.1] via-transparent to-primary/[0.08]" />
+      <div className="relative w-full max-w-[22rem]">
+        <h1 className="sr-only">Entrar no Mais Money Inbox</h1>
+        <div ref={logoRef} className="logo-animada mx-auto w-52 sm:w-60">
+          <LogoMaisMoney className="block w-full" />
+        </div>
 
-        <div className="relative">
-          <div className="text-center">
-            <img src="/logo.png" alt="MaisMoney" className="mx-auto size-12 object-contain" />
-
-            <h1 className="mt-4 text-2xl font-bold text-white">Bem-vindo</h1>
+        <form onSubmit={handleSubmit} className={`mt-10 space-y-3 ${saindo ? "login-saindo" : ""}`}>
+          <div className="login-campo relative" style={{ animationDelay: "220ms" }}>
+            <label htmlFor="email" className="sr-only">
+              E-mail
+            </label>
+            <Mail size={18} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-[15px]" />
+            <input
+              id="email"
+              type="email"
+              required
+              autoFocus
+              autoComplete="email"
+              placeholder="E-mail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={`${classeCampo} pr-3`}
+            />
           </div>
 
-          <div className="mt-6 space-y-4">
-            <div>
-              <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-muted">
-                E-mail
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-md border border-white/10 bg-bg/60 px-3 py-2.5 text-sm text-white outline-none focus:border-primary"
-              />
-            </div>
+          <div className="login-campo relative" style={{ animationDelay: "280ms" }}>
+            <label htmlFor="senha" className="sr-only">
+              Senha
+            </label>
+            <Lock size={18} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-[15px]" />
+            <input
+              id="senha"
+              type={mostrarSenha ? "text" : "password"}
+              required
+              autoComplete="current-password"
+              placeholder="Senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              className={`${classeCampo} pr-12`}
+            />
+            <button
+              type="button"
+              onClick={() => setMostrarSenha((v) => !v)}
+              aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+              className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-lg outline-none hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-indigo"
+            >
+              {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
 
-            <div>
-              <label htmlFor="senha" className="mb-1.5 block text-xs font-medium text-muted">
-                Senha
-              </label>
-              <div className="relative">
-                <input
-                  id="senha"
-                  type={mostrarSenha ? "text" : "password"}
-                  required
-                  autoComplete="current-password"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  className="w-full rounded-md border border-white/10 bg-bg/60 px-3 py-2.5 pr-10 text-sm text-white outline-none focus:border-primary"
-                />
-                <button
-                  type="button"
-                  onClick={() => setMostrarSenha((v) => !v)}
-                  aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
-                  className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted hover:text-white"
-                >
-                  {mostrarSenha ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              </div>
-              <Link
-                to="/recuperar-senha"
-                className="mt-1.5 inline-block text-xs font-medium text-primary hover:underline"
-              >
-                Esqueci minha senha
-              </Link>
-            </div>
+          {erro && (
+            <p role="alert" className="flex items-start gap-2 pt-1 text-sm font-semibold">
+              <CircleAlert size={18} aria-hidden="true" className="mt-px shrink-0" />
+              {erro}
+            </p>
+          )}
 
-            {erro && <p className="text-sm text-primary">{erro}</p>}
-
+          <div className="login-campo !mt-5" style={{ animationDelay: "340ms" }}>
             <button
               type="submit"
-              disabled={enviando}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50"
+              disabled={enviando || saindo}
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-white text-base font-bold text-marca-indigo outline-none hover:bg-marca-indigo hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-indigo disabled:cursor-wait disabled:hover:bg-white disabled:hover:text-marca-indigo"
             >
-              <LogIn size={16} strokeWidth={2.5} />
+              {enviando && <Loader2 size={18} aria-hidden="true" className="animate-spin" />}
               {enviando ? "Entrando..." : "Entrar"}
             </button>
           </div>
 
-          <p className="mt-6 text-center text-xs text-muted">Acesso restrito a usuários autorizados.</p>
-        </div>
-      </form>
-    </div>
+          <div className="login-campo flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-1 text-sm" style={{ animationDelay: "400ms" }}>
+            <p>Acesso restrito à equipe.</p>
+            <Link to="/recuperar-senha" className="font-semibold underline underline-offset-2 hover:opacity-70">
+              Esqueci minha senha
+            </Link>
+          </div>
+        </form>
+      </div>
+    </main>
   );
 }

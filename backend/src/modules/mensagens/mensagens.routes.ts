@@ -186,6 +186,15 @@ router.post(
       return res.status(500).json({ error: "Erro inesperado ao criar mensagem" });
     }
 
+    // Operador respondeu: a Maisa para na hora, e quem respondeu vira o responsável
+    // se a conversa ainda não tinha um.
+    if (conversa.comMaisa || !conversa.operadorId) {
+      await prisma.conversa.update({
+        where: { id: conversaId },
+        data: { comMaisa: false, operadorId: conversa.operadorId ?? req.user!.id },
+      });
+    }
+
     const { entregue, erroEntrega } = await entregarMensagem(mensagem, conversa, original, {
       filename: req.file?.originalname,
       voiceNote: audioGravado,

@@ -130,7 +130,7 @@ router.post(
             const nomeContato: string | undefined = value?.contacts?.[0]?.profile?.name;
 
             const contato = await findOrCreateContato(numero, nomeContato);
-            const conversa = await findOrCreateConversaAberta(instanciaDb.id, contato.id);
+            const conversa = await findOrCreateConversaAberta(instanciaDb.id, contato.id, true);
             // Resposta do cliente tira a conversa da aba "Disparos" (se veio de lá) sem
             // apagar a etiqueta azul de origem — ver conversas.service.ts.
             await marcarConversaRespondida(conversa.id);

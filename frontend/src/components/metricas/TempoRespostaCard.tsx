@@ -15,13 +15,13 @@ export function TempoRespostaCard({ dias, valores }: { dias: string[]; valores: 
   const variacaoPct = primeiroComDado ? Math.round(((ultimo - primeiroComDado) / primeiroComDado) * 100) : 0;
 
   return (
-    <div className="rounded-lg border border-white/10 bg-surface/40 p-5 backdrop-blur-xl">
+    <div className="rounded-lg border border-ink/10 bg-surface p-5">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-white">Tempo de resposta</h2>
-          <p className="mt-1 text-xl font-bold text-white">{formatarSegundos(ultimo)}</p>
+          <h2 className="text-sm font-semibold text-ink">Tempo de resposta</h2>
+          <p className="mt-1 text-xl font-bold text-ink">{formatarSegundos(ultimo)}</p>
           {primeiroComDado > 0 && (
-            <p className="text-xs text-primary">{variacaoPct >= 0 ? "+" : ""}{variacaoPct}% vs início do período</p>
+            <p className="text-xs text-accent">{variacaoPct >= 0 ? "+" : ""}{variacaoPct}% vs início do período</p>
           )}
         </div>
         <span className="rounded-md border border-border px-2.5 py-1 text-xs text-muted">Últimos 8 dias</span>
@@ -50,7 +50,7 @@ export function TempoRespostaCard({ dias, valores }: { dias: string[]; valores: 
                 fontSize: 12,
               }}
               labelStyle={{ color: "var(--color-muted)" }}
-              itemStyle={{ color: "var(--color-white)" }}
+              itemStyle={{ color: "var(--color-ink)" }}
               formatter={(value) => [formatarSegundos(Number(value)), "Tempo médio"]}
             />
             <Area

@@ -69,6 +69,7 @@ Uma plataforma web interna para centralizar e gerenciar todos os atendimentos vi
 - [x] Enviar áudios, fotos e outros arquivos de mídia
 - [x] Registrar qual operador respondeu cada mensagem
 - [x] Indicar status da conversa (aberta / em_atendimento / aguardando / encerrada)
+- [x] Separar conversas em seções: Maisa (IA), Na fila, Atribuídas e Disparos
 
 ### 6.2 — Métricas
 - [x] Volume de mensagens por período (dia/semana/mês)
@@ -126,33 +127,33 @@ Uma plataforma web interna para centralizar e gerenciar todos os atendimentos vi
 ## 8. DESIGN E IDENTIDADE VISUAL
 
 ### Referência visual
-O frontend deve seguir o mesmo padrão do **CorbanCRM** já existente:
-- Layout dark
+Identidade visual Mais Money 2026, em tema escuro. O login e a saudação de entrada usam o fundo laranja:
 - Sidebar à esquerda com navegação
 - Tabelas com dados de atendimento
 - Cards de métricas no topo
+- Logo oficial em `frontend/src/components/LogoMaisMoney.tsx`, extraída do PDF da marca: principal no laranja, branca no fundo escuro. Não redesenhar.
 
-### Paleta de cores — "The Deep Blue"
-Substituir as cores do CorbanCRM pelas cores abaixo. Apenas estes 7 tokens são permitidos em todo o sistema — nenhuma outra cor deve ser usada:
+### Paleta de cores
+Tokens definidos em `frontend/src/index.css`. Não usar outras cores:
 
 | Token | Hex | Uso |
 |-------|-----|-----|
-| `--color-primary` | `#ff8910` | Cor dominante: item ativo da sidebar, botões principais, CTAs, "Sair", alertas/atenção, borda de foco em inputs |
-| `--color-accent` | `#1b36f5` | Acento: badges de status positivo, números de métricas no Dashboard, links e elementos clicáveis secundários |
-| `--color-white` | `#ffffff` | Texto principal, ícones da sidebar (ativo e inativo), labels de cards |
-| `--color-bg` | `#0d0f14` | Fundo geral da aplicação |
-| `--color-surface` | `#13161f` | Cards, sidebar, painéis elevados |
-| `--color-border` | `#1e2130` | Bordas sutis, skeletons/loading states |
-| `--color-muted` | `#6b7280` | Textos secundários, labels, placeholders, subtítulos |
+| `--color-primary` | `#f87500` | Laranja da marca: preenchimentos, item ativo, botões principais |
+| `--color-accent` | `#f87500` | Laranja usado em texto, links e foco de inputs |
+| `--color-marca-indigo` | `#270b7c` | Índigo da marca: texto sobre o laranja |
+| `--color-indigo-claro` | `#b7a6f7` | Tint do índigo para texto e selos sobre o escuro, derivado da paleta |
+| `--color-marca-creme` | `#fff4ea` | Campos do login |
+| `--color-white` / `--color-ink` | `#ffffff` | Texto principal |
+| `--color-bg` | `#1d1b22` | Grafite: fundo geral |
+| `--color-surface` | `#27252e` | Cards, sidebar, painéis, derivada do grafite |
+| `--color-border` | `#38353f` | Bordas sutis, derivada do grafite |
+| `--color-muted` | `#aaa6b4` | Textos secundários, derivada do grafite |
 
-`--color-accent` (`#1b36f5`) tem apenas 2.49:1 de contraste sobre `--color-surface` — abaixo do mínimo de 4.5:1 para texto. Para texto/ícone pequeno sobre fundo escuro, usar `var(--color-accent-fg)` (tint derivado do mesmo azul, definido em `frontend/src/index.css`) em vez de `text-accent` diretamente. `--color-accent` continua valendo normalmente para fundos, badges translúcidos e bordas.
-
-**Pendência conhecida:** `--color-muted` também fica abaixo de 4.5:1 sobre `surface`/`bg` (~3.7-4:1). Como é um dos 7 hex fixados pelo cliente, não foi ajustado — sinalizar antes de decidir se muda o valor ou se aceita o risco de acessibilidade.
+Sobre o laranja, use índigo: branco dá só 2,8:1. Índigo puro não serve como texto sobre o grafite.
 
 ### Tipografia e componentes
-- Seguir o mesmo padrão de cards, tabelas e sidebar do CorbanCRM
-- Fonte: Inter
-- Apenas substituir a identidade de cor
+- Fonte: Plus Jakarta Sans (títulos 700, subtítulos 600, texto 400)
+- Animações curtas e discretas, respeitando `prefers-reduced-motion`
 
 ---
 
@@ -253,7 +254,7 @@ mensagens (
 ## 13. O QUE NÃO CONSTRUIR AGORA
 
 - Multi-tenancy (SaaS) — fase futura
-- Bot de atendimento automático — fora do escopo desta fase
+- Bot de atendimento automático — a Maisa (IA) está em preparação na branch `preview`; as seções existem, mas ela ainda não responde
 - Integração com CorbanCRM — pode ser considerada depois
 - Discadora / Twilio Voice + IVR — ver seção 12, planejado para Fase 2
 

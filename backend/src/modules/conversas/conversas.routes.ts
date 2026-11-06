@@ -7,6 +7,7 @@ import { findOrCreateContato } from "../contatos/contatos.service.js";
 import {
   adicionarEtiqueta,
   atualizarConversa,
+  contarAbas,
   findOrCreateConversaAberta,
   getConversaById,
   listConversas,
@@ -20,18 +21,18 @@ router.use(authenticate);
 
 const statusEnum = z.enum(["aberta", "em_atendimento", "aguardando", "encerrada"]);
 
-const abaEnum = z.enum(["atendimento", "disparos"]);
+const abaEnum = z.enum(["maisa", "sem_atendente", "atribuidas", "disparos"]);
 
 router.get(
   "/",
   asyncHandler(async (req, res) => {
     const statusParsed = statusEnum.safeParse(req.query.status);
     const abaParsed = abaEnum.safeParse(req.query.aba);
-    const conversas = await listConversas(
-      statusParsed.success ? statusParsed.data : undefined,
-      abaParsed.success ? abaParsed.data : undefined,
-    );
-    res.json({ conversas });
+    const [conversas, contagens] = await Promise.all([
+      listConversas(statusParsed.success ? statusParsed.data : undefined, abaParsed.success ? abaParsed.data : undefined),
+      contarAbas(),
+    ]);
+    res.json({ conversas, contagens });
   }),
 );
 
@@ -91,6 +92,7 @@ router.post(
 const updateSchema = z.object({
   status: statusEnum.optional(),
   operadorId: z.string().uuid().nullable().optional(),
+  comMaisa: z.boolean().optional(),
 });
 
 router.patch(
@@ -101,7 +103,19 @@ router.patch(
       return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
     }
 
-    const conversa = await atualizarConversa(req.params.id, parsed.data);
+    const data = { ...parsed.data };
+    if (data.comMaisa) {
+      const atual = await prisma.conversa.findUnique({ where: { id: req.params.id }, include: { instancia: true } });
+      if (!atual?.instancia.maisaAtiva) {
+        return res.status(400).json({ error: "A Maisa não está ligada neste número" });
+      }
+      data.operadorId = null;
+    } else if (data.operadorId) {
+      // Atribuir a um operador tira a conversa da Maisa na hora.
+      data.comMaisa = false;
+    }
+
+    const conversa = await atualizarConversa(req.params.id, data);
     emitConversaAtualizada(conversa);
     res.json({ conversa });
   }),

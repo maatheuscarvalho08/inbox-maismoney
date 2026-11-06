@@ -80,6 +80,7 @@ const atualizarSchema = z.object({
   metaPhoneNumberId: z.string().trim().min(1).optional(),
   metaWabaId: z.string().trim().min(1).optional(),
   status: z.enum(["conectado", "desconectado"]).optional(),
+  maisaAtiva: z.boolean().optional(),
 });
 
 router.patch(
@@ -92,6 +93,10 @@ router.patch(
     }
 
     const instancia = await prisma.instancia.update({ where: { id: req.params.id }, data: parsed.data });
+    // Desligar a Maisa devolve as conversas dela para a equipe, para nenhuma ficar sem resposta.
+    if (parsed.data.maisaAtiva === false) {
+      await prisma.conversa.updateMany({ where: { instanciaId: instancia.id, comMaisa: true }, data: { comMaisa: false } });
+    }
     res.json({ instancia });
   }),
 );

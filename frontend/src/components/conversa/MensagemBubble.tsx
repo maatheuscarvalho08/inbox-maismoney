@@ -80,7 +80,7 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
   const iconesAcao = (
     <div className="flex shrink-0 items-center gap-1.5 opacity-0 group-hover:opacity-100">
       {onResponder && (
-        <button onClick={() => onResponder(mensagem)} title="Responder" className="text-muted hover:text-primary">
+        <button onClick={() => onResponder(mensagem)} title="Responder" className="text-muted hover:text-accent">
           <Reply size={13} />
         </button>
       )}
@@ -91,7 +91,7 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
             setEditando(true);
           }}
           title="Editar mensagem"
-          className="text-muted hover:text-primary"
+          className="text-muted hover:text-accent"
         >
           <Pencil size={13} />
         </button>
@@ -112,16 +112,16 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
 
       <div
         className={`relative max-w-[70%] rounded-lg border px-3 py-2 ${
-          doOperador ? "border-primary/20 bg-primary/10" : "border-white/10 bg-surface/60"
+          doOperador ? "border-primary/20 bg-primary/10" : "border-ink/10 bg-surface"
         }`}
       >
         {doOperador && mensagem.operador && (
-          <p className="mb-0.5 text-[11px] font-medium text-primary">{mensagem.operador.nome}</p>
+          <p className="mb-0.5 text-[11px] font-medium text-accent">{mensagem.operador.nome}</p>
         )}
 
         {mensagem.respondeA && (
           <div className="mb-2 rounded border-l-2 border-primary/60 bg-bg/30 px-2 py-1">
-            <p className="text-[11px] font-medium text-primary">
+            <p className="text-[11px] font-medium text-accent">
               {mensagem.respondeA.remetenteTipo === "operador" ? "Você" : "Cliente"}
             </p>
             <p className="line-clamp-2 text-xs text-muted">{previewDaMensagem(mensagem.respondeA)}</p>
@@ -148,21 +148,21 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
                 if (e.key === "Escape") setEditando(false);
               }}
               rows={2}
-              className="w-full rounded-md border border-primary bg-bg/60 px-2 py-1.5 text-sm text-white outline-none"
+              className="w-full rounded-md border border-primary bg-bg/60 px-2 py-1.5 text-sm text-ink outline-none"
             />
-            {erro && <p className="text-[11px] text-primary">{erro}</p>}
+            {erro && <p className="text-[11px] text-accent">{erro}</p>}
             <div className="flex justify-end gap-2 text-[11px] font-medium">
-              <button onClick={() => setEditando(false)} className="text-muted hover:text-white">
+              <button onClick={() => setEditando(false)} className="text-muted hover:text-ink">
                 Cancelar
               </button>
-              <button onClick={salvar} disabled={salvando} className="text-primary hover:underline disabled:opacity-50">
+              <button onClick={salvar} disabled={salvando} className="text-accent hover:underline disabled:opacity-50">
                 {salvando ? "Salvando..." : "Salvar"}
               </button>
             </div>
           </div>
         ) : (
           mensagem.conteudoTexto && (
-            <p className="whitespace-pre-wrap text-sm text-white">{mensagem.conteudoTexto}</p>
+            <p className="whitespace-pre-wrap text-sm text-ink">{mensagem.conteudoTexto}</p>
           )
         )}
 
@@ -178,8 +178,8 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
 
         {doOperador && mensagem.statusEntrega === "falhou" && (
           <div className="mt-1 flex items-center justify-end gap-2 text-[11px]">
-            {erroReenvio && <span className="text-primary">{erroReenvio}</span>}
-            <button onClick={reenviar} disabled={reenviando} className="font-medium text-primary hover:underline disabled:opacity-50">
+            {erroReenvio && <span className="text-accent">{erroReenvio}</span>}
+            <button onClick={reenviar} disabled={reenviando} className="font-medium text-accent hover:underline disabled:opacity-50">
               {reenviando ? "Reenviando..." : "Reenviar"}
             </button>
           </div>

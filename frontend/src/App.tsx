@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { AppLayout } from "./layouts/AppLayout";
 import { LoginPage } from "./pages/LoginPage";
 import { PlaceholderPage } from "./components/PlaceholderPage";
+import { SaudacaoEntrada } from "./components/SaudacaoEntrada";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
 const MetricasPage = lazy(() => import("./pages/MetricasPage").then((m) => ({ default: m.MetricasPage })));
@@ -44,6 +45,7 @@ function pagina(Componente: React.ComponentType) {
 export default function App() {
   return (
     <AuthProvider>
+      <SaudacaoEntrada />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
