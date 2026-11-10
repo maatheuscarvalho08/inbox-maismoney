@@ -1,7 +1,8 @@
-// Cliente da API Facta, crédito do trabalhador (CLT).
-// Manuais: "Consulta Dados CLT v2.0" e "CRÉDITO DO TRABALHADOR v9.0".
-// Só leitura: pede a autorização, consulta a Dataprev e simula. A digitação da
-// proposta fica com a equipe.
+// Cliente da API Facta. Manuais: "Consulta Dados CLT v2.0", "CRÉDITO DO TRABALHADOR v9.0",
+// "INSS v11.0" e "SIAPE v1.0".
+// CLT: pede a autorização, consulta a Dataprev e simula. INSS e SIAPE: simulam com a
+// parcela do extrato e, quando o cliente aceita, digitam a proposta (etapas 1, 2 e 3)
+// e mandam o link de assinatura.
 import { env } from "../../config/env.js";
 import { mascararCpf } from "./cpf.js";
 
@@ -161,6 +162,10 @@ export async function consultarTrabalhador(cpf: string): Promise<ResultadoConsul
 // 3. Simulação. Só leitura, não cria nada na Facta.
 export interface Tabela {
   tabela: string;
+  codigoTabela: number;
+  coeficiente: number;
+  // Valor bruto do contrato. A etapa 1 da digitação pede este, não o líquido.
+  contrato: number;
   prazo: number;
   taxa: number;
   parcela: number;
@@ -199,6 +204,9 @@ async function operacoesDisponiveis(cpf: string, dataNascimento: string, valorPa
   if (j.erro) return { tabelas: [] as Tabela[], mensagem: String(j.mensagem ?? "") };
   const tabelas: Tabela[] = (j.tabelas ?? []).map((t: Record<string, unknown>) => ({
     tabela: String(t.tabela ?? ""),
+    codigoTabela: Number(t.codigoTabela),
+    coeficiente: Number(t.coeficiente),
+    contrato: Number(t.contrato),
     prazo: Number(t.prazo),
     taxa: Number(t.taxa),
     parcela: Number(t.parcela),
@@ -209,3 +217,164 @@ async function operacoesDisponiveis(cpf: string, dataNascimento: string, valorPa
 }
 
 export const factaConfigurada = () => Boolean(env.FACTA_USER && env.FACTA_PASS);
+export const digitacaoConfigurada = () => factaConfigurada() && Boolean(env.FACTA_LOGIN_CERTIFICADO);
+
+// Listas auxiliares (proposta-combos). Mudam raramente: ficam em memória por 1 dia.
+const combos = new Map<string, { valor: Record<string, unknown>; ate: number }>();
+
+async function combo(nome: string, chave: string): Promise<Record<string, unknown>> {
+  const guardado = combos.get(nome);
+  if (guardado && guardado.ate > Date.now()) return guardado.valor;
+  const j = await chamar(`/proposta-combos/${nome}`, "", { method: "GET" });
+  if (j.erro || !j[chave]) throw new FactaErro(nome, String(j.mensagem ?? "lista indisponível"));
+  combos.set(nome, { valor: j[chave], ate: Date.now() + 24 * 60 * 60_000 });
+  return j[chave];
+}
+
+export async function estadosCivis(): Promise<Record<string, string>> {
+  return (await combo("estado-civil", "estado_civil")) as Record<string, string>;
+}
+
+export async function orgaosEmissores(): Promise<Record<string, string>> {
+  return (await combo("orgao-emissor", "orgao_emissor")) as Record<string, string>;
+}
+
+const semAcento = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+
+// Código da cidade na Facta. null quando não acha uma cidade com esse nome no estado.
+export async function codigoCidade(uf: string, nome: string): Promise<string | null> {
+  const j = await chamar("/proposta-combos/cidade", "", { method: "GET", query: { estado: uf, nome_cidade: nome } });
+  const cidades = (j.cidade ?? {}) as Record<string, { nome: string; estado: string }>;
+  const alvo = semAcento(nome);
+  const exata = Object.entries(cidades).find(([, c]) => semAcento(c.nome) === alvo && c.estado === uf);
+  return exata?.[0] ?? null;
+}
+
+// Celular no formato da etapa 2: (0DD) NNNNN-NNNN.
+function celularEtapa2(numeroWhatsapp: string) {
+  const d = soDigitos(numeroWhatsapp).replace(/^55(?=\d{10,11}$)/, "");
+  return `(0${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}`;
+}
+
+const dataBr = (iso: string) => iso.split("-").reverse().join("/");
+
+export interface Contratacao {
+  convenio: "inss" | "siape";
+  cpf: string;
+  dataNascimento: string; // AAAA-MM-DD
+  celular: string;
+  tabela: { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number };
+  pessoa: {
+    nome: string;
+    sexo: "M" | "F";
+    estadoCivil: string;
+    rg: string;
+    estadoRg: string;
+    orgaoEmissor: string;
+    dataExpedicao: string; // AAAA-MM-DD
+    estadoNatural: string;
+    cidadeNatural: string; // código Facta
+    renda: number;
+    cep: string;
+    endereco: string;
+    numero: string;
+    complemento: string;
+    bairro: string;
+    cidade: string; // código Facta
+    estado: string;
+    nomeMae: string;
+    nomePai: string;
+    valorPatrimonio: string;
+    matricula: string;
+    email: string;
+    // Só INSS.
+    tipoCreditoNb?: string;
+    tipoBeneficio?: string;
+  };
+}
+
+export type ResultadoContratacao =
+  | { tipo: "enviada"; codigoAf: string; url: string }
+  | { tipo: "erro"; etapa: string; mensagem: string };
+
+// Etapas 1, 2 e 3 e o envio do link de assinatura pelo WhatsApp. Para na primeira falha.
+export async function contratar(c: Contratacao): Promise<ResultadoContratacao> {
+  const averbador = AVERBADOR_EXTRATO[c.convenio];
+  const cpf = cpf11(c.cpf);
+  const p = c.pessoa;
+
+  const e1 = await chamar("/proposta/etapa1-simulador", cpf, {
+    method: "POST",
+    form: {
+      produto: PRODUTO,
+      tipo_operacao: TIPO_OPERACAO,
+      averbador,
+      convenio: CONVENIO,
+      cpf,
+      data_nascimento: dataBr(c.dataNascimento),
+      login_certificado: env.FACTA_LOGIN_CERTIFICADO,
+      codigo_tabela: String(c.tabela.codigoTabela),
+      prazo: String(c.tabela.prazo),
+      valor_operacao: c.tabela.contrato.toFixed(2),
+      valor_parcela: c.tabela.parcela.toFixed(2),
+      coeficiente: String(c.tabela.coeficiente),
+      ...(env.FACTA_CODIGO_MASTER ? { codigo_master: env.FACTA_CODIGO_MASTER } : {}),
+    },
+  });
+  const idSimulador = String(e1.id_simulador ?? "");
+  if (e1.erro || !idSimulador) return { tipo: "erro", etapa: "simulador", mensagem: String(e1.mensagem ?? "sem id_simulador") };
+
+  const e2 = await chamar("/proposta/etapa2-dados-pessoais", cpf, {
+    method: "POST",
+    form: {
+      id_simulador: idSimulador,
+      cpf,
+      nome: p.nome.toUpperCase(),
+      sexo: p.sexo,
+      estado_civil: p.estadoCivil,
+      data_nascimento: dataBr(c.dataNascimento),
+      rg: p.rg,
+      estado_rg: p.estadoRg,
+      orgao_emissor: p.orgaoEmissor,
+      data_expedicao: dataBr(p.dataExpedicao),
+      estado_natural: p.estadoNatural,
+      cidade_natural: p.cidadeNatural,
+      nacionalidade: "1",
+      celular: celularEtapa2(c.celular),
+      renda: p.renda.toFixed(2),
+      cep: p.cep,
+      endereco: p.endereco.toUpperCase(),
+      numero: p.numero,
+      complemento: p.complemento.toUpperCase(),
+      bairro: p.bairro.toUpperCase(),
+      cidade: p.cidade,
+      estado: p.estado,
+      nome_mae: p.nomeMae.toUpperCase(),
+      nome_pai: p.nomePai.toUpperCase(),
+      valor_patrimonio: p.valorPatrimonio,
+      cliente_iletrado_impossibilitado: "N",
+      matricula: p.matricula,
+      email: p.email,
+      // Crédito por PIX na chave CPF, que precisa ser o mesmo da proposta.
+      tipo_chave_pix: "1",
+      chave_pix: cpf,
+      ...(c.convenio === "inss"
+        ? { tipo_credito_nb: p.tipoCreditoNb ?? "1", tipo_beneficio: p.tipoBeneficio ?? "", estado_beneficio: p.estado }
+        : {}),
+    },
+  });
+  const codigoCliente = String(e2.codigo_cliente ?? "");
+  if (e2.erro || !codigoCliente) return { tipo: "erro", etapa: "dados pessoais", mensagem: String(e2.mensagem ?? "sem codigo_cliente") };
+
+  const e3 = await chamar("/proposta/etapa3-proposta-cadastro", cpf, {
+    method: "POST",
+    form: { codigo_cliente: codigoCliente, id_simulador: idSimulador, tipo_formalizacao: "DIG" },
+  });
+  const codigoAf = String(e3.codigo ?? "");
+  if (e3.erro || !codigoAf) return { tipo: "erro", etapa: "cadastro da proposta", mensagem: String(e3.mensagem ?? "sem código da proposta") };
+
+  const e4 = await chamar("/proposta/envio-link", cpf, { method: "POST", form: { codigo_af: codigoAf, tipo_envio: "whatsapp" } });
+  // A proposta já existe. Se o envio falhar, o link ainda serve: a Maisa manda ela mesma.
+  if (e4.erro) console.error(`Facta não enviou o link da proposta ${codigoAf}: ${String(e4.mensagem ?? "")}`);
+  return { tipo: "enviada", codigoAf, url: String(e3.url_formalizacao ?? "") };
+}

@@ -9,7 +9,9 @@ import { getConversaById } from "../conversas/conversas.service.js";
 import { avancarEtapa } from "../funil/funil.service.js";
 import { classificadorRegras } from "./classificador.js";
 import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
-import { factaConfigurada } from "./facta.js";
+import { contratar, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
+import { extrairDados } from "./coleta.js";
+import type { DadosContrato } from "./contrato.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo } from "./fluxo.js";
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
 
@@ -91,11 +93,81 @@ async function aplicarEfeito(conversa: ConversaMaisa, efeito: Efeito) {
       }
       return;
     }
+    case "proposta": {
+      const estado = conversa.maisaEstado as EstadoMaisa | null;
+      const oferta = estado?.oferta;
+      await prisma.proposta.create({
+        data: {
+          conversaId: conversa.id,
+          banco: "Facta",
+          convenio: estado?.produto ?? null,
+          valorCentavos: oferta?.valorCentavos ?? 0,
+          parcelaCentavos: oferta?.parcelaCentavos ?? null,
+          prazoMeses: oferta?.prazoMeses ?? null,
+          numeroContrato: efeito.codigoAf,
+        },
+      });
+      await avancarEtapa(conversa.id, "proposta_digitada", await etapaAtual(conversa.id));
+      return;
+    }
     case "transferir":
       // Sai da Maisa e entra em "Na fila". Quem estava atribuído continua.
       await prisma.conversa.update({ where: { id: conversa.id }, data: { comMaisa: false } });
       return;
   }
+}
+
+function exigir<T>(valor: T | undefined | null, campo: string): T {
+  if (valor === undefined || valor === null || valor === "") throw new Error(`falta ${campo}`);
+  return valor;
+}
+
+async function digitarProposta(
+  conversa: ConversaMaisa,
+  estado: EstadoMaisa | null,
+  d: DadosContrato,
+  simulado: boolean,
+): Promise<ResultadoContratacao> {
+  // Conversa de teste nunca cria proposta de verdade.
+  if (simulado) return { tipo: "enviada", codigoAf: "TESTE", url: "" };
+  const produto = estado?.produto;
+  if (produto !== "inss" && produto !== "siape") throw new Error("digitação só para INSS e SIAPE");
+  const tabela = exigir(estado?.oferta?.tabela, "tabela da oferta");
+  const resultado = await contratar({
+    convenio: produto,
+    cpf: await cpfDoContato(conversa.contatoId),
+    dataNascimento: exigir(estado?.dataNascimento, "data de nascimento"),
+    celular: conversa.contato.numeroWhatsapp,
+    tabela,
+    pessoa: {
+      nome: exigir(d.nome, "nome"),
+      sexo: exigir(d.sexo, "sexo"),
+      estadoCivil: exigir(d.estadoCivil, "estado civil"),
+      rg: exigir(d.rg, "RG"),
+      estadoRg: exigir(d.estadoRg, "UF do RG"),
+      orgaoEmissor: exigir(d.orgaoEmissor, "órgão emissor"),
+      dataExpedicao: exigir(d.dataExpedicao, "data de expedição"),
+      estadoNatural: exigir(d.estadoNatural, "UF de nascimento"),
+      cidadeNatural: exigir(d.cidadeNatural, "cidade de nascimento"),
+      renda: exigir(d.renda, "renda"),
+      cep: exigir(d.cep, "CEP"),
+      endereco: exigir(d.endereco, "endereço"),
+      numero: exigir(d.numero, "número"),
+      complemento: d.complemento ?? "",
+      bairro: exigir(d.bairro, "bairro"),
+      cidade: exigir(d.cidade, "cidade"),
+      estado: exigir(d.estado, "UF"),
+      nomeMae: exigir(d.nomeMae, "nome da mãe"),
+      nomePai: exigir(d.nomePai, "nome do pai"),
+      valorPatrimonio: exigir(d.valorPatrimonio, "patrimônio"),
+      matricula: exigir(d.matricula, "matrícula"),
+      email: exigir(d.email, "e-mail"),
+      tipoCreditoNb: d.tipoCreditoNb,
+      tipoBeneficio: d.tipoBeneficio,
+    },
+  });
+  console.log(`Maisa digitou na Facta, conversa ${conversa.id}: ${resultado.tipo === "enviada" ? `proposta ${resultado.codigoAf}` : `erro em ${resultado.etapa}`}`);
+  return resultado;
 }
 
 async function enviarResposta(conversa: ConversaMaisa, texto: string) {
@@ -162,8 +234,22 @@ async function processar(conversaId: string, gatilho: Gatilho) {
       // Registro de acesso a documento sensível, sem dado pessoal.
       console.log(`Maisa leu extrato ${convenio} da conversa ${conversa.id}: ${leitura.tipo} ${Date.now() - inicio}ms`);
       if (leitura.tipo !== "ok") return leitura;
-      return banco.simularConsignado({ convenio, cpf: await cpfDoContato(conversa.contatoId), dataNascimento, parcelaMaxima: leitura.parcelaMaxima });
+      const resultado = await banco.simularConsignado({
+        convenio,
+        cpf: await cpfDoContato(conversa.contatoId),
+        dataNascimento,
+        parcelaMaxima: leitura.parcelaMaxima,
+      });
+      return resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie } : resultado;
     },
+    digitacaoAtiva: env.MAISA_DIGITA_PROPOSTA && (banco === bancoSimulado || (banco === bancoFacta && digitacaoConfigurada())),
+    extrairDados: async (pergunta, recebida, faltando) => {
+      const doc = recebida.documento && arquivo ? { conteudo: await lerArquivo(arquivo.midiaPath), tipo: arquivo.tipo } : null;
+      const dados = await extrairDados(pergunta, recebida.texto, doc, faltando);
+      console.log(`Maisa leu dados do contrato na conversa ${conversa.id}: ${Object.keys(dados).length} campo(s)`);
+      return dados;
+    },
+    digitar: (dados) => digitarProposta(conversa, estadoAntes, dados, banco === bancoSimulado),
   });
 
   // Checagem sem novidade: só guarda quando checar de novo, sem registro nem aviso.

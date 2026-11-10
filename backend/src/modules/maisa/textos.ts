@@ -107,6 +107,18 @@ export const TEXTOS = {
     "Esse valor é uma estimativa e ainda passa pela análise do banco. Quer seguir? Responda SIM ou NÃO.",
   // Uma vez só, 10 minutos depois da oferta sem resposta.
   followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",
+  inicioContrato: "Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta.",
+  continuarCadastro: "Vamos continuar o seu cadastro.",
+  confirmaDados: (resumo: string) => `Confere se está tudo certo:\n\n${resumo}\n\nEstá tudo certo? Responda SIM ou NÃO.`,
+  perguntaConfirmacao: "Os dados estão certos? Responda SIM ou NÃO.",
+  contratoEnviado: (url: string) =>
+    "Pronto! O seu contrato foi feito no banco Facta. Agora o banco vai te mandar no WhatsApp um link para assinar. " +
+    "É só abrir, conferir e assinar." +
+    (url ? `\n\nSe a mensagem do banco não chegar, o link é este: ${url}` : "") +
+    "\n\nUm atendente da nossa equipe acompanha com você até o dinheiro cair.",
+  erroDigitacao: "Tive um problema para fazer o contrato no sistema do banco. Vou passar para um atendente terminar com você.",
+  corrigirDados: "Sem problema. Vou passar para um atendente corrigir os dados com você.",
+  pixRecusado: "Tudo bem. Vou passar para um atendente ver outra forma de pagamento com você.",
   aceitou:"Ótimo! Vou te passar para um atendente finalizar a sua proposta. Já já alguém da equipe continua com você.",
   recusou: "Tudo bem! Se mudar de ideia, é só me chamar aqui.",
   semConsentimento: "Sem problema. Vou te passar para um atendente, que pode te explicar melhor como funciona.",

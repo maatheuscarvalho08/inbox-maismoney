@@ -48,6 +48,11 @@ export const ETAPAS_FLUXO = [
     nome: "Oferta",
     oQueFaz: "Mostra até quanto o cliente pode receber e pergunta se quer seguir.",
   },
+  {
+    id: "contrato",
+    nome: "Contrato",
+    oQueFaz: "INSS e SIAPE: pede RG ou CNH, endereço e o resto do cadastro, mostra o resumo e faz a proposta na Facta. A Facta manda o link de assinatura.",
+  },
 ] as const;
 
 // Etapa do backend para a posição no roteiro. "inicio" ainda é a primeira pergunta.
@@ -61,6 +66,8 @@ const POSICAO: Record<string, number> = {
   nascimento: 1,
   extrato: 2,
   oferta: 3,
+  coleta: 4,
+  confirmacao: 4,
 };
 
 export function indiceEtapa(etapa: string | undefined) {
@@ -97,13 +104,19 @@ export const SAIDAS_MAISA: Record<string, Saida> = {
   link_nao_autorizado: { titulo: "Não autorizou o link", proximoPasso: "Ajudar o cliente a abrir o link da Facta." },
   carrinho: { titulo: "Não respondeu a oferta", proximoPasso: "Ligar ou mandar mensagem para tentar fechar.", quente: true },
   telefone_outro_cpf: { titulo: "Celular de outro CPF", proximoPasso: "Pedir outro celular ao cliente." },
+  contrato_enviado: { titulo: "Contrato feito na Facta", proximoPasso: "Acompanhar a assinatura do link até o pagamento.", quente: true },
+  erro_digitacao: { titulo: "Contrato não entrou na Facta", proximoPasso: "Digitar a proposta direto na Facta.", quente: true },
+  dados_contrato: { titulo: "Parou no cadastro do contrato", proximoPasso: "Terminar o cadastro com o cliente e digitar.", quente: true },
   extrato_invalido: { titulo: "Extrato não deu para ler", proximoPasso: "Pedir o PDF do documento e analisar o extrato." },
   sem_extrato: { titulo: "Não mandou o extrato", proximoPasso: "Ajudar o cliente a tirar o extrato ou o contracheque." },
 };
 
 // Ordem em que as saídas aparecem no guia.
 export const SAIDAS_NO_GUIA = [
+  "contrato_enviado",
   "aceitou",
+  "erro_digitacao",
+  "dados_contrato",
   "carrinho",
   "recusou",
   "sem_saldo",

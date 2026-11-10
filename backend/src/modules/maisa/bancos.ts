@@ -4,7 +4,18 @@ import * as facta from "./facta.js";
 import { REGRAS, avaliarVinculo } from "./regras.js";
 
 export type ResultadoBanco =
-  | { tipo: "com_saldo"; banco: string; valorCentavos: number; parcelaCentavos: number; prazoMeses: number }
+  | {
+      tipo: "com_saldo";
+      banco: string;
+      valorCentavos: number;
+      parcelaCentavos: number;
+      prazoMeses: number;
+      // Tabela escolhida, para digitar a proposta depois. Só a Facta preenche.
+      tabela?: { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number };
+      // Lidos do extrato: entram no cadastro sem perguntar de novo.
+      renda?: number | null;
+      especie?: number | null;
+    }
   | { tipo: "sem_saldo"; banco: string; motivo: string }
   | { tipo: "erro"; banco: string; motivo: string };
 
@@ -41,6 +52,13 @@ function melhorTabela(nome: string, tabelas: facta.Tabela[], mensagem: string): 
     valorCentavos: reais(melhor.valorLiquido),
     parcelaCentavos: reais(melhor.parcela),
     prazoMeses: melhor.prazo,
+    tabela: {
+      codigoTabela: melhor.codigoTabela,
+      prazo: melhor.prazo,
+      contrato: melhor.contrato,
+      parcela: melhor.parcela,
+      coeficiente: melhor.coeficiente,
+    },
   };
 }
 
@@ -130,6 +148,8 @@ export const bancoSimulado: BancoClt & { autorizar(cpf: string): void; reiniciar
   // Coeficiente parecido com o da Facta (1,85% em 84 meses), só para teste.
   async simularConsignado({ parcelaMaxima }) {
     const parcelaCentavos = Math.round(parcelaMaxima * REGRAS.folgaMargem * 100);
-    return { tipo: "com_saldo", banco: this.nome, valorCentavos: Math.round(parcelaCentavos / 0.0245), parcelaCentavos, prazoMeses: 84 };
+    const valorCentavos = Math.round(parcelaCentavos / 0.0245);
+    const tabela = { codigoTabela: 1, prazo: 84, contrato: valorCentavos / 100, parcela: parcelaCentavos / 100, coeficiente: 0.0245 };
+    return { tipo: "com_saldo", banco: this.nome, valorCentavos, parcelaCentavos, prazoMeses: 84, tabela, renda: 3000, especie: 42 };
   },
 };

@@ -5,6 +5,36 @@ import { avancar, type Dependencias, type Entrada, type EstadoMaisa, type Passo 
 import { classificadorRegras } from "../modules/maisa/classificador.js";
 import { bancoSimulado } from "../modules/maisa/bancos.js";
 import { cpfValido } from "../modules/maisa/cpf.js";
+import type { DadosContrato } from "../modules/maisa/contrato.js";
+
+// Cadastro inteiro de uma vez, como se a foto e as respostas já tivessem chegado.
+const DADOS_COMPLETOS: DadosContrato = {
+  nome: "Maria da Silva",
+  rg: "123456789",
+  orgaoEmissor: "SSP",
+  estadoRg: "RJ",
+  dataExpedicao: "2010-05-20",
+  nomeMae: "Ana da Silva",
+  nomePai: "José da Silva",
+  cidadeNatural: "540",
+  cidadeNaturalNome: "NITEROI",
+  estadoNatural: "RJ",
+  sexo: "F",
+  estadoCivil: "4",
+  estadoCivilNome: "SOLTEIRO",
+  cep: "24020000",
+  numero: "100",
+  complemento: "",
+  endereco: "Rua da Conceição",
+  bairro: "Centro",
+  cidade: "540",
+  cidadeNome: "NITEROI",
+  estado: "RJ",
+  email: "maria@exemplo.com",
+  matricula: "1234567",
+  valorPatrimonio: "1",
+  pixCpf: true,
+};
 
 // Gera um CPF válido que termina no dígito pedido. O banco simulado decide pelo último
 // dígito: 0 e 1 já autorizados, 9 celular de outro CPF; depois de autorizar,
@@ -22,7 +52,8 @@ function cpfTerminadoEm(ultimo: number) {
 // O que acontece na conversa: mensagem do cliente, foto, o cliente tocar no link do
 // banco, a checagem automática ou o relógio andar.
 // extrato: o cliente manda um PDF; o valor diz o que a leitura encontra.
-type Acao = string | { midia: true } | { extrato: "com_margem" | "sem_margem" | "invalido" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
+// dados: o cliente responde e a leitura encontra esses campos. digitacao: o que a Facta devolve.
+type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "invalido" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
 
 interface Caso {
   nome: string;
@@ -215,20 +246,73 @@ const CASOS: Caso[] = [
   },
   { nome: "Manda foto", acoes: ["oi", { midia: true }], etapaFinal: "finalizada", saida: "midia" },
   {
-    nome: "INSS completo: CPF, nascimento, extrato e oferta",
+    nome: "INSS completo: CPF, nascimento, extrato, oferta e começo do contrato",
     acoes: [...ATE_EXTRATO, { extrato: "com_margem" }, "sim"],
-    etapaFinal: "finalizada",
-    saida: "aceitou",
+    etapaFinal: "coleta",
     respostaContem: "no seu benefício",
   },
   {
-    nome: "SIAPE completo: contracheque e oferta",
+    nome: "SIAPE completo: contracheque, oferta e começo do contrato",
     acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim"],
-    etapaFinal: "finalizada",
-    saida: "aceitou",
+    etapaFinal: "coleta",
     respostaContem: "no seu contracheque",
   },
   { nome: "SIAPE pede o contracheque", acoes: ["oi", "sou servidor federal", CPF_SALDO, "15/03/1958"], etapaFinal: "extrato", respostaContem: "SouGov" },
+  {
+    nome: "SIAPE fecha o contrato: aceita, manda os dados, confirma e a proposta é digitada",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }, "sim"],
+    etapaFinal: "finalizada",
+    saida: "contrato_enviado",
+    respostaContem: "foi feito no banco Facta",
+  },
+  {
+    nome: "Contrato: aceitou e recebe o pedido do documento",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim"],
+    etapaFinal: "coleta",
+    respostaContem: "foto do seu RG",
+  },
+  {
+    nome: "Contrato: foto pela metade pede só o que faltou",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: { nome: "Maria da Silva", rg: "123456789" } }],
+    etapaFinal: "coleta",
+    respostaContem: "Não consegui ver: órgão emissor do RG",
+  },
+  {
+    nome: "Contrato: mostra o resumo antes de digitar",
+    acoes: ["oi", "1", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: { ...DADOS_COMPLETOS, tipoCreditoNb: "1" } }],
+    etapaFinal: "confirmacao",
+    respostaContem: "Confere se está tudo certo",
+  },
+  {
+    nome: "Contrato: resumo não mostra o RG inteiro",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }],
+    etapaFinal: "confirmacao",
+    respostaContem: "RG: final 789",
+  },
+  {
+    nome: "Contrato: cliente diz que os dados estão errados vai para a equipe",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }, "não"],
+    etapaFinal: "finalizada",
+    saida: "dados_contrato",
+  },
+  {
+    nome: "Contrato: erro na Facta vai para a equipe",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }, { digitacao: "erro" }, "sim"],
+    etapaFinal: "finalizada",
+    saida: "erro_digitacao",
+  },
+  {
+    nome: "Contrato: não quer PIX no CPF vai para a equipe",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: { pixCpf: false } }],
+    etapaFinal: "finalizada",
+    saida: "dados_contrato",
+  },
+  {
+    nome: "Contrato: resposta sem dado nenhum três vezes vai para a equipe",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", "hum", "hum", "hum"],
+    etapaFinal: "finalizada",
+    saida: "dados_contrato",
+  },
   { nome: "INSS pede o extrato depois da data", acoes: ATE_EXTRATO, etapaFinal: "extrato", respostaContem: "Meu INSS" },
   { nome: "INSS aceita data sem barras", acoes: ["oi", "1", CPF_SALDO, "15031958"], etapaFinal: "extrato" },
   {
@@ -279,6 +363,8 @@ function descrever(a: Acao) {
   if (typeof a === "string") return `cliente: ${a}`;
   if ("midia" in a) return "cliente: [foto]";
   if ("extrato" in a) return `cliente: [extrato, ${a.extrato}]`;
+  if ("dados" in a) return `cliente: [dados: ${Object.keys(a.dados).join(", ")}]`;
+  if ("digitacao" in a) return `[a Facta vai responder: ${a.digitacao}]`;
   if ("autoriza" in a) return "[cliente autorizou o link]";
   if ("verifica" in a) return "[checagem automática]";
   if ("verificaOferta" in a) return "[checagem da oferta]";
@@ -291,6 +377,8 @@ async function rodar(caso: Caso, verbose: boolean) {
   let cpfGravado: string | null = null;
   let relogio = new Date("2026-11-09T12:00:00Z");
   let leituraExtrato: "com_margem" | "sem_margem" | "invalido" = "com_margem";
+  let proximosDados: DadosContrato = {};
+  let digitacao: "ok" | "erro" = "ok";
   const deps: Dependencias = {
     classificador: classificadorRegras,
     agora: () => relogio,
@@ -302,6 +390,16 @@ async function rodar(caso: Caso, verbose: boolean) {
       if (leituraExtrato === "invalido") return { tipo: "extrato_invalido", motivo: "não é extrato do INSS" };
       if (leituraExtrato === "sem_margem") return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
       return bancoSimulado.simularConsignado({ convenio: _produto, cpf: cpfGravado!, dataNascimento, parcelaMaxima: 300 });
+    },
+    digitacaoAtiva: true,
+    extrairDados: async () => {
+      const dados = proximosDados;
+      proximosDados = {};
+      return dados;
+    },
+    digitar: async (dados) => {
+      assert.ok(dados.nome && dados.email, "digitou sem o cadastro completo");
+      return digitacao === "ok" ? { tipo: "enviada", codigoAf: "123", url: "facta.ly/teste" } : { tipo: "erro", etapa: "dados pessoais", mensagem: "teste" };
     },
   };
 
@@ -317,11 +415,19 @@ async function rodar(caso: Caso, verbose: boolean) {
       continue;
     }
     if (typeof acao === "object" && "autoriza" in acao) bancoSimulado.autorizar(cpfGravado!);
+    if (typeof acao === "object" && "digitacao" in acao) {
+      digitacao = acao.digitacao;
+      if (verbose) console.log(`  ${descrever(acao)}`);
+      continue;
+    }
 
     let entrada: Entrada;
     if (typeof acao === "string") entrada = { texto: acao, temMidia: false };
     else if ("midia" in acao) entrada = { texto: null, temMidia: true };
-    else if ("extrato" in acao) {
+    else if ("dados" in acao) {
+      proximosDados = acao.dados;
+      entrada = { texto: "resposta do cliente", temMidia: false };
+    } else if ("extrato" in acao) {
       leituraExtrato = acao.extrato;
       entrada = { texto: null, temMidia: true, documento: true };
     }

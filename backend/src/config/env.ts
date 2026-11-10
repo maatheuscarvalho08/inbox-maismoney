@@ -47,6 +47,15 @@ const envSchema = z.object({
   FACTA_BASE_URL: z.string().default("https://webservice-homol.facta.com.br"),
   FACTA_USER: z.string().default(""),
   FACTA_PASS: z.string().default(""),
+  // Digitação da proposta: login do correspondente certificado e código master.
+  FACTA_LOGIN_CERTIFICADO: z.string().default(""),
+  FACTA_CODIGO_MASTER: z.string().default(""),
+  // A Maisa digita a proposta na Facta quando o cliente de INSS ou SIAPE aceita.
+  // Desligado, o "sim" do cliente vai para a equipe, como antes.
+  MAISA_DIGITA_PROPOSTA: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
   // OpenAI. A leitura de extrato usa um modelo com visão; as etapas simples, um barato.
   OPENAI_API_KEY: z.string().default(""),
   OPENAI_MODELO_EXTRATO: z.string().default("gpt-6.1-sol"),

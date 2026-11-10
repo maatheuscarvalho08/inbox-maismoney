@@ -50,7 +50,7 @@ export async function parcelaPeloExtrato(
   conteudo: Buffer,
   mimetype: string,
   convenio: "inss" | "siape",
-): Promise<{ tipo: "ok"; parcelaMaxima: number } | Exclude<ResultadoExtrato, { tipo: "com_saldo" | "erro" }>> {
+): Promise<{ tipo: "ok"; parcelaMaxima: number; renda: number | null; especie: number | null } | Exclude<ResultadoExtrato, { tipo: "com_saldo" | "erro" }>> {
   const { extrato } = await lerExtrato(conteudo, mimetype, mimetype === "application/pdf" ? "extrato.pdf" : "extrato");
   if (!extrato.legivel || extrato.tipo_documento !== convenio) {
     return { tipo: "extrato_invalido", motivo: extrato.legivel ? `não é extrato do ${convenio.toUpperCase()}` : "extrato ilegível" };
@@ -60,5 +60,5 @@ export async function parcelaPeloExtrato(
   if (!novo || novo.tipo !== "novo" || !novo.possivel) {
     return { tipo: "sem_saldo", banco: "extrato", motivo: novo?.motivo ?? "sem margem para empréstimo novo" };
   }
-  return { tipo: "ok", parcelaMaxima: novo.parcelaMaxima };
+  return { tipo: "ok", parcelaMaxima: novo.parcelaMaxima, renda: extrato.base_calculo, especie: extrato.especie_codigo };
 }

@@ -4,6 +4,8 @@ import type { ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta, Resultado
 import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
+import { camposFaltando, proximaPergunta, resumoDados, type CampoContrato, type DadosContrato } from "./contrato.js";
+import type { ResultadoContratacao } from "./facta.js";
 
 // O fluxograma da Maisa. Cada etapa só sabe tratar a resposta da pergunta que ela
 // fez. Este arquivo não fala com o banco de dados nem com o WhatsApp: recebe o estado
@@ -22,6 +24,8 @@ export type Etapa =
   | "nascimento"
   | "extrato"
   | "oferta"
+  | "coleta"
+  | "confirmacao"
   | "finalizada";
 
 export type Produto = "clt" | "inss" | "siape";
@@ -45,7 +49,17 @@ export interface EstadoMaisa {
   ofertaEm?: string;
   ultimoContatoCliente?: string;
   followupEnviado?: boolean;
-  oferta?: { banco: string; valorCentavos: number; parcelaCentavos: number; prazoMeses: number };
+  oferta?: {
+    banco: string;
+    valorCentavos: number;
+    parcelaCentavos: number;
+    prazoMeses: number;
+    tabela?: { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number };
+    renda?: number | null;
+    especie?: number | null;
+  };
+  // Cadastro para digitar a proposta. Sai do estado assim que ela passa para a equipe.
+  contrato?: { dados: DadosContrato; pergunta: string };
   motivoTransferencia?: string;
   // Onde ela estava quando passou para a equipe, e por quê, num rótulo fechado.
   // A tela usa isso para dizer ao atendente o que fazer em seguida.
@@ -66,13 +80,18 @@ export interface Dependencias {
   statusProposta(): Promise<{ banco: string; status: string } | null>;
   // Lê o extrato que acabou de chegar e simula com a margem dele.
   simularPorExtrato(produto: ProdutoExtrato, dataNascimento: string): Promise<ResultadoExtrato>;
+  // Digitação na Facta (INSS e SIAPE). Desligada, o "sim" vai para a equipe.
+  digitacaoAtiva: boolean;
+  extrairDados(pergunta: string, entrada: { texto: string | null; documento?: boolean }, faltando: CampoContrato[]): Promise<DadosContrato>;
+  digitar(dados: DadosContrato): Promise<ResultadoContratacao>;
 }
 
 export type Efeito =
   | { tipo: "convenio"; convenio: Convenio }
   | { tipo: "cpf"; cpf: string }
   | { tipo: "simulacao"; convenio: Produto; resultado: ResultadoBanco }
-  | { tipo: "transferir"; motivo: string };
+  | { tipo: "transferir"; motivo: string }
+  | { tipo: "proposta"; codigoAf: string };
 
 export interface Passo {
   estado: EstadoMaisa;
@@ -99,6 +118,8 @@ const PERGUNTA_DA_ETAPA: Record<Etapa, string> = {
   nascimento: TEXTOS.nascimentoInvalido,
   extrato: TEXTOS.lembraExtrato,
   oferta: TEXTOS.perguntaOferta,
+  coleta: TEXTOS.continuarCadastro,
+  confirmacao: TEXTOS.perguntaConfirmacao,
   finalizada: "",
 };
 
@@ -112,6 +133,8 @@ const NOME_ETAPA: Record<Etapa, string> = {
   nascimento: "data de nascimento",
   extrato: "extrato",
   oferta: "oferta",
+  coleta: "dados do contrato",
+  confirmacao: "confirmação dos dados",
   finalizada: "fim",
 };
 
@@ -128,7 +151,8 @@ function transferir(
   saida = rotulo,
 ): Passo {
   return {
-    estado: { ...estado, etapa: "finalizada", tentativas: 0, motivoTransferencia: motivo, paradaEm: estado.etapa, saida },
+    // Os dados do cadastro (RG, endereço, filiação) não ficam guardados depois daqui.
+    estado: { ...estado, etapa: "finalizada", tentativas: 0, motivoTransferencia: motivo, paradaEm: estado.etapa, saida, contrato: undefined },
     respostas: resposta ? [resposta] : [],
     efeitos: [...efeitos, { tipo: "transferir", motivo }],
     rotulo,
@@ -197,10 +221,10 @@ function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora:
   if (resultado.tipo === "erro") {
     return transferir(estado, `erro no banco: ${resultado.motivo}`, TEXTOS.erroBanco, "erro_banco", [efeito]);
   }
-  const { banco, valorCentavos, parcelaCentavos, prazoMeses } = resultado;
+  const { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie } = resultado;
   const mensagem = TEXTOS.oferta(formatarReais(valorCentavos), prazoMeses, formatarReais(parcelaCentavos), DESCONTO[estado.produto ?? "clt"]);
   return ir(estado, "oferta", [mensagem], "com_saldo", [efeito], {
-    oferta: { banco, valorCentavos, parcelaCentavos, prazoMeses },
+    oferta: { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie },
     autorizacaoPedidaEm: undefined,
     proximaVerificacao: undefined,
     ofertaEm: agora.toISOString(),
@@ -387,9 +411,73 @@ async function etapaAguardando(estado: EstadoMaisa, texto: string, deps: Depende
 
 async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const resposta = await deps.classificador.simNao(texto);
+  // INSS e SIAPE com a digitação ligada: ela mesma faz o contrato.
+  if (resposta === "sim" && porExtrato(estado.produto) && deps.digitacaoAtiva && estado.oferta?.tabela) {
+    const dados: DadosContrato = {};
+    if (estado.oferta.renda) dados.renda = estado.oferta.renda;
+    if (estado.produto === "inss" && estado.oferta.especie) dados.tipoBeneficio = String(estado.oferta.especie);
+    const pergunta = proximaPergunta(dados, estado.produto)!;
+    return ir(estado, "coleta", [TEXTOS.inicioContrato, pergunta], "aceitou_contrato", [], {
+      contrato: { dados, pergunta },
+      ofertaEm: undefined,
+      followupEnviado: undefined,
+    });
+  }
   if (resposta === "sim") return transferir(estado, "aceitou a oferta", TEXTOS.aceitou, "aceitou");
   if (resposta === "nao") return transferir(estado, "recusou a oferta", TEXTOS.recusou, "recusou");
   return foraDaEtapa(estado, texto);
+}
+
+// Cada resposta do cliente (texto, foto do documento ou áudio já transcrito) preenche
+// o que der do cadastro. Falta algo: pergunta o próximo. Completo: mostra o resumo.
+async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null; documento?: boolean }, deps: Dependencias): Promise<Passo> {
+  const produto = produtoExtrato(estado);
+  const dados = estado.contrato?.dados ?? {};
+  const pergunta = estado.contrato?.pergunta ?? proximaPergunta(dados, produto) ?? TEXTOS.continuarCadastro;
+  const texto = entrada.texto?.trim() ?? "";
+  if (!entrada.documento && texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
+
+  let novos: DadosContrato;
+  try {
+    novos = await deps.extrairDados(pergunta, entrada, camposFaltando(dados, produto));
+  } catch (err) {
+    const motivo = err instanceof Error ? err.message : "falha ao ler a resposta";
+    return transferir(estado, `erro na coleta dos dados: ${motivo}`, TEXTOS.erroDigitacao, "erro_coleta", [], "erro_digitacao");
+  }
+  if (novos.pixCpf === false) {
+    return transferir(estado, "não quer receber por PIX no CPF", TEXTOS.pixRecusado, "pix_recusado", [], "dados_contrato");
+  }
+
+  const junto = { ...dados, ...novos };
+  const proxima = proximaPergunta(junto, produto);
+  if (!proxima) {
+    return ir(estado, "confirmacao", [TEXTOS.confirmaDados(resumoDados(junto))], "dados_completos", [], {
+      contrato: { dados: junto, pergunta: TEXTOS.perguntaConfirmacao },
+    });
+  }
+  if (!Object.keys(novos).length) {
+    return tentarDeNovo({ ...estado, contrato: { dados, pergunta } }, `${TEXTOS.naoEntendi} ${pergunta}`, "dado_nao_entendido", "dados_contrato");
+  }
+  return ir(estado, "coleta", [proxima], "dado_recebido", [], { contrato: { dados: junto, pergunta: proxima } });
+}
+
+async function etapaConfirmacao(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  const resposta = await deps.classificador.simNao(texto);
+  if (resposta === "nao") return transferir(estado, "cliente quer corrigir os dados", TEXTOS.corrigirDados, "corrigir_dados", [], "dados_contrato");
+  if (resposta !== "sim") return foraDaEtapa(estado, texto);
+
+  let resultado: ResultadoContratacao;
+  try {
+    resultado = await deps.digitar(estado.contrato?.dados ?? {});
+  } catch (err) {
+    resultado = { tipo: "erro", etapa: "sistema", mensagem: err instanceof Error ? err.message : "falha na digitação" };
+  }
+  if (resultado.tipo === "erro") {
+    return transferir(estado, `erro na digitação (${resultado.etapa}): ${resultado.mensagem}`, TEXTOS.erroDigitacao, "erro_digitacao");
+  }
+  return transferir(estado, `proposta ${resultado.codigoAf} digitada na Facta`, TEXTOS.contratoEnviado(resultado.url), "contrato_enviado", [
+    { tipo: "proposta", codigoAf: resultado.codigoAf },
+  ]);
 }
 
 const FOLLOWUP_MS = 10 * 60_000;
@@ -428,6 +516,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 
   // Na etapa do extrato, PDF ou foto é o que ela pediu. Fora dela, arquivo vai para a equipe.
   if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps);
+  if (estado.etapa === "coleta" && entrada.documento) return etapaColeta(estado, entrada, deps);
   if (entrada.temMidia) return transferir(estado, "cliente enviou arquivo", TEXTOS.midiaRecebida, "midia");
 
   const texto = entrada.texto?.trim() ?? "";
@@ -464,6 +553,10 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
       return etapaExtrato(estado, { texto }, deps);
     case "oferta":
       return etapaOferta(estado, texto, deps);
+    case "coleta":
+      return etapaColeta(estado, { texto }, deps);
+    case "confirmacao":
+      return etapaConfirmacao(estado, texto, deps);
     case "finalizada":
       return { estado, respostas: [], efeitos: [], rotulo: "ja_finalizada" };
   }
