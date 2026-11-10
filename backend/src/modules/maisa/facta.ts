@@ -168,19 +168,32 @@ export interface Tabela {
   valorSeguro: number;
 }
 
-export async function simular(p: { cpf: string; dataNascimento: string; renda: number; valorParcela: number }) {
-  const j = await chamar("/proposta/operacoes-disponiveis", p.cpf, {
+// INSS (manual INSS v11.0): mesmo endpoint, averbador 3 e sem renda. A Facta não
+// consulta a margem do INSS; a parcela vem do extrato que o cliente manda.
+// SIAPE (manual SIAPE v1.0): igual, com averbador 15.
+const AVERBADOR_EXTRATO = { inss: "3", siape: "15" } as const;
+
+export function simular(p: { cpf: string; dataNascimento: string; renda: number; valorParcela: number }) {
+  return operacoesDisponiveis(p.cpf, p.dataNascimento, p.valorParcela, AVERBADOR, { valor_renda: p.renda.toFixed(2) });
+}
+
+export function simularConsignado(p: { convenio: "inss" | "siape"; cpf: string; dataNascimento: string; valorParcela: number }) {
+  return operacoesDisponiveis(p.cpf, p.dataNascimento, p.valorParcela, AVERBADOR_EXTRATO[p.convenio]);
+}
+
+async function operacoesDisponiveis(cpf: string, dataNascimento: string, valorParcela: number, averbador: string, extra: Record<string, string> = {}) {
+  const j = await chamar("/proposta/operacoes-disponiveis", cpf, {
     method: "GET",
     query: {
       produto: PRODUTO,
       tipo_operacao: TIPO_OPERACAO,
-      averbador: AVERBADOR,
+      averbador,
       convenio: CONVENIO,
       opcao_valor: "2", // pela parcela
-      valor_parcela: p.valorParcela.toFixed(2),
-      cpf: cpf11(p.cpf),
-      data_nascimento: p.dataNascimento.split("-").reverse().join("/"),
-      valor_renda: p.renda.toFixed(2),
+      valor_parcela: valorParcela.toFixed(2),
+      cpf: cpf11(cpf),
+      data_nascimento: dataNascimento.split("-").reverse().join("/"),
+      ...extra,
     },
   });
   if (j.erro) return { tabelas: [] as Tabela[], mensagem: String(j.mensagem ?? "") };

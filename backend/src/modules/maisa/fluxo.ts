@@ -1,6 +1,6 @@
 import type { Convenio } from "@prisma/client";
 import type { Classificador, ConvenioEntendido } from "./classificador.js";
-import type { ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta } from "./bancos.js";
+import type { ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta, ResultadoExtrato } from "./bancos.js";
 import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
@@ -10,12 +10,31 @@ import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "
 // e a mensagem e devolve o novo estado, as respostas e o que precisa ser gravado.
 // Assim dá para testar o fluxo inteiro sem nada rodando (ver scripts/testarMaisa.ts).
 
-export type Etapa = "inicio" | "convenio" | "cpf" | "nome" | "consentimento" | "aguardando" | "oferta" | "finalizada";
+// CLT: cpf, nome, consentimento, aguardando (link do banco), oferta.
+// INSS e SIAPE: cpf, nascimento, extrato, oferta. A margem sai do extrato do cliente.
+export type Etapa =
+  | "inicio"
+  | "convenio"
+  | "cpf"
+  | "nome"
+  | "consentimento"
+  | "aguardando"
+  | "nascimento"
+  | "extrato"
+  | "oferta"
+  | "finalizada";
+
+export type Produto = "clt" | "inss" | "siape";
+type ProdutoExtrato = Exclude<Produto, "clt">;
+const porExtrato = (p: string | undefined): p is ProdutoExtrato => p === "inss" || p === "siape";
 
 export interface EstadoMaisa {
   etapa: Etapa;
   // Quantas vezes seguidas ela não entendeu a resposta da etapa atual.
   tentativas: number;
+  produto?: Produto;
+  // INSS e SIAPE: AAAA-MM-DD, a Facta pede na simulação.
+  dataNascimento?: string;
   // Nome completo, que o banco exige no pedido de autorização.
   nome?: string;
   // Espera pela autorização do cliente no link do banco (ISO).
@@ -34,9 +53,9 @@ export interface EstadoMaisa {
   saida?: string;
 }
 
-// Mensagem do cliente, ou a checagem automática da autorização (sem texto).
 // Mensagem do cliente, ou uma checagem automática do relógio (sem texto).
-export type Entrada = { texto: string | null; temMidia: boolean } | { evento: "verificar_autorizacao" | "verificar_oferta" };
+// documento = PDF ou imagem, que pode ser o extrato. Áudio chega já transcrito em texto.
+export type Entrada = { texto: string | null; temMidia: boolean; documento?: boolean } | { evento: "verificar_autorizacao" | "verificar_oferta" };
 
 export interface Dependencias {
   classificador: Classificador;
@@ -45,12 +64,14 @@ export interface Dependencias {
   solicitarAutorizacao(nome: string): Promise<ResultadoAutorizacao>;
   consultar(): Promise<ResultadoConsulta>;
   statusProposta(): Promise<{ banco: string; status: string } | null>;
+  // Lê o extrato que acabou de chegar e simula com a margem dele.
+  simularPorExtrato(produto: ProdutoExtrato, dataNascimento: string): Promise<ResultadoExtrato>;
 }
 
 export type Efeito =
   | { tipo: "convenio"; convenio: Convenio }
   | { tipo: "cpf"; cpf: string }
-  | { tipo: "simulacao"; resultado: ResultadoBanco }
+  | { tipo: "simulacao"; convenio: Produto; resultado: ResultadoBanco }
   | { tipo: "transferir"; motivo: string };
 
 export interface Passo {
@@ -75,6 +96,8 @@ const PERGUNTA_DA_ETAPA: Record<Etapa, string> = {
   nome: TEXTOS.nomeInvalido,
   consentimento: TEXTOS.perguntaConsentimento,
   aguardando: TEXTOS.aindaNaoAutorizou,
+  nascimento: TEXTOS.nascimentoInvalido,
+  extrato: TEXTOS.lembraExtrato,
   oferta: TEXTOS.perguntaOferta,
   finalizada: "",
 };
@@ -86,6 +109,8 @@ const NOME_ETAPA: Record<Etapa, string> = {
   nome: "nome",
   consentimento: "autorização",
   aguardando: "link do banco",
+  nascimento: "data de nascimento",
+  extrato: "extrato",
   oferta: "oferta",
   finalizada: "fim",
 };
@@ -129,10 +154,10 @@ function foraDaEtapa(estado: EstadoMaisa, texto: string): Passo {
 
 function decidirConvenio(estado: EstadoMaisa, convenio: ConvenioEntendido, prefixo: string[] = []): Passo {
   const comPrefixo = (p: Passo) => ({ ...p, respostas: [...prefixo, ...p.respostas] });
-  // Só segue com a Maisa o produto que tem simulação por API. Hoje o roteiro de CPF,
-  // autorização e oferta é o do CLT (Facta). Os demais vão para a equipe abaixo.
-  if (convenio === "clt" && PRODUTOS_COM_SIMULACAO.includes("clt")) {
-    return comPrefixo(ir(estado, "cpf", [TEXTOS.pedeCpf], "clt", [{ tipo: "convenio", convenio: "clt" }]));
+  // Só segue com a Maisa o produto que tem simulação por API (CLT, INSS e SIAPE, na Facta).
+  // Os demais vão para a equipe abaixo.
+  if ((convenio === "clt" || porExtrato(convenio)) && PRODUTOS_COM_SIMULACAO.includes(convenio)) {
+    return comPrefixo(ir(estado, "cpf", [TEXTOS.pedeCpf], convenio, [{ tipo: "convenio", convenio }], { produto: convenio }));
   }
   if (convenio === "servidor") {
     return comPrefixo(transferir(estado, "servidor público", TEXTOS.servidorComEquipe, "servidor"));
@@ -160,16 +185,20 @@ function proximaVerificacao(pedidaEm: Date, agora: Date) {
   return new Date(agora.getTime() + intervalo).toISOString();
 }
 
+const DESCONTO: Record<Produto, string> = { clt: "no seu salário", inss: "no seu benefício", siape: "no seu contracheque" };
+
 function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora: Date): Passo {
-  const efeito: Efeito = { tipo: "simulacao", resultado };
+  const efeito: Efeito = { tipo: "simulacao", convenio: estado.produto ?? "clt", resultado };
   if (resultado.tipo === "sem_saldo") {
-    return transferir(estado, `sem saldo: ${resultado.motivo}`, TEXTOS.semSaldo, "sem_saldo", [efeito]);
+    // "extrato" = a margem já acabou no extrato, nem chegou a consultar o banco.
+    const texto = resultado.banco === "extrato" ? TEXTOS.semMargemExtrato : TEXTOS.semSaldo;
+    return transferir(estado, `sem saldo: ${resultado.motivo}`, texto, "sem_saldo", [efeito]);
   }
   if (resultado.tipo === "erro") {
     return transferir(estado, `erro no banco: ${resultado.motivo}`, TEXTOS.erroBanco, "erro_banco", [efeito]);
   }
   const { banco, valorCentavos, parcelaCentavos, prazoMeses } = resultado;
-  const mensagem = TEXTOS.oferta(formatarReais(valorCentavos), prazoMeses, formatarReais(parcelaCentavos));
+  const mensagem = TEXTOS.oferta(formatarReais(valorCentavos), prazoMeses, formatarReais(parcelaCentavos), DESCONTO[estado.produto ?? "clt"]);
   return ir(estado, "oferta", [mensagem], "com_saldo", [efeito], {
     oferta: { banco, valorCentavos, parcelaCentavos, prazoMeses },
     autorizacaoPedidaEm: undefined,
@@ -213,6 +242,7 @@ async function etapaCpf(estado: EstadoMaisa, texto: string, deps: Dependencias):
   const cpf = extrairCpf(texto);
   if (cpf) {
     if (!cpfValido(cpf)) return tentarDeNovo(estado, TEXTOS.cpfInvalido, "cpf_invalido");
+    if (porExtrato(estado.produto)) return ir(estado, "nascimento", [TEXTOS.pedeNascimento], "cpf_valido", [{ tipo: "cpf", cpf }]);
     return ir(estado, "nome", [TEXTOS.pedeNome], "cpf_valido", [{ tipo: "cpf", cpf }]);
   }
   if ((await deps.classificador.simNao(texto)) === "nao") {
@@ -231,6 +261,49 @@ async function etapaNome(estado: EstadoMaisa, texto: string): Promise<Passo> {
   }
   if (texto.includes("?")) return foraDaEtapa(estado, texto);
   return tentarDeNovo(estado, TEXTOS.nomeInvalido, "nome_invalido");
+}
+
+// "15/03/1958", "15-03-58", "15 03 1958" ou "15031958". Devolve AAAA-MM-DD.
+export function lerDataNascimento(texto: string, agora: Date): string | null {
+  const m = texto.match(/\b(\d{1,2})\s*[/.\- ]\s*(\d{1,2})\s*[/.\- ]\s*(\d{4}|\d{2})\b/) ?? texto.match(/\b(\d{2})(\d{2})(\d{4})\b/);
+  if (!m) return null;
+  const dia = Number(m[1]);
+  const mes = Number(m[2]);
+  let ano = Number(m[3]);
+  if (m[3].length === 2) ano += ano > agora.getFullYear() % 100 ? 1900 : 2000;
+  const data = new Date(Date.UTC(ano, mes - 1, dia));
+  if (data.getUTCDate() !== dia || data.getUTCMonth() !== mes - 1) return null;
+  const idade = (agora.getTime() - data.getTime()) / (365.25 * 24 * 60 * 60_000);
+  if (idade < 18 || idade > 100) return null;
+  return data.toISOString().slice(0, 10);
+}
+
+const produtoExtrato = (estado: EstadoMaisa): ProdutoExtrato => (porExtrato(estado.produto) ? estado.produto : "inss");
+
+async function etapaNascimento(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  const data = lerDataNascimento(texto, deps.agora());
+  if (data) return ir(estado, "extrato", [TEXTOS.pedeExtrato(produtoExtrato(estado))], "nascimento_valido", [], { dataNascimento: data });
+  if (texto.includes("?")) return foraDaEtapa(estado, texto);
+  return tentarDeNovo(estado, TEXTOS.nascimentoInvalido, "nascimento_invalido");
+}
+
+// Chegou um PDF ou foto: lê como extrato e simula. Texto: explica como tirar o extrato.
+async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null; documento?: boolean }, deps: Dependencias): Promise<Passo> {
+  if (!entrada.documento) {
+    const texto = entrada.texto?.trim() ?? "";
+    if (texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
+    return tentarDeNovo(estado, TEXTOS.comoTirarExtrato(produtoExtrato(estado)), "sem_extrato", "sem_extrato");
+  }
+  let resultado: ResultadoExtrato;
+  try {
+    resultado = await deps.simularPorExtrato(produtoExtrato(estado), estado.dataNascimento ?? "");
+  } catch (err) {
+    resultado = { tipo: "erro", banco: "desconhecido", motivo: err instanceof Error ? err.message : "falha na leitura do extrato" };
+  }
+  if (resultado.tipo === "extrato_invalido") {
+    return tentarDeNovo(estado, TEXTOS.extratoInvalido(produtoExtrato(estado)), "extrato_invalido", "extrato_invalido");
+  }
+  return mostrarResultado(estado, resultado, deps.agora());
 }
 
 async function pedirAutorizacao(estado: EstadoMaisa, deps: Dependencias, rotulo: string, reenvio = false): Promise<Passo> {
@@ -353,7 +426,8 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   // O cliente falou durante a oferta: o relógio do follow-up recomeça daqui.
   if (estado.etapa === "oferta") estado = { ...estado, ultimoContatoCliente: deps.agora().toISOString() };
 
-  // Foto, áudio ou documento: ela ainda não lê, então passa para quem lê.
+  // Na etapa do extrato, PDF ou foto é o que ela pediu. Fora dela, arquivo vai para a equipe.
+  if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps);
   if (entrada.temMidia) return transferir(estado, "cliente enviou arquivo", TEXTOS.midiaRecebida, "midia");
 
   const texto = entrada.texto?.trim() ?? "";
@@ -384,6 +458,10 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
       return etapaConsentimento(estado, texto, deps);
     case "aguardando":
       return etapaAguardando(estado, texto, deps);
+    case "nascimento":
+      return etapaNascimento(estado, texto, deps);
+    case "extrato":
+      return etapaExtrato(estado, { texto }, deps);
     case "oferta":
       return etapaOferta(estado, texto, deps);
     case "finalizada":

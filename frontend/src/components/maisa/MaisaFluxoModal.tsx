@@ -9,7 +9,7 @@ interface Props {
 
 const SEMPRE_PASSA = [
   "Pedir para falar com um atendente.",
-  "Mandar foto, áudio ou documento.",
+  "Mandar foto ou documento fora da etapa do extrato. Áudio ela escuta e responde.",
   "Fazer uma pergunta que ela não sabe responder.",
   "Não ser entendido três vezes seguidas.",
 ];

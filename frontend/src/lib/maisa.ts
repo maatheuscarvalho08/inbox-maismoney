@@ -31,17 +31,17 @@ export const ETAPAS_FLUXO = [
   {
     id: "convenio",
     nome: "Vínculo",
-    oQueFaz: "Apresenta todos os produtos. Só CLT segue com ela; os outros vão para a equipe.",
+    oQueFaz: "Apresenta todos os produtos. CLT, INSS e SIAPE seguem com ela; os outros vão para a equipe.",
   },
   {
     id: "dados",
     nome: "Dados",
-    oQueFaz: "Pede o CPF e o nome completo.",
+    oQueFaz: "CLT: CPF e nome completo. INSS e SIAPE: CPF e data de nascimento.",
   },
   {
     id: "autorizacao",
     nome: "Autorização",
-    oQueFaz: "O banco Facta manda um link ao cliente. Ela espera o cliente autorizar.",
+    oQueFaz: "CLT: a Facta manda um link e ela espera o cliente autorizar. INSS e SIAPE: ela pede o extrato do Meu INSS ou o contracheque e calcula a margem.",
   },
   {
     id: "oferta",
@@ -58,6 +58,8 @@ const POSICAO: Record<string, number> = {
   nome: 1,
   consentimento: 2,
   aguardando: 2,
+  nascimento: 1,
+  extrato: 2,
   oferta: 3,
 };
 
@@ -95,6 +97,8 @@ export const SAIDAS_MAISA: Record<string, Saida> = {
   link_nao_autorizado: { titulo: "Não autorizou o link", proximoPasso: "Ajudar o cliente a abrir o link da Facta." },
   carrinho: { titulo: "Não respondeu a oferta", proximoPasso: "Ligar ou mandar mensagem para tentar fechar.", quente: true },
   telefone_outro_cpf: { titulo: "Celular de outro CPF", proximoPasso: "Pedir outro celular ao cliente." },
+  extrato_invalido: { titulo: "Extrato não deu para ler", proximoPasso: "Pedir o PDF do documento e analisar o extrato." },
+  sem_extrato: { titulo: "Não mandou o extrato", proximoPasso: "Ajudar o cliente a tirar o extrato ou o contracheque." },
 };
 
 // Ordem em que as saídas aparecem no guia.
@@ -112,6 +116,8 @@ export const SAIDAS_NO_GUIA = [
   "acompanhar_proposta",
   "link_nao_autorizado",
   "telefone_outro_cpf",
+  "extrato_invalido",
+  "sem_extrato",
   "midia",
   "nao_entendeu",
   "recusou_cpf",

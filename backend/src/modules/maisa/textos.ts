@@ -33,8 +33,8 @@ export const PRODUTOS: { convenio: Convenio; texto: string }[] = [
 ];
 
 // Produtos que a Maisa simula sozinha, porque já existe API de banco ligada.
-// Quando chegar a API de outro produto (FGTS na Facta, INSS no BRB), entra aqui.
-export const PRODUTOS_COM_SIMULACAO: Convenio[] = ["clt"];
+// Quando chegar a API de outro produto (FGTS na Facta, BRB), entra aqui.
+export const PRODUTOS_COM_SIMULACAO: Convenio[] = ["clt", "inss", "siape"];
 
 const OPCOES_CONVENIO = PRODUTOS.map((p, i) => `${i + 1}. ${p.texto}`).join("\n");
 const PERGUNTA_CONVENIO = "Com qual destes produtos posso te ajudar? Responda com o número.\n" + OPCOES_CONVENIO;
@@ -49,6 +49,28 @@ export const TEXTOS = {
   pedeCpf: "Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.",
   cpfInvalido: "Esse CPF não parece válido. Pode conferir e me mandar de novo?",
   pedeNome: "Obrigada! Agora me manda o seu nome completo, igual está no documento.",
+  pedeNascimento: "Obrigada! Agora me manda a sua data de nascimento. Por exemplo: 15/03/1958.",
+  nascimentoInvalido: "Não entendi a data. Pode mandar assim: 15/03/1958?",
+  pedeExtrato: (produto: "inss" | "siape") =>
+    produto === "inss"
+      ? "Agora preciso do seu extrato de empréstimos do INSS. É ele que mostra quanto ainda sobra de margem no seu benefício.\n\n" +
+        "No aplicativo Meu INSS, entre em \"Extrato de Empréstimos\" e baixe o PDF. Pode mandar aqui o PDF ou uma foto bem nítida. " +
+        "Uso o extrato só para fazer a sua simulação."
+      : "Agora preciso do seu contracheque mais recente. É ele que mostra quanto ainda sobra de margem consignável.\n\n" +
+        "No aplicativo SouGov.br, baixe o contracheque em PDF. Pode mandar aqui o PDF ou uma foto bem nítida. " +
+        "Uso o documento só para fazer a sua simulação.",
+  lembraExtrato: "Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.",
+  comoTirarExtrato: (produto: "inss" | "siape") =>
+    (produto === "inss"
+      ? "Para tirar o extrato: abra o aplicativo ou o site Meu INSS, entre com a sua conta gov.br e toque em \"Extrato de Empréstimos\". "
+      : "Para tirar o contracheque: abra o aplicativo SouGov.br, entre com a sua conta gov.br e procure o contracheque do último mês. ") +
+    "Baixe o PDF e mande aqui.\n\nSe preferir, é só pedir que eu chamo um atendente.",
+  extratoInvalido: (produto: "inss" | "siape") =>
+    produto === "inss"
+      ? "Não consegui ler esse arquivo como extrato de empréstimos do INSS. Pode mandar o PDF do Meu INSS ou uma foto mais nítida?"
+      : "Não consegui ler esse arquivo como contracheque de servidor federal. Pode mandar o PDF do SouGov.br ou uma foto mais nítida?",
+  semMargemExtrato:
+    "Olhei o seu documento e, no momento, não sobra margem para um empréstimo novo. Vou te passar para um atendente ver outras opções com você.",
   nomeInvalido: "Preciso do nome completo, com sobrenome. Pode mandar de novo?",
   avisoLink:
     "Pronto! Agora vai chegar no seu WhatsApp uma mensagem do banco Facta, nosso parceiro, com um link. " +
@@ -80,8 +102,8 @@ export const TEXTOS = {
     "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Vou te passar para um atendente ver outras opções com você.",
   erroBanco: "Não consegui consultar o banco agora. Vou te passar para um atendente continuar daqui.",
   // Nunca prometer valor garantido: sempre "até" e "estimativa".
-  oferta: (valor: string, prazo: number, parcela: string) =>
-    `Boa notícia! Você pode receber até ${valor}, em ${prazo} parcelas de ${parcela}, descontadas direto no seu salário.\n\n` +
+  oferta: (valor: string, prazo: number, parcela: string, desconto = "no seu salário") =>
+    `Boa notícia! Você pode receber até ${valor}, em ${prazo} parcelas de ${parcela}, descontadas direto ${desconto}.\n\n` +
     "Esse valor é uma estimativa e ainda passa pela análise do banco. Quer seguir? Responda SIM ou NÃO.",
   // Uma vez só, 10 minutos depois da oferta sem resposta.
   followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",

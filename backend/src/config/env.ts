@@ -50,6 +50,8 @@ const envSchema = z.object({
   // OpenAI. A leitura de extrato usa um modelo com visão; as etapas simples, um barato.
   OPENAI_API_KEY: z.string().default(""),
   OPENAI_MODELO_EXTRATO: z.string().default("gpt-6.1-sol"),
+  // Transcrição dos áudios que o cliente manda para a Maisa.
+  OPENAI_MODELO_AUDIO: z.string().default("gpt-4o-transcribe"),
   // Libera a tela de teste, que cria conversas de mentira e simula o cliente.
   MAISA_SIMULADOR: z
     .string()

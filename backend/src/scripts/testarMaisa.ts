@@ -21,7 +21,8 @@ function cpfTerminadoEm(ultimo: number) {
 
 // O que acontece na conversa: mensagem do cliente, foto, o cliente tocar no link do
 // banco, a checagem automática ou o relógio andar.
-type Acao = string | { midia: true } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
+// extrato: o cliente manda um PDF; o valor diz o que a leitura encontra.
+type Acao = string | { midia: true } | { extrato: "com_margem" | "sem_margem" | "invalido" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
 
 interface Caso {
   nome: string;
@@ -39,6 +40,7 @@ const CPF_ERRO = cpfTerminadoEm(8);
 const CPF_OUTRO_CELULAR = cpfTerminadoEm(9);
 const NOME = "Maria da Silva";
 const ATE_AUTORIZAR = (cpf: string) => ["oi", "2", cpf, NOME, "sim"];
+const ATE_EXTRATO = ["oi", "1", CPF_SALDO, "15/03/1958"];
 
 const CASOS: Caso[] = [
   {
@@ -169,10 +171,10 @@ const CASOS: Caso[] = [
     etapaFinal: "finalizada",
     saida: "nao_entendeu",
   },
-  { nome: "INSS vai para a equipe", acoes: ["olá", "sou aposentado"], etapaFinal: "finalizada", saida: "convenio" },
+  { nome: "Aposentado segue com ela e recebe o pedido de CPF", acoes: ["olá", "sou aposentado"], etapaFinal: "cpf" },
   { nome: "Servidor público genérico vai para a equipe", acoes: ["oi", "sou servidor público"], etapaFinal: "finalizada", saida: "servidor" },
   { nome: "Saudação apresenta todos os produtos", acoes: ["oi"], etapaFinal: "convenio", respostaContem: "10. Antecipação do FGTS" },
-  ...[1, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
+  ...[4, 5, 6, 7, 8, 9, 10].map((n) => ({
     nome: `Produto ${n} sem API vai para a fila com o convênio marcado`,
     acoes: ["oi", String(n)],
     etapaFinal: "finalizada" as const,
@@ -213,6 +215,54 @@ const CASOS: Caso[] = [
   },
   { nome: "Manda foto", acoes: ["oi", { midia: true }], etapaFinal: "finalizada", saida: "midia" },
   {
+    nome: "INSS completo: CPF, nascimento, extrato e oferta",
+    acoes: [...ATE_EXTRATO, { extrato: "com_margem" }, "sim"],
+    etapaFinal: "finalizada",
+    saida: "aceitou",
+    respostaContem: "no seu benefício",
+  },
+  {
+    nome: "SIAPE completo: contracheque e oferta",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim"],
+    etapaFinal: "finalizada",
+    saida: "aceitou",
+    respostaContem: "no seu contracheque",
+  },
+  { nome: "SIAPE pede o contracheque", acoes: ["oi", "sou servidor federal", CPF_SALDO, "15/03/1958"], etapaFinal: "extrato", respostaContem: "SouGov" },
+  { nome: "INSS pede o extrato depois da data", acoes: ATE_EXTRATO, etapaFinal: "extrato", respostaContem: "Meu INSS" },
+  { nome: "INSS aceita data sem barras", acoes: ["oi", "1", CPF_SALDO, "15031958"], etapaFinal: "extrato" },
+  {
+    nome: "INSS com data inválida pergunta de novo",
+    acoes: ["oi", "1", CPF_SALDO, "31/02/1958"],
+    etapaFinal: "nascimento",
+    respostaContem: "Não entendi a data",
+  },
+  {
+    nome: "INSS sem margem no extrato vai para a equipe",
+    acoes: [...ATE_EXTRATO, { extrato: "sem_margem" }],
+    etapaFinal: "finalizada",
+    saida: "sem_saldo",
+    respostaContem: "não sobra margem",
+  },
+  {
+    nome: "INSS com arquivo que não é extrato pede de novo",
+    acoes: [...ATE_EXTRATO, { extrato: "invalido" }],
+    etapaFinal: "extrato",
+    respostaContem: "Não consegui ler",
+  },
+  {
+    nome: "INSS sem extrato: explica como tirar",
+    acoes: [...ATE_EXTRATO, "não tenho"],
+    etapaFinal: "extrato",
+    respostaContem: "gov.br",
+  },
+  {
+    nome: "INSS: foto fora da etapa do extrato vai para a equipe",
+    acoes: ["oi", "1", { midia: true }],
+    etapaFinal: "finalizada",
+    saida: "midia",
+  },
+  {
     nome: "Não entende o vínculo duas vezes e entende na terceira",
     acoes: ["oi", "hmm", "sei la", "carteira assinada"],
     etapaFinal: "cpf",
@@ -228,6 +278,7 @@ const CASOS: Caso[] = [
 function descrever(a: Acao) {
   if (typeof a === "string") return `cliente: ${a}`;
   if ("midia" in a) return "cliente: [foto]";
+  if ("extrato" in a) return `cliente: [extrato, ${a.extrato}]`;
   if ("autoriza" in a) return "[cliente autorizou o link]";
   if ("verifica" in a) return "[checagem automática]";
   if ("verificaOferta" in a) return "[checagem da oferta]";
@@ -239,12 +290,19 @@ async function rodar(caso: Caso, verbose: boolean) {
   bancoSimulado.reiniciar();
   let cpfGravado: string | null = null;
   let relogio = new Date("2026-11-09T12:00:00Z");
+  let leituraExtrato: "com_margem" | "sem_margem" | "invalido" = "com_margem";
   const deps: Dependencias = {
     classificador: classificadorRegras,
     agora: () => relogio,
     solicitarAutorizacao: async (nome) => bancoSimulado.solicitarAutorizacao({ cpf: cpfGravado!, nome, celular: "5521999998888" }),
     consultar: async () => bancoSimulado.consultar(cpfGravado!),
     statusProposta: async () => null,
+    simularPorExtrato: async (_produto, dataNascimento) => {
+      assert.equal(dataNascimento, "1958-03-15", "data de nascimento");
+      if (leituraExtrato === "invalido") return { tipo: "extrato_invalido", motivo: "não é extrato do INSS" };
+      if (leituraExtrato === "sem_margem") return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
+      return bancoSimulado.simularConsignado({ convenio: _produto, cpf: cpfGravado!, dataNascimento, parcelaMaxima: 300 });
+    },
   };
 
   let estado: EstadoMaisa | null = null;
@@ -263,6 +321,10 @@ async function rodar(caso: Caso, verbose: boolean) {
     let entrada: Entrada;
     if (typeof acao === "string") entrada = { texto: acao, temMidia: false };
     else if ("midia" in acao) entrada = { texto: null, temMidia: true };
+    else if ("extrato" in acao) {
+      leituraExtrato = acao.extrato;
+      entrada = { texto: null, temMidia: true, documento: true };
+    }
     else if ("verificaOferta" in acao) entrada = { evento: "verificar_oferta" };
     else entrada = { evento: "verificar_autorizacao" };
 

@@ -10,6 +10,9 @@ export type ResultadoBanco =
 
 export type ResultadoAutorizacao = facta.ResultadoAutorizacao;
 
+// INSS e SIAPE: o extrato pode não servir (outro documento, ilegível) antes de chegar ao banco.
+export type ResultadoExtrato = ResultadoBanco | { tipo: "extrato_invalido"; motivo: string };
+
 // Antes de consultar, o cliente precisa autorizar num link que o banco manda.
 export type ResultadoConsulta = { tipo: "nao_autorizado" } | { tipo: "indisponivel" } | ResultadoBanco;
 
@@ -17,9 +20,29 @@ export interface BancoClt {
   nome: string;
   solicitarAutorizacao(p: { cpf: string; nome: string; celular: string }): Promise<ResultadoAutorizacao>;
   consultar(cpf: string): Promise<ResultadoConsulta>;
+  // INSS e SIAPE: a parcela máxima sai do extrato que o cliente mandou.
+  simularConsignado(p: { convenio: "inss" | "siape"; cpf: string; dataNascimento: string; parcelaMaxima: number }): Promise<ResultadoBanco>;
 }
 
 const reais = (v: number) => Math.round(v * 100);
+
+// A oferta padrão é a de maior valor sem seguro. Seguro só se o consultor oferecer.
+// Tabela "iletrado" é para cliente que não assina: só a equipe usa.
+function melhorTabela(nome: string, tabelas: facta.Tabela[], mensagem: string): ResultadoBanco {
+  const semSeguro = tabelas.filter((t) => t.valorSeguro === 0 && t.valorLiquido > 0 && !/iletrad/i.test(t.tabela));
+  if (!semSeguro.length) {
+    const motivo = tabelas.length ? "só há tabelas com seguro" : mensagem || "nenhuma tabela disponível";
+    return { tipo: "sem_saldo", banco: nome, motivo };
+  }
+  const melhor = semSeguro.reduce((a, b) => (b.valorLiquido > a.valorLiquido ? b : a));
+  return {
+    tipo: "com_saldo",
+    banco: nome,
+    valorCentavos: reais(melhor.valorLiquido),
+    parcelaCentavos: reais(melhor.parcela),
+    prazoMeses: melhor.prazo,
+  };
+}
 
 export const bancoFacta: BancoClt = {
   nome: "Facta",
@@ -50,20 +73,17 @@ export const bancoFacta: BancoClt = {
       valorParcela: v.margemDisponivel! * REGRAS.folgaMargem,
     });
 
-    // A oferta padrão é a de maior valor sem seguro. Seguro só se o consultor oferecer.
-    const semSeguro = tabelas.filter((t) => t.valorSeguro === 0 && t.valorLiquido > 0);
-    if (!semSeguro.length) {
-      const motivo = tabelas.length ? "só há tabelas com seguro" : mensagem || "nenhuma tabela disponível";
-      return { tipo: "sem_saldo", banco: this.nome, motivo };
-    }
-    const melhor = semSeguro.reduce((a, b) => (b.valorLiquido > a.valorLiquido ? b : a));
-    return {
-      tipo: "com_saldo",
-      banco: this.nome,
-      valorCentavos: reais(melhor.valorLiquido),
-      parcelaCentavos: reais(melhor.parcela),
-      prazoMeses: melhor.prazo,
-    };
+    return melhorTabela(this.nome, tabelas, mensagem);
+  },
+
+  async simularConsignado(p) {
+    const { tabelas, mensagem } = await facta.simularConsignado({
+      convenio: p.convenio,
+      cpf: p.cpf,
+      dataNascimento: p.dataNascimento,
+      valorParcela: p.parcelaMaxima * REGRAS.folgaMargem,
+    });
+    return melhorTabela(this.nome, tabelas, mensagem);
   },
 };
 
@@ -105,5 +125,11 @@ export const bancoSimulado: BancoClt & { autorizar(cpf: string): void; reiniciar
     // Juros fictícios de 2% ao mês, só para a parcela não sair absurda.
     const parcelaCentavos = Math.round((valorCentavos * (1 + 0.02 * prazoMeses)) / prazoMeses);
     return { tipo: "com_saldo", banco: this.nome, valorCentavos, parcelaCentavos, prazoMeses };
+  },
+
+  // Coeficiente parecido com o da Facta (1,85% em 84 meses), só para teste.
+  async simularConsignado({ parcelaMaxima }) {
+    const parcelaCentavos = Math.round(parcelaMaxima * REGRAS.folgaMargem * 100);
+    return { tipo: "com_saldo", banco: this.nome, valorCentavos: Math.round(parcelaCentavos / 0.0245), parcelaCentavos, prazoMeses: 84 };
   },
 };

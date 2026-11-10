@@ -11,6 +11,7 @@ import { classificadorRegras } from "./classificador.js";
 import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
 import { factaConfigurada } from "./facta.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo } from "./fluxo.js";
+import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
 export const PREFIXO_NUMERO_TESTE = "5500000";
@@ -78,7 +79,7 @@ async function aplicarEfeito(conversa: ConversaMaisa, efeito: Efeito) {
         data: {
           conversaId: conversa.id,
           banco: r.banco,
-          convenio: "clt",
+          convenio: efeito.convenio,
           resultado: r.tipo,
           valorCentavos: r.tipo === "com_saldo" ? r.valorCentavos : null,
           motivo: r.tipo === "com_saldo" ? null : r.motivo,
@@ -120,10 +121,23 @@ async function processar(conversaId: string, gatilho: Gatilho) {
   if (!conversa || !conversa.comMaisa || !conversa.instancia.maisaAtiva || conversa.status === "encerrada") return;
 
   let entrada: Entrada;
+  let arquivo: { midiaPath: string; tipo: string } | null = null;
   if ("mensagemId" in gatilho) {
     const mensagem = await prisma.mensagem.findUnique({ where: { id: gatilho.mensagemId } });
     if (!mensagem || mensagem.remetenteTipo !== "cliente") return;
-    entrada = { texto: mensagem.conteudoTexto, temMidia: Boolean(mensagem.tipoMidia) };
+    const tipo = mensagem.tipoMidia?.split(";")[0].trim() ?? null;
+    if (tipo && mensagem.midiaPath && !mensagem.midiaDeleted) arquivo = { midiaPath: mensagem.midiaPath, tipo };
+    entrada = { texto: mensagem.conteudoTexto, temMidia: Boolean(tipo), documento: Boolean(arquivo && FORMATOS_EXTRATO.includes(arquivo.tipo)) };
+    // Áudio: ela escuta e segue como se o cliente tivesse escrito. Se falhar, vai para a equipe.
+    if (arquivo?.tipo.startsWith("audio/") && env.OPENAI_API_KEY) {
+      try {
+        const texto = await transcreverAudio(await lerArquivo(arquivo.midiaPath), arquivo.tipo);
+        if (texto) entrada = { texto, temMidia: false };
+        console.log(`Maisa transcreveu áudio da conversa ${conversa.id} (${texto.length} caracteres)`);
+      } catch (err) {
+        console.error(`Maisa não conseguiu transcrever o áudio da conversa ${conversa.id}:`, err instanceof Error ? err.message : err);
+      }
+    }
   } else {
     entrada = gatilho;
   }
@@ -140,6 +154,16 @@ async function processar(conversaId: string, gatilho: Gatilho) {
         : semBanco(),
     consultar: async () => (banco ? banco.consultar(await cpfDoContato(conversa.contatoId)) : semBanco()),
     statusProposta: () => ultimaProposta(conversa.contatoId),
+    simularPorExtrato: async (convenio, dataNascimento) => {
+      if (!banco) return semBanco();
+      if (!arquivo) return { tipo: "extrato_invalido", motivo: "arquivo não encontrado" };
+      const inicio = Date.now();
+      const leitura = await parcelaPeloExtrato(await lerArquivo(arquivo.midiaPath), arquivo.tipo, convenio);
+      // Registro de acesso a documento sensível, sem dado pessoal.
+      console.log(`Maisa leu extrato ${convenio} da conversa ${conversa.id}: ${leitura.tipo} ${Date.now() - inicio}ms`);
+      if (leitura.tipo !== "ok") return leitura;
+      return banco.simularConsignado({ convenio, cpf: await cpfDoContato(conversa.contatoId), dataNascimento, parcelaMaxima: leitura.parcelaMaxima });
+    },
   });
 
   // Checagem sem novidade: só guarda quando checar de novo, sem registro nem aviso.
