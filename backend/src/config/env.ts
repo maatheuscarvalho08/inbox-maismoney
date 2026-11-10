@@ -31,6 +31,30 @@ const envSchema = z.object({
   TWILIO_AUTH_TOKEN: z.string().default(""),
   TWILIO_PHONE_NUMBER: z.string().default(""),
   REDIS_URL: z.string().default("redis://localhost:6379"),
+
+  // Maisa (IA de atendimento). Desligada por padrão: nada muda em produção até
+  // alguém ligar de propósito.
+  // copiloto = ela grava a resposta como sugestão e a equipe decide se envia.
+  // automatico = ela mesma envia pelo WhatsApp.
+  MAISA_MODO: z.enum(["desligado", "copiloto", "automatico"]).default("desligado"),
+  // Usa o banco de mentira nas simulações. Só para teste: gera ofertas fictícias.
+  MAISA_BANCO_SIMULADO: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
+  // API da Facta para a simulação CLT. Comece pela homologação. A Facta só aceita
+  // chamadas do IP liberado, então em produção isso só funciona na VPS.
+  FACTA_BASE_URL: z.string().default("https://webservice-homol.facta.com.br"),
+  FACTA_USER: z.string().default(""),
+  FACTA_PASS: z.string().default(""),
+  // OpenAI. A leitura de extrato usa um modelo com visão; as etapas simples, um barato.
+  OPENAI_API_KEY: z.string().default(""),
+  OPENAI_MODELO_EXTRATO: z.string().default("gpt-6.1-sol"),
+  // Libera a tela de teste, que cria conversas de mentira e simula o cliente.
+  MAISA_SIMULADOR: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
 });
 
 export const env = envSchema.parse(process.env);

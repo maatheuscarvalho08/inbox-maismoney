@@ -257,7 +257,7 @@ mensagens (
 ## 13. O QUE NÃO CONSTRUIR AGORA
 
 - Multi-tenancy (SaaS) — fase futura
-- Bot de atendimento automático — a Maisa (IA) está em preparação na branch `preview`; as seções existem, mas ela ainda não responde
+- Bot de atendimento automático — a Maisa (IA) está em preparação na branch `preview`. O fluxograma dela já roda em `backend/src/modules/maisa/` (etapas fixas, classificador por regras), desligado por padrão via `MAISA_MODO`. O código decide a etapa; o modelo só classifica e redige. Testes: `npm run maisa:testar`. CLT chama a API da Facta direto do backend (`maisa/facta.ts`, sem o funil do Supabase): pede o link de autorização, checa a cada minuto até o cliente autorizar (48h no máximo), consulta a Dataprev e simula. Regras em `maisa/regras.ts` ainda são provisórias. INSS e SIAPE vão para a equipe. Ainda falta: follow-up por tempo, GPT-6 Luna nas etapas, IP liberado na Facta
 - Integração com CorbanCRM — pode ser considerada depois
 - Discadora / Twilio Voice + IVR — ver seção 12, planejado para Fase 2
 

@@ -15,3 +15,8 @@ export function emitInstanciaAtualizada(instancia: unknown) {
 export function emitCampanhaAtualizada(payload: unknown) {
   getIo().emit("campanha:atualizada", payload);
 }
+
+// Cliente ofertado que não respondeu em 24h: a tela avisa a equipe no topo.
+export function emitCarrinhoNovo(conversa: unknown) {
+  getIo().emit("carrinho:novo", conversa);
+}

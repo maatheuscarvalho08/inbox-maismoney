@@ -1,0 +1,260 @@
+import cron from "node-cron";
+import type { Prisma, StatusProposta } from "@prisma/client";
+import { prisma } from "../../db/prisma.js";
+import { env } from "../../config/env.js";
+import { emitCarrinhoNovo, emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
+import { criarMensagem } from "../mensagens/mensagens.service.js";
+import { entregarMensagem } from "../mensagens/entrega.js";
+import { getConversaById } from "../conversas/conversas.service.js";
+import { avancarEtapa } from "../funil/funil.service.js";
+import { classificadorRegras } from "./classificador.js";
+import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
+import { factaConfigurada } from "./facta.js";
+import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo } from "./fluxo.js";
+
+// Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
+export const PREFIXO_NUMERO_TESTE = "5500000";
+
+const STATUS_PROPOSTA: Record<StatusProposta, string> = {
+  digitada: "digitada, aguardando o banco",
+  em_analise: "em análise no banco",
+  aprovada: "aprovada",
+  paga: "paga",
+  recusada: "recusada pelo banco",
+  cancelada: "cancelada",
+};
+
+type ConversaMaisa = Prisma.ConversaGetPayload<{ include: { contato: true; instancia: true } }>;
+
+const ehTeste = (conversa: ConversaMaisa) => conversa.contato.numeroWhatsapp.startsWith(PREFIXO_NUMERO_TESTE);
+
+// Conversa de teste sempre usa o banco de mentira: o número dela não existe.
+function bancoDaConversa(conversa: ConversaMaisa): BancoClt | null {
+  if (ehTeste(conversa) || env.MAISA_BANCO_SIMULADO) return bancoSimulado;
+  if (factaConfigurada()) return bancoFacta;
+  return null;
+}
+
+export function bancoConfigurado() {
+  return env.MAISA_BANCO_SIMULADO ? "simulado" : factaConfigurada() ? "facta" : "nenhum";
+}
+
+async function cpfDoContato(contatoId: string) {
+  const contato = await prisma.contato.findUnique({ where: { id: contatoId }, select: { cpf: true } });
+  if (!contato?.cpf) throw new Error("CPF não encontrado no contato");
+  return contato.cpf;
+}
+
+async function ultimaProposta(contatoId: string) {
+  const proposta = await prisma.proposta.findFirst({
+    where: { conversa: { contatoId } },
+    orderBy: { createdAt: "desc" },
+  });
+  return proposta ? { banco: proposta.banco, status: STATUS_PROPOSTA[proposta.status] } : null;
+}
+
+async function etapaAtual(conversaId: string) {
+  return (await prisma.conversa.findUnique({ where: { id: conversaId }, select: { etapaFunil: true } }))?.etapaFunil ?? null;
+}
+
+async function aplicarEfeito(conversa: ConversaMaisa, efeito: Efeito) {
+  switch (efeito.tipo) {
+    case "convenio":
+      // Convênio definido por uma pessoa da equipe vale mais que o da Maisa.
+      if (conversa.convenioOrigem !== "operador") {
+        await prisma.conversa.update({
+          where: { id: conversa.id },
+          data: { convenio: efeito.convenio, convenioOrigem: "maisa" },
+        });
+      }
+      return;
+    case "cpf":
+      await prisma.contato.update({ where: { id: conversa.contatoId }, data: { cpf: efeito.cpf } });
+      await avancarEtapa(conversa.id, "dados_coletados", await etapaAtual(conversa.id));
+      return;
+    case "simulacao": {
+      const r = efeito.resultado;
+      await prisma.simulacao.create({
+        data: {
+          conversaId: conversa.id,
+          banco: r.banco,
+          convenio: "clt",
+          resultado: r.tipo,
+          valorCentavos: r.tipo === "com_saldo" ? r.valorCentavos : null,
+          motivo: r.tipo === "com_saldo" ? null : r.motivo,
+        },
+      });
+      // Erro na API do banco não é simulação concluída, então não move o funil.
+      if (r.tipo !== "erro") {
+        await avancarEtapa(conversa.id, r.tipo === "com_saldo" ? "simulacao_com_saldo" : "simulacao", await etapaAtual(conversa.id));
+      }
+      return;
+    }
+    case "transferir":
+      // Sai da Maisa e entra em "Na fila". Quem estava atribuído continua.
+      await prisma.conversa.update({ where: { id: conversa.id }, data: { comMaisa: false } });
+      return;
+  }
+}
+
+async function enviarResposta(conversa: ConversaMaisa, texto: string) {
+  const mensagem = await criarMensagem({ conversaId: conversa.id, remetenteTipo: "maisa", conteudoTexto: texto });
+  if (!mensagem) return;
+  // No copiloto a mensagem fica só como sugestão. Conversa de teste nunca vai para o WhatsApp.
+  if (env.MAISA_MODO === "automatico" && !ehTeste(conversa)) {
+    await entregarMensagem(mensagem, conversa, null);
+  }
+  emitNovaMensagem(mensagem);
+}
+
+// O que fez a Maisa andar: uma mensagem do cliente ou a checagem da autorização.
+type Gatilho = { mensagemId: string } | { evento: "verificar_autorizacao" | "verificar_oferta" };
+
+async function processar(conversaId: string, gatilho: Gatilho) {
+  if (env.MAISA_MODO === "desligado") return;
+
+  const conversa = await prisma.conversa.findUnique({
+    where: { id: conversaId },
+    include: { contato: true, instancia: true },
+  });
+  if (!conversa || !conversa.comMaisa || !conversa.instancia.maisaAtiva || conversa.status === "encerrada") return;
+
+  let entrada: Entrada;
+  if ("mensagemId" in gatilho) {
+    const mensagem = await prisma.mensagem.findUnique({ where: { id: gatilho.mensagemId } });
+    if (!mensagem || mensagem.remetenteTipo !== "cliente") return;
+    entrada = { texto: mensagem.conteudoTexto, temMidia: Boolean(mensagem.tipoMidia) };
+  } else {
+    entrada = gatilho;
+  }
+
+  const banco = bancoDaConversa(conversa);
+  const semBanco = () => Promise.reject(new Error("Nenhum banco configurado para a Maisa"));
+  const estadoAntes = (conversa.maisaEstado as EstadoMaisa | null) ?? null;
+  const passo: Passo = await avancar(estadoAntes, entrada, {
+    classificador: classificadorRegras,
+    agora: () => new Date(),
+    solicitarAutorizacao: async (nome) =>
+      banco
+        ? banco.solicitarAutorizacao({ cpf: await cpfDoContato(conversa.contatoId), nome, celular: conversa.contato.numeroWhatsapp })
+        : semBanco(),
+    consultar: async () => (banco ? banco.consultar(await cpfDoContato(conversa.contatoId)) : semBanco()),
+    statusProposta: () => ultimaProposta(conversa.contatoId),
+  });
+
+  // Checagem sem novidade: só guarda quando checar de novo, sem registro nem aviso.
+  const mudouEtapa = passo.estado.etapa !== estadoAntes?.etapa;
+  if (!("mensagemId" in gatilho) && !mudouEtapa && !passo.respostas.length) {
+    await prisma.conversa.update({ where: { id: conversa.id }, data: { maisaEstado: passo.estado as unknown as Prisma.InputJsonValue } });
+    return;
+  }
+
+  // Primeiro grava o que ela aprendeu, depois responde, e só então sai da conversa:
+  // assim a resposta de despedida ainda aparece como dela.
+  const transferencia = passo.efeitos.find((e) => e.tipo === "transferir");
+  for (const efeito of passo.efeitos) {
+    if (efeito.tipo !== "transferir") await aplicarEfeito(conversa, efeito);
+  }
+  await prisma.conversa.update({
+    where: { id: conversa.id },
+    data: { maisaEstado: passo.estado as unknown as Prisma.InputJsonValue },
+  });
+  await prisma.maisaEvento.create({
+    data: {
+      conversaId: conversa.id,
+      etapaAntes: estadoAntes?.etapa ?? null,
+      etapaDepois: passo.estado.etapa,
+      rotulo: passo.rotulo,
+      motivo: transferencia?.tipo === "transferir" ? transferencia.motivo : null,
+    },
+  });
+
+  for (const texto of passo.respostas) await enviarResposta(conversa, texto);
+  if (transferencia) await aplicarEfeito(conversa, transferencia);
+
+  // 24 horas sem responder a oferta: entra no Carrinho e avisa a equipe na hora.
+  if (passo.estado.saida === "carrinho") {
+    await prisma.conversa.update({ where: { id: conversa.id }, data: { carrinhoEm: new Date() } });
+  }
+
+  const atualizada = await getConversaById(conversa.id);
+  if (atualizada) {
+    emitConversaAtualizada(atualizada);
+    if (passo.estado.saida === "carrinho") emitCarrinhoNovo(atualizada);
+  }
+}
+
+// Uma coisa por vez em cada conversa. Se o cliente manda três mensagens seguidas,
+// a segunda só é lida depois que a primeira mudou a etapa.
+const filas = new Map<string, Promise<void>>();
+
+function enfileirar(conversaId: string, gatilho: Gatilho): Promise<void> {
+  const anterior = filas.get(conversaId) ?? Promise.resolve();
+  const atual = anterior
+    .then(() => processar(conversaId, gatilho))
+    .catch(async (err) => {
+      console.error(`Maisa falhou na conversa ${conversaId}:`, err);
+      // Se ela quebrar no meio, o cliente não pode ficar sem resposta: vai para a fila.
+      try {
+        await prisma.conversa.update({ where: { id: conversaId }, data: { comMaisa: false } });
+        const conversa = await getConversaById(conversaId);
+        if (conversa) emitConversaAtualizada(conversa);
+      } catch (erroFila) {
+        console.error("Não foi possível passar a conversa para a fila:", erroFila);
+      }
+    });
+  filas.set(conversaId, atual);
+  atual.finally(() => {
+    if (filas.get(conversaId) === atual) filas.delete(conversaId);
+  });
+  return atual;
+}
+
+export function processarComMaisa(conversaId: string, mensagemId: string): Promise<void> {
+  return enfileirar(conversaId, { mensagemId });
+}
+
+export function verificarAutorizacao(conversaId: string): Promise<void> {
+  return enfileirar(conversaId, { evento: "verificar_autorizacao" });
+}
+
+// Conversas esperando o cliente autorizar o link do banco e já na hora de checar.
+export async function verificarAutorizacoesPendentes() {
+  const esperando = await prisma.conversa.findMany({
+    where: {
+      comMaisa: true,
+      status: { not: "encerrada" },
+      maisaEstado: { path: ["etapa"], equals: "aguardando" },
+    },
+    select: { id: true, maisaEstado: true },
+  });
+  const agora = Date.now();
+  const naHora = esperando.filter((c) => {
+    const proxima = (c.maisaEstado as EstadoMaisa | null)?.proximaVerificacao;
+    return !proxima || new Date(proxima).getTime() <= agora;
+  });
+  for (const c of naHora) await verificarAutorizacao(c.id);
+  return naHora.length;
+}
+
+// Ofertas ainda sem resposta: o fluxo decide se é hora do follow-up ou do carrinho.
+export async function verificarOfertasPendentes() {
+  const ofertadas = await prisma.conversa.findMany({
+    where: { comMaisa: true, status: { not: "encerrada" }, maisaEstado: { path: ["etapa"], equals: "oferta" } },
+    select: { id: true },
+  });
+  for (const c of ofertadas) await enfileirar(c.id, { evento: "verificar_oferta" });
+  return ofertadas.length;
+}
+
+export function startMaisaJobs() {
+  if (env.MAISA_MODO === "desligado") return;
+  cron.schedule("* * * * *", async () => {
+    try {
+      await verificarAutorizacoesPendentes();
+      await verificarOfertasPendentes();
+    } catch (err) {
+      console.error("Erro nas checagens de tempo da Maisa:", err);
+    }
+  });
+}

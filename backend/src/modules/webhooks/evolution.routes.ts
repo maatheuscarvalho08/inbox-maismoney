@@ -9,6 +9,7 @@ import { findOrCreateConversaAberta, getConversaById, marcarConversaRespondida }
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitInstanciaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { uploadsRoot } from "../../middleware/upload.js";
+import { processarComMaisa } from "../maisa/maisa.service.js";
 
 const router = Router();
 
@@ -155,6 +156,7 @@ router.post(
 
               emitNovaMensagem(mensagem);
               if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
+              void processarComMaisa(conversa.id, mensagem.id);
             }
           }
         }

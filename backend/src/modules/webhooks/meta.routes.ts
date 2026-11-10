@@ -12,6 +12,7 @@ import { findOrCreateConversaAberta, marcarConversaRespondida } from "../convers
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { fallbackEvolutionQueue } from "../../queues/fallbackEvolutionQueue.js";
+import { processarComMaisa } from "../maisa/maisa.service.js";
 import type { StatusEntrega } from "@prisma/client";
 
 // Texto exato que a Meta manda quando bloqueia por reputação da conta, não por
@@ -209,6 +210,8 @@ router.post(
 
             emitNovaMensagem(mensagem);
             if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
+            // Sem esperar: o webhook responde rápido e a Maisa segue em segundo plano.
+            void processarComMaisa(conversa.id, mensagem.id);
           }
         }
       }

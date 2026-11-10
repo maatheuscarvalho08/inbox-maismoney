@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Reply } from "../icones";
+import { Bot, FileText, Pencil, Reply } from "../icones";
 import { api, ApiError } from "../../lib/api";
 import { Avatar } from "../Avatar";
 import { urlFotoOperador } from "../../lib/avatar";
@@ -27,10 +27,21 @@ interface Props {
   podeEditar?: boolean;
   onEditada?: (mensagem: Mensagem) => void;
   onResponder?: (mensagem: Mensagem) => void;
+  // Conversa criada pelo simulador da Maisa: nada dela vai para o WhatsApp.
+  conversaDeTeste?: boolean;
+  onAnalisarExtrato?: (mensagem: Mensagem) => void;
 }
 
-export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEditar, onEditada, onResponder }: Props) {
+// Extrato de consignado chega como PDF ou foto.
+const pareceExtrato = (tipo: string) => tipo === "application/pdf" || tipo.startsWith("image/");
+
+export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEditar, onEditada, onResponder, conversaDeTeste, onAnalisarExtrato }: Props) {
   const doOperador = mensagem.remetenteTipo === "operador";
+  const daMaisa = mensagem.remetenteTipo === "maisa";
+  // Mensagem que sai da empresa, seja da equipe ou da Maisa: fica do lado direito.
+  const saida = doOperador || daMaisa;
+  // No modo copiloto a Maisa só sugere. A sugestão ainda não foi para o WhatsApp.
+  const sugestao = daMaisa && !mensagem.externalId && mensagem.statusEntrega !== "falhou";
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(mensagem.conteudoTexto ?? "");
   const [salvando, setSalvando] = useState(false);
@@ -77,6 +88,22 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
     }
   }
 
+  const [enviandoSugestao, setEnviandoSugestao] = useState(false);
+
+  async function enviarSugestao() {
+    setEnviandoSugestao(true);
+    setErroReenvio(null);
+    try {
+      const res = await api.post<{ mensagem: Mensagem; erroEntrega?: string }>(`/maisa/mensagens/${mensagem.id}/enviar`, {});
+      onEditada?.(res.mensagem);
+      if (res.erroEntrega) setErroReenvio("Não foi enviada");
+    } catch (err) {
+      setErroReenvio(err instanceof ApiError ? err.message : "Não foi possível enviar");
+    } finally {
+      setEnviandoSugestao(false);
+    }
+  }
+
   const iconesAcao = (
     <div className="flex shrink-0 items-center gap-1.5 opacity-0 group-hover:opacity-100">
       {onResponder && (
@@ -99,30 +126,42 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
     </div>
   );
 
-  const avatar = doOperador ? (
+  const avatar = daMaisa ? (
+    <span
+      title="Maisa"
+      className="flex size-6 shrink-0 items-center justify-center rounded-full border border-indigo-claro/30 bg-indigo-claro/15 text-indigo-claro"
+    >
+      <Bot size={14} aria-hidden="true" />
+    </span>
+  ) : doOperador ? (
     <Avatar nome={mensagem.operador?.nome ?? "Operador"} fotoUrl={urlFotoOperador(mensagem.operador?.fotoPath, mensagem.operador?.id)} tamanho={24} />
   ) : (
     <Avatar nome={contatoNome} fotoUrl={contatoFotoUrl} tamanho={24} />
   );
 
   return (
-    <div className={`group flex items-end gap-1.5 ${doOperador ? "justify-end" : "justify-start"}`}>
-      {!doOperador && avatar}
-      {doOperador && iconesAcao}
+    <div className={`group flex items-end gap-1.5 ${saida ? "justify-end" : "justify-start"}`}>
+      {!saida && avatar}
+      {saida && iconesAcao}
 
       <div
         className={`relative max-w-[70%] rounded-lg border px-3 py-2 ${
-          doOperador ? "border-primary/20 bg-primary/10" : "border-ink/10 bg-surface"
+          daMaisa
+            ? `border-indigo-claro/25 bg-indigo-claro/10 ${sugestao ? "border-dashed" : ""}`
+            : doOperador
+              ? "border-primary/20 bg-primary/10"
+              : "border-ink/10 bg-surface"
         }`}
       >
         {doOperador && mensagem.operador && (
           <p className="mb-0.5 text-[11px] font-medium text-accent">{mensagem.operador.nome}</p>
         )}
+        {daMaisa && <p className="mb-0.5 text-[11px] font-medium text-indigo-claro">Maisa</p>}
 
         {mensagem.respondeA && (
           <div className="mb-2 rounded border-l-2 border-primary/60 bg-bg/30 px-2 py-1">
             <p className="text-[11px] font-medium text-accent">
-              {mensagem.respondeA.remetenteTipo === "operador" ? "Você" : "Cliente"}
+              {mensagem.respondeA.remetenteTipo === "operador" ? "Você" : mensagem.respondeA.remetenteTipo === "maisa" ? "Maisa" : "Cliente"}
             </p>
             <p className="line-clamp-2 text-xs text-muted">{previewDaMensagem(mensagem.respondeA)}</p>
           </div>
@@ -131,7 +170,18 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
         {mensagem.midiaDeleted ? (
           <p className="text-xs italic text-muted">Mídia removida após 4 dias de inatividade</p>
         ) : mensagem.tipoMidia && mensagem.midiaPath ? (
-          <MidiaMensagem mensagemId={mensagem.id} tipoMidia={mensagem.tipoMidia} />
+          <>
+            <MidiaMensagem mensagemId={mensagem.id} tipoMidia={mensagem.tipoMidia} />
+            {onAnalisarExtrato && mensagem.remetenteTipo === "cliente" && pareceExtrato(mensagem.tipoMidia) && (
+              <button
+                onClick={() => onAnalisarExtrato(mensagem)}
+                className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
+              >
+                <FileText size={12} aria-hidden="true" />
+                Analisar extrato
+              </button>
+            )}
+          </>
         ) : null}
 
         {editando ? (
@@ -169,14 +219,30 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
         <div className="mt-1 flex items-center justify-end gap-1">
           {mensagem.editadaEm && <p className="text-[10px] italic text-muted">editada</p>}
           <p className="text-[10px] text-muted">{formatarHorario(mensagem.timestamp)}</p>
-          {doOperador && (
+          {saida && !sugestao && (
             <span title={mensagem.statusEntrega === "falhou" ? `Não enviada: ${mensagem.erroEntrega ?? "motivo não registrado"}` : undefined}>
               <StatusEntregaIcone status={mensagem.statusEntrega} />
             </span>
           )}
         </div>
 
-        {doOperador && mensagem.statusEntrega === "falhou" && (
+        {sugestao && (
+          <div className="mt-1 flex items-center justify-end gap-2 text-[11px]">
+            {erroReenvio && <span className="text-accent">{erroReenvio}</span>}
+            {conversaDeTeste ? (
+              <span className="italic text-muted">Teste: não vai para o WhatsApp</span>
+            ) : (
+              <>
+                <span className="italic text-muted">Sugestão, não enviada</span>
+                <button onClick={enviarSugestao} disabled={enviandoSugestao} className="font-medium text-indigo-claro hover:underline disabled:opacity-50">
+                  {enviandoSugestao ? "Enviando..." : "Enviar"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {saida && mensagem.statusEntrega === "falhou" && (
           <div className="mt-1 flex items-center justify-end gap-2 text-[11px]">
             {erroReenvio && <span className="text-accent">{erroReenvio}</span>}
             <button onClick={reenviar} disabled={reenviando} className="font-medium text-accent hover:underline disabled:opacity-50">
@@ -186,8 +252,8 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
         )}
       </div>
 
-      {!doOperador && iconesAcao}
-      {doOperador && avatar}
+      {!saida && iconesAcao}
+      {saida && avatar}
     </div>
   );
 }

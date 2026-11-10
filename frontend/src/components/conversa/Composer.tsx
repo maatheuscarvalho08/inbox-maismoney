@@ -158,7 +158,7 @@ export function Composer({
         <div className="mb-2 flex items-center gap-2 rounded-md border-l-2 border-primary bg-bg/40 px-3 py-1.5">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-medium text-accent">
-              Respondendo a {respondendoA.remetenteTipo === "operador" ? "você mesmo" : "cliente"}
+              Respondendo a {respondendoA.remetenteTipo === "operador" ? "você mesmo" : respondendoA.remetenteTipo === "maisa" ? "Maisa" : "cliente"}
             </p>
             <p className="truncate text-xs text-muted">{previewDaMensagem(respondendoA)}</p>
           </div>

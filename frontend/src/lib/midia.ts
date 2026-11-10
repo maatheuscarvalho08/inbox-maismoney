@@ -1,6 +1,8 @@
 import { ORIGIN_URL } from "./api";
 
-export async function carregarMidia(mensagemId: string): Promise<string> {
+// `tipo` força o tipo do arquivo: o servidor manda tudo como download genérico, e um PDF
+// só abre dentro da página se o navegador souber que é PDF.
+export async function carregarMidia(mensagemId: string, tipo?: string): Promise<string> {
   const token = localStorage.getItem("token");
   const res = await fetch(`${ORIGIN_URL}/api/midia/${mensagemId}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -8,7 +10,8 @@ export async function carregarMidia(mensagemId: string): Promise<string> {
   if (!res.ok) {
     throw new Error("Não foi possível carregar a mídia");
   }
-  const blob = await res.blob();
+  const recebido = await res.blob();
+  const blob = tipo ? new Blob([recebido], { type: tipo }) : recebido;
   return URL.createObjectURL(blob);
 }
 

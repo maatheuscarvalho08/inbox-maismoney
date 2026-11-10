@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "seed": "tsx src/db/seed.ts"
+    "seed": "tsx src/db/seed.ts",
+    "maisa:testar": "tsx src/scripts/testarMaisa.ts",
+    "extrato:testar": "tsx src/scripts/testarExtrato.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",

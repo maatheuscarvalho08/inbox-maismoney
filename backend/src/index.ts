@@ -6,6 +6,7 @@ import { startMediaCleanupJob } from "./jobs/mediaCleanup.js";
 import { startDiscadoraWorker } from "./queues/discadoraQueue.js";
 import { startDisparoLoteWorker } from "./queues/disparoLoteQueue.js";
 import { startFallbackEvolutionWorker } from "./queues/fallbackEvolutionQueue.js";
+import { startMaisaJobs } from "./modules/maisa/maisa.service.js";
 import { prisma } from "./db/prisma.js";
 
 const server = http.createServer(app);
@@ -14,6 +15,7 @@ startMediaCleanupJob();
 startDiscadoraWorker();
 startDisparoLoteWorker();
 startFallbackEvolutionWorker();
+startMaisaJobs();
 
 server.listen(env.PORT, () => {
   console.log(`Backend rodando em http://localhost:${env.PORT}`);

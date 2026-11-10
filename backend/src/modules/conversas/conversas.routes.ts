@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
 import { authenticate, requireRole } from "../../middleware/auth.js";
@@ -22,7 +23,7 @@ router.use(authenticate);
 
 const statusEnum = z.enum(["aberta", "em_atendimento", "aguardando", "encerrada"]);
 
-const abaEnum = z.enum(["maisa", "sem_atendente", "atribuidas", "disparos"]);
+const abaEnum = z.enum(["maisa", "sem_atendente", "atribuidas", "disparos", "carrinho"]);
 
 router.get(
   "/",
@@ -151,6 +152,8 @@ const updateSchema = z.object({
   etapaFunil: z
     .enum(["lead", "dados_coletados", "simulacao", "simulacao_com_saldo", "proposta_digitada", "proposta_paga"])
     .optional(),
+  // false = a equipe já tratou: tira do Carrinho.
+  carrinho: z.literal(false).optional(),
 });
 
 router.patch(
@@ -161,7 +164,10 @@ router.patch(
       return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
     }
 
-    const { etapaFunil, ...data } = parsed.data;
+    const { etapaFunil, carrinho, ...campos } = parsed.data;
+    const data: Parameters<typeof atualizarConversa>[1] = campos;
+    // Tirar do Carrinho, ou encerrar a conversa, limpa a marca.
+    if (carrinho === false || campos.status === "encerrada") data.carrinhoEm = null;
     if (etapaFunil) await definirEtapa(req.params.id, etapaFunil);
     if (data.convenio !== undefined) Object.assign(data, { convenioOrigem: "operador" });
     if (data.comMaisa) {
@@ -170,6 +176,9 @@ router.patch(
         return res.status(400).json({ error: "A Maisa não está ligada neste número" });
       }
       data.operadorId = null;
+      // Devolvida para a Maisa: ela recomeça o fluxo do início. O que já foi
+      // gravado no contato e na conversa, como CPF e convênio, continua lá.
+      await prisma.conversa.update({ where: { id: req.params.id }, data: { maisaEstado: Prisma.DbNull } });
     } else if (data.operadorId) {
       // Atribuir a um operador tira a conversa da Maisa na hora.
       data.comMaisa = false;

@@ -41,7 +41,8 @@ async function calcularDeltasResposta(desde: Date) {
   for (const m of mensagens) {
     if (m.remetenteTipo === "cliente") {
       ultimaDoCliente = { conversaId: m.conversaId, timestamp: m.timestamp };
-    } else if (ultimaDoCliente && ultimaDoCliente.conversaId === m.conversaId) {
+      // Tempo de resposta mede a equipe. A resposta da Maisa é instantânea e não entra.
+    } else if (m.remetenteTipo === "operador" && ultimaDoCliente && ultimaDoCliente.conversaId === m.conversaId) {
       deltas.push({ timestamp: m.timestamp, segundos: (m.timestamp.getTime() - ultimaDoCliente.timestamp.getTime()) / 1000 });
       ultimaDoCliente = null;
     }

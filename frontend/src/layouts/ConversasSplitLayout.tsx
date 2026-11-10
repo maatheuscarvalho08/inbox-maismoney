@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
-import { CircleDot, Filter, Plus, Search, Smartphone, User } from "../components/icones";
-import { api } from "../lib/api";
+import { Bot, CircleDot, Filter, Info, Plus, Search, Smartphone, User } from "../components/icones";
+import { api, ApiError } from "../lib/api";
+import { ETAPAS_FLUXO, indiceEtapa, saidaDaConversa, useMaisaConfig } from "../lib/maisa";
+import { MaisaFluxoModal } from "../components/maisa/MaisaFluxoModal";
 import { useAuth } from "../lib/auth";
 import { tempoRelativo } from "../lib/tempoRelativo";
 import { useSocketEvent } from "../hooks/useSocketEvent";
@@ -120,6 +122,23 @@ export function ConversasSplitLayout() {
     return lista;
   }, [conversas, filtroStatus, etiquetaFiltro, instanciaFiltro, vendedorFiltro, busca]);
 
+  const maisaConfig = useMaisaConfig();
+  const [erroTeste, setErroTeste] = useState<string | null>(null);
+  const [guiaMaisaAberto, setGuiaMaisaAberto] = useState(false);
+  const fecharGuiaMaisa = useCallback(() => setGuiaMaisaAberto(false), []);
+
+  // Simulador da Maisa: cria um cliente de mentira e abre a conversa na aba dela.
+  async function novaConversaDeTeste() {
+    setErroTeste(null);
+    try {
+      const { conversa } = await api.post<{ conversa: Conversa }>("/maisa/simulador/conversas", {});
+      setAba("maisa");
+      navigate(`/conversas/${conversa.id}`);
+    } catch (err) {
+      setErroTeste(err instanceof ApiError ? err.message : "Não foi possível criar a conversa de teste");
+    }
+  }
+
   const filtrosAtivos = [filtroStatus, etiquetaFiltro, instanciaFiltro, vendedorFiltro].filter(Boolean).length;
 
   return (
@@ -128,14 +147,27 @@ export function ConversasSplitLayout() {
         <div className="border-b border-border">
           <div className="flex items-center justify-between px-4 pt-4">
             <h1 className="text-lg font-bold tracking-tight text-ink">Conversas</h1>
-            <button
-              onClick={() => setNovaConversaAberta(true)}
-              className="flex h-8 items-center gap-1 rounded-md bg-primary px-2.5 text-xs font-semibold text-marca-indigo hover:opacity-90"
-            >
-              <Plus size={13} />
-              Nova
-            </button>
+            <div className="flex items-center gap-2">
+              {maisaConfig?.simulador && usuario?.role === "admin" && (
+                <button
+                  onClick={novaConversaDeTeste}
+                  title="Cria um cliente de mentira para testar a Maisa"
+                  className="flex h-8 items-center gap-1 rounded-md border border-indigo-claro/40 px-2.5 text-xs font-semibold text-indigo-claro hover:bg-indigo-claro/10"
+                >
+                  <Bot size={13} />
+                  Testar Maisa
+                </button>
+              )}
+              <button
+                onClick={() => setNovaConversaAberta(true)}
+                className="flex h-8 items-center gap-1 rounded-md bg-primary px-2.5 text-xs font-semibold text-marca-indigo hover:opacity-90"
+              >
+                <Plus size={13} />
+                Nova
+              </button>
+            </div>
           </div>
+          {erroTeste && <p className="px-4 pt-2 text-xs text-accent">{erroTeste}</p>}
 
           <div className="flex items-center gap-2 px-4 pt-3">
             <div className="relative flex-1">
@@ -240,7 +272,16 @@ export function ConversasSplitLayout() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {carregando && <p className="p-4 text-center text-xs text-muted">Carregando...</p>}
+          {(aba === "maisa" || aba === "sem_atendente") && (
+            <button
+              onClick={() => setGuiaMaisaAberto(true)}
+              className="flex w-full items-center gap-1.5 border-b border-border px-4 py-2 text-left text-xs font-medium text-muted hover:text-ink"
+            >
+              <Info size={14} aria-hidden="true" />
+              Como a Maisa atende
+            </button>
+          )}
+          {carregando &&<p className="p-4 text-center text-xs text-muted">Carregando...</p>}
           {!carregando && conversasFiltradas.length === 0 && (
             <p className="p-4 text-center text-xs text-muted">
               {busca || etiquetaFiltro || instanciaFiltro || vendedorFiltro || filtroStatus
@@ -259,6 +300,9 @@ export function ConversasSplitLayout() {
             // manda uma resposta de verdade (aí o remetenteTipo já resolve sozinho).
             const euJaVi = usuario ? c.visualizacoes.some((v) => v.usuarioId === usuario.id) : false;
             const naoRespondida = c.status !== "encerrada" && c.mensagens?.[0]?.remetenteTipo === "cliente" && !euJaVi;
+            // Na aba Maisa, em que etapa ela está. Na fila, por que ela passou a conversa.
+            const etapaMaisa = aba === "maisa" && c.comMaisa ? indiceEtapa(c.maisaEstado?.etapa) : null;
+            const saidaMaisa = aba === "sem_atendente" && c.status !== "encerrada" ? saidaDaConversa(c) : null;
             return (
             <button
               key={c.id}
@@ -280,7 +324,15 @@ export function ConversasSplitLayout() {
                   )}
                 </div>
                 <p className="mt-1 truncate text-[11px] text-muted">
-                  {c.convenio && <span className="font-semibold text-indigo-claro">{LABEL_CONVENIO[c.convenio]} · </span>}
+                  {etapaMaisa !== null && (
+                    <span className="font-semibold text-indigo-claro">Etapa: {ETAPAS_FLUXO[etapaMaisa].nome} · </span>
+                  )}
+                  {saidaMaisa && (
+                    <span className={`font-semibold ${saidaMaisa.quente ? "text-accent" : "text-indigo-claro"}`}>
+                      {saidaMaisa.titulo} ·{" "}
+                    </span>
+                  )}
+                  {c.convenio &&<span className="font-semibold text-indigo-claro">{LABEL_CONVENIO[c.convenio]} · </span>}
                   {c.origemDisparo && <span className="font-semibold text-indigo-claro">Disparo · </span>}
                   {FILTROS_STATUS.find((f) => f.id === c.status)?.label} · {c.instancia.nome}
                   {c.operador ? ` · ${c.operador.nome}` : ""}
@@ -295,6 +347,8 @@ export function ConversasSplitLayout() {
       <div key={idAtivo ?? "vazio"} className="conversa-entra min-w-0 flex-1">
         <Outlet />
       </div>
+
+      <MaisaFluxoModal aberto={guiaMaisaAberto} onFechar={fecharGuiaMaisa} />
 
       <NovaConversaModal
         aberto={novaConversaAberta}

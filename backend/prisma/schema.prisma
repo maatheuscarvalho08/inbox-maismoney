@@ -69,6 +69,7 @@ enum StatusConversa {
 enum RemetenteTipo {
   cliente
   operador
+  maisa
 }
 
 enum StatusEntrega {
@@ -192,6 +193,11 @@ model Conversa {
   // "operador" = definido ou removido por uma pessoa: a IA não pode sobrescrever.
   convenioOrigem String?        @map("convenio_origem")
   etapaFunil    EtapaFunil?     @map("etapa_funil")
+  // Etapa do fluxo da Maisa e o que ela já sabe. Nunca guarda CPF: ele fica no contato.
+  maisaEstado   Json?           @map("maisa_estado")
+  // Ofertada pela Maisa e sem resposta do cliente por 24h: aparece no Carrinho para a
+  // equipe tentar converter. Sai quando o cliente responde ou alguém tira de lá.
+  carrinhoEm    DateTime?       @map("carrinho_em")
 
   instancia     Instancia  @relation(fields: [instanciaId], references: [id])
   contato       Contato    @relation(fields: [contatoId], references: [id])
@@ -202,7 +208,9 @@ model Conversa {
   eventosFunil  FunilEvento[]
   propostas     Proposta[]
   simulacoes    Simulacao[]
+  eventosMaisa  MaisaEvento[]
 
+  @@index([carrinhoEm])
   @@map("conversas")
 }
 
@@ -246,6 +254,24 @@ model Proposta {
   @@index([conversaId])
   @@index([status, createdAt])
   @@map("propostas")
+}
+
+// Cada passo da Maisa: de qual etapa saiu, para qual foi e o que entendeu.
+// Guarda só rótulos, nunca o texto do cliente. Serve para achar onde ela erra.
+model MaisaEvento {
+  id          String   @id @default(uuid())
+  conversaId  String   @map("conversa_id")
+  etapaAntes  String?  @map("etapa_antes")
+  etapaDepois String   @map("etapa_depois")
+  rotulo      String?
+  motivo      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  conversa    Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+
+  @@index([conversaId])
+  @@index([createdAt])
+  @@map("maisa_eventos")
 }
 
 // Quando cada conversa chegou em cada etapa do funil.
@@ -381,4 +407,15 @@ model CampanhaNumero {
   @@index([campanhaId])
   @@index([twilioCallSid])
   @@map("campanha_numeros")
+}
+
+// Foto das métricas num momento. A primeira é a linha de base de antes da Maisa,
+// para medir depois quanto ela ajuda nas respostas.
+model MetricaRetrato {
+  id        String   @id @default(uuid())
+  rotulo    String
+  dados     Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("metricas_retratos")
 }

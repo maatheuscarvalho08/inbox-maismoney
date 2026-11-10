@@ -2,7 +2,7 @@ export type Role = "admin" | "operador";
 export type TipoConexao = "evolution" | "meta_cloud";
 export type StatusInstancia = "conectado" | "desconectado";
 export type StatusConversa = "aberta" | "em_atendimento" | "aguardando" | "encerrada";
-export type RemetenteTipo = "cliente" | "operador";
+export type RemetenteTipo = "cliente" | "operador" | "maisa";
 export type Convenio = "inss" | "clt" | "siape" | "servidor_prefeitura" | "marinha" | "militar" | "conta_de_luz" | "loas" | "credito_pessoal" | "fgts";
 export type EtapaFunil = "lead" | "dados_coletados" | "simulacao" | "simulacao_com_saldo" | "proposta_digitada" | "proposta_paga";
 export type ResultadoSimulacao = "com_saldo" | "sem_saldo" | "erro";
@@ -117,6 +117,18 @@ export interface Conversa {
   comMaisa: boolean;
   convenio: Convenio | null;
   etapaFunil: EtapaFunil | null;
+  // Onde a Maisa está no fluxo e, se ela passou a conversa para a equipe, por quê.
+  maisaEstado?: {
+    etapa: string;
+    tentativas: number;
+    motivoTransferencia?: string;
+    paradaEm?: string;
+    saida?: string;
+    oferta?: { banco: string; valorCentavos: number; parcelaCentavos: number; prazoMeses: number };
+    ofertaEm?: string;
+  } | null;
+  // Ofertada e sem resposta por 24h: está no Carrinho.
+  carrinhoEm?: string | null;
   contato: Contato;
   instancia: Pick<Instancia, "id" | "nome" | "numero" | "tipoConexao" | "status" | "maisaAtiva">;
   operador: { id: string; nome: string; fotoPath: string | null } | null;

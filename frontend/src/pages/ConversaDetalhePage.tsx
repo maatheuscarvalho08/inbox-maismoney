@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Bot, Check, MoreVertical, Pencil, X } from "../components/icones";
+import { Bot, Check, MoreVertical, Pencil, Send, X } from "../components/icones";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { PREFIXO_NUMERO_TESTE, useMaisaConfig } from "../lib/maisa";
 import { formatarTelefone } from "../lib/telefone";
 import { useSocketEvent } from "../hooks/useSocketEvent";
 import { Avatar } from "../components/Avatar";
@@ -11,6 +12,9 @@ import { Select } from "../components/Select";
 import { MensagemBubble } from "../components/conversa/MensagemBubble";
 import { Composer } from "../components/conversa/Composer";
 import { PainelLateralConversa } from "../components/conversa/PainelLateralConversa";
+import { MaisaProgresso } from "../components/maisa/MaisaProgresso";
+import { MaisaFluxoModal } from "../components/maisa/MaisaFluxoModal";
+import { AnaliseExtratoModal } from "../components/conversa/AnaliseExtratoModal";
 import type { Contato, Conversa, Mensagem, StatusConversa, Usuario } from "../types/api";
 
 const STATUS_OPCOES: StatusConversa[] = ["aberta", "em_atendimento", "aguardando", "encerrada"];
@@ -41,6 +45,41 @@ export function ConversaDetalhePage() {
   const [salvandoNome, setSalvandoNome] = useState(false);
   const [erroNome, setErroNome] = useState<string | null>(null);
   const fimDaListaRef = useRef<HTMLDivElement>(null);
+  const maisaConfig = useMaisaConfig();
+  const [textoTeste, setTextoTeste] = useState("");
+  const [enviandoTeste, setEnviandoTeste] = useState(false);
+  const [erroTeste, setErroTeste] = useState<string | null>(null);
+  const [guiaMaisaAberto, setGuiaMaisaAberto] = useState(false);
+  const fecharGuiaMaisa = useCallback(() => setGuiaMaisaAberto(false), []);
+  const [extratoEmAnalise, setExtratoEmAnalise] = useState<Mensagem | null>(null);
+  const fecharAnaliseExtrato = useCallback(() => setExtratoEmAnalise(null), []);
+
+  // Simulador: manda a mensagem como se fosse o cliente e a Maisa responde.
+  async function enviarComoCliente() {
+    const texto = textoTeste.trim();
+    if (!id || !texto) return;
+    setEnviandoTeste(true);
+    setErroTeste(null);
+    try {
+      await api.post("/maisa/simulador/mensagens", { conversaId: id, texto });
+      setTextoTeste("");
+    } catch (err) {
+      setErroTeste(err instanceof ApiError ? err.message : "Não foi possível simular");
+    } finally {
+      setEnviandoTeste(false);
+    }
+  }
+
+  // Simulador: faz de conta que o cliente tocou no link do banco e autorizou.
+  async function autorizarLinkTeste() {
+    if (!id) return;
+    setErroTeste(null);
+    try {
+      await api.post("/maisa/simulador/autorizar", { conversaId: id });
+    } catch (err) {
+      setErroTeste(err instanceof ApiError ? err.message : "Não foi possível simular a autorização");
+    }
+  }
 
   async function salvarNomeContato() {
     if (!conversa) return;
@@ -131,6 +170,7 @@ export function ConversaDetalhePage() {
   }
 
   const ultimaDoCliente = [...mensagens].reverse().find((m) => m.remetenteTipo === "cliente");
+  const conversaDeTeste = conversa.contato.numeroWhatsapp.startsWith(PREFIXO_NUMERO_TESTE);
 
   return (
     <div className="flex h-full">
@@ -236,6 +276,8 @@ export function ConversaDetalhePage() {
           </div>
         </div>
 
+        <MaisaProgresso conversa={conversa} onVerFluxo={() => setGuiaMaisaAberto(true)} />
+
         <div className="flex-1 space-y-3 overflow-y-auto p-8">
           {mensagens.length === 0 && <p className="text-center text-sm text-muted">Nenhuma mensagem ainda.</p>}
           {mensagens.map((m, i) => {
@@ -265,12 +307,51 @@ export function ConversaDetalhePage() {
                     setMensagens((atual) => atual.map((mm) => (mm.id === atualizada.id ? atualizada : mm)))
                   }
                   onResponder={setRespondendoA}
+                  conversaDeTeste={conversaDeTeste}
+                  onAnalisarExtrato={setExtratoEmAnalise}
                 />
               </div>
             );
           })}
           <div ref={fimDaListaRef} />
         </div>
+
+        {maisaConfig?.simulador && conversaDeTeste && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              enviarComoCliente();
+            }}
+            className="flex items-center gap-2 border-t border-dashed border-indigo-claro/40 bg-indigo-claro/5 px-8 py-2"
+          >
+            <span className="shrink-0 text-xs font-semibold text-indigo-claro">Simular cliente</span>
+            <input
+              value={textoTeste}
+              onChange={(e) => setTextoTeste(e.target.value)}
+              placeholder="Escreva como se fosse o cliente"
+              aria-label="Mensagem do cliente de teste"
+              className="h-8 flex-1 rounded-md border border-border bg-bg/60 px-3 text-sm text-ink outline-none focus:border-indigo-claro"
+            />
+            <button
+              type="submit"
+              disabled={enviandoTeste || !textoTeste.trim()}
+              title="Enviar como cliente"
+              className="flex size-8 items-center justify-center rounded-md border border-indigo-claro/40 text-indigo-claro hover:bg-indigo-claro/10 disabled:opacity-40"
+            >
+              <Send size={14} />
+            </button>
+            {conversa.comMaisa && conversa.maisaEstado?.etapa === "aguardando" && (
+              <button
+                type="button"
+                onClick={autorizarLinkTeste}
+                className="h-8 shrink-0 rounded-md border border-indigo-claro/40 px-3 text-xs font-semibold text-indigo-claro hover:bg-indigo-claro/10"
+              >
+                Cliente autorizou o link
+              </button>
+            )}
+            {erroTeste && <span className="text-xs text-accent">{erroTeste}</span>}
+          </form>
+        )}
 
         {conversa.comMaisa && (
           <p className="border-t border-border bg-indigo-claro/10 px-8 py-2 text-xs font-medium text-indigo-claro">
@@ -289,6 +370,9 @@ export function ConversaDetalhePage() {
           }
         />
       </div>
+
+      <MaisaFluxoModal aberto={guiaMaisaAberto} onFechar={fecharGuiaMaisa} />
+      <AnaliseExtratoModal mensagem={extratoEmAnalise} onFechar={fecharAnaliseExtrato} />
 
       {painelAberto && (
         <PainelLateralConversa

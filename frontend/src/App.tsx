@@ -18,6 +18,8 @@ const ConversaDetalhePage = lazy(() =>
 );
 const SimulacoesPage = lazy(() => import("./pages/SimulacoesPage").then((m) => ({ default: m.SimulacoesPage })));
 const PropostasPage = lazy(() => import("./pages/PropostasPage").then((m) => ({ default: m.PropostasPage })));
+const TrafegoPage = lazy(() => import("./pages/TrafegoPage").then((m) => ({ default: m.TrafegoPage })));
+const CarrinhoPage = lazy(() => import("./pages/CarrinhoPage").then((m) => ({ default: m.CarrinhoPage })));
 const FunilPage = lazy(() => import("./pages/FunilPage").then((m) => ({ default: m.FunilPage })));
 const NumerosPage = lazy(() => import("./pages/NumerosPage").then((m) => ({ default: m.NumerosPage })));
 const UsuariosPage = lazy(() => import("./pages/UsuariosPage").then((m) => ({ default: m.UsuariosPage })));
@@ -72,6 +74,8 @@ export default function App() {
             </Route>
             <Route path="/simulacoes" element={pagina(SimulacoesPage)} />
             <Route path="/propostas" element={pagina(PropostasPage)} />
+            <Route path="/carrinho" element={pagina(CarrinhoPage)} />
+            <Route path="/trafego" element={pagina(TrafegoPage)} />
             <Route path="/disparos" element={pagina(DisparosPage)} />
             <Route path="/discadora" element={pagina(DiscadoraPage)} />
             <Route path="/discadora/nova" element={pagina(DiscadoraNovaPage)} />

@@ -13,7 +13,7 @@ const INCLUDE_PADRAO = {
   visualizacoes: { select: { usuarioId: true } },
 } as const;
 
-export type AbaConversas = "maisa" | "sem_atendente" | "atribuidas" | "disparos";
+export type AbaConversas = "maisa" | "sem_atendente" | "atribuidas" | "disparos" | "carrinho";
 
 // "disparos" = nasceu de um disparo e o lead ainda não respondeu — some dessa aba
 // assim que chega a primeira resposta (ver evolutionWebhook/metaWebhook marcando
@@ -30,6 +30,9 @@ function filtroDaAba(aba: AbaConversas) {
       return { ...JA_EM_ATENDIMENTO, comMaisa: false, operadorId: null };
     case "atribuidas":
       return { ...JA_EM_ATENDIMENTO, comMaisa: false, operadorId: { not: null } };
+    // Ofertados que não responderam em 24h. Também aparecem na Fila ou em Atribuídas.
+    case "carrinho":
+      return { carrinhoEm: { not: null } };
   }
 }
 
@@ -37,13 +40,14 @@ function filtroDaAba(aba: AbaConversas) {
 export async function contarAbas() {
   const contar = (aba: AbaConversas) =>
     prisma.conversa.count({ where: { ...filtroDaAba(aba), status: { not: "encerrada" } } });
-  const [maisa, sem_atendente, atribuidas, disparos] = await Promise.all([
+  const [maisa, sem_atendente, atribuidas, disparos, carrinho] = await Promise.all([
     contar("maisa"),
     contar("sem_atendente"),
     contar("atribuidas"),
     contar("disparos"),
+    contar("carrinho"),
   ]);
-  return { maisa, sem_atendente, atribuidas, disparos };
+  return { maisa, sem_atendente, atribuidas, disparos, carrinho };
 }
 
 export async function listConversas(status?: StatusConversa, aba?: AbaConversas) {
@@ -69,7 +73,14 @@ export async function getConversaById(id: string) {
 
 export async function atualizarConversa(
   id: string,
-  data: { status?: StatusConversa; operadorId?: string | null; comMaisa?: boolean; convenio?: Convenio | null; convenioOrigem?: string },
+  data: {
+    status?: StatusConversa;
+    operadorId?: string | null;
+    comMaisa?: boolean;
+    convenio?: Convenio | null;
+    convenioOrigem?: string;
+    carrinhoEm?: null;
+  },
 ) {
   return prisma.conversa.update({
     where: { id },
@@ -117,7 +128,8 @@ export async function marcarConversaRespondida(conversaId: string) {
   const entraComMaisa = Boolean(conversa && !conversa.respondida && !conversa.operadorId && conversa.instancia.maisaAtiva);
   await prisma.conversa.update({
     where: { id: conversaId },
-    data: { respondida: true, ...(entraComMaisa ? { comMaisa: true } : {}) },
+    // Cliente voltou a falar: sai do Carrinho.
+    data: { respondida: true, carrinhoEm: null, ...(entraComMaisa ? { comMaisa: true } : {}) },
   });
   // Cliente escreveu: a conversa passa a contar como lead no funil.
   if (conversa) await avancarEtapa(conversaId, "lead", conversa.etapaFunil);
