@@ -20,7 +20,8 @@ export type AbaConversas = "maisa" | "sem_atendente" | "atribuidas" | "disparos"
 // respondida:true). As outras três são tudo o resto, separadas por quem está atendendo.
 const JA_EM_ATENDIMENTO = { OR: [{ origemDisparo: false }, { respondida: true }] };
 
-function filtroDaAba(aba: AbaConversas) {
+// "atribuidas" mostra só as conversas de quem está logado.
+function filtroDaAba(aba: AbaConversas, usuarioId: string) {
   switch (aba) {
     case "disparos":
       return { origemDisparo: true, respondida: false };
@@ -29,7 +30,7 @@ function filtroDaAba(aba: AbaConversas) {
     case "sem_atendente":
       return { ...JA_EM_ATENDIMENTO, comMaisa: false, operadorId: null };
     case "atribuidas":
-      return { ...JA_EM_ATENDIMENTO, comMaisa: false, operadorId: { not: null } };
+      return { ...JA_EM_ATENDIMENTO, comMaisa: false, operadorId: usuarioId };
     // Ofertados que não responderam em 24h. Também aparecem na Fila ou em Atribuídas.
     case "carrinho":
       return { carrinhoEm: { not: null } };
@@ -37,9 +38,9 @@ function filtroDaAba(aba: AbaConversas) {
 }
 
 // Contagem das conversas ainda ativas em cada aba, mostrada no topo da lista.
-export async function contarAbas() {
+export async function contarAbas(usuarioId: string) {
   const contar = (aba: AbaConversas) =>
-    prisma.conversa.count({ where: { ...filtroDaAba(aba), status: { not: "encerrada" } } });
+    prisma.conversa.count({ where: { ...filtroDaAba(aba, usuarioId), status: { not: "encerrada" } } });
   const [maisa, sem_atendente, atribuidas, disparos, carrinho] = await Promise.all([
     contar("maisa"),
     contar("sem_atendente"),
@@ -50,11 +51,11 @@ export async function contarAbas() {
   return { maisa, sem_atendente, atribuidas, disparos, carrinho };
 }
 
-export async function listConversas(status?: StatusConversa, aba?: AbaConversas) {
+export async function listConversas(usuarioId: string, status?: StatusConversa, aba?: AbaConversas) {
   return prisma.conversa.findMany({
     where: {
       ...(status ? { status } : {}),
-      ...(aba ? filtroDaAba(aba) : {}),
+      ...(aba ? filtroDaAba(aba, usuarioId) : {}),
     },
     orderBy: { lastMessageAt: "desc" },
     include: {

@@ -39,8 +39,8 @@ const ABAS: { id: Aba; label: string; descricao: string; vazio: string }[] = [
   {
     id: "atribuidas",
     label: "Atribuídas",
-    descricao: "Fora da Maisa, com um responsável da equipe",
-    vazio: "Nenhuma conversa atribuída.",
+    descricao: "Conversas atribuídas a você",
+    vazio: "Nenhuma conversa atribuída a você.",
   },
   {
     id: "disparos",
