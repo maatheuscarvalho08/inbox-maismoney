@@ -39,6 +39,8 @@ export type OperacaoAlternativa = "port_refin" | "portabilidade" | "refin";
 export interface SimulacaoPortabilidade {
   trocoCentavos: number | null;
   temPortabilidade: boolean;
+  // Menor parcela que a Facta abriu para portar o contrato.
+  parcelaPortabilidade: number | null;
   motivo: string;
 }
 
@@ -145,9 +147,11 @@ export const bancoFacta: BancoClt = {
         t.valorLiquido >= REGRAS_PORTABILIDADE.trocoMinimo,
     );
     const melhor = refins.sort((a, b) => b.valorLiquido - a.valorLiquido)[0];
+    const port = [...s.portabilidade].sort((a, b) => a.parcela - b.parcela)[0];
     return {
       trocoCentavos: melhor ? reais(melhor.valorLiquido) : null,
       temPortabilidade: s.portabilidade.length > 0,
+      parcelaPortabilidade: port ? port.parcela : null,
       motivo: melhor ? `${melhor.tabela}, troco ${melhor.valorLiquido}` : s.mensagem || "nenhuma tabela de refin da port",
     };
   },
@@ -204,6 +208,6 @@ export const bancoSimulado: BancoClt & { autorizar(cpf: string): void; reiniciar
   // Troco fictício de 10% do saldo, só para teste.
   async simularPortabilidadeSiape({ contrato }) {
     const troco = Math.round((contrato.saldoDevedorEstimado ?? 0) * 10);
-    return { trocoCentavos: troco || null, temPortabilidade: true, motivo: "simulado" };
+    return { trocoCentavos: troco || null, temPortabilidade: true, parcelaPortabilidade: contrato.parcela, motivo: "simulado" };
   },
 };

@@ -58,7 +58,7 @@ const CASOS: [string, () => void | Promise<void>][] = [
     },
   ],
   [
-    "Sem margem: SIAPE com port mas sem tabela de refin não tem alternativa",
+    "Sem margem: SIAPE com port mas sem tabela de refin vai para a equipe como portabilidade",
     async () => {
       const analise = analisarExtrato(
         extrato({
@@ -68,8 +68,25 @@ const CASOS: [string, () => void | Promise<void>][] = [
           contratos: [contrato({ banco_nome: "CAIXA", parcela: 400, parcelas_restantes: 70 })],
         }),
       );
-      const semRefin = { ...bancoSimulado, simularPortabilidadeSiape: async () => ({ trocoCentavos: null, temPortabilidade: true, motivo: "sem tabela" }) };
+      const semRefin = { ...bancoSimulado, simularPortabilidadeSiape: async () => ({ trocoCentavos: null, temPortabilidade: true, parcelaPortabilidade: 395, motivo: "sem tabela" }) };
       const alt = await buscarAlternativa({ convenio: "siape", analise, banco: semRefin, cpf: "00000000000", dataNascimento: "1953-01-01" });
+      assert.equal(alt?.operacao, "portabilidade");
+      assert.match(alt?.motivo ?? "", /cai para 395/);
+    },
+  ],
+  [
+    "Sem margem: SIAPE sem nenhuma tabela da Facta encerra",
+    async () => {
+      const analise = analisarExtrato(
+        extrato({
+          tipo_documento: "siape",
+          especie_codigo: null,
+          margens_informadas: { emprestimo: 0, rmc: 0, rcc: 0 },
+          contratos: [contrato({ banco_nome: "CAIXA", parcela: 400, parcelas_restantes: 70 })],
+        }),
+      );
+      const nada = { ...bancoSimulado, simularPortabilidadeSiape: async () => ({ trocoCentavos: null, temPortabilidade: false, parcelaPortabilidade: null, motivo: "sem tabela" }) };
+      const alt = await buscarAlternativa({ convenio: "siape", analise, banco: nada, cpf: "00000000000", dataNascimento: "1953-01-01" });
       assert.equal(alt, null);
     },
   ],

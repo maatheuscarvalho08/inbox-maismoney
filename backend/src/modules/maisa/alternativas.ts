@@ -31,10 +31,14 @@ export async function buscarAlternativa(p: {
     let melhor: SimulacaoPortabilidade | null = null;
     let algumaPort = false;
     let falhou = false;
+    const portas: string[] = [];
     for (const contrato of candidatos) {
       try {
         const s = await p.banco.simularPortabilidadeSiape({ cpf: p.cpf, dataNascimento: p.dataNascimento, contrato });
-        algumaPort ||= s.temPortabilidade;
+        if (s.temPortabilidade) {
+          algumaPort = true;
+          portas.push(`parcela de ${contrato.parcela} cai para ${s.parcelaPortabilidade ?? "?"} na Facta`);
+        }
         if (s.trocoCentavos && (!melhor?.trocoCentavos || s.trocoCentavos > melhor.trocoCentavos)) melhor = s;
       } catch (err) {
         falhou = true;
@@ -44,12 +48,14 @@ export async function buscarAlternativa(p: {
     if (melhor?.trocoCentavos) {
       return { tipo: "alternativa", operacao: "port_refin", trocoCentavos: melhor.trocoCentavos, motivo: `port + refin: ${melhor.motivo}` };
     }
-    // Sem tabela de refin não há troco, e só portar não compensa: não há o que fazer.
-    // Só se a simulação falhou (rede, Facta fora) a equipe confere com o saldo real.
+    // Abriu tabela de portabilidade, mesmo sem troco: cliente em potencial, a equipe
+    // simula e mostra a ele. Se a simulação falhou, a equipe confere com o saldo real.
+    if (algumaPort) {
+      return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `port sem refin: ${portas.join("; ")}` };
+    }
     if (falhou) {
       return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: "simulação da port falhou, conferir" };
     }
-    if (algumaPort) console.log(`Port sem troco em ${candidatos.length} contrato(s): sem opção`);
   } else if (portaveis.length) {
     // INSS: a port ainda não é simulada aqui. A equipe simula com o contrato em mãos.
     return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `${portaveis.length} contrato(s) para portar` };
