@@ -159,6 +159,17 @@ const PERGUNTA_DA_ETAPA: Record<Etapa, string> = {
   finalizada: "",
 };
 
+// Depois de responder ao que o cliente disse, ela retoma a etapa com uma pergunta curta.
+// Repetir o texto inteiro (a lista de 10 produtos) a cada mensagem soa como robô.
+const RETOMA_ETAPA: Partial<Record<Etapa, string>> = {
+  inicio: "Me conta: qual é o seu vínculo? Por exemplo CLT, INSS, SIAPE ou outro.",
+  convenio: "Me conta: qual é o seu vínculo? Por exemplo CLT, INSS, SIAPE ou outro.",
+  cpf: "Pode me mandar o seu CPF? Só os números.",
+  nascimento: "Qual a sua data de nascimento?",
+  extrato: "Quando puder, me manda o extrato aqui, em PDF ou foto.",
+  consentimento: "Posso consultar? É só me responder SIM.",
+};
+
 const NOME_ETAPA: Record<Etapa, string> = {
   inicio: "início",
   convenio: "vínculo",
@@ -282,7 +293,10 @@ async function ouvirCliente(estado: EstadoMaisa, texto: string, deps: Dependenci
   if (deps.responderLivre && texto.trim() && tentativas <= MAX_TENTATIVAS) {
     try {
       const resposta = await deps.responderLivre(texto, NOME_ETAPA[estado.etapa], estado.produto, pergunta);
-      if (resposta) return { estado: { ...estado, tentativas }, respostas: [resposta, pergunta], efeitos: [], rotulo: "resposta_livre" };
+      if (resposta) {
+        const retoma = RETOMA_ETAPA[estado.etapa] ?? pergunta;
+        return { estado: { ...estado, tentativas }, respostas: [resposta, retoma], efeitos: [], rotulo: "resposta_livre" };
+      }
     } catch (err) {
       console.error("Resposta livre falhou:", err instanceof Error ? err.message : err);
     }
