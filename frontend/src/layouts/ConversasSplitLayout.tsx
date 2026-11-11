@@ -7,6 +7,7 @@ import { MaisaFluxoModal } from "../components/maisa/MaisaFluxoModal";
 import { useAuth } from "../lib/auth";
 import { tempoRelativo } from "../lib/tempoRelativo";
 import { useSocketEvent } from "../hooks/useSocketEvent";
+import { useRecargaAgrupada } from "../hooks/useRecargaAgrupada";
 import { Avatar } from "../components/Avatar";
 import { EtiquetaFiltroDropdown } from "../components/EtiquetaFiltroDropdown";
 import { FiltroDropdown } from "../components/FiltroDropdown";
@@ -98,8 +99,9 @@ export function ConversasSplitLayout() {
     api.get<{ usuarios: Usuario[] }>("/usuarios").then((res) => setVendedores(res.usuarios.filter((u) => u.ativo)));
   }, []);
 
-  useSocketEvent("mensagem:nova", () => carregar(filtroStatus, aba));
-  useSocketEvent("conversa:atualizada", () => carregar(filtroStatus, aba));
+  const recarregar = useRecargaAgrupada(() => carregar(filtroStatus, aba), 1000);
+  useSocketEvent("mensagem:nova", recarregar);
+  useSocketEvent("conversa:atualizada", recarregar);
 
   const conversasFiltradas = useMemo(() => {
     // Encerradas só aparecem pelo filtro de status: assim a lista bate com o contador da aba.

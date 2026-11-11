@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 import { calcularDelta } from "../lib/metricasDelta";
 import { formatarSegundos } from "../lib/tempoRelativo";
 import { useSocketEvent } from "../hooks/useSocketEvent";
+import { useRecargaAgrupada } from "../hooks/useRecargaAgrupada";
 import { PageHeader } from "../components/PageHeader";
 import { MetricCard } from "../components/dashboard/MetricCard";
 import { SparklineLine, SparklineBars } from "../components/dashboard/Sparkline";
@@ -46,7 +47,7 @@ export function DashboardPage() {
     const [resumoRes, historicoRes, conversasRes] = await Promise.all([
       api.get<ResumoDashboard>("/metricas/resumo"),
       api.get<HistoricoDiario>("/metricas/historico-diario"),
-      api.get<{ conversas: Conversa[] }>("/conversas"),
+      api.get<{ conversas: Conversa[] }>("/conversas?limite=5"),
     ]);
     setResumo(resumoRes);
     setHistorico(historicoRes);
@@ -58,8 +59,10 @@ export function DashboardPage() {
     carregar();
   }, [carregar]);
 
-  useSocketEvent("mensagem:nova", () => carregar());
-  useSocketEvent("conversa:atualizada", () => carregar());
+  // O painel não precisa ser instantâneo: no máximo uma recarga a cada 5 segundos.
+  const recarregar = useRecargaAgrupada(carregar, 5000);
+  useSocketEvent("mensagem:nova", recarregar);
+  useSocketEvent("conversa:atualizada", recarregar);
 
   const deltaConversas = historico ? calcularDelta(historico.conversasAbertas) : null;
   const deltaAtendimentos = historico ? calcularDelta(historico.atendimentosConcluidos) : null;

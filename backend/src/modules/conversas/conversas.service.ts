@@ -60,16 +60,23 @@ export async function contarAbas(leitor: Leitor) {
   return { maisa, sem_atendente, atribuidas, disparos, carrinho };
 }
 
-export async function listConversas(leitor: Leitor, status?: StatusConversa, aba?: AbaConversas) {
+export async function listConversas(leitor: Leitor, status?: StatusConversa, aba?: AbaConversas, limite?: number) {
   return prisma.conversa.findMany({
     where: {
-      ...(status ? { status } : {}),
+      // Sem filtro de status, a lista não mostra encerradas: nem manda.
+      ...(status ? { status } : { status: { not: "encerrada" as const } }),
       ...(aba ? filtroDaAba(aba, leitor) : {}),
     },
     orderBy: { lastMessageAt: "desc" },
+    ...(limite ? { take: limite } : {}),
     include: {
       ...INCLUDE_PADRAO,
-      mensagens: { take: 1, orderBy: { timestamp: "desc" } },
+      // Só o que a lista mostra da última mensagem.
+      mensagens: {
+        take: 1,
+        orderBy: { timestamp: "desc" },
+        select: { id: true, conteudoTexto: true, tipoMidia: true, remetenteTipo: true, timestamp: true },
+      },
     },
   });
 }

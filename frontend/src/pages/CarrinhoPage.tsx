@@ -5,6 +5,7 @@ import { LABEL_CONVENIO } from "../lib/funil";
 import { formatarCentavos } from "../lib/propostas";
 import { tempoRelativo } from "../lib/tempoRelativo";
 import { useSocketEvent } from "../hooks/useSocketEvent";
+import { useRecargaAgrupada } from "../hooks/useRecargaAgrupada";
 import { PageHeader } from "../components/PageHeader";
 import { Avatar } from "../components/Avatar";
 import type { Conversa } from "../types/api";
@@ -24,8 +25,9 @@ export function CarrinhoPage() {
   }, []);
 
   useEffect(() => carregar(), [carregar]);
-  useSocketEvent("conversa:atualizada", carregar);
-  useSocketEvent("carrinho:novo", carregar);
+  const recarregar = useRecargaAgrupada(carregar, 1500);
+  useSocketEvent("conversa:atualizada", recarregar);
+  useSocketEvent("carrinho:novo", recarregar);
 
   async function tirar(id: string) {
     try {

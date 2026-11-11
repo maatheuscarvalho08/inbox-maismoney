@@ -31,8 +31,13 @@ router.get(
   asyncHandler(async (req, res) => {
     const statusParsed = statusEnum.safeParse(req.query.status);
     const abaParsed = abaEnum.safeParse(req.query.aba);
+    // limite=0: só as contagens (contador do Carrinho). limite=N: as N mais recentes (painel).
+    const limiteParsed = z.coerce.number().int().min(0).max(500).safeParse(req.query.limite);
+    const limite = req.query.limite !== undefined && limiteParsed.success ? limiteParsed.data : undefined;
     const [conversas, contagens] = await Promise.all([
-      listConversas(req.user!, statusParsed.success ? statusParsed.data : undefined, abaParsed.success ? abaParsed.data : undefined),
+      limite === 0
+        ? []
+        : listConversas(req.user!, statusParsed.success ? statusParsed.data : undefined, abaParsed.success ? abaParsed.data : undefined, limite),
       contarAbas(req.user!),
     ]);
     res.json({ conversas, contagens });
