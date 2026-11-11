@@ -125,10 +125,17 @@ export const TEXTOS = {
   semPressa: "Claro, sem pressa! Quando decidir, é só me responder SIM ou NÃO por aqui.",
   objecao:
     "Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.",
-  retomaDigitacao: (banco: string, parcela: string) =>
-    `Oi! Retomando o seu pedido: eu mesma vou digitar o seu contrato na Facta. Preciso só de algumas informações, uma de cada vez.
-
-Primeiro, o número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
+  // Retomada de quem já aceitou: primeiro lembra o que ele ganha, depois pede o contrato.
+  retomaDigitacao: (banco: string, parcela: string, ganho: string) =>
+    `Oi! Retomando o seu pedido. ${ganho}\n\nEu mesma vou digitar o seu contrato na Facta. Preciso só de algumas informações, uma de cada vez.\n\n` +
+    `Primeiro, o número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
+  // O que a port rende para o cliente, em uma frase. Nunca valor garantido.
+  ganhoPort: (troco: string | null, banco: string, atual: string, nova: string | null) =>
+    troco
+      ? `Pela simulação na Facta, você recebe até ${troco} na sua conta, sem aumentar a parcela. É uma estimativa: o valor final depende do saldo que o seu banco informar.`
+      : nova
+        ? `Pela simulação na Facta, a parcela do ${banco} cai de ${atual} para ${nova}, com uma taxa menor.`
+        : `Pela simulação na Facta, dá para trazer o seu contrato do ${banco} com uma taxa menor.`,
   pedeNumeroContrato: (banco: string, parcela: string) =>
     `Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
   numeroContratoInvalido: "Não consegui entender o número do contrato. Pode mandar de novo, só o número? Se não souber onde achar, me diga.",

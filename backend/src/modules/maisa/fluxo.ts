@@ -430,7 +430,18 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
       return ir(
         estado,
         "numero_contrato",
-        [TEXTOS.retomaDigitacao(digitacao.banco, formatarReais(Math.round(digitacao.parcela * 100)))],
+        [
+          TEXTOS.retomaDigitacao(
+            digitacao.banco,
+            r$(digitacao.parcela),
+            TEXTOS.ganhoPort(
+              troco,
+              digitacao.banco,
+              r$(digitacao.parcela),
+              digitacao.refin ? null : r$(digitacao.port.parcela),
+            ),
+          ),
+        ],
         "retoma_contrato",
         [],
         {
