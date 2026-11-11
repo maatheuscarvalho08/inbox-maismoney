@@ -731,11 +731,28 @@ function respostaSobreOferta(estado: EstadoMaisa, t: string): string | null {
   const o = estado.oferta;
   const querDinheiro = /(troco|dinheiro|libera|recebo|receber|valor extra|sobra|quanto (eu )?(pego|ganho|recebo|cai))/.test(t);
   const querParcela = /(parcela|prestacao|desconto|quanto (vou )?pagar|taxa|juros|prazo|quantas vezes)/.test(t);
-  if (!querDinheiro && !querParcela) return null;
+  // "Depende do qual", "qual contrato?", "de qual banco?": diz qual contrato e o que muda.
+  const querContrato = /(qual|quais|que contrato|que banco)/.test(t);
+  if (!querDinheiro && !querParcela && !querContrato) return null;
 
   if (a) {
     const red = a.reducoes?.[0];
     const dig = a.digitacao;
+    if (querContrato && !querDinheiro && !querParcela) {
+      if (dig) {
+        return (
+          `É o seu contrato do ${dig.banco}, o de parcela de ${r$(dig.parcela)}, que ainda tem ${dig.prazoRestante} parcelas. ` +
+          (a.trocoCentavos
+            ? `Ele foi o que deu o melhor resultado na simulação: você recebe até ${formatarReais(a.trocoCentavos)} na sua conta${dig.refin ? `, e a parcela continua ${r$(dig.refin.parcela)}` : ""}.`
+            : red
+              ? `Na Facta, a parcela dele cai para ${r$(red.nova)}.`
+              : "Ele foi o que deu o melhor resultado na simulação.")
+        );
+      }
+      if (red) {
+        return `São estes contratos:\n${(a.reducoes ?? []).map((x) => `• ${x.banco}: de ${r$(x.atual)} para ${r$(x.nova)} por mês`).join("\n")}`;
+      }
+    }
     if (querDinheiro) {
       if (a.trocoCentavos) {
         return `Sim! Pela simulação na Facta, você recebe até ${formatarReais(a.trocoCentavos)} de dinheiro extra na sua conta. É uma estimativa: o valor final depende do saldo que o seu banco informar.`;

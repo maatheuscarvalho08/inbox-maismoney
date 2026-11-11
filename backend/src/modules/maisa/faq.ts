@@ -10,6 +10,13 @@ const FAQ: { padrao: RegExp; resposta: string }[] = [
       "Você pode conferir a gente no Instagram @maismoneyrj.",
   },
   {
+    // SAC tirado do roteiro operacional SIAPE da Facta (atende também por WhatsApp).
+    padrao: /\b(contato|telefone|numero|whats|sac)\b.*\bfacta\b|\bfacta\b.*\b(contato|telefone|numero|whats|sac)\b/,
+    resposta:
+      "Claro! O SAC da Facta Financeira, o banco do seu contrato, é o 0800 942 0462, que também atende pelo WhatsApp. " +
+      "Pode ligar para conferir. E a Mais Money é a correspondente que cuida da sua proposta: CNPJ 45.027.472/0001-76, Instagram @maismoneyrj.",
+  },
+  {
     padrao: /\b(robo|bot|inteligencia artificial|e uma pessoa|e humano|e gente)\b/,
     resposta: "Eu sou a Maisa, assistente virtual da Mais Money. Se preferir falar com uma pessoa, é só pedir.",
   },

@@ -439,6 +439,18 @@ const CASOS: Caso[] = [
     respostaContem: "você recebe até R$",
   },
   {
+    nome: "Pede o contato da Facta na oferta: manda o SAC e continua na oferta",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "não me envia o contato da Facta por favor"],
+    etapaFinal: "oferta_port",
+    respostaContem: "0800 942 0462",
+  },
+  {
+    nome: "Pergunta qual contrato na oferta: diz o contrato e o ganho, e continua",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "Depende do qual"],
+    etapaFinal: "oferta_port",
+    respostaContem: "É o seu contrato do 104 - CEF",
+  },
+  {
     nome: "Pergunta sem resposta pronta na oferta: chama a equipe sem falar em preocupação",
     acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "posso pagar com boleto?"],
     etapaFinal: "finalizada",
