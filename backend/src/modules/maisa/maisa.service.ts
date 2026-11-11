@@ -203,7 +203,8 @@ function pessoaDoContrato(d: DadosContrato) {
     estado: exigir(d.estado, "UF"),
     nomeMae: exigir(d.nomeMae, "nome da mãe"),
     nomePai: exigir(d.nomePai, "nome do pai"),
-    valorPatrimonio: exigir(d.valorPatrimonio, "patrimônio"),
+    // Decisão do dono: patrimônio sempre faixa 1 (até R$ 10 mil), sem perguntar ao cliente.
+    valorPatrimonio: d.valorPatrimonio ?? "1",
     matricula: exigir(d.matricula, "matrícula"),
     email: exigir(d.email, "e-mail"),
     tipoCreditoNb: d.tipoCreditoNb,

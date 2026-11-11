@@ -116,13 +116,6 @@ export const GRUPOS: Grupo[] = [
     pergunta: () => "Qual a espécie do seu benefício? É o número que aparece no extrato, por exemplo 41 ou 42.",
   },
   {
-    id: "patrimonio",
-    campos: ["valorPatrimonio"],
-    pergunta: () =>
-      "O banco pede uma estimativa do seu patrimônio, somando imóveis, carro e dinheiro guardado. Responda com o número:\n" +
-      "1. Até R$ 10 mil\n2. De R$ 10 mil a R$ 100 mil\n3. De R$ 100 mil a R$ 500 mil\n4. De R$ 500 mil a R$ 1 milhão\n5. Acima de R$ 1 milhão",
-  },
-  {
     id: "pix",
     campos: ["pixCpf"],
     so: "inss",
