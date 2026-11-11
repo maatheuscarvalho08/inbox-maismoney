@@ -114,7 +114,7 @@ export interface Dependencias {
   digitar(dados: DadosContrato): Promise<ResultadoContratacao>;
   // Responde ao que o cliente disse fora do esperado (ex.: "estou negativo"), só com fatos
   // aprovados. null: não tem o que dizer. Ausente nos testes: valem as regras.
-  responderLivre?(texto: string, etapa: string, produto: string | undefined): Promise<string | null>;
+  responderLivre?(texto: string, etapa: string, produto: string | undefined, pergunta: string): Promise<string | null>;
 }
 
 export type Efeito =
@@ -281,7 +281,7 @@ async function ouvirCliente(estado: EstadoMaisa, texto: string, deps: Dependenci
   const tentativas = estado.tentativas + 1;
   if (deps.responderLivre && texto.trim() && tentativas <= MAX_TENTATIVAS) {
     try {
-      const resposta = await deps.responderLivre(texto, NOME_ETAPA[estado.etapa], estado.produto);
+      const resposta = await deps.responderLivre(texto, NOME_ETAPA[estado.etapa], estado.produto, pergunta);
       if (resposta) return { estado: { ...estado, tentativas }, respostas: [resposta, pergunta], efeitos: [], rotulo: "resposta_livre" };
     } catch (err) {
       console.error("Resposta livre falhou:", err instanceof Error ? err.message : err);
@@ -473,7 +473,10 @@ async function etapaExtrato(
     const texto = entrada.texto?.trim() ?? "";
     const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     // Não sabe tirar o extrato: explica como. Outra conversa ("estou negativo"): responde antes.
-    if (!t || /(como|onde|nao (sei|consigo|acho|tenho)|tirar|baixar|sougov|meu inss|aplicativo)/.test(t)) {
+    // Só quando fala do extrato ou do aplicativo. "Não tenho margem" é outra conversa.
+    const comoTirar =
+      /(como|onde) (eu )?(tiro|tirar|baixo|baixar|pego|pegar|acho|achar|faco|fazer)|nao (sei|consigo) (tirar|baixar|pegar|achar|entrar|abrir|fazer)|nao tenho (o |a )?(extrato|aplicativo|app|sougov|senha|gov|celular)|sougov|meu inss|aplicativo|senha do gov|^nao (tenho|sei)( isso| esse| ele| nao)?[\s.!]*$/;
+    if (!t || comoTirar.test(t)) {
       return tentarDeNovo(estado, TEXTOS.comoTirarExtrato(produtoExtrato(estado)), "sem_extrato", "sem_extrato");
     }
     return ouvirCliente(estado, texto, deps);

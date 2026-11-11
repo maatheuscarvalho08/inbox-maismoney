@@ -294,6 +294,12 @@ const CASOS: Caso[] = [
     etapaFinal: "extrato",
     respostaContem: "com a margem negativa ainda pode dar para fazer portabilidade",
   },
+  {
+    nome: "'Não tenho margem' no extrato não vira instrução de como tirar o extrato",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", "Tá mas eu não tenho margem"],
+    etapaFinal: "extrato",
+    respostaContem: "com a margem negativa ainda pode dar",
+  },
   { nome: "SIAPE pede o extrato de consignações", acoes: ["oi", "sou servidor federal", CPF_SALDO, "15/03/1958"], etapaFinal: "extrato", respostaContem: "extrato de consignações" },
   {
     nome: "SIAPE fecha o contrato: aceita, manda os dados, confirma e a proposta é digitada",
@@ -604,7 +610,7 @@ async function rodar(caso: Caso, verbose: boolean) {
     },
     digitacaoAtiva: true,
     // Stand-in do modelo: só responde à margem negativa, como o caso real.
-    responderLivre: async (t) => (/negativ/i.test(t) ? "Entendi, com a margem negativa ainda pode dar para fazer portabilidade." : null),
+    responderLivre: async (t) => (/negativ|margem/i.test(t) ? "Entendi, com a margem negativa ainda pode dar para fazer portabilidade." : null),
     extrairDados: async () => {
       const dados = proximosDados;
       proximosDados = {};
