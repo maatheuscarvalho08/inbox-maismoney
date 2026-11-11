@@ -77,7 +77,16 @@ async function chamar(
 const soDigitos = (s: string) => s.replace(/\D/g, "");
 // CPF sempre como texto de 11 dígitos. O manual tipa como int, mas int perde o zero da frente.
 const cpf11 = (c: string) => soDigitos(c).padStart(11, "0");
-const numero = (v: unknown) => (v === "" || v == null ? null : Number(String(v).replace(",", ".")));
+// Aceita 2345.67, "2345,67", "2.345,67" e "R$ 2.345,67". O que não der número vira null,
+// para a regra do vínculo recusar em vez de mandar "NaN" para a Facta.
+export function numero(v: unknown): number | null {
+  if (v === "" || v == null) return null;
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  let s = String(v).replace(/[R$\s]/g, "");
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  const n = Number(s);
+  return s !== "" && Number.isFinite(n) ? n : null;
+}
 const sim = (v: unknown) => /^(s|sim|true|1)$/i.test(String(v ?? "").trim());
 
 function dataIso(d: unknown): string | null {
