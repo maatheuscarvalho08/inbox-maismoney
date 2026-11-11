@@ -2,7 +2,7 @@
 // da Facta ou trazer um de outro banco (portabilidade, com ou sem refin). Se der, a equipe
 // fecha. Se não der nada, não há o que fazer e ela encerra.
 import type { AnaliseExtrato, ContratoAnalisado } from "../extratos/analise.js";
-import type { BancoClt, ResultadoExtrato, SimulacaoPortabilidade } from "./bancos.js";
+import type { BancoClt, ReducaoParcela, ResultadoExtrato, SimulacaoPortabilidade } from "./bancos.js";
 
 type Alternativa = Extract<ResultadoExtrato, { tipo: "alternativa" }>;
 
@@ -32,12 +32,14 @@ export async function buscarAlternativa(p: {
     let algumaPort = false;
     let falhou = false;
     const portas: string[] = [];
+    const reducoes: ReducaoParcela[] = [];
     for (const contrato of candidatos) {
       try {
         const s = await p.banco.simularPortabilidadeSiape({ cpf: p.cpf, dataNascimento: p.dataNascimento, contrato });
         if (s.temPortabilidade) {
           algumaPort = true;
           portas.push(`parcela de ${contrato.parcela} cai para ${s.parcelaPortabilidade ?? "?"} na Facta`);
+          if (s.parcelaPortabilidade) reducoes.push({ banco: contrato.banco, atual: contrato.parcela, nova: s.parcelaPortabilidade });
         }
         if (s.trocoCentavos && (!melhor?.trocoCentavos || s.trocoCentavos > melhor.trocoCentavos)) melhor = s;
       } catch (err) {
@@ -46,12 +48,19 @@ export async function buscarAlternativa(p: {
       }
     }
     if (melhor?.trocoCentavos) {
-      return { tipo: "alternativa", operacao: "port_refin", trocoCentavos: melhor.trocoCentavos, motivo: `port + refin: ${melhor.motivo}`, simulada: true };
+      return {
+        tipo: "alternativa",
+        operacao: "port_refin",
+        trocoCentavos: melhor.trocoCentavos,
+        motivo: `port + refin: ${melhor.motivo}`,
+        simulada: true,
+        ...(melhor.digitacao ? { digitacao: melhor.digitacao } : {}),
+      };
     }
     // Abriu tabela de portabilidade, mesmo sem troco: cliente em potencial, a equipe
     // simula e mostra a ele. Se a simulação falhou, a equipe confere com o saldo real.
     if (algumaPort) {
-      return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `port sem refin: ${portas.join("; ")}`, simulada: true };
+      return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `port sem refin: ${portas.join("; ")}`, simulada: true, reducoes };
     }
     if (falhou) {
       return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: "simulação da port falhou, conferir", simulada: false };

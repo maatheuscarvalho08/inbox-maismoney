@@ -53,7 +53,7 @@ function cpfTerminadoEm(ultimo: number) {
 // banco, a checagem automática ou o relógio andar.
 // extrato: o cliente manda um PDF; o valor diz o que a leitura encontra.
 // dados: o cliente responde e a leitura encontra esses campos. digitacao: o que a Facta devolve.
-type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "invalido" | "estadual" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
+type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "invalido" | "estadual" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
 
 interface Caso {
   nome: string;
@@ -363,6 +363,20 @@ const CASOS: Caso[] = [
     respostaContem: "Vou te passar para um atendente",
   },
   {
+    nome: "Port + refin com banco conhecido: pede o número do contrato, coleta e digita",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "sim", "Contrato 1234567890", { dados: { ...DADOS_COMPLETOS, renda: 5000 } }, "sim"],
+    etapaFinal: "finalizada",
+    saida: "contrato_enviado",
+    respostaContem: "número do contrato do 104 - CEF",
+  },
+  {
+    nome: "Port + refin: cliente não sabe o número do contrato, vai para a equipe",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa_digitavel" }, "sim", "não sei onde vejo isso"],
+    etapaFinal: "finalizada",
+    saida: "alternativa",
+    respostaContem: "te ajuda a achar o número",
+  },
+  {
     nome: "Aceita a port + refin: vai para a equipe digitar",
     acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "sim, quero"],
     etapaFinal: "finalizada",
@@ -443,7 +457,7 @@ async function rodar(caso: Caso, verbose: boolean) {
   bancoSimulado.reiniciar();
   let cpfGravado: string | null = null;
   let relogio = new Date("2026-11-09T12:00:00Z");
-  let leituraExtrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "invalido" | "estadual" = "com_margem";
+  let leituraExtrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "invalido" | "estadual" = "com_margem";
   let proximosDados: DadosContrato = {};
   let digitacao: "ok" | "erro" = "ok";
   const deps: Dependencias = {
@@ -459,6 +473,17 @@ async function rodar(caso: Caso, verbose: boolean) {
       if (leituraExtrato === "sem_margem") return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
       if (leituraExtrato === "sem_margem_duvida") return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem", revisar: true };
       if (leituraExtrato === "alternativa") return { tipo: "alternativa", operacao: "port_refin", trocoCentavos: 125000, motivo: "teste", simulada: true };
+      if (leituraExtrato === "alternativa_digitavel") {
+        const t = { codigoTabela: 1, prazo: 96, contrato: 20000, parcela: 400, coeficiente: 0.02 };
+        return {
+          tipo: "alternativa",
+          operacao: "port_refin",
+          trocoCentavos: 90000,
+          motivo: "teste",
+          simulada: true,
+          digitacao: { banco: "104 - CEF", bancoCodigo: "104", parcela: 400, prazoRestante: 80, prazoOriginal: 120, saldoDevedor: 19000, port: t, refin: t },
+        };
+      }
       if (leituraExtrato === "alternativa_sem_simular") return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: "teste", simulada: false };
       return bancoSimulado.simularConsignado({ convenio: _produto, cpf: cpfGravado!, dataNascimento, parcelaMaxima: 300 });
     },

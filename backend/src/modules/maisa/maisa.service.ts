@@ -9,7 +9,7 @@ import { getConversaById } from "../conversas/conversas.service.js";
 import { avancarEtapa } from "../funil/funil.service.js";
 import { classificadorRegras } from "./classificador.js";
 import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
-import { contratar, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
+import { contratar, contratarPortRefin, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo } from "./fluxo.js";
@@ -139,42 +139,61 @@ async function digitarProposta(
   if (simulado) return { tipo: "enviada", codigoAf: "TESTE", url: "" };
   const produto = estado?.produto;
   if (produto !== "inss" && produto !== "siape") throw new Error("digitação só para INSS e SIAPE");
-  const tabela = exigir(estado?.oferta?.tabela, "tabela da oferta");
-  const resultado = await contratar({
-    convenio: produto,
+  const base = {
     cpf: await cpfDoContato(conversa.contatoId),
     dataNascimento: exigir(estado?.dataNascimento, "data de nascimento"),
     celular: conversa.contato.numeroWhatsapp,
-    tabela,
-    pessoa: {
-      nome: exigir(d.nome, "nome"),
-      sexo: exigir(d.sexo, "sexo"),
-      estadoCivil: exigir(d.estadoCivil, "estado civil"),
-      rg: exigir(d.rg, "RG"),
-      estadoRg: exigir(d.estadoRg, "UF do RG"),
-      orgaoEmissor: exigir(d.orgaoEmissor, "órgão emissor"),
-      dataExpedicao: exigir(d.dataExpedicao, "data de expedição"),
-      estadoNatural: exigir(d.estadoNatural, "UF de nascimento"),
-      cidadeNatural: exigir(d.cidadeNatural, "cidade de nascimento"),
-      renda: exigir(d.renda, "renda"),
-      cep: exigir(d.cep, "CEP"),
-      endereco: exigir(d.endereco, "endereço"),
-      numero: exigir(d.numero, "número"),
-      complemento: d.complemento ?? "",
-      bairro: exigir(d.bairro, "bairro"),
-      cidade: exigir(d.cidade, "cidade"),
-      estado: exigir(d.estado, "UF"),
-      nomeMae: exigir(d.nomeMae, "nome da mãe"),
-      nomePai: exigir(d.nomePai, "nome do pai"),
-      valorPatrimonio: exigir(d.valorPatrimonio, "patrimônio"),
-      matricula: exigir(d.matricula, "matrícula"),
-      email: exigir(d.email, "e-mail"),
-      tipoCreditoNb: d.tipoCreditoNb,
-      tipoBeneficio: d.tipoBeneficio,
-    },
-  });
+    pessoa: pessoaDoContrato(d),
+  };
+  // Port + refin aceito: compra o contrato do outro banco e libera o troco.
+  const port = estado?.alternativa;
+  const resultado =
+    port?.digitacao && port.numeroContrato
+      ? await contratarPortRefin({
+          ...base,
+          port: port.digitacao.port,
+          refin: port.digitacao.refin,
+          compra: {
+            bancoCodigo: exigir(port.digitacao.bancoCodigo, "código do banco de origem"),
+            numeroContrato: port.numeroContrato,
+            parcela: port.digitacao.parcela,
+            prazoRestante: port.digitacao.prazoRestante,
+            prazoOriginal: port.digitacao.prazoOriginal,
+            saldoDevedor: port.digitacao.saldoDevedor,
+          },
+        })
+      : await contratar({ ...base, convenio: produto, tabela: exigir(estado?.oferta?.tabela, "tabela da oferta") });
   console.log(`Maisa digitou na Facta, conversa ${conversa.id}: ${resultado.tipo === "enviada" ? `proposta ${resultado.codigoAf}` : `erro em ${resultado.etapa}`}`);
   return resultado;
+}
+
+function pessoaDoContrato(d: DadosContrato) {
+  return {
+    nome: exigir(d.nome, "nome"),
+    sexo: exigir(d.sexo, "sexo"),
+    estadoCivil: exigir(d.estadoCivil, "estado civil"),
+    rg: exigir(d.rg, "RG"),
+    estadoRg: exigir(d.estadoRg, "UF do RG"),
+    orgaoEmissor: exigir(d.orgaoEmissor, "órgão emissor"),
+    dataExpedicao: exigir(d.dataExpedicao, "data de expedição"),
+    estadoNatural: exigir(d.estadoNatural, "UF de nascimento"),
+    cidadeNatural: exigir(d.cidadeNatural, "cidade de nascimento"),
+    renda: exigir(d.renda, "renda"),
+    cep: exigir(d.cep, "CEP"),
+    endereco: exigir(d.endereco, "endereço"),
+    numero: exigir(d.numero, "número"),
+    complemento: d.complemento ?? "",
+    bairro: exigir(d.bairro, "bairro"),
+    cidade: exigir(d.cidade, "cidade"),
+    estado: exigir(d.estado, "UF"),
+    nomeMae: exigir(d.nomeMae, "nome da mãe"),
+    nomePai: exigir(d.nomePai, "nome do pai"),
+    valorPatrimonio: exigir(d.valorPatrimonio, "patrimônio"),
+    matricula: exigir(d.matricula, "matrícula"),
+    email: exigir(d.email, "e-mail"),
+    tipoCreditoNb: d.tipoCreditoNb,
+    tipoBeneficio: d.tipoBeneficio,
+  };
 }
 
 // Tempo de "digitando..." antes de cada mensagem, como uma pessoa: cresce com o

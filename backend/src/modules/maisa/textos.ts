@@ -108,16 +108,28 @@ export const TEXTOS = {
   semMargemFim:
     "Olhei o seu documento com atenção. No momento não sobra margem para um empréstimo novo, e também não dá para fazer portabilidade ou refinanciamento dos seus contratos. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
   // Nunca valor garantido: o saldo real só vem do banco de origem, na digitação.
-  ofertaPort: (operacao: "port_refin" | "portabilidade" | "refin", troco: string | null) =>
+  ofertaPort: (
+    operacao: "port_refin" | "portabilidade" | "refin",
+    troco: string | null,
+    reducoes: { banco: string; atual: number; nova: number }[] = [],
+  ) =>
     (operacao === "port_refin" && troco
       ? `Para empréstimo novo não sobra margem, mas encontrei uma saída: trazer um dos seus contratos para a Facta, com taxa menor, e ainda liberar um dinheiro extra de até ${troco} na sua conta, sem aumentar a parcela.\n\nÉ uma estimativa: o valor final depende do saldo que o seu banco informar.`
       : operacao === "refin"
         ? "Para empréstimo novo não sobra margem, mas dá para refinanciar um contrato que você já tem e liberar um valor novo."
-        : "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que baixa um pouco a sua parcela.") +
+        : reducoes.length
+          ? "Para empréstimo novo não sobra margem, mas dá para trazer contrato seu para a Facta com uma taxa menor, e a parcela cai:\n" +
+            reducoes.map((r) => `• ${r.banco}: de ${formatarReais(Math.round(r.atual * 100))} para ${formatarReais(Math.round(r.nova * 100))}`).join("\n")
+          : "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que baixa um pouco a sua parcela.") +
     "\n\nQuer seguir? Responda SIM ou NÃO.",
   semPressa: "Claro, sem pressa! Quando decidir, é só me responder SIM ou NÃO por aqui.",
   objecao:
     "Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.",
+  pedeNumeroContrato: (banco: string, parcela: string) =>
+    `Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
+  numeroContratoInvalido: "Não consegui entender o número do contrato. Pode mandar de novo, só o número? Se não souber onde achar, me diga.",
+  semNumeroContrato:
+    "Sem problema! Vou te passar para um especialista da nossa equipe, que te ajuda a achar o número do contrato e fecha a proposta com você. Já já alguém continua aqui.",
   aceitouPort:
     "Ótimo! Vou te passar para um especialista da nossa equipe. Ele confirma o saldo com o seu banco e fecha a proposta com você. Já já alguém continua aqui.",
   semSaldo:

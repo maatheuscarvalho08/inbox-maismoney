@@ -32,7 +32,42 @@ export type ResultadoExtrato =
   | { tipo: "servidor_outro"; motivo: string }
   // Sem margem para novo, mas dá para portar ou refinanciar: a equipe fecha.
   // simulada: a Facta abriu tabela, então ela oferta. Sem simulação, vai para a equipe.
-  | { tipo: "alternativa"; operacao: OperacaoAlternativa; trocoCentavos: number | null; motivo: string; simulada: boolean };
+  | {
+      tipo: "alternativa";
+      operacao: OperacaoAlternativa;
+      trocoCentavos: number | null;
+      motivo: string;
+      simulada: boolean;
+      // Port + refin: o contrato comprado e as tabelas escolhidas, para a Maisa digitar.
+      digitacao?: DigitacaoPort;
+      // Port sem troco: quanto cada parcela cai, para a oferta mostrar os valores.
+      reducoes?: ReducaoParcela[];
+    };
+
+export interface ReducaoParcela {
+  banco: string;
+  atual: number;
+  nova: number;
+}
+
+export interface TabelaDigitacao {
+  codigoTabela: number;
+  prazo: number;
+  contrato: number;
+  parcela: number;
+  coeficiente: number;
+}
+
+export interface DigitacaoPort {
+  banco: string;
+  bancoCodigo: string | null;
+  parcela: number;
+  prazoRestante: number;
+  prazoOriginal: number;
+  saldoDevedor: number;
+  port: TabelaDigitacao;
+  refin: TabelaDigitacao;
+}
 
 export type OperacaoAlternativa = "port_refin" | "portabilidade" | "refin";
 
@@ -43,6 +78,7 @@ export interface SimulacaoPortabilidade {
   // Menor parcela que a Facta abriu para portar o contrato.
   parcelaPortabilidade: number | null;
   motivo: string;
+  digitacao?: DigitacaoPort;
 }
 
 // Antes de consultar, o cliente precisa autorizar num link que o banco manda.
@@ -152,10 +188,31 @@ export const bancoFacta: BancoClt = {
     );
     const melhor = refins.sort((a, b) => b.valorLiquido - a.valorLiquido)[0];
     const port = [...s.portabilidade].sort((a, b) => a.parcela - b.parcela)[0];
+    const tabela = (t: facta.Tabela): TabelaDigitacao => ({
+      codigoTabela: t.codigoTabela,
+      prazo: t.prazo,
+      contrato: t.contrato,
+      parcela: t.parcela,
+      coeficiente: t.coeficiente,
+    });
     return {
       trocoCentavos: melhor ? reais(melhor.valorLiquido) : null,
       temPortabilidade: s.portabilidade.length > 0,
       parcelaPortabilidade: port ? port.parcela : null,
+      ...(melhor && port
+        ? {
+            digitacao: {
+              banco: contrato.banco,
+              bancoCodigo: facta.codigoBancoPorNome(contrato.bancoCodigo ?? contrato.banco),
+              parcela: contrato.parcela!,
+              prazoRestante: restantes,
+              prazoOriginal: original,
+              saldoDevedor: contrato.saldoDevedorEstimado!,
+              port: tabela(port),
+              refin: tabela(melhor),
+            },
+          }
+        : {}),
       motivo: melhor ? `${melhor.tabela}, troco ${melhor.valorLiquido}` : s.mensagem || "nenhuma tabela de refin da port",
     };
   },

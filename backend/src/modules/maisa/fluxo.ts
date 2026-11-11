@@ -1,6 +1,6 @@
 import type { Convenio } from "@prisma/client";
 import type { Classificador, ConvenioEntendido } from "./classificador.js";
-import type { ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta, ResultadoExtrato } from "./bancos.js";
+import type { DigitacaoPort, ReducaoParcela, ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta, ResultadoExtrato } from "./bancos.js";
 import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
@@ -26,6 +26,8 @@ export type Etapa =
   | "oferta"
   // Sem margem para novo, mas a Facta abriu port ou refin: ela oferta e a equipe digita.
   | "oferta_port"
+  // Aceitou a port + refin: pede o número do contrato no banco de origem.
+  | "numero_contrato"
   | "coleta"
   | "confirmacao"
   | "finalizada";
@@ -61,7 +63,14 @@ export interface EstadoMaisa {
     especie?: number | null;
   };
   // Port, port + refin ou refin que a Facta abriu, ofertado ao cliente.
-  alternativa?: { operacao: "port_refin" | "portabilidade" | "refin"; trocoCentavos: number | null; motivo: string };
+  alternativa?: {
+    operacao: "port_refin" | "portabilidade" | "refin";
+    trocoCentavos: number | null;
+    motivo: string;
+    digitacao?: DigitacaoPort;
+    reducoes?: ReducaoParcela[];
+    numeroContrato?: string;
+  };
   // Cadastro para digitar a proposta. Sai do estado assim que ela passa para a equipe.
   contrato?: { dados: DadosContrato; pergunta: string };
   motivoTransferencia?: string;
@@ -125,6 +134,7 @@ const PERGUNTA_DA_ETAPA: Record<Etapa, string> = {
   extrato: TEXTOS.lembraExtrato,
   oferta: TEXTOS.perguntaOferta,
   oferta_port: TEXTOS.perguntaOferta,
+  numero_contrato: TEXTOS.numeroContratoInvalido,
   coleta: TEXTOS.continuarCadastro,
   confirmacao: TEXTOS.perguntaConfirmacao,
   finalizada: "",
@@ -141,6 +151,7 @@ const NOME_ETAPA: Record<Etapa, string> = {
   extrato: "extrato",
   oferta: "oferta",
   oferta_port: "oferta de portabilidade",
+  numero_contrato: "número do contrato",
   coleta: "dados do contrato",
   confirmacao: "confirmação dos dados",
   finalizada: "fim",
@@ -349,13 +360,15 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
   }
   if (resultado.tipo === "alternativa") {
     const troco = resultado.trocoCentavos ? formatarReais(resultado.trocoCentavos) : null;
-    const { operacao, trocoCentavos, motivo } = resultado;
+    const { operacao, trocoCentavos, motivo, digitacao, reducoes } = resultado;
     // Sem simulação na Facta (INSS, refin ou simulação que falhou): pode passar, mas
     // ela não oferta o que não simulou. A equipe simula e mostra ao cliente.
     if (!resultado.simulada) {
       return transferir(estado, `sem margem para novo; ${motivo}`, TEXTOS.semMargemExtrato, "alternativa", [], "alternativa");
     }
-    return ir(estado, "oferta_port", [TEXTOS.ofertaPort(operacao, troco)], "alternativa", [], { alternativa: { operacao, trocoCentavos, motivo } });
+    return ir(estado, "oferta_port", [TEXTOS.ofertaPort(operacao, troco, reducoes)], "alternativa", [], {
+      alternativa: { operacao, trocoCentavos, motivo, ...(digitacao ? { digitacao } : {}), ...(reducoes?.length ? { reducoes } : {}) },
+    });
   }
   if (resultado.tipo === "servidor_outro") {
     return transferir(estado, resultado.motivo, TEXTOS.servidorNaoFederal, "servidor_outro", [], "servidor_outro");
@@ -469,9 +482,32 @@ async function etapaAguardando(estado: EstadoMaisa, texto: string, deps: Depende
 async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const resposta = await deps.classificador.simNao(texto);
   const motivo = estado.alternativa?.motivo ?? "portabilidade";
+  const dig = estado.alternativa?.digitacao;
+  // Port + refin com o banco de origem conhecido: ela mesma faz o contrato. Falta só o número.
+  if (resposta === "sim" && dig?.bancoCodigo && deps.digitacaoAtiva) {
+    return ir(estado, "numero_contrato", [TEXTOS.pedeNumeroContrato(dig.banco, formatarReais(Math.round(dig.parcela * 100)))], "aceitou_port");
+  }
   if (resposta === "sim") return transferir(estado, `aceitou: ${motivo}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
   // NÃO, receio ou dúvida: a Facta já aprovou, é cliente para a equipe convencer.
   return objecao(estado, texto, resposta === "nao" ? "recusou a portabilidade" : "objeção na oferta de portabilidade");
+}
+
+// Número do contrato no banco de origem: a Facta precisa dele para comprar a dívida.
+async function etapaNumeroContrato(estado: EstadoMaisa, texto: string): Promise<Passo> {
+  const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (/nao sei|nao tenho|nao lembro|nao acho|onde (vejo|acho|encontro)/.test(t)) {
+    return transferir(estado, "não sabe o número do contrato", TEXTOS.semNumeroContrato, "sem_numero_contrato", [], "alternativa");
+  }
+  const numero = texto.replace(/[^0-9A-Za-z]/g, "");
+  if (numero.length < 5 || numero.length > 30 || (numero.match(/\d/g) ?? []).length < 4) {
+    return tentarDeNovo(estado, TEXTOS.numeroContratoInvalido, "numero_contrato_invalido", "alternativa");
+  }
+  const dados: DadosContrato = {};
+  const pergunta = proximaPergunta(dados, produtoExtrato(estado))!;
+  return ir(estado, "coleta", [TEXTOS.inicioContrato, pergunta], "numero_contrato", [], {
+    alternativa: { ...estado.alternativa!, numeroContrato: numero },
+    contrato: { dados, pergunta },
+  });
 }
 
 // Na oferta, o que não é SIM é objeção: dúvida com resposta pronta ela responde e repete a
@@ -634,6 +670,8 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
       return etapaOferta(estado, texto, deps);
     case "oferta_port":
       return etapaOfertaPort(estado, texto, deps);
+    case "numero_contrato":
+      return etapaNumeroContrato(estado, texto);
     case "coleta":
       return etapaColeta(estado, { texto }, deps);
     case "confirmacao":

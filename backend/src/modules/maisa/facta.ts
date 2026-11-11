@@ -352,7 +352,7 @@ export interface Contratacao {
 }
 
 export type ResultadoContratacao =
-  | { tipo: "enviada"; codigoAf: string; url: string }
+  | { tipo: "enviada"; codigoAf: string; url: string; codigoRefin?: string }
   | { tipo: "erro"; etapa: string; mensagem: string };
 
 // Etapas 1, 2 e 3 e o envio do link de assinatura pelo WhatsApp. Para na primeira falha.
@@ -381,7 +381,13 @@ export async function contratar(c: Contratacao): Promise<ResultadoContratacao> {
   });
   const idSimulador = String(e1.id_simulador ?? "");
   if (e1.erro || !idSimulador) return { tipo: "erro", etapa: "simulador", mensagem: String(e1.mensagem ?? "sem id_simulador") };
+  return concluirProposta(c, idSimulador);
+}
 
+// Etapas 2 e 3 e o envio do link: iguais no empréstimo novo e na port + refin.
+async function concluirProposta(c: Contratacao, idSimulador: string): Promise<ResultadoContratacao> {
+  const cpf = cpf11(c.cpf);
+  const p = c.pessoa;
   const e2 = await chamar("/proposta/etapa2-dados-pessoais", cpf, {
     method: "POST",
     form: {
@@ -434,5 +440,90 @@ export async function contratar(c: Contratacao): Promise<ResultadoContratacao> {
   const e4 = await chamar("/proposta/envio-link", cpf, { method: "POST", form: { codigo_af: codigoAf, tipo_envio: "whatsapp" } });
   // A proposta já existe. Se o envio falhar, o link ainda serve: a Maisa manda ela mesma.
   if (e4.erro) console.error(`Facta não enviou o link da proposta ${codigoAf}: ${String(e4.mensagem ?? "")}`);
-  return { tipo: "enviada", codigoAf, url: String(e3.url_formalizacao ?? "") };
+  // Port + refin gera duas propostas; o link de assinatura é o da primeira.
+  const refin = e3.codigo_refin_port ? String(e3.codigo_refin_port) : undefined;
+  return { tipo: "enviada", codigoAf, url: String(e3.url_formalizacao ?? ""), ...(refin ? { codigoRefin: refin } : {}) };
+}
+
+// Port + refin do SIAPE (manual Portabilidade SIAPE v1.0): etapa 1 da port, etapa 1 do
+// refin da port com o contrato comprado, depois o mesmo cadastro do empréstimo novo.
+export interface ContratacaoPort extends Omit<Contratacao, "tabela" | "convenio"> {
+  port: { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number };
+  refin: { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number };
+  compra: { bancoCodigo: string; numeroContrato: string; parcela: number; prazoRestante: number; prazoOriginal: number; saldoDevedor: number };
+}
+
+export async function contratarPortRefin(c: ContratacaoPort): Promise<ResultadoContratacao> {
+  const cpf = cpf11(c.cpf);
+  const e1 = await chamar("/proposta/etapa1-simulador", cpf, {
+    method: "POST",
+    form: {
+      produto: PRODUTO,
+      tipo_operacao: "003500",
+      averbador: AVERBADOR_EXTRATO.siape,
+      convenio: CONVENIO,
+      cpf,
+      data_nascimento: dataBr(c.dataNascimento),
+      login_certificado: env.FACTA_LOGIN_CERTIFICADO,
+      valor_operacao: c.port.contrato.toFixed(2),
+      coeficiente: String(c.port.coeficiente),
+      valor_parcela: c.port.parcela.toFixed(2),
+      prazo: String(c.port.prazo),
+      saldo_devedor: c.compra.saldoDevedor.toFixed(2),
+      codigo_tabela: String(c.port.codigoTabela),
+      prazo_original: String(c.compra.prazoOriginal),
+      ...(env.FACTA_CODIGO_MASTER ? { codigo_master: env.FACTA_CODIGO_MASTER } : {}),
+    },
+  });
+  const idSimulador = String(e1.id_simulador ?? "");
+  if (e1.erro || !idSimulador) return { tipo: "erro", etapa: "simulador da port", mensagem: String(e1.mensagem ?? "sem id_simulador") };
+
+  const r = await chamar("/proposta/etapa1-refin-portabilidade", cpf, {
+    method: "POST",
+    form: {
+      id_simulador: idSimulador,
+      banco_compra: c.compra.bancoCodigo,
+      contrato_compra: c.compra.numeroContrato,
+      prazo_restante: String(c.compra.prazoRestante),
+      saldo_devedor: c.compra.saldoDevedor.toFixed(2),
+      valor_parcela_original: c.compra.parcela.toFixed(2),
+      prazo: String(c.refin.prazo),
+      codigo_tabela: String(c.refin.codigoTabela),
+      coeficiente: String(c.refin.coeficiente),
+      valor_operacao: c.refin.contrato.toFixed(2),
+      valor_parcela: c.refin.parcela.toFixed(2),
+    },
+  });
+  if (r.erro) return { tipo: "erro", etapa: "refin da port", mensagem: String(r.mensagem ?? "erro sem mensagem") };
+  return concluirProposta({ ...c, convenio: "siape", tabela: c.port }, idSimulador);
+}
+
+// Código do banco de origem pelo nome que aparece no contracheque. null: a equipe digita.
+const BANCO_POR_NOME: [RegExp, string][] = [
+  [/\bcef\b|caixa/, "104"],
+  [/bradesc/, "237"],
+  [/\bitau\b|unibanco/, "341"],
+  [/santander/, "33"],
+  [/banco do brasil|\bbb\b|\bbco brasil/, "1"],
+  [/\bpan\b|panamericano/, "623"],
+  [/\bbmg\b/, "318"],
+  [/daycoval|daybco/, "707"],
+  [/agibank|agiplan/, "121"],
+  [/\bc6\b/, "336"],
+  [/digio/, "335"],
+  [/safra/, "422"],
+  [/mercantil/, "389"],
+  [/crefisa/, "69"],
+  [/\bbrb\b/, "70"],
+  [/banrisul/, "41"],
+  [/\binter\b/, "77"],
+  [/original/, "212"],
+  [/\bbv\b|votorantim/, "413"],
+];
+
+export function codigoBancoPorNome(nome: string): string | null {
+  const n = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const direto = n.match(/^(\d{1,3})\b/)?.[1];
+  if (direto) return String(Number(direto));
+  return BANCO_POR_NOME.find(([re]) => re.test(n))?.[1] ?? null;
 }
