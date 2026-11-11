@@ -64,6 +64,8 @@ interface Caso {
   ultimaResposta?: "nenhuma";
   // Fecha sem passar para a equipe.
   encerra?: boolean;
+  // Trecho que a nota para o operador precisa ter.
+  notaContem?: string;
 }
 
 const CPF_SALDO = cpfTerminadoEm(3);
@@ -375,6 +377,7 @@ const CASOS: Caso[] = [
     etapaFinal: "finalizada",
     saida: "alternativa",
     respostaContem: "te ajuda a achar o número",
+    notaContem: "Simulei na Facta (port + refin, operação 003500)",
   },
   {
     nome: "Aceita a port + refin: vai para a equipe digitar",
@@ -502,6 +505,7 @@ async function rodar(caso: Caso, verbose: boolean) {
   let estado: EstadoMaisa | null = null;
   let transferida = false;
   let encerrada = false;
+  let nota = "";
   let ultimas: string[] = [];
   const todasRespostas: string[] = [];
 
@@ -534,7 +538,10 @@ async function rodar(caso: Caso, verbose: boolean) {
     const passo: Passo = await avancar(estado, entrada, deps);
     for (const e of passo.efeitos) {
       if (e.tipo === "cpf") cpfGravado = e.cpf;
-      if (e.tipo === "transferir") transferida = true;
+      if (e.tipo === "transferir") {
+        transferida = true;
+        nota = e.nota ?? "";
+      }
       if (e.tipo === "encerrar") encerrada = true;
     }
     // Nenhuma resposta pode ter o CPF do cliente.
@@ -558,6 +565,9 @@ async function rodar(caso: Caso, verbose: boolean) {
   if (caso.saida) assert.equal(estado?.saida, caso.saida, "saida");
   // A tela do atendente depende disso para dizer o próximo passo.
   if (transferida || encerrada) assert.ok(estado?.saida && estado.paradaEm, "fim sem saida ou paradaEm");
+  if (transferida) assert.ok(nota.startsWith("Passei para a equipe"), "transferência sem nota para o operador");
+  if (caso.notaContem) assert.ok(nota.includes(caso.notaContem), `nota sem "${caso.notaContem}":
+${nota}`);
   if (caso.respostaContem) {
     assert.ok(todasRespostas.some((r) => r.includes(caso.respostaContem!)), `nenhuma resposta com "${caso.respostaContem}"`);
   }

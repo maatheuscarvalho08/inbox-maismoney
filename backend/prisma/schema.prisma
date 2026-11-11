@@ -70,6 +70,8 @@ enum RemetenteTipo {
   cliente
   operador
   maisa
+  // Nota interna da Maisa para a equipe: aparece na conversa, nunca vai para o WhatsApp.
+  nota
 }
 
 enum StatusEntrega {

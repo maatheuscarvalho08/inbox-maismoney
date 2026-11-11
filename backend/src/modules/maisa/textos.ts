@@ -130,6 +130,8 @@ export const TEXTOS = {
   numeroContratoInvalido: "Não consegui entender o número do contrato. Pode mandar de novo, só o número? Se não souber onde achar, me diga.",
   semNumeroContrato:
     "Sem problema! Vou te passar para um especialista da nossa equipe, que te ajuda a achar o número do contrato e fecha a proposta com você. Já já alguém continua aqui.",
+  portProntaEquipe:
+    "Recebi tudo! Um especialista da nossa equipe vai cadastrar a sua portabilidade agora e te manda aqui o link para assinar. Já já alguém continua com você.",
   aceitouPort:
     "Ótimo! Vou te passar para um especialista da nossa equipe. Ele confirma o saldo com o seu banco e fecha a proposta com você. Já já alguém continua aqui.",
   semSaldo:

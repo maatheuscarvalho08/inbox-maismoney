@@ -74,6 +74,8 @@ export async function listConversas(leitor: Leitor, status?: StatusConversa, aba
       // Só o que a lista mostra da última mensagem.
       mensagens: {
         take: 1,
+        // A nota interna da Maisa não é "a última mensagem" da conversa.
+        where: { remetenteTipo: { not: "nota" } },
         orderBy: { timestamp: "desc" },
         select: { id: true, conteudoTexto: true, tipoMidia: true, remetenteTipo: true, timestamp: true },
       },

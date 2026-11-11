@@ -56,12 +56,12 @@ export async function resumoMetricas() {
   const hoje = inicioDoDia();
 
   const [totalMensagensMes, atendimentosMes, atendimentosHoje, conversasEmAberto, deltas] = await Promise.all([
-    prisma.mensagem.count({ where: { createdAt: { gte: inicioMes } } }),
+    prisma.mensagem.count({ where: { createdAt: { gte: inicioMes }, remetenteTipo: { not: "nota" } } }),
     prisma.conversa.count({ where: { status: "encerrada", createdAt: { gte: inicioMes } } }),
     prisma.conversa.count({ where: { status: "encerrada", createdAt: { gte: hoje } } }),
     prisma.conversa.findMany({
       where: { status: { not: "encerrada" } },
-      include: { mensagens: { take: 1, orderBy: { timestamp: "desc" } } },
+      include: { mensagens: { take: 1, where: { remetenteTipo: { not: "nota" } }, orderBy: { timestamp: "desc" } } },
     }),
     calcularDeltasResposta(inicioMes),
   ]);

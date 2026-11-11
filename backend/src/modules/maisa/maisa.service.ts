@@ -116,12 +116,26 @@ async function aplicarEfeito(conversa: ConversaMaisa, efeito: Efeito) {
     case "transferir":
       // Sai da Maisa e entra em "Na fila". Quem estava atribuído continua.
       await prisma.conversa.update({ where: { id: conversa.id }, data: { comMaisa: false } });
+      if (efeito.nota) await deixarNota(conversa.id, efeito.nota);
       return;
     case "encerrar":
       // Nada a oferecer: fecha sem ir para a fila. Se o cliente voltar, abre outra conversa.
       await prisma.conversa.update({ where: { id: conversa.id }, data: { status: "encerrada" } });
       return;
   }
+}
+
+// Nota interna para o operador: aparece na conversa, nunca vai para o WhatsApp e não
+// mexe no horário da última mensagem (a lista continua ordenada pelo cliente).
+async function deixarNota(conversaId: string, texto: string) {
+  const nota = await prisma.mensagem.create({
+    data: { conversaId, remetenteTipo: "nota", conteudoTexto: texto },
+    include: {
+      operador: { select: { id: true, nome: true, fotoPath: true } },
+      respondeA: { select: { id: true, conteudoTexto: true, tipoMidia: true, remetenteTipo: true } },
+    },
+  });
+  emitNovaMensagem(nota);
 }
 
 function exigir<T>(valor: T | undefined | null, campo: string): T {
@@ -152,7 +166,7 @@ async function digitarProposta(
       ? await contratarPortRefin({
           ...base,
           port: port.digitacao.port,
-          refin: port.digitacao.refin,
+          refin: exigir(port.digitacao.refin, "tabela do refin da port"),
           compra: {
             bancoCodigo: exigir(port.digitacao.bancoCodigo, "código do banco de origem"),
             numeroContrato: port.numeroContrato,

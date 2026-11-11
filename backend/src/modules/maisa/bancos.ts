@@ -66,7 +66,8 @@ export interface DigitacaoPort {
   prazoOriginal: number;
   saldoDevedor: number;
   port: TabelaDigitacao;
-  refin: TabelaDigitacao;
+  // Sem refin: port pura, que a API da Facta não digita. A equipe digita no portal.
+  refin?: TabelaDigitacao;
 }
 
 export type OperacaoAlternativa = "port_refin" | "portabilidade" | "refin";
@@ -199,7 +200,7 @@ export const bancoFacta: BancoClt = {
       trocoCentavos: melhor ? reais(melhor.valorLiquido) : null,
       temPortabilidade: s.portabilidade.length > 0,
       parcelaPortabilidade: port ? port.parcela : null,
-      ...(melhor && port
+      ...(port
         ? {
             digitacao: {
               banco: contrato.banco,
@@ -209,7 +210,7 @@ export const bancoFacta: BancoClt = {
               prazoOriginal: original,
               saldoDevedor: contrato.saldoDevedorEstimado!,
               port: tabela(port),
-              refin: tabela(melhor),
+              ...(melhor ? { refin: tabela(melhor) } : {}),
             },
           }
         : {}),

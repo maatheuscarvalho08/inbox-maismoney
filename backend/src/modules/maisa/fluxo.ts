@@ -103,7 +103,8 @@ export type Efeito =
   | { tipo: "convenio"; convenio: Convenio }
   | { tipo: "cpf"; cpf: string }
   | { tipo: "simulacao"; convenio: Produto; resultado: ResultadoBanco }
-  | { tipo: "transferir"; motivo: string }
+  // nota: o que a Maisa fez, para o operador ler na conversa.
+  | { tipo: "transferir"; motivo: string; nota?: string }
   // Não há o que fazer: a conversa fecha sem passar para a equipe.
   | { tipo: "encerrar"; motivo: string }
   | { tipo: "proposta"; codigoAf: string };
@@ -173,9 +174,65 @@ function transferir(
     // Os dados do cadastro (RG, endereço, filiação) não ficam guardados depois daqui.
     estado: { ...estado, etapa: "finalizada", tentativas: 0, motivoTransferencia: motivo, paradaEm: estado.etapa, saida, contrato: undefined },
     respostas: resposta ? [resposta] : [],
-    efeitos: [...efeitos, { tipo: "transferir", motivo }],
+    efeitos: [...efeitos, { tipo: "transferir", motivo, nota: notaEquipe(estado, motivo, efeitos) }],
     rotulo,
   };
+}
+
+const r$ = (reais: number) => formatarReais(Math.round(reais * 100));
+
+// Nota para o operador ao passar a conversa: o que a Maisa fez, onde simulou e o que
+// voltou. Fica na conversa, só para a equipe. Os dados do cadastro saem resumidos.
+export function notaEquipe(estado: EstadoMaisa, motivo: string, efeitos: Efeito[] = []): string {
+  const linhas = [`Passei para a equipe: ${motivo}.`];
+  const produto = estado.produto ? estado.produto.toUpperCase() : "não definido";
+  linhas.push(`Produto: ${produto}. Parei na etapa: ${NOME_ETAPA[estado.etapa]}.`);
+
+  for (const e of efeitos) {
+    if (e.tipo !== "simulacao") continue;
+    const r = e.resultado;
+    if (r.tipo === "com_saldo") {
+      linhas.push(`Simulei no ${r.banco}: até ${formatarReais(r.valorCentavos)} em ${r.prazoMeses}x de ${formatarReais(r.parcelaCentavos)}.`);
+    } else if (r.tipo === "sem_saldo") {
+      linhas.push(`Simulei no ${r.banco === "extrato" ? "extrato (leitura do documento)" : r.banco}: sem saldo. ${r.motivo}`);
+    } else {
+      linhas.push(`Simulação no ${r.banco} deu erro: ${r.motivo}`);
+    }
+  }
+
+  const o = estado.oferta;
+  if (o) {
+    linhas.push(
+      `Oferta enviada (${o.banco}): até ${formatarReais(o.valorCentavos)} em ${o.prazoMeses}x de ${formatarReais(o.parcelaCentavos)}` +
+        (o.tabela ? `, tabela ${o.tabela.codigoTabela}.` : "."),
+    );
+  }
+
+  const a = estado.alternativa;
+  if (a) {
+    const nome = { port_refin: "port + refin", portabilidade: "portabilidade", refin: "refin" }[a.operacao];
+    linhas.push(`Simulei na Facta (${nome}, operação 003500): ${a.motivo}.`);
+    const d = a.digitacao;
+    if (d) {
+      linhas.push(
+        `Contrato a comprar: ${d.banco}${d.bancoCodigo ? ` (código ${d.bancoCodigo})` : " (código do banco não identificado)"}, ` +
+          `parcela ${r$(d.parcela)}, faltam ${d.prazoRestante}, saldo estimado ${r$(d.saldoDevedor)} (confirmar na CIP).`,
+      );
+      linhas.push(`Port: tabela ${d.port.codigoTabela}, ${d.port.prazo}x de ${r$(d.port.parcela)}.`);
+      if (d.refin) {
+        linhas.push(`Refin da port: tabela ${d.refin.codigoTabela}, ${d.refin.prazo}x de ${r$(d.refin.parcela)}, bruto ${r$(d.refin.contrato)}.`);
+      }
+    }
+    for (const red of a.reducoes ?? []) linhas.push(`Port ${red.banco}: parcela de ${r$(red.atual)} cai para ${r$(red.nova)}.`);
+    if (a.trocoCentavos) linhas.push(`Troco ofertado: até ${formatarReais(a.trocoCentavos)}.`);
+    if (a.numeroContrato) linhas.push(`Número do contrato informado pelo cliente: ${a.numeroContrato}.`);
+  }
+
+  const dados = estado.contrato?.dados;
+  if (dados && Object.keys(dados).length) {
+    linhas.push(`Dados coletados para o contrato:\n${resumoDados(dados)}`);
+  }
+  return linhas.join("\n");
 }
 
 // Fim sem atendente: nada a oferecer agora. Se o cliente escrever de novo, começa outra conversa.
@@ -483,8 +540,9 @@ async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Depende
   const resposta = await deps.classificador.simNao(texto);
   const motivo = estado.alternativa?.motivo ?? "portabilidade";
   const dig = estado.alternativa?.digitacao;
-  // Port + refin com o banco de origem conhecido: ela mesma faz o contrato. Falta só o número.
-  if (resposta === "sim" && dig?.bancoCodigo && deps.digitacaoAtiva) {
+  // Com a simulação em mãos ela conduz: número do contrato, dados e, se a API permitir, a
+  // digitação. Só passa para a equipe se travar no caminho.
+  if (resposta === "sim" && dig && deps.digitacaoAtiva) {
     return ir(estado, "numero_contrato", [TEXTOS.pedeNumeroContrato(dig.banco, formatarReais(Math.round(dig.parcela * 100)))], "aceitou_port");
   }
   if (resposta === "sim") return transferir(estado, `aceitou: ${motivo}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
@@ -580,6 +638,16 @@ async function etapaConfirmacao(estado: EstadoMaisa, texto: string, deps: Depend
   const resposta = await deps.classificador.simNao(texto);
   if (resposta === "nao") return transferir(estado, "cliente quer corrigir os dados", TEXTOS.corrigirDados, "corrigir_dados", [], "dados_contrato");
   if (resposta !== "sim") return foraDaEtapa(estado, texto);
+
+  // Port pura ou banco de origem sem código: a API da Facta não digita. Tudo coletado, a
+  // equipe só cadastra no portal Agente Facta com os dados da nota.
+  const dig = estado.alternativa?.digitacao;
+  if (estado.alternativa && (!dig?.refin || !dig.bancoCodigo)) {
+    const motivo = !dig?.refin
+      ? "port pura aceita, a API da Facta não digita port sem refin: cadastrar no portal Agente Facta"
+      : "banco de origem sem código conhecido: cadastrar no portal Agente Facta";
+    return transferir(estado, motivo, TEXTOS.portProntaEquipe, "port_pronta", [], "alternativa");
+  }
 
   let resultado: ResultadoContratacao;
   try {

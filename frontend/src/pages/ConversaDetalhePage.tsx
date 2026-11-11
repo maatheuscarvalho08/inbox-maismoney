@@ -15,6 +15,7 @@ import { PainelLateralConversa } from "../components/conversa/PainelLateralConve
 import { MaisaProgresso } from "../components/maisa/MaisaProgresso";
 import { MaisaFluxoModal } from "../components/maisa/MaisaFluxoModal";
 import { AnaliseExtratoModal } from "../components/conversa/AnaliseExtratoModal";
+import { NotaMaisa } from "../components/conversa/NotaMaisa";
 import type { Contato, Conversa, Mensagem, StatusConversa, Usuario } from "../types/api";
 
 const STATUS_OPCOES: StatusConversa[] = ["aberta", "em_atendimento", "aguardando", "encerrada"];
@@ -299,6 +300,9 @@ export function ConversaDetalhePage() {
                     </span>
                   </div>
                 )}
+                {m.remetenteTipo === "nota" ? (
+                  <NotaMaisa mensagem={m} />
+                ) : (
                 <MensagemBubble
                   mensagem={m}
                   contatoNome={conversa.contato.nome ?? conversa.contato.numeroWhatsapp}
@@ -311,6 +315,7 @@ export function ConversaDetalhePage() {
                   conversaDeTeste={conversaDeTeste}
                   onAnalisarExtrato={setExtratoEmAnalise}
                 />
+                )}
               </div>
             );
           })}
