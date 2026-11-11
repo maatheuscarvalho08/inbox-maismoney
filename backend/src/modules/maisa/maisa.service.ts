@@ -9,7 +9,7 @@ import { getConversaById } from "../conversas/conversas.service.js";
 import { avancarEtapa } from "../funil/funil.service.js";
 import { classificadorRegras } from "./classificador.js";
 import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
-import { contratar, contratarPortRefin, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
+import { codigoBancoPorNome, contratar, contratarPortRefin, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo } from "./fluxo.js";
@@ -208,6 +208,9 @@ function pessoaDoContrato(d: DadosContrato) {
     email: exigir(d.email, "e-mail"),
     tipoCreditoNb: d.tipoCreditoNb,
     tipoBeneficio: d.tipoBeneficio,
+    bancoConta: d.bancoConta,
+    agencia: d.agencia,
+    conta: d.conta,
   };
 }
 
@@ -291,7 +294,11 @@ async function processar(conversaId: string, gatilho: Gatilho) {
       // Sem empréstimo novo: antes de desistir, vê se dá para portar ou refinanciar.
       // Renda e matrícula do documento vão junto: o contrato não pergunta de novo.
       const lido = registro.leitura as ExtratoLido;
-      const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula };
+      const bancoSal = lido.conta_banco ? codigoBancoPorNome(lido.conta_banco) : null;
+      const agenciaSal = (lido.conta_agencia ?? "").replace(/\D/g, "");
+      const contaSal = (lido.conta_numero ?? "").replace(/\D/g, "");
+      const contaSalario = bancoSal && agenciaSal.length >= 3 && contaSal.length >= 4 ? { bancoConta: bancoSal, agencia: agenciaSal, conta: contaSal } : null;
+      const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula, contaSalario };
       const alternativa = async () => {
         const alt = await buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento });
         return alt ? { ...alt, ...lidos } : null;
@@ -302,7 +309,7 @@ async function processar(conversaId: string, gatilho: Gatilho) {
       if (leitura.tipo !== "ok") return leitura;
       const resultado = await banco.simularConsignado({ convenio, cpf, dataNascimento, parcelaMaxima: leitura.parcelaMaxima });
       if (resultado.tipo === "sem_saldo") return (await alternativa()) ?? resultado;
-      return resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie, matricula: leitura.matricula } : resultado;
+      return resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie, matricula: leitura.matricula, contaSalario } : resultado;
     },
     digitacaoAtiva: env.MAISA_DIGITA_PROPOSTA && (banco === bancoSimulado || (banco === bancoFacta && digitacaoConfigurada())),
     extrairDados: async (pergunta, recebida, faltando) => {

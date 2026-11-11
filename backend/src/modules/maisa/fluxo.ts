@@ -64,6 +64,7 @@ export interface EstadoMaisa {
     renda?: number | null;
     especie?: number | null;
     matricula?: string | null;
+    contaSalario?: { bancoConta: string; agencia: string; conta: string } | null;
   };
   // O cliente já tinha aceitado (conversa retomada): ela não oferta de novo, vai direto ao contrato.
   aceitouOferta?: boolean;
@@ -78,6 +79,7 @@ export interface EstadoMaisa {
     // Do extrato, para o contrato não perguntar de novo.
     renda?: number | null;
     matricula?: string | null;
+    contaSalario?: { bancoConta: string; agencia: string; conta: string } | null;
   };
   // Cadastro para digitar a proposta. Sai do estado assim que ela passa para a equipe.
   contrato?: { dados: DadosContrato; pergunta: string };
@@ -320,10 +322,10 @@ function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora:
   if (resultado.tipo === "erro") {
     return transferir(estado, `erro no banco: ${resultado.motivo}`, TEXTOS.erroBanco, "erro_banco", [efeito]);
   }
-  const { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula } = resultado;
+  const { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula, contaSalario } = resultado;
   const mensagem = TEXTOS.oferta(formatarReais(valorCentavos), prazoMeses, formatarReais(parcelaCentavos), DESCONTO[estado.produto ?? "clt"]);
   return ir(estado, "oferta", [mensagem], "com_saldo", [efeito], {
-    oferta: { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula },
+    oferta: { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula, contaSalario },
     autorizacaoPedidaEm: undefined,
     proximaVerificacao: undefined,
     ofertaEm: agora.toISOString(),
@@ -447,8 +449,8 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
   }
   if (resultado.tipo === "alternativa") {
     const troco = resultado.trocoCentavos ? formatarReais(resultado.trocoCentavos) : null;
-    const { operacao, trocoCentavos, motivo, digitacao, reducoes, renda, matricula } = resultado;
-    const lidos = { ...(renda ? { renda } : {}), ...(matricula ? { matricula } : {}) };
+    const { operacao, trocoCentavos, motivo, digitacao, reducoes, renda, matricula, contaSalario } = resultado;
+    const lidos = { ...(renda ? { renda } : {}), ...(matricula ? { matricula } : {}), ...(contaSalario ? { contaSalario } : {}) };
     // Sem simulação na Facta (INSS, refin ou simulação que falhou): pode passar, mas
     // ela não oferta o que não simulou. A equipe simula e mostra ao cliente.
     if (!resultado.simulada) {
@@ -626,6 +628,7 @@ async function etapaNumeroContrato(estado: EstadoMaisa, texto: string): Promise<
   const dados: DadosContrato = {};
   if (estado.alternativa?.renda) dados.renda = estado.alternativa.renda;
   if (estado.alternativa?.matricula) dados.matricula = estado.alternativa.matricula;
+  if (estado.produto === "siape" && estado.alternativa?.contaSalario) Object.assign(dados, estado.alternativa.contaSalario);
   const pergunta = proximaPergunta(dados, produtoExtrato(estado))!;
   return ir(estado, "coleta", [TEXTOS.inicioContrato, pergunta], "numero_contrato", [], {
     alternativa: { ...estado.alternativa!, numeroContrato: numero },
@@ -741,6 +744,7 @@ async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencia
     const dados: DadosContrato = {};
     if (estado.oferta.renda) dados.renda = estado.oferta.renda;
     if (estado.oferta.matricula) dados.matricula = estado.oferta.matricula;
+    if (estado.produto === "siape" && estado.oferta.contaSalario) Object.assign(dados, estado.oferta.contaSalario);
     if (estado.produto === "inss" && estado.oferta.especie) dados.tipoBeneficio = String(estado.oferta.especie);
     const pergunta = proximaPergunta(dados, estado.produto)!;
     return ir(estado, "coleta", [TEXTOS.inicioContrato, pergunta], "aceitou_contrato", [], {

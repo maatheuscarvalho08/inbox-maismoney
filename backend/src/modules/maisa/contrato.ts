@@ -31,6 +31,10 @@ export interface DadosContrato {
   tipoBeneficio?: string;
   valorPatrimonio?: string;
   pixCpf?: boolean;
+  // SIAPE: o crédito cai na conta em que o servidor recebe o salário.
+  bancoConta?: string; // código do banco
+  agencia?: string;
+  conta?: string;
 }
 
 export type CampoContrato = keyof DadosContrato;
@@ -50,6 +54,9 @@ export const ROTULO_CAMPO: Partial<Record<CampoContrato, string>> = {
   numero: "número da casa",
   endereco: "nome da rua",
   bairro: "bairro",
+  bancoConta: "banco da conta salário",
+  agencia: "agência",
+  conta: "número da conta",
 };
 
 interface Grupo {
@@ -118,7 +125,16 @@ export const GRUPOS: Grupo[] = [
   {
     id: "pix",
     campos: ["pixCpf"],
+    so: "inss",
     pergunta: () => "O dinheiro cai por PIX, na chave do seu CPF. Pode ser assim? Responda SIM ou NÃO.",
+  },
+  {
+    // No SIAPE o crédito vai obrigatoriamente para a conta salário (roteiro da Facta).
+    id: "conta",
+    campos: ["bancoConta", "agencia", "conta"],
+    so: "siape",
+    pergunta: () =>
+      "O dinheiro cai na mesma conta em que você recebe o salário. Qual o banco, a agência e o número dessa conta? Se preferir, pode mandar uma foto do cartão ou do contracheque.",
   },
 ];
 
@@ -157,5 +173,6 @@ export function resumoDados(d: DadosContrato): string {
     `Estado civil: ${d.estadoCivilNome}`,
     `Endereço: ${endereco}, ${d.bairro}, ${d.cidadeNome}/${d.estado}, CEP ${d.cep}`,
     `E-mail: ${d.email}`,
+    ...(d.conta ? [`Conta para receber: banco ${d.bancoConta}, agência ${d.agencia}, conta final ${String(d.conta).slice(-3)}`] : []),
   ].join("\n");
 }

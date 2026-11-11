@@ -363,6 +363,10 @@ export interface Contratacao {
     // Só INSS.
     tipoCreditoNb?: string;
     tipoBeneficio?: string;
+    // SIAPE: conta salário.
+    bancoConta?: string;
+    agencia?: string;
+    conta?: string;
   };
 }
 
@@ -434,9 +438,11 @@ async function concluirProposta(c: Contratacao, idSimulador: string): Promise<Re
       cliente_iletrado_impossibilitado: "N",
       matricula: p.matricula,
       email: p.email,
-      // Crédito por PIX na chave CPF, que precisa ser o mesmo da proposta.
-      tipo_chave_pix: "1",
-      chave_pix: cpf,
+      // SIAPE: crédito na conta salário (roteiro da Facta). INSS: PIX na chave CPF, que
+      // precisa ser o mesmo da proposta.
+      ...(c.convenio === "siape" && p.conta && p.agencia && p.bancoConta
+        ? { banco: p.bancoConta, agencia: p.agencia, conta: p.conta, tipo_conta: "C" }
+        : { tipo_chave_pix: "1", chave_pix: cpf }),
       ...(c.convenio === "inss"
         ? { tipo_credito_nb: p.tipoCreditoNb ?? "1", tipo_beneficio: p.tipoBeneficio ?? "", estado_beneficio: p.estado }
         : {}),

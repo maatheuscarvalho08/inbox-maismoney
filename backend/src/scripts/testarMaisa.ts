@@ -32,6 +32,9 @@ const DADOS_COMPLETOS: DadosContrato = {
   estado: "RJ",
   email: "maria@exemplo.com",
   matricula: "1234567",
+  bancoConta: "104",
+  agencia: "1234",
+  conta: "123456",
   valorPatrimonio: "1",
   pixCpf: true,
 };

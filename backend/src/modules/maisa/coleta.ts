@@ -34,6 +34,9 @@ const CAMPOS_MODELO = {
   especie: "espécie do benefício do INSS, número",
   patrimonio: "faixa de patrimônio escolhida, de 1 a 5",
   pix_cpf: "SIM se o cliente aceita receber por PIX na chave CPF, NAO se não aceita",
+  banco_conta: "banco da conta em que recebe o salário: nome ou código de 3 dígitos",
+  agencia: "agência da conta salário, só dígitos",
+  conta: "número da conta salário com o dígito, só dígitos",
 } as const;
 
 type CampoModelo = keyof typeof CAMPOS_MODELO;
@@ -176,6 +179,13 @@ async function validar(m: Record<CampoModelo, string | null>, faltando: Set<Camp
   if (quer("valorPatrimonio") && /^[1-5]$/.test(limpo(m.patrimonio))) d.valorPatrimonio = limpo(m.patrimonio);
   const pix = semAcento(m.pix_cpf ?? "");
   if (quer("pixCpf") && (pix === "SIM" || pix === "NAO")) d.pixCpf = pix === "SIM";
+  // Conta salário (SIAPE): banco pela lista de códigos, agência e conta só com dígitos.
+  const banco = m.banco_conta ? facta.codigoBancoPorNome(m.banco_conta) : null;
+  if (quer("bancoConta") && banco) d.bancoConta = banco;
+  const agencia = (m.agencia ?? "").replace(/\D/g, "");
+  if (quer("agencia") && agencia.length >= 3 && agencia.length <= 5) d.agencia = agencia;
+  const conta = (m.conta ?? "").replace(/\D/g, "");
+  if (quer("conta") && conta.length >= 4 && conta.length <= 15) d.conta = conta;
   return d;
 }
 
