@@ -42,7 +42,13 @@ export async function buscarAlternativa(p: {
           algumaPort = true;
           portas.push(`parcela de ${contrato.parcela} cai para ${s.parcelaPortabilidade ?? "?"} na Facta`);
           if (s.parcelaPortabilidade) {
-            reducoes.push({ banco: contrato.banco, atual: contrato.parcela, nova: s.parcelaPortabilidade });
+            reducoes.push({
+              banco: contrato.banco,
+              atual: contrato.parcela,
+              nova: s.parcelaPortabilidade,
+              restantes: contrato.parcelasRestantes,
+              ...(s.digitacao?.port.taxa ? { taxa: s.digitacao.port.taxa } : {}),
+            });
             const reducao = contrato.parcela - s.parcelaPortabilidade;
             if (s.digitacao && (!melhorPort || reducao > melhorPort.reducao)) melhorPort = { reducao, digitacao: s.digitacao };
           }

@@ -48,6 +48,9 @@ export interface ReducaoParcela {
   banco: string;
   atual: number;
   nova: number;
+  // Parcelas que faltam e a taxa da port, para a oferta mostrar a economia.
+  restantes?: number;
+  taxa?: number;
 }
 
 export interface TabelaDigitacao {
@@ -56,6 +59,8 @@ export interface TabelaDigitacao {
   contrato: number;
   parcela: number;
   coeficiente: number;
+  // % ao mês, para a oferta dizer a taxa nova.
+  taxa?: number;
 }
 
 export interface DigitacaoPort {
@@ -195,6 +200,7 @@ export const bancoFacta: BancoClt = {
       contrato: t.contrato,
       parcela: t.parcela,
       coeficiente: t.coeficiente,
+      taxa: t.taxa,
     });
     return {
       trocoCentavos: melhor ? reais(melhor.valorLiquido) : null,

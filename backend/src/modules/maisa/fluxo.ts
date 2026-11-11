@@ -450,7 +450,7 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
         },
       );
     }
-    return ir(estado, "oferta_port", [TEXTOS.ofertaPort(operacao, troco, reducoes, digitacao?.refin?.prazo ?? null)], "alternativa", [], {
+    return ir(estado, "oferta_port", [TEXTOS.ofertaPort({ operacao, trocoCentavos, digitacao, reducoes })], "alternativa", [], {
       alternativa: { operacao, trocoCentavos, motivo, ...(digitacao ? { digitacao } : {}), ...(reducoes?.length ? { reducoes } : {}) },
     });
   }
@@ -604,9 +604,57 @@ function objecao(estado: EstadoMaisa, texto: string, motivo: string): Passo {
   if (PENSANDO.test(texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "")) && !texto.includes("?")) {
     return { estado, respostas: [TEXTOS.semPressa], efeitos: [], rotulo: "pensando" };
   }
+  const t = texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  // Receio de verdade pede acolhimento e a equipe, mesmo que fale de dinheiro.
+  if (RECEIO.test(t)) return transferir(estado, motivo, TEXTOS.objecao, "objecao", [], "objecao");
+  // Pergunta sobre a própria oferta: ela sabe a resposta, então responde com os números.
+  const sobreOferta = respostaSobreOferta(estado, t);
+  if (sobreOferta) return { estado, respostas: [sobreOferta, PERGUNTA_DA_ETAPA[estado.etapa]], efeitos: [], rotulo: "duvida_oferta" };
   const faq = buscarFaq(texto);
   if (faq) return { estado, respostas: [faq, PERGUNTA_DA_ETAPA[estado.etapa]], efeitos: [], rotulo: "faq" };
-  return transferir(estado, motivo, TEXTOS.objecao, "objecao", [], "objecao");
+  // Dúvida que ela não sabe responder: chama a equipe, sem falar em preocupação.
+  return transferir(estado, motivo, TEXTOS.duvidaParaEquipe, "objecao", [], "objecao");
+}
+
+const RECEIO = /(medo|receio|golpe|fraude|reclame|confia|seguro|segura|demora|nao libera|nao paga|enganad|desconfi|perigo|risco)/;
+
+// Troco, dinheiro, valor, parcela, taxa: as perguntas que a oferta já responde.
+function respostaSobreOferta(estado: EstadoMaisa, t: string): string | null {
+  const a = estado.alternativa;
+  const o = estado.oferta;
+  const querDinheiro = /(troco|dinheiro|libera|recebo|receber|valor extra|sobra|quanto (eu )?(pego|ganho|recebo|cai))/.test(t);
+  const querParcela = /(parcela|prestacao|desconto|quanto (vou )?pagar|taxa|juros|prazo|quantas vezes)/.test(t);
+  if (!querDinheiro && !querParcela) return null;
+
+  if (a) {
+    const red = a.reducoes?.[0];
+    const dig = a.digitacao;
+    if (querDinheiro) {
+      if (a.trocoCentavos) {
+        return `Sim! Pela simulação na Facta, você recebe até ${formatarReais(a.trocoCentavos)} de dinheiro extra na sua conta. É uma estimativa: o valor final depende do saldo que o seu banco informar.`;
+      }
+      if (red) {
+        return (
+          `Nessa opção não sobra dinheiro extra para você. O ganho é na parcela: ela cai de ${r$(red.atual)} para ${r$(red.nova)}, ` +
+          `uma economia de ${r$(red.atual - red.nova)} por mês${red.restantes ? `, ou ${r$((red.atual - red.nova) * red.restantes)} até o fim do contrato` : ""}.`
+        );
+      }
+      return "Nessa opção não sobra dinheiro extra para você. O ganho é uma taxa menor no seu contrato.";
+    }
+    if (dig?.refin) {
+      return `A parcela continua ${r$(dig.refin.parcela)}, em ${dig.refin.prazo} parcelas${dig.refin.taxa ? `, com taxa de ${dig.refin.taxa.toLocaleString("pt-BR")}% ao mês` : ""}. O contrato recomeça na Facta.`;
+    }
+    if (red) {
+      return `A parcela cai de ${r$(red.atual)} para ${r$(red.nova)}${red.taxa ? `, com taxa de ${red.taxa.toLocaleString("pt-BR")}% ao mês` : ""}, e você continua com as mesmas parcelas que faltavam.`;
+    }
+    return null;
+  }
+  if (o) {
+    return querDinheiro
+      ? `Pela simulação, você recebe até ${formatarReais(o.valorCentavos)} na sua conta.`
+      : `São ${o.prazoMeses} parcelas de ${formatarReais(o.parcelaCentavos)}.`;
+  }
+  return null;
 }
 
 async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {

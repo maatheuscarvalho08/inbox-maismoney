@@ -39,6 +39,19 @@ export const PRODUTOS_COM_SIMULACAO: Convenio[] = ["clt", "inss", "siape"];
 const OPCOES_CONVENIO = PRODUTOS.map((p, i) => `${i + 1}. ${p.texto}`).join("\n");
 const PERGUNTA_CONVENIO = "Com qual destes produtos posso te ajudar? Responda com o número.\n" + OPCOES_CONVENIO;
 
+// O que a oferta de port precisa saber. Estrutural, para não amarrar textos.ts a bancos.ts.
+export interface OfertaPortTexto {
+  operacao: "port_refin" | "portabilidade" | "refin";
+  trocoCentavos: number | null;
+  digitacao?: {
+    banco: string;
+    parcela: number;
+    prazoRestante: number;
+    refin?: { parcela: number; prazo: number; taxa?: number };
+  };
+  reducoes?: { banco: string; atual: number; nova: number; restantes?: number; taxa?: number }[];
+}
+
 export const TEXTOS = {
   apresentacao: "Olá! Eu sou a Maisa, assistente virtual da Mais Money.",
   saudacao:
@@ -107,28 +120,48 @@ export const TEXTOS = {
     "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
   semMargemFim:
     "Olhei o seu documento com atenção. No momento não sobra margem para um empréstimo novo, e também não dá para fazer portabilidade ou refinanciamento dos seus contratos. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
-  // Nunca valor garantido: o saldo real só vem do banco de origem, na digitação.
-  // prazo: em quantas parcelas fica o contrato na Facta. Port + refin recomeça (ex.: 120x);
-  // port pura mantém as parcelas que faltavam, só com taxa e parcela menores.
-  ofertaPort: (
-    operacao: "port_refin" | "portabilidade" | "refin",
-    troco: string | null,
-    reducoes: { banco: string; atual: number; nova: number }[] = [],
-    prazo: number | null = null,
-  ) =>
-    (operacao === "port_refin" && troco
-      ? `Para empréstimo novo não sobra margem, mas encontrei uma saída: trazer um dos seus contratos para a Facta, com taxa menor, e ainda liberar um dinheiro extra de até ${troco} na sua conta, sem aumentar a parcela.` +
-        (prazo ? ` O contrato recomeça do zero, em ${prazo} parcelas.` : "") +
-        "\n\nÉ uma estimativa: o valor final depende do saldo que o seu banco informar."
-      : operacao === "refin"
-        ? "Para empréstimo novo não sobra margem, mas dá para refinanciar um contrato que você já tem e liberar um valor novo."
-        : reducoes.length
-          ? "Para empréstimo novo não sobra margem, mas dá para trazer contrato seu para a Facta com uma taxa menor, e a parcela cai:\n" +
-            reducoes.map((r) => `• ${r.banco}: de ${formatarReais(Math.round(r.atual * 100))} para ${formatarReais(Math.round(r.nova * 100))}`).join("\n") +
-            "\n\nVocê continua com as mesmas parcelas que faltam, só que pagando menos em cada uma."
-          : "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que baixa um pouco a sua parcela.") +
-    "\n\nSe fizer sentido para você, eu mesma cuido de tudo. É só me responder SIM que eu já começo. Ficou alguma dúvida? Pode me perguntar.",
+  // Oferta de port: diz qual contrato, como está hoje, como fica na Facta (parcela, prazo e
+  // taxa) e o que o cliente ganha. Nunca valor garantido: o saldo real vem do banco de origem.
+  ofertaPort: (a: OfertaPortTexto) => {
+    const r = (v: number) => formatarReais(Math.round(v * 100));
+    const taxa = (t?: number) => (t ? `, com taxa de ${t.toLocaleString("pt-BR")}% ao mês` : "");
+    const d = a.digitacao;
+    let corpo: string;
+    if (a.operacao === "port_refin" && a.trocoCentavos && d?.refin) {
+      corpo =
+        `Para empréstimo novo não sobra margem, mas encontrei uma saída com o seu contrato do ${d.banco}:\n\n` +
+        `• Hoje: parcela de ${r(d.parcela)}, faltando ${d.prazoRestante} parcelas.\n` +
+        `• Na Facta: a parcela continua ${r(d.refin.parcela)}, em ${d.refin.prazo} parcelas (o contrato recomeça)${taxa(d.refin.taxa)}.\n` +
+        `• Você recebe: até ${formatarReais(a.trocoCentavos)} de dinheiro extra na sua conta.\n\n` +
+        `É uma estimativa: o valor final depende do saldo que o ${d.banco} informar.`;
+    } else if (a.operacao === "port_refin" && a.trocoCentavos) {
+      corpo =
+        `Para empréstimo novo não sobra margem, mas encontrei uma saída: trazer um dos seus contratos para a Facta, com taxa menor, e ainda liberar um dinheiro extra de até ${formatarReais(a.trocoCentavos)} na sua conta, sem aumentar a parcela.\n\n` +
+        "É uma estimativa: o valor final depende do saldo que o seu banco informar.";
+    } else if (a.operacao === "refin") {
+      corpo = "Para empréstimo novo não sobra margem, mas dá para refinanciar um contrato que você já tem e liberar um valor novo.";
+    } else if (a.reducoes?.length) {
+      corpo =
+        "Para empréstimo novo não sobra margem, mas dá para trazer contrato seu para a Facta com uma taxa menor:\n\n" +
+        a.reducoes
+          .map((x) => {
+            const economia = x.atual - x.nova;
+            const total = x.restantes ? ` (${r(economia * x.restantes)} até o fim do contrato)` : "";
+            return (
+              `• ${x.banco}: hoje ${r(x.atual)} por mês${x.restantes ? `, faltando ${x.restantes} parcelas` : ""}. ` +
+              `Na Facta, ${r(x.nova)}${taxa(x.taxa)}. Economia de ${r(economia)} por mês${total}.`
+            );
+          })
+          .join("\n") +
+        "\n\nVocê continua com as mesmas parcelas que faltam, só que pagando menos em cada uma. É uma estimativa: o valor final depende do saldo que o seu banco informar.";
+    } else {
+      corpo = "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que baixa a sua parcela.";
+    }
+    return corpo + "\n\nSe fizer sentido para você, eu mesma cuido de tudo. É só me responder SIM que eu já começo. Ficou alguma dúvida? Pode me perguntar.";
+  },
   semPressa: "Claro, sem pressa! Quando decidir, é só me responder por aqui.",
+  duvidaParaEquipe:
+    "Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.",
   objecao:
     "Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.",
   // Retomada de quem já aceitou: primeiro lembra o que ele ganha, depois pede o contrato.

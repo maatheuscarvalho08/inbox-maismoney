@@ -400,6 +400,19 @@ const CASOS: Caso[] = [
     respostaContem: "Entendo a sua preocupação",
   },
   {
+    nome: "Pergunta se tem troco na port + refin: responde o valor e continua na oferta",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "Tem algum troco"],
+    etapaFinal: "oferta_port",
+    respostaContem: "você recebe até R$",
+  },
+  {
+    nome: "Pergunta sem resposta pronta na oferta: chama a equipe sem falar em preocupação",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "posso pagar com boleto?"],
+    etapaFinal: "finalizada",
+    saida: "objecao",
+    respostaContem: "Boa pergunta",
+  },
+  {
     nome: "Deixa eu pensar na oferta de port: ela espera",
     acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "deixa eu pensar"],
     etapaFinal: "oferta_port",
