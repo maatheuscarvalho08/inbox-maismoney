@@ -58,6 +58,22 @@ const CASOS: [string, () => void | Promise<void>][] = [
     },
   ],
   [
+    "Sem margem: SIAPE com port mas sem tabela de refin não tem alternativa",
+    async () => {
+      const analise = analisarExtrato(
+        extrato({
+          tipo_documento: "siape",
+          especie_codigo: null,
+          margens_informadas: { emprestimo: 0, rmc: 0, rcc: 0 },
+          contratos: [contrato({ banco_nome: "CAIXA", parcela: 400, parcelas_restantes: 70 })],
+        }),
+      );
+      const semRefin = { ...bancoSimulado, simularPortabilidadeSiape: async () => ({ trocoCentavos: null, temPortabilidade: true, motivo: "sem tabela" }) };
+      const alt = await buscarAlternativa({ convenio: "siape", analise, banco: semRefin, cpf: "00000000000", dataNascimento: "1953-01-01" });
+      assert.equal(alt, null);
+    },
+  ],
+  [
     "Sem margem e sem contrato para portar ou refinanciar: nenhuma alternativa",
     async () => {
       const analise = analisarExtrato(extrato({ margens_informadas: { emprestimo: 0, rmc: 0, rcc: 0 }, contratos: [] }));

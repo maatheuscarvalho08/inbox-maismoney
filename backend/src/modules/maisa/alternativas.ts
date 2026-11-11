@@ -44,11 +44,12 @@ export async function buscarAlternativa(p: {
     if (melhor?.trocoCentavos) {
       return { tipo: "alternativa", operacao: "port_refin", trocoCentavos: melhor.trocoCentavos, motivo: `port + refin: ${melhor.motivo}` };
     }
-    // A Facta aceita portar, mas sem troco: ainda pode baixar a parcela. Se a simulação
-    // falhou, a equipe confere com o saldo real.
-    if (algumaPort || falhou) {
-      return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `${candidatos.length} contrato(s) para portar` };
+    // Sem tabela de refin não há troco, e só portar não compensa: não há o que fazer.
+    // Só se a simulação falhou (rede, Facta fora) a equipe confere com o saldo real.
+    if (falhou) {
+      return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: "simulação da port falhou, conferir" };
     }
+    if (algumaPort) console.log(`Port sem troco em ${candidatos.length} contrato(s): sem opção`);
   } else if (portaveis.length) {
     // INSS: a port ainda não é simulada aqui. A equipe simula com o contrato em mãos.
     return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `${portaveis.length} contrato(s) para portar` };
