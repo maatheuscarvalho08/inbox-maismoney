@@ -112,6 +112,9 @@ export interface Dependencias {
   digitacaoAtiva: boolean;
   extrairDados(pergunta: string, entrada: { texto: string | null; documento?: boolean }, faltando: CampoContrato[]): Promise<DadosContrato>;
   digitar(dados: DadosContrato): Promise<ResultadoContratacao>;
+  // Responde ao que o cliente disse fora do esperado (ex.: "estou negativo"), só com fatos
+  // aprovados. null: não tem o que dizer. Ausente nos testes: valem as regras.
+  responderLivre?(texto: string, etapa: string, produto: string | undefined): Promise<string | null>;
 }
 
 export type Efeito =
@@ -270,6 +273,23 @@ function tentarDeNovo(estado: EstadoMaisa, resposta: string, rotulo: string, sai
 
 // Resposta fora do que a etapa espera. Se for uma dúvida conhecida, responde e repete
 // a pergunta. Dúvida desconhecida vai para a equipe, em vez de a Maisa improvisar.
+// Antes de repetir a pergunta da etapa, responde ao que o cliente disse. Sem resposta
+// possível, vale a regra de sempre (FAQ, dúvida para a equipe ou "não entendi").
+async function ouvirCliente(estado: EstadoMaisa, texto: string, deps: Dependencias, pergunta = PERGUNTA_DA_ETAPA[estado.etapa]): Promise<Passo> {
+  const faq = buscarFaq(texto);
+  if (faq) return { estado, respostas: [faq, pergunta], efeitos: [], rotulo: "faq" };
+  const tentativas = estado.tentativas + 1;
+  if (deps.responderLivre && texto.trim() && tentativas <= MAX_TENTATIVAS) {
+    try {
+      const resposta = await deps.responderLivre(texto, NOME_ETAPA[estado.etapa], estado.produto);
+      if (resposta) return { estado: { ...estado, tentativas }, respostas: [resposta, pergunta], efeitos: [], rotulo: "resposta_livre" };
+    } catch (err) {
+      console.error("Resposta livre falhou:", err instanceof Error ? err.message : err);
+    }
+  }
+  return foraDaEtapa(estado, texto);
+}
+
 function foraDaEtapa(estado: EstadoMaisa, texto: string): Passo {
   const faq = buscarFaq(texto);
   if (faq) return { estado, respostas: [faq, PERGUNTA_DA_ETAPA[estado.etapa]], efeitos: [], rotulo: "faq" };
@@ -365,7 +385,7 @@ async function etapaInicio(estado: EstadoMaisa, texto: string, deps: Dependencia
 
 async function etapaConvenio(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const convenio = await deps.classificador.convenio(texto);
-  return convenio ? decidirConvenio(estado, convenio) : foraDaEtapa(estado, texto);
+  return convenio ? decidirConvenio(estado, convenio) : ouvirCliente(estado, texto, deps);
 }
 
 async function etapaCpf(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
@@ -378,7 +398,7 @@ async function etapaCpf(estado: EstadoMaisa, texto: string, deps: Dependencias):
   if ((await deps.classificador.simNao(texto)) === "nao") {
     return transferir(estado, "não quis informar o CPF", TEXTOS.semConsentimento, "recusou_cpf");
   }
-  return foraDaEtapa(estado, texto);
+  return ouvirCliente(estado, texto, deps);
 }
 
 // Nome com pelo menos duas palavras, só letras.
@@ -437,7 +457,8 @@ async function etapaNascimento(estado: EstadoMaisa, texto: string, deps: Depende
   if (data) return seguirParaExtrato(estado, data, deps);
   const sugerida = sugerirDataNascimento(texto, deps.agora());
   if (sugerida) return ir(estado, "nascimento", [TEXTOS.confirmaData(dataBr(sugerida))], "nascimento_sugerido", [], { dataSugerida: sugerida });
-  if (texto.includes("?")) return foraDaEtapa(estado, texto);
+  // Sem número nenhum, é conversa: responde antes de pedir a data de novo.
+  if (!/\d/.test(texto)) return ouvirCliente(estado, texto, deps);
   return tentarDeNovo(estado, TEXTOS.nascimentoInvalido, "nascimento_invalido");
 }
 
@@ -450,8 +471,12 @@ async function etapaExtrato(
 ): Promise<Passo> {
   if (!entrada.documento) {
     const texto = entrada.texto?.trim() ?? "";
-    if (texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
-    return tentarDeNovo(estado, TEXTOS.comoTirarExtrato(produtoExtrato(estado)), "sem_extrato", "sem_extrato");
+    const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    // Não sabe tirar o extrato: explica como. Outra conversa ("estou negativo"): responde antes.
+    if (!t || /(como|onde|nao (sei|consigo|acho|tenho)|tirar|baixar|sougov|meu inss|aplicativo)/.test(t)) {
+      return tentarDeNovo(estado, TEXTOS.comoTirarExtrato(produtoExtrato(estado)), "sem_extrato", "sem_extrato");
+    }
+    return ouvirCliente(estado, texto, deps);
   }
   let resultado: ResultadoExtrato;
   try {
@@ -599,7 +624,7 @@ async function consultarAgora(
 async function etapaConsentimento(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const resposta = await deps.classificador.simNao(texto);
   if (resposta === "nao") return transferir(estado, "não autorizou a consulta", TEXTOS.semConsentimento, "nao_autorizou");
-  if (resposta !== "sim") return foraDaEtapa(estado, texto);
+  if (resposta !== "sim") return ouvirCliente(estado, texto, deps);
   return pedirAutorizacao(estado, deps, "autorizou");
 }
 

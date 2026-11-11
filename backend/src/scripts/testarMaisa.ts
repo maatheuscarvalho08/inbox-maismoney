@@ -288,6 +288,12 @@ const CASOS: Caso[] = [
     etapaFinal: "oferta",
     respostaContem: "Recebi o seu documento, obrigada",
   },
+  {
+    nome: "Diz que está negativo na etapa do extrato: ela responde antes de pedir o extrato",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", "Eu estou negativo 1139 reais"],
+    etapaFinal: "extrato",
+    respostaContem: "com a margem negativa ainda pode dar para fazer portabilidade",
+  },
   { nome: "SIAPE pede o extrato de consignações", acoes: ["oi", "sou servidor federal", CPF_SALDO, "15/03/1958"], etapaFinal: "extrato", respostaContem: "extrato de consignações" },
   {
     nome: "SIAPE fecha o contrato: aceita, manda os dados, confirma e a proposta é digitada",
@@ -597,6 +603,8 @@ async function rodar(caso: Caso, verbose: boolean) {
       return bancoSimulado.simularConsignado({ convenio: _produto, cpf: cpfGravado!, dataNascimento, parcelaMaxima: 300 });
     },
     digitacaoAtiva: true,
+    // Stand-in do modelo: só responde à margem negativa, como o caso real.
+    responderLivre: async (t) => (/negativ/i.test(t) ? "Entendi, com a margem negativa ainda pode dar para fazer portabilidade." : null),
     extrairDados: async () => {
       const dados = proximosDados;
       proximosDados = {};
