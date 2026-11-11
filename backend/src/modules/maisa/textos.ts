@@ -162,6 +162,19 @@ export const TEXTOS = {
     return corpo + "\n\nSe fizer sentido para você, eu mesma cuido de tudo. É só me responder SIM que eu já começo. Ficou alguma dúvida? Pode me perguntar.";
   },
   semPressa: "Claro, sem pressa! Quando decidir, é só me responder por aqui.",
+  contornoConfianca:
+    "Entendo a preocupação, é importante ter segurança. Funciona assim: o contrato só é assinado por você, pelo link da Facta, e só se você concordar. O dinheiro cai depois que a portabilidade é aprovada.\n\n" +
+    "Se quiser conferir, o SAC da Facta Financeira é 0800 942 0462, que também atende pelo WhatsApp. E a Mais Money, que cuida da sua proposta, tem CNPJ 45.027.472/0001-76 e Instagram @maismoneyrj.",
+  contornoPoucoValor: (parcela: string, troco: string) =>
+    `Entendo! Vale lembrar: a sua parcela não aumenta. Você continua pagando os mesmos ${parcela} e ainda recebe até ${troco} na sua conta.\n\n` +
+    "E esse valor foi calculado com o saldo aproximado do seu contrato. Com o saldo real do banco, ele pode ser maior. Você só assina se concordar. Quer que eu siga? É só me responder SIM.",
+  contornoPrazo: (banco: string, restantes: number, atual: string, nova: string) =>
+    `Entendo, você não quer esticar o prazo. Então tem outra opção: trazer o seu contrato do ${banco} sem refinanciar. ` +
+    `Você continua com as ${restantes} parcelas que faltam, sem dinheiro extra, e a parcela cai de ${atual} para ${nova}.\n\nPrefere assim? É só me responder SIM.`,
+  perguntaOutraOferta:
+    "Que bom que você está comparando! Me conta quanto te ofereceram, em quantas parcelas e em qual banco. Assim a nossa equipe compara e vê se consegue fazer melhor.",
+  ofertaMelhorEquipe:
+    "Obrigada por me contar! Vou passar para um especialista da nossa equipe, que vai comparar com essa oferta e ver se consegue fazer melhor para você. Já já alguém continua aqui.",
   recusaValor:
     "Entendi, faz sentido você querer mais. Esse valor é uma estimativa feita com o saldo aproximado do seu contrato. Vou pedir para um especialista da nossa equipe olhar o saldo real e ver se consegue uma condição melhor para você. Já já alguém continua aqui.",
   recusaSimples:

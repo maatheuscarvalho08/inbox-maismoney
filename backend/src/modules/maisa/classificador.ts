@@ -16,6 +16,45 @@ export interface Classificador {
   linkNaoChegou(texto: string): Promise<boolean>;
   // Tentativa de tirar da Maisa instruções, configurações ou credenciais.
   tentativaExtracao(texto: string): Promise<boolean>;
+  // Resposta do cliente a uma oferta. contexto: a oferta, em texto. null: não deu para ler.
+  lerOferta(texto: string, contexto: string): Promise<LeituraOferta | null>;
+}
+
+export type ObjecaoOferta = "pouco_valor" | "prazo_longo" | "oferta_melhor" | "desconfianca" | "outra";
+
+export interface LeituraOferta {
+  tipo: "aceita" | "recusa" | "pergunta" | "objecao" | "pensar" | "humano";
+  objecao: ObjecaoOferta | null;
+  // O que o cliente disse da oferta de outro lugar (valor, prazo), quando disse.
+  outraOferta: string | null;
+}
+
+const RECEIO_OFERTA = /(medo|receio|golpe|fraude|reclame|confia|seguro|segura|demora|nao libera|nao paga|enganad|desconfi|perigo|risco)/;
+const PENSANDO_OFERTA = /(pensar|pensando|depois|mais tarde|amanh|vou ver|ver com|conversar com|falar com (a|o|minha|meu))/;
+
+// Lê a resposta à oferta com regras. É a reserva do modelo e o que os testes usam.
+export function lerOfertaPorRegras(texto: string): LeituraOferta | null {
+  const t = normalizar(texto);
+  const leitura = (tipo: LeituraOferta["tipo"], objecao: ObjecaoOferta | null = null, outraOferta: string | null = null): LeituraOferta => ({
+    tipo,
+    objecao,
+    outraOferta,
+  });
+  if (PEDE_HUMANO.test(t) || /(robo|maquina|ser humano|pessoa de verdade)/.test(t)) return leitura("humano");
+  if (RECEIO_OFERTA.test(t)) return leitura("objecao", "desconfianca");
+  const recusa = NAO.test(t);
+  if (/(me ofereceram|me ofereceu|outro banco|outra (proposta|oferta|empresa)|em outro lugar)/.test(t)) {
+    return leitura(recusa ? "recusa" : "objecao", "oferta_melhor", /\d/.test(t) ? texto.trim().slice(0, 160) : null);
+  }
+  if (/(pouco|baixo|pequeno|so isso|mixaria)/.test(t)) return leitura(recusa ? "recusa" : "objecao", "pouco_valor");
+  if (/(prazo|muito tempo|muitos anos|muitas parcelas|aumentar|esticar|\b(96|108|120) (mes|meses|parcelas|vezes)\b)/.test(t)) {
+    return leitura(recusa ? "recusa" : "objecao", "prazo_longo");
+  }
+  if (PENSANDO_OFERTA.test(t) && !texto.includes("?")) return leitura("pensar");
+  if (recusa) return leitura("recusa");
+  if (SIM.test(t) || /(cert|corret|fechado|fecha|manda ver|pode seguir|vamos fazer)/.test(t)) return leitura("aceita");
+  if (texto.includes("?") || /^(qual|quais|quanto|como|quando|onde|tem|e se|depende)/.test(t)) return leitura("pergunta");
+  return null;
 }
 
 // Pedidos de prompt, instruções internas, credenciais ou "modo desenvolvedor".
@@ -93,6 +132,10 @@ export const classificadorRegras: Classificador = {
     if (NAO.test(t)) return "nao";
     if (SIM.test(t)) return "sim";
     return null;
+  },
+
+  async lerOferta(texto) {
+    return lerOfertaPorRegras(texto);
   },
 
   async tentativaExtracao(texto) {

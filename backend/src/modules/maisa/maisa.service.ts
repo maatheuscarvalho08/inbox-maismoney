@@ -17,6 +17,7 @@ import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } fr
 import { TEXTOS } from "./textos.js";
 import { guardarAnalise } from "../extratos/guardadas.js";
 import { buscarAlternativa } from "./alternativas.js";
+import { comModelo } from "./intencao.js";
 import type { ExtratoLido } from "../extratos/leitor.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
@@ -271,7 +272,7 @@ async function processar(conversaId: string, gatilho: Gatilho) {
   const semBanco = () => Promise.reject(new Error("Nenhum banco configurado para a Maisa"));
   const estadoAntes = (conversa.maisaEstado as EstadoMaisa | null) ?? null;
   const passo: Passo = await avancar(estadoAntes, entrada, {
-    classificador: classificadorRegras,
+    classificador: comModelo(classificadorRegras),
     agora: () => new Date(),
     solicitarAutorizacao: async (nome) =>
       banco

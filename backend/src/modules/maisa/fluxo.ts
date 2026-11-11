@@ -1,5 +1,5 @@
 import type { Convenio } from "@prisma/client";
-import type { Classificador, ConvenioEntendido } from "./classificador.js";
+import type { Classificador, ConvenioEntendido, LeituraOferta } from "./classificador.js";
 import type { DigitacaoPort, ReducaoParcela, ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta, ResultadoExtrato } from "./bancos.js";
 import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
@@ -68,6 +68,8 @@ export interface EstadoMaisa {
     matricula?: string | null;
     contaSalario?: { bancoConta: string; agencia: string; conta: string } | null;
   };
+  // Quantas objeções ela já tentou contornar nesta oferta.
+  contornos?: number;
   // O cliente já tinha aceitado (conversa retomada): ela não oferta de novo, vai direto ao contrato.
   aceitouOferta?: boolean;
   // Port, port + refin ou refin que a Facta abriu, ofertado ao cliente.
@@ -615,9 +617,25 @@ async function etapaAguardando(estado: EstadoMaisa, texto: string, deps: Depende
 
 // Aceitou a port ou o refin: a equipe confirma o saldo na CIP e digita. Recusou: encerra.
 async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
-  const resposta = await deps.classificador.simNao(texto);
+  // O modelo (com reserva nas regras) diz se aceitou, recusou, perguntou ou levantou objeção.
+  const leitura = await deps.classificador.lerOferta(texto, contextoOfertaPort(estado));
+  const resposta = leitura
+    ? leitura.tipo === "aceita"
+      ? "sim"
+      : leitura.tipo === "recusa" && !leitura.objecao
+        ? "nao"
+        : null
+    : await deps.classificador.simNao(texto);
   const motivo = estado.alternativa?.motivo ?? "portabilidade";
   const dig = estado.alternativa?.digitacao;
+  if (leitura?.tipo === "humano") {
+    return transferir(estado, "quer falar com uma pessoa", TEXTOS.transferindo, "humano", [], "objecao");
+  }
+  if (leitura?.tipo === "pensar") return { estado, respostas: [TEXTOS.semPressa], efeitos: [], rotulo: "pensando" };
+  // Objeção, ou recusa com motivo: ela tenta contornar com os argumentos aprovados.
+  if (leitura && (leitura.tipo === "objecao" || (leitura.tipo === "recusa" && leitura.objecao))) {
+    return contornar(estado, texto, leitura);
+  }
   // Com a simulação em mãos ela conduz: número do contrato, dados e, se a API permitir, a
   // digitação. Só passa para a equipe se travar no caminho.
   if (resposta === "sim" && dig && deps.digitacaoAtiva) {
@@ -628,6 +646,59 @@ async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Depende
   if (resposta === "sim") return transferir(estado, `aceitou: ${motivo}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
   // NÃO, receio ou dúvida: a Facta já aprovou, é cliente para a equipe convencer.
   return objecao(estado, texto, resposta === "nao" ? "recusou a portabilidade" : "objeção na oferta de portabilidade", resposta === "nao");
+}
+
+// A oferta em texto, para o modelo entender a resposta do cliente.
+function contextoOfertaPort(estado: EstadoMaisa): string {
+  const a = estado.alternativa;
+  const d = a?.digitacao;
+  if (!a) return "oferta de portabilidade";
+  const linhas = [`Operação: ${a.operacao === "port_refin" ? "portabilidade com refinanciamento (libera troco)" : "portabilidade (só baixa a parcela)"}.`];
+  if (d) linhas.push(`Contrato: ${d.banco}, parcela ${r$(d.parcela)}, faltam ${d.prazoRestante} parcelas.`);
+  if (d?.refin) linhas.push(`Na Facta: parcela ${r$(d.refin.parcela)} em ${d.refin.prazo} parcelas.`);
+  if (a.trocoCentavos) linhas.push(`Troco: até ${formatarReais(a.trocoCentavos)}.`);
+  for (const red of a.reducoes ?? []) linhas.push(`${red.banco}: parcela de ${r$(red.atual)} para ${r$(red.nova)}.`);
+  return linhas.join("\n");
+}
+
+const MAX_CONTORNOS = 2;
+
+// Contorna a objeção com os argumentos aprovados pelo dono e os números da simulação.
+// Depois de duas tentativas, ou sem argumento para aquele caso, a equipe assume.
+function contornar(estado: EstadoMaisa, texto: string, l: LeituraOferta): Passo {
+  const a = estado.alternativa;
+  const dig = a?.digitacao;
+  const vezes = estado.contornos ?? 0;
+  const motivo = `objeção (${l.objecao ?? "sem motivo"}): ${texto.slice(0, 120)}${l.outraOferta ? ` | outra oferta: ${l.outraOferta}` : ""}`;
+  if (vezes >= MAX_CONTORNOS) {
+    return transferir(estado, motivo, l.objecao === "desconfianca" ? TEXTOS.objecao : TEXTOS.recusaValor, "objecao", [], "objecao");
+  }
+  const fica = (respostas: string[], extra: Partial<EstadoMaisa> = {}): Passo => ({
+    estado: { ...estado, ...extra, contornos: vezes + 1 },
+    respostas,
+    efeitos: [],
+    rotulo: `contorno_${l.objecao}`,
+  });
+  switch (l.objecao) {
+    case "desconfianca":
+      return fica([TEXTOS.contornoConfianca, PERGUNTA_DA_ETAPA.oferta_port]);
+    case "pouco_valor":
+      if (a?.trocoCentavos && dig?.refin) return fica([TEXTOS.contornoPoucoValor(r$(dig.refin.parcela), formatarReais(a.trocoCentavos))]);
+      break;
+    case "prazo_longo":
+      // Não quer esticar: oferece a port sem refin, que mantém as parcelas que faltam.
+      if (a && dig?.refin && dig.port.parcela < dig.parcela) {
+        const reducoes = [{ banco: dig.banco, atual: dig.parcela, nova: dig.port.parcela, restantes: dig.prazoRestante }];
+        return fica([TEXTOS.contornoPrazo(dig.banco, dig.prazoRestante, r$(dig.parcela), r$(dig.port.parcela))], {
+          alternativa: { ...a, operacao: "portabilidade", trocoCentavos: null, digitacao: { ...dig, refin: undefined }, reducoes },
+        });
+      }
+      break;
+    case "oferta_melhor":
+      if (l.outraOferta) return transferir(estado, motivo, TEXTOS.ofertaMelhorEquipe, "objecao", [], "objecao");
+      return fica([TEXTOS.perguntaOutraOferta]);
+  }
+  return transferir(estado, motivo, l.tipo === "recusa" ? TEXTOS.recusaValor : TEXTOS.duvidaParaEquipe, "objecao", [], "objecao");
 }
 
 // Número do contrato no banco de origem: a Facta precisa dele para comprar a dívida.

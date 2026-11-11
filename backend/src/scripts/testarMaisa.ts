@@ -426,11 +426,41 @@ const CASOS: Caso[] = [
     saida: "objecao",
   },
   {
-    nome: "Receio na oferta de port vira lead para a equipe, sem 'não entendi'",
+    nome: "Receio na oferta de port: contorna com o SAC e o CNPJ e continua",
     acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "Mas no Reclame Aqui a Facta demora liberar e muitas vezes não libera. Tenho receio."],
+    etapaFinal: "oferta_port",
+    respostaContem: "0800 942 0462",
+  },
+  {
+    nome: "Pouco troco: lembra que a parcela não aumenta e que o saldo real pode render mais",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "Não vou aceitar, muito pouco troco"],
+    etapaFinal: "oferta_port",
+    respostaContem: "a sua parcela não aumenta",
+  },
+  {
+    nome: "Pouco troco e depois oferta melhor com valores: equipe compara",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "muito pouco troco", "Já me ofereceram mais pra ficar em 96"],
     etapaFinal: "finalizada",
     saida: "objecao",
-    respostaContem: "Entendo a sua preocupação",
+    respostaContem: "comparar com essa oferta",
+    notaContem: "outra oferta",
+  },
+  {
+    nome: "Não quer esticar o prazo: oferece a port sem refin mantendo as parcelas",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "não quero aumentar o prazo"],
+    etapaFinal: "oferta_port",
+    respostaContem: "sem refinanciar",
+  },
+  {
+    nome: "Terceira objeção: depois de dois contornos a equipe assume",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "tenho medo de golpe", "não confio", "acho golpe"],
+    etapaFinal: "finalizada",
+    saida: "objecao",
+  },
+  {
+    nome: "Pergunta se é robô na oferta: passa para uma pessoa na hora",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "estou falando com um robô?"],
+    etapaFinal: "finalizada",
   },
   {
     nome: "Pergunta se tem troco na port + refin: responde o valor e continua na oferta",
@@ -560,7 +590,7 @@ async function rodar(caso: Caso, verbose: boolean) {
           trocoCentavos: 90000,
           motivo: "teste",
           simulada: true,
-          digitacao: { banco: "104 - CEF", bancoCodigo: "104", parcela: 400, prazoRestante: 80, prazoOriginal: 120, saldoDevedor: 19000, port: t, refin: t },
+          digitacao: { banco: "104 - CEF", bancoCodigo: "104", parcela: 400, prazoRestante: 80, prazoOriginal: 120, saldoDevedor: 19000, port: { ...t, parcela: 390 }, refin: t },
         };
       }
       if (leituraExtrato === "alternativa_sem_simular") return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: "teste", simulada: false };
