@@ -18,6 +18,7 @@ import { TEXTOS } from "./textos.js";
 import { guardarAnalise } from "../extratos/guardadas.js";
 import { buscarAlternativa } from "./alternativas.js";
 import { comModelo, responderLivre } from "./intencao.js";
+import { TEXTO_FORA_DO_HORARIO, dentroDoHorario, proximaAbertura } from "./horario.js";
 import type { ExtratoLido } from "../extratos/leitor.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
@@ -361,7 +362,12 @@ async function processar(conversaId: string, gatilho: Gatilho) {
     },
   });
 
-  for (const texto of passo.respostas) await enviarResposta(conversa, texto);
+  // Passou para a equipe fora do horário de atendimento: avisa quando alguém responde.
+  const respostas = [...passo.respostas];
+  if (passo.efeitos.some((e) => e.tipo === "transferir") && !dentroDoHorario()) {
+    respostas.push(TEXTO_FORA_DO_HORARIO(proximaAbertura()));
+  }
+  for (const texto of respostas) await enviarResposta(conversa, texto);
   if (transferencia) await aplicarEfeito(conversa, transferencia);
 
   // 24 horas sem responder a oferta: entra no Carrinho e avisa a equipe na hora.
