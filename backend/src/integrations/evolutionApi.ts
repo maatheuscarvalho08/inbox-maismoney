@@ -32,12 +32,19 @@ export async function enviarTextoEvolution(
   numero: string,
   texto: string,
   citado?: CitacaoEvolution,
+  // Mostra "digitando..." por esse tempo antes de mandar. A chamada só volta depois do envio.
+  digitandoMs = 0,
 ) {
-  const { data } = await client.post<RespostaEnvioEvolution>(`/message/sendText/${instanceName}`, {
-    number: numero,
-    text: texto,
-    quoted: montarQuoted(numero, citado),
-  });
+  const { data } = await client.post<RespostaEnvioEvolution>(
+    `/message/sendText/${instanceName}`,
+    {
+      number: numero,
+      text: texto,
+      quoted: montarQuoted(numero, citado),
+      ...(digitandoMs > 0 ? { delay: digitandoMs } : {}),
+    },
+    { timeout: 15_000 + digitandoMs },
+  );
   return data.key?.id;
 }
 

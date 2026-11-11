@@ -170,12 +170,19 @@ async function digitarProposta(
   return resultado;
 }
 
+// Tempo de "digitando..." antes de cada mensagem, como uma pessoa: cresce com o
+// tamanho do texto, com uma variação para não ficar sempre igual. Entre 3 e 12 segundos.
+export function tempoDigitando(texto: string, sorteio = Math.random()) {
+  const base = 2500 + texto.length * 30;
+  return Math.round(Math.min(12_000, Math.max(3000, base * (0.85 + sorteio * 0.3))));
+}
+
 async function enviarResposta(conversa: ConversaMaisa, texto: string) {
   const mensagem = await criarMensagem({ conversaId: conversa.id, remetenteTipo: "maisa", conteudoTexto: texto });
   if (!mensagem) return;
   // No copiloto a mensagem fica só como sugestão. Conversa de teste nunca vai para o WhatsApp.
   if (env.MAISA_MODO === "automatico" && !ehTeste(conversa)) {
-    await entregarMensagem(mensagem, conversa, null);
+    await entregarMensagem(mensagem, conversa, null, { digitandoMs: tempoDigitando(texto) });
   }
   emitNovaMensagem(mensagem);
 }

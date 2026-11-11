@@ -23,7 +23,8 @@ export async function entregarMensagem(
   mensagem: Mensagem,
   conversa: ConversaComEnvio,
   original: Mensagem | null,
-  opts: { filename?: string; voiceNote?: boolean } = {},
+  // digitandoMs: espera antes de mandar. No Evolution o cliente vê "digitando..." nesse tempo.
+  opts: { filename?: string; voiceNote?: boolean; digitandoMs?: number } = {},
 ) {
   const { instancia, contato } = conversa;
   const texto = mensagem.conteudoTexto ?? undefined;
@@ -61,9 +62,11 @@ export async function entregarMensagem(
       }
     } else if (texto) {
       if (instancia.tipoConexao === "evolution" && instancia.evolutionInstanceId) {
-        idEnvio = await enviarTextoEvolution(instancia.evolutionInstanceId, contato.numeroWhatsapp, texto, citacaoEvolution);
+        idEnvio = await enviarTextoEvolution(instancia.evolutionInstanceId, contato.numeroWhatsapp, texto, citacaoEvolution, opts.digitandoMs);
         entregue = true;
       } else if (instancia.tipoConexao === "meta_cloud" && instancia.metaPhoneNumberId) {
+        // A Meta não tem "digitando" com tempo: só espera.
+        if (opts.digitandoMs) await new Promise((r) => setTimeout(r, opts.digitandoMs));
         idEnvio = await enviarTextoMeta(instancia.metaPhoneNumberId, contato.numeroWhatsapp, texto, citacaoMetaId);
         entregue = true;
       }
