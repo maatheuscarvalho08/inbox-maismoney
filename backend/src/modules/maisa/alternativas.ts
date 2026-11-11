@@ -46,24 +46,24 @@ export async function buscarAlternativa(p: {
       }
     }
     if (melhor?.trocoCentavos) {
-      return { tipo: "alternativa", operacao: "port_refin", trocoCentavos: melhor.trocoCentavos, motivo: `port + refin: ${melhor.motivo}` };
+      return { tipo: "alternativa", operacao: "port_refin", trocoCentavos: melhor.trocoCentavos, motivo: `port + refin: ${melhor.motivo}`, simulada: true };
     }
     // Abriu tabela de portabilidade, mesmo sem troco: cliente em potencial, a equipe
     // simula e mostra a ele. Se a simulação falhou, a equipe confere com o saldo real.
     if (algumaPort) {
-      return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `port sem refin: ${portas.join("; ")}` };
+      return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `port sem refin: ${portas.join("; ")}`, simulada: true };
     }
     if (falhou) {
-      return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: "simulação da port falhou, conferir" };
+      return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: "simulação da port falhou, conferir", simulada: false };
     }
   } else if (portaveis.length) {
     // INSS: a port ainda não é simulada aqui. A equipe simula com o contrato em mãos.
-    return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `${portaveis.length} contrato(s) para portar` };
+    return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `${portaveis.length} contrato(s) para portar, simular na Facta`, simulada: false };
   }
 
   const refin = possivel("refin");
   if (refin.length) {
-    return { tipo: "alternativa", operacao: "refin", trocoCentavos: null, motivo: `${refin.length} contrato(s) da Facta para refinanciar` };
+    return { tipo: "alternativa", operacao: "refin", trocoCentavos: null, motivo: `${refin.length} contrato(s) da Facta para refinanciar, simular`, simulada: false };
   }
   return null;
 }

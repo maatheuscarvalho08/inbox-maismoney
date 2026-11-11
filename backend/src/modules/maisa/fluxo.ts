@@ -350,6 +350,11 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
   if (resultado.tipo === "alternativa") {
     const troco = resultado.trocoCentavos ? formatarReais(resultado.trocoCentavos) : null;
     const { operacao, trocoCentavos, motivo } = resultado;
+    // Sem simulação na Facta (INSS, refin ou simulação que falhou): pode passar, mas
+    // ela não oferta o que não simulou. A equipe simula e mostra ao cliente.
+    if (!resultado.simulada) {
+      return transferir(estado, `sem margem para novo; ${motivo}`, TEXTOS.semMargemExtrato, "alternativa", [], "alternativa");
+    }
     return ir(estado, "oferta_port", [TEXTOS.ofertaPort(operacao, troco)], "alternativa", [], { alternativa: { operacao, trocoCentavos, motivo } });
   }
   if (resultado.tipo === "servidor_outro") {

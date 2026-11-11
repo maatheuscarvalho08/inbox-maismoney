@@ -31,7 +31,8 @@ export type ResultadoExtrato =
   | { tipo: "extrato_invalido"; motivo: string }
   | { tipo: "servidor_outro"; motivo: string }
   // Sem margem para novo, mas dá para portar ou refinanciar: a equipe fecha.
-  | { tipo: "alternativa"; operacao: OperacaoAlternativa; trocoCentavos: number | null; motivo: string };
+  // simulada: a Facta abriu tabela, então ela oferta. Sem simulação, vai para a equipe.
+  | { tipo: "alternativa"; operacao: OperacaoAlternativa; trocoCentavos: number | null; motivo: string; simulada: boolean };
 
 export type OperacaoAlternativa = "port_refin" | "portabilidade" | "refin";
 
