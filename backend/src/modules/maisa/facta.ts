@@ -267,8 +267,10 @@ export async function simularPortRefinSiape(p: {
       prazo_original: String(p.prazoOriginal),
     },
   });
-  const mensagem = String(j.mensagem ?? "");
-  if (j.erro) return { portabilidade: [], refin: [], mensagem };
+  // A Facta marca erro:true quando só uma das partes não tem tabela. Nesse caso a parte
+  // sem tabela vem como texto ("Não foram encontradas tabelas..."), e a outra vem normal.
+  const texto = (v: unknown) => (typeof v === "string" ? v : "");
+  const mensagem = String(j.mensagem ?? "") || texto(j.tabelas_refin_portabilidade) || texto(j.tabelas_portabilidade);
   return { portabilidade: lerTabelas(j.tabelas_portabilidade), refin: lerTabelas(j.tabelas_refin_portabilidade), mensagem };
 }
 
