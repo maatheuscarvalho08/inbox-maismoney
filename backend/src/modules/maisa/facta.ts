@@ -539,7 +539,7 @@ const BANCO_POR_NOME: [RegExp, string][] = [
   [/crefisa/, "69"],
   [/\bbrb\b/, "70"],
   [/banrisul/, "41"],
-  [/\binter\b/, "77"],
+  [/\binter\b|interme/, "77"],
   [/original/, "212"],
   [/\bbv\b|votorantim/, "413"],
 ];

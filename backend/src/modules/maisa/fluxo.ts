@@ -468,6 +468,16 @@ async function etapaExtrato(
     }
     // Já tinha dito SIM: avisa que vai digitar e pede o que falta, começando pelo contrato.
     if (estado.aceitouOferta && digitacao && deps.digitacaoAtiva) {
+      const ganho = TEXTOS.ganhoPort(troco, digitacao.banco, r$(digitacao.parcela), digitacao.refin ? null : r$(digitacao.port.parcela));
+      // Número do contrato já no extrato: retoma direto nos dados do cliente.
+      if (digitacao.numeroContrato) {
+        const comAlternativa: EstadoMaisa = {
+          ...estado,
+          aceitouOferta: undefined,
+          alternativa: { operacao, trocoCentavos, motivo, digitacao, ...(reducoes?.length ? { reducoes } : {}), ...lidos },
+        };
+        return iniciarColetaPort(comAlternativa, digitacao.numeroContrato, "retoma_contrato", [TEXTOS.retomaSemNumero(ganho)]);
+      }
       return ir(
         estado,
         "numero_contrato",
@@ -611,6 +621,8 @@ async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Depende
   // Com a simulação em mãos ela conduz: número do contrato, dados e, se a API permitir, a
   // digitação. Só passa para a equipe se travar no caminho.
   if (resposta === "sim" && dig && deps.digitacaoAtiva) {
+    // O extrato já trouxe o número do contrato: vai direto para os dados.
+    if (dig.numeroContrato) return iniciarColetaPort(estado, dig.numeroContrato, "aceitou_port", [TEXTOS.inicioContrato]);
     return ir(estado, "numero_contrato", [TEXTOS.pedeNumeroContrato(dig.banco, formatarReais(Math.round(dig.parcela * 100)))], "aceitou_port");
   }
   if (resposta === "sim") return transferir(estado, `aceitou: ${motivo}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
@@ -634,13 +646,18 @@ async function etapaNumeroContrato(estado: EstadoMaisa, texto: string): Promise<
   if (!numero) {
     return tentarDeNovo(estado, TEXTOS.numeroContratoInvalido, "numero_contrato_invalido", "alternativa");
   }
-  // Renda e matrícula já lidas do extrato: não pergunta de novo.
+  return iniciarColetaPort(estado, numero, "numero_contrato", [TEXTOS.inicioContrato]);
+}
+
+// Começa o cadastro da port com o número do contrato em mãos. Renda, matrícula e conta
+// salário já lidas do extrato entram preenchidas: ela não pergunta de novo.
+function iniciarColetaPort(estado: EstadoMaisa, numero: string, rotulo: string, antes: string[]): Passo {
   const dados: DadosContrato = {};
   if (estado.alternativa?.renda) dados.renda = estado.alternativa.renda;
   if (estado.alternativa?.matricula) dados.matricula = estado.alternativa.matricula;
   if (estado.produto === "siape" && estado.alternativa?.contaSalario) Object.assign(dados, estado.alternativa.contaSalario);
   const pergunta = proximaPergunta(dados, produtoExtrato(estado))!;
-  return ir(estado, "coleta", [TEXTOS.inicioContrato, pergunta], "numero_contrato", [], {
+  return ir(estado, "coleta", [...antes, pergunta], rotulo, [], {
     alternativa: { ...estado.alternativa!, numeroContrato: numero },
     contrato: { dados, pergunta },
   });

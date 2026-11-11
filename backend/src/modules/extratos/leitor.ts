@@ -141,6 +141,8 @@ Regras:
 - margens_informadas: as margens disponíveis que o próprio documento mostra, para empréstimo, cartão consignado (RMC) e cartão benefício (RCC).
 - contratos: todos os contratos listados, inclusive excluídos ou suspensos, com a situação correta. tipo "rmc" para cartão de crédito consignado, "rcc" para cartão consignado de benefício, "emprestimo" para empréstimo pessoal consignado.
 - parcelas_restantes: quantas parcelas faltam, quando o documento mostra. No contracheque do SIAPE é o número da coluna PRAZO ao lado de cada desconto de empréstimo.
+- Extrato de Consignações do SouGov (SIAPE): cada linha de contrato tem Número do Contrato, Rubrica, Sequência, Prioridade, Data/Hora, Parcela, Valor da Parcela, Início e Fim. Copie o Número do Contrato em numero. O banco vem no fim do texto da Rubrica (ex.: "EMPREST BCO PRIVADOS - INTERME" vira banco_nome "INTERME"); o código numérico da rubrica não é o código do banco, deixe banco_codigo null. A coluna Parcela vem como "atual/total" (ex.: 13/96): total_parcelas 96, parcelas_pagas 12 (a atual ainda não foi paga) e parcelas_restantes 85.
+- Margens no Extrato de Consignações do SouGov: margens_informadas.emprestimo é a margem líquida disponível para empréstimo (Líquida Facultativa), rmc é a Líquida Cartão e rcc é a Líquida Cartão Benefício.
 - especie_codigo: o número da espécie do benefício do INSS (ex.: 41, 42, 32, 87, 88). null no SIAPE.
 - bloqueado_emprestimo: true se o documento diz que o benefício está bloqueado para empréstimo.
 - legivel: false se o documento não for um extrato de consignado ou se estiver ilegível demais para confiar. Explique em problemas.

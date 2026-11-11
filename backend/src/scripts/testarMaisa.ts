@@ -56,7 +56,7 @@ function cpfTerminadoEm(ultimo: number) {
 // banco, a checagem automática ou o relógio andar.
 // extrato: o cliente manda um PDF; o valor diz o que a leitura encontra.
 // dados: o cliente responde e a leitura encontra esses campos. digitacao: o que a Facta devolve.
-type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "invalido" | "estadual" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
+type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "alternativa_com_numero" | "invalido" | "estadual" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
 
 interface Caso {
   nome: string;
@@ -387,6 +387,12 @@ const CASOS: Caso[] = [
     respostaContem: "número do contrato do 104 - CEF",
   },
   {
+    nome: "Extrato com o número do contrato: no SIM vai direto para os dados",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_com_numero" }, "sim"],
+    etapaFinal: "coleta",
+    respostaContem: "Eu mesma faço o seu contrato agora",
+  },
+  {
     nome: "Manda contrato de outro banco: Maisa pede o do banco certo",
     acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "sim", "Santander Ole 877096220."],
     etapaFinal: "numero_contrato",
@@ -500,7 +506,7 @@ async function rodar(caso: Caso, verbose: boolean) {
   bancoSimulado.reiniciar();
   let cpfGravado: string | null = null;
   let relogio = new Date("2026-11-09T12:00:00Z");
-  let leituraExtrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "invalido" | "estadual" = "com_margem";
+  let leituraExtrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "alternativa_com_numero" | "invalido" | "estadual" = "com_margem";
   let proximosDados: DadosContrato = {};
   let digitacao: "ok" | "erro" = "ok";
   const deps: Dependencias = {
@@ -516,6 +522,17 @@ async function rodar(caso: Caso, verbose: boolean) {
       if (leituraExtrato === "sem_margem") return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
       if (leituraExtrato === "sem_margem_duvida") return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem", revisar: true };
       if (leituraExtrato === "alternativa") return { tipo: "alternativa", operacao: "port_refin", trocoCentavos: 125000, motivo: "teste", simulada: true };
+      if (leituraExtrato === "alternativa_com_numero") {
+        const t = { codigoTabela: 1, prazo: 96, contrato: 20000, parcela: 400, coeficiente: 0.02 };
+        return {
+          tipo: "alternativa",
+          operacao: "port_refin",
+          trocoCentavos: 90000,
+          motivo: "teste",
+          simulada: true,
+          digitacao: { banco: "INTERME", bancoCodigo: "77", numeroContrato: "9876543", parcela: 400, prazoRestante: 80, prazoOriginal: 96, saldoDevedor: 19000, port: t, refin: t },
+        };
+      }
       if (leituraExtrato === "alternativa_digitavel") {
         const t = { codigoTabela: 1, prazo: 96, contrato: 20000, parcela: 400, coeficiente: 0.02 };
         return {

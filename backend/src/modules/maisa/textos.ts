@@ -170,6 +170,8 @@ export const TEXTOS = {
   retomaDigitacao: (banco: string, parcela: string, ganho: string) =>
     `Oi! Retomando o seu pedido. ${ganho}\n\nEu mesma vou digitar o seu contrato na Facta. Preciso só de algumas informações, uma de cada vez.\n\n` +
     `Primeiro, o número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
+  retomaSemNumero: (ganho: string) =>
+    `Oi! Retomando o seu pedido. ${ganho}\n\nEu mesma vou digitar o seu contrato na Facta. Preciso só de alguns dados seus, um de cada vez.`,
   // O que a port rende para o cliente, em uma frase. Nunca valor garantido.
   ganhoPort: (troco: string | null, banco: string, atual: string, nova: string | null) =>
     troco

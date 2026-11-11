@@ -72,6 +72,8 @@ export interface TabelaDigitacao {
 export interface DigitacaoPort {
   banco: string;
   bancoCodigo: string | null;
+  // Número do contrato no banco de origem, quando o extrato mostra: a Maisa não pergunta.
+  numeroContrato?: string | null;
   parcela: number;
   prazoRestante: number;
   prazoOriginal: number;
@@ -217,6 +219,7 @@ export const bancoFacta: BancoClt = {
             digitacao: {
               banco: contrato.banco,
               bancoCodigo: facta.codigoBancoPorNome(contrato.bancoCodigo ?? contrato.banco),
+              numeroContrato: contrato.numero,
               parcela: contrato.parcela!,
               prazoRestante: restantes,
               prazoOriginal: original,
