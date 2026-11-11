@@ -103,6 +103,17 @@ export const TEXTOS = {
   servidorNaoFederal:
     "Pelo seu contracheque, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",
+  semSaldoFim:
+    "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
+  semMargemFim:
+    "Olhei o seu documento com atenção. No momento não sobra margem para um empréstimo novo, e também não dá para fazer portabilidade ou refinanciamento dos seus contratos. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
+  alternativa: (operacao: "port_refin" | "portabilidade" | "refin", troco: string | null) =>
+    (operacao === "port_refin" && troco
+      ? `Para empréstimo novo não sobra margem, mas encontrei uma saída: trazer um dos seus contratos para a Facta, com taxa menor, e ainda liberar um troco de até ${troco}. É uma estimativa e depende do saldo que o seu banco informar.`
+      : operacao === "refin"
+        ? "Para empréstimo novo não sobra margem, mas dá para refinanciar um contrato que você já tem e liberar um valor novo."
+        : "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que pode baixar a sua parcela.") +
+    "\n\nVou te passar para um especialista da nossa equipe, que fecha isso com você.",
   semSaldo:
     "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Vou te passar para um atendente ver outras opções com você.",
   erroBanco: "Não consegui consultar o banco agora. Vou te passar para um atendente continuar daqui.",

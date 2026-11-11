@@ -82,7 +82,9 @@ export async function parcelaPeloExtrato(
   }
   const novo = analise.possibilidades.find((p) => p.tipo === "novo");
   if (!novo || novo.tipo !== "novo" || !novo.possivel) {
-    return { resultado: { tipo: "sem_saldo", banco: "extrato", motivo: novo?.motivo ?? "sem margem para empréstimo novo" }, registro };
+    // Leitura com dúvida: a margem zerada pode ser erro de leitura. A equipe confere.
+    const motivo = novo?.motivo ?? "sem margem para empréstimo novo";
+    return { resultado: { tipo: "sem_saldo", banco: "extrato", motivo, revisar: !analise.confiavel }, registro };
   }
   return {
     resultado: { tipo: "ok", parcelaMaxima: novo.parcelaMaxima, renda: extrato.base_calculo, especie: extrato.especie_codigo },

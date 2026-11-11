@@ -91,6 +91,8 @@ export type Efeito =
   | { tipo: "cpf"; cpf: string }
   | { tipo: "simulacao"; convenio: Produto; resultado: ResultadoBanco }
   | { tipo: "transferir"; motivo: string }
+  // Não há o que fazer: a conversa fecha sem passar para a equipe.
+  | { tipo: "encerrar"; motivo: string }
   | { tipo: "proposta"; codigoAf: string };
 
 export interface Passo {
@@ -159,6 +161,16 @@ function transferir(
   };
 }
 
+// Fim sem atendente: nada a oferecer agora. Se o cliente escrever de novo, começa outra conversa.
+function encerrar(estado: EstadoMaisa, motivo: string, resposta: string, rotulo: string, efeitos: Efeito[] = [], saida = rotulo): Passo {
+  return {
+    estado: { ...estado, etapa: "finalizada", tentativas: 0, motivoTransferencia: motivo, paradaEm: estado.etapa, saida, contrato: undefined },
+    respostas: [resposta],
+    efeitos: [...efeitos, { tipo: "encerrar", motivo }],
+    rotulo,
+  };
+}
+
 function tentarDeNovo(estado: EstadoMaisa, resposta: string, rotulo: string, saida = "nao_entendeu"): Passo {
   const tentativas = estado.tentativas + 1;
   if (tentativas > MAX_TENTATIVAS) {
@@ -215,8 +227,13 @@ function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora:
   const efeito: Efeito = { tipo: "simulacao", convenio: estado.produto ?? "clt", resultado };
   if (resultado.tipo === "sem_saldo") {
     // "extrato" = a margem já acabou no extrato, nem chegou a consultar o banco.
-    const texto = resultado.banco === "extrato" ? TEXTOS.semMargemExtrato : TEXTOS.semSaldo;
-    return transferir(estado, `sem saldo: ${resultado.motivo}`, texto, "sem_saldo", [efeito]);
+    const doExtrato = resultado.banco === "extrato";
+    // Leitura com dúvida: pode ser erro de leitura, a equipe confere.
+    if (resultado.revisar) {
+      return transferir(estado, `sem margem, leitura com dúvida: ${resultado.motivo}`, TEXTOS.semMargemExtrato, "sem_saldo", [efeito], "revisar_extrato");
+    }
+    // Sem margem e sem port ou refin: não há o que fazer. Encerra sem atendente.
+    return encerrar(estado, `sem saldo: ${resultado.motivo}`, doExtrato ? TEXTOS.semMargemFim : TEXTOS.semSaldoFim, "sem_saldo", [efeito]);
   }
   if (resultado.tipo === "erro") {
     return transferir(estado, `erro no banco: ${resultado.motivo}`, TEXTOS.erroBanco, "erro_banco", [efeito]);
@@ -323,6 +340,10 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
     resultado = await deps.simularPorExtrato(produtoExtrato(estado), estado.dataNascimento ?? "");
   } catch (err) {
     resultado = { tipo: "erro", banco: "desconhecido", motivo: err instanceof Error ? err.message : "falha na leitura do extrato" };
+  }
+  if (resultado.tipo === "alternativa") {
+    const troco = resultado.trocoCentavos ? formatarReais(resultado.trocoCentavos) : null;
+    return transferir(estado, `sem margem para novo; ${resultado.motivo}`, TEXTOS.alternativa(resultado.operacao, troco), "alternativa", [], "alternativa");
   }
   if (resultado.tipo === "servidor_outro") {
     return transferir(estado, resultado.motivo, TEXTOS.servidorNaoFederal, "servidor_outro", [], "servidor_outro");

@@ -2,6 +2,8 @@
 // traduz a resposta da API dele para cá.
 import * as facta from "./facta.js";
 import { REGRAS, avaliarVinculo } from "./regras.js";
+import type { ContratoAnalisado } from "../extratos/analise.js";
+import { REGRAS_PORTABILIDADE } from "../extratos/regrasMargem.js";
 
 export type ResultadoBanco =
   | {
@@ -16,7 +18,8 @@ export type ResultadoBanco =
       renda?: number | null;
       especie?: number | null;
     }
-  | { tipo: "sem_saldo"; banco: string; motivo: string }
+  // revisar: a leitura do extrato ficou com dúvida, então a equipe confere antes de desistir.
+  | { tipo: "sem_saldo"; banco: string; motivo: string; revisar?: boolean }
   | { tipo: "erro"; banco: string; motivo: string };
 
 export type ResultadoAutorizacao = facta.ResultadoAutorizacao;
@@ -26,7 +29,18 @@ export type ResultadoAutorizacao = facta.ResultadoAutorizacao;
 export type ResultadoExtrato =
   | ResultadoBanco
   | { tipo: "extrato_invalido"; motivo: string }
-  | { tipo: "servidor_outro"; motivo: string };
+  | { tipo: "servidor_outro"; motivo: string }
+  // Sem margem para novo, mas dá para portar ou refinanciar: a equipe fecha.
+  | { tipo: "alternativa"; operacao: OperacaoAlternativa; trocoCentavos: number | null; motivo: string };
+
+export type OperacaoAlternativa = "port_refin" | "portabilidade" | "refin";
+
+// Melhor simulação de port + refin de um contrato. null: a Facta não devolveu tabela.
+export interface SimulacaoPortabilidade {
+  trocoCentavos: number | null;
+  temPortabilidade: boolean;
+  motivo: string;
+}
 
 // Antes de consultar, o cliente precisa autorizar num link que o banco manda.
 export type ResultadoConsulta = { tipo: "nao_autorizado" } | { tipo: "link_expirado" } | { tipo: "indisponivel" } | ResultadoBanco;
@@ -37,6 +51,8 @@ export interface BancoClt {
   consultar(cpf: string): Promise<ResultadoConsulta>;
   // INSS e SIAPE: a parcela máxima sai do extrato que o cliente mandou.
   simularConsignado(p: { convenio: "inss" | "siape"; cpf: string; dataNascimento: string; parcelaMaxima: number }): Promise<ResultadoBanco>;
+  // SIAPE: port + refin de um contrato de outro banco, com o saldo estimado pelo extrato.
+  simularPortabilidadeSiape(p: { cpf: string; dataNascimento: string; contrato: ContratoAnalisado }): Promise<SimulacaoPortabilidade>;
 }
 
 const reais = (v: number) => Math.round(v * 100);
@@ -108,6 +124,33 @@ export const bancoFacta: BancoClt = {
     });
     return melhorTabela(this.nome, tabelas, mensagem);
   },
+
+  async simularPortabilidadeSiape({ cpf, dataNascimento, contrato }) {
+    const restantes = contrato.parcelasRestantes!;
+    const original = contrato.totalParcelas ?? (contrato.parcelasPagas != null ? restantes + contrato.parcelasPagas : restantes);
+    const s = await facta.simularPortRefinSiape({
+      cpf,
+      dataNascimento,
+      parcela: contrato.parcela!,
+      prazoRestante: restantes,
+      prazoOriginal: original,
+      saldoDevedor: contrato.saldoDevedorEstimado!,
+      prazo: REGRAS_PORTABILIDADE.prazoRefin,
+    });
+    // Troco do refin: sem seguro, com o bruto e o troco mínimos do roteiro.
+    const refins = s.refin.filter(
+      (t) =>
+        t.valorSeguro === 0 &&
+        t.contrato >= REGRAS_PORTABILIDADE.refinBrutoMinimo &&
+        t.valorLiquido >= REGRAS_PORTABILIDADE.trocoMinimo,
+    );
+    const melhor = refins.sort((a, b) => b.valorLiquido - a.valorLiquido)[0];
+    return {
+      trocoCentavos: melhor ? reais(melhor.valorLiquido) : null,
+      temPortabilidade: s.portabilidade.length > 0,
+      motivo: melhor ? `${melhor.tabela}, troco ${melhor.valorLiquido}` : s.mensagem || "nenhuma tabela de refin da port",
+    };
+  },
 };
 
 // Banco de mentira, para testar o fluxo sem a Facta. O último dígito do CPF decide:
@@ -156,5 +199,11 @@ export const bancoSimulado: BancoClt & { autorizar(cpf: string): void; reiniciar
     const valorCentavos = Math.round(parcelaCentavos / 0.0245);
     const tabela = { codigoTabela: 1, prazo: 84, contrato: valorCentavos / 100, parcela: parcelaCentavos / 100, coeficiente: 0.0245 };
     return { tipo: "com_saldo", banco: this.nome, valorCentavos, parcelaCentavos, prazoMeses: 84, tabela, renda: 3000, especie: 42 };
+  },
+
+  // Troco fictício de 10% do saldo, só para teste.
+  async simularPortabilidadeSiape({ contrato }) {
+    const troco = Math.round((contrato.saldoDevedorEstimado ?? 0) * 10);
+    return { trocoCentavos: troco || null, temPortabilidade: true, motivo: "simulado" };
   },
 };

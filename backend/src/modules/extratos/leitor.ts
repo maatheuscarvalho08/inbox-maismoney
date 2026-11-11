@@ -13,6 +13,7 @@ export interface ContratoLido {
   parcela: number | null;
   total_parcelas: number | null;
   parcelas_pagas: number | null;
+  parcelas_restantes: number | null;
   inicio: string | null;
   fim: string | null;
   valor_emprestado: number | null;
@@ -86,6 +87,7 @@ const SCHEMA = {
           "parcela",
           "total_parcelas",
           "parcelas_pagas",
+          "parcelas_restantes",
           "inicio",
           "fim",
           "valor_emprestado",
@@ -100,6 +102,7 @@ const SCHEMA = {
           parcela: num,
           total_parcelas: num,
           parcelas_pagas: num,
+          parcelas_restantes: num,
           inicio: txt,
           fim: txt,
           valor_emprestado: num,
@@ -120,6 +123,7 @@ Regras:
 - base_calculo: a base de cálculo da margem consignável (no INSS, o valor do benefício usado como base; no SIAPE, a base informada para a margem).
 - margens_informadas: as margens disponíveis que o próprio documento mostra, para empréstimo, cartão consignado (RMC) e cartão benefício (RCC).
 - contratos: todos os contratos listados, inclusive excluídos ou suspensos, com a situação correta. tipo "rmc" para cartão de crédito consignado, "rcc" para cartão consignado de benefício, "emprestimo" para empréstimo pessoal consignado.
+- parcelas_restantes: quantas parcelas faltam, quando o documento mostra. No contracheque do SIAPE é o número da coluna PRAZO ao lado de cada desconto de empréstimo.
 - especie_codigo: o número da espécie do benefício do INSS (ex.: 41, 42, 32, 87, 88). null no SIAPE.
 - bloqueado_emprestimo: true se o documento diz que o benefício está bloqueado para empréstimo.
 - legivel: false se o documento não for um extrato de consignado ou se estiver ilegível demais para confiar. Explique em problemas.

@@ -53,7 +53,7 @@ function cpfTerminadoEm(ultimo: number) {
 // banco, a checagem automática ou o relógio andar.
 // extrato: o cliente manda um PDF; o valor diz o que a leitura encontra.
 // dados: o cliente responde e a leitura encontra esses campos. digitacao: o que a Facta devolve.
-type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "invalido" | "estadual" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
+type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "invalido" | "estadual" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
 
 interface Caso {
   nome: string;
@@ -62,6 +62,8 @@ interface Caso {
   saida?: string;
   respostaContem?: string;
   ultimaResposta?: "nenhuma";
+  // Fecha sem passar para a equipe.
+  encerra?: boolean;
 }
 
 const CPF_SALDO = cpfTerminadoEm(3);
@@ -168,10 +170,12 @@ const CASOS: Caso[] = [
     saida: "telefone_outro_cpf",
   },
   {
-    nome: "Sem saldo no banco",
+    nome: "Sem saldo no banco encerra sem passar para a equipe",
     acoes: [...ATE_AUTORIZAR(CPF_SEM_SALDO), { autoriza: true }],
     etapaFinal: "finalizada",
     saida: "sem_saldo",
+    encerra: true,
+    respostaContem: "Obrigada pelo contato",
   },
   {
     nome: "Erro no banco",
@@ -332,11 +336,25 @@ const CASOS: Caso[] = [
     respostaContem: "Não entendi a data",
   },
   {
-    nome: "INSS sem margem no extrato vai para a equipe",
+    nome: "INSS sem margem e sem port ou refin encerra sem a equipe",
     acoes: [...ATE_EXTRATO, { extrato: "sem_margem" }],
     etapaFinal: "finalizada",
     saida: "sem_saldo",
-    respostaContem: "não sobra margem",
+    encerra: true,
+    respostaContem: "também não dá para fazer portabilidade",
+  },
+  {
+    nome: "Sem margem com leitura em dúvida vai para a equipe conferir",
+    acoes: [...ATE_EXTRATO, { extrato: "sem_margem_duvida" }],
+    etapaFinal: "finalizada",
+    saida: "revisar_extrato",
+  },
+  {
+    nome: "Sem margem, mas com port + refin: fala o troco e passa para a equipe",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }],
+    etapaFinal: "finalizada",
+    saida: "alternativa",
+    respostaContem: "troco de até R$",
   },
   {
     nome: "SIAPE com contracheque de estado vai para a equipe explicando",
@@ -393,7 +411,7 @@ async function rodar(caso: Caso, verbose: boolean) {
   bancoSimulado.reiniciar();
   let cpfGravado: string | null = null;
   let relogio = new Date("2026-11-09T12:00:00Z");
-  let leituraExtrato: "com_margem" | "sem_margem" | "invalido" | "estadual" = "com_margem";
+  let leituraExtrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "invalido" | "estadual" = "com_margem";
   let proximosDados: DadosContrato = {};
   let digitacao: "ok" | "erro" = "ok";
   const deps: Dependencias = {
@@ -407,6 +425,8 @@ async function rodar(caso: Caso, verbose: boolean) {
       if (leituraExtrato === "invalido") return { tipo: "extrato_invalido", motivo: "não é extrato do INSS" };
       if (leituraExtrato === "estadual") return { tipo: "servidor_outro", motivo: "contracheque estadual" };
       if (leituraExtrato === "sem_margem") return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
+      if (leituraExtrato === "sem_margem_duvida") return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem", revisar: true };
+      if (leituraExtrato === "alternativa") return { tipo: "alternativa", operacao: "port_refin", trocoCentavos: 125000, motivo: "teste" };
       return bancoSimulado.simularConsignado({ convenio: _produto, cpf: cpfGravado!, dataNascimento, parcelaMaxima: 300 });
     },
     digitacaoAtiva: true,
@@ -423,6 +443,7 @@ async function rodar(caso: Caso, verbose: boolean) {
 
   let estado: EstadoMaisa | null = null;
   let transferida = false;
+  let encerrada = false;
   let ultimas: string[] = [];
   const todasRespostas: string[] = [];
 
@@ -456,6 +477,7 @@ async function rodar(caso: Caso, verbose: boolean) {
     for (const e of passo.efeitos) {
       if (e.tipo === "cpf") cpfGravado = e.cpf;
       if (e.tipo === "transferir") transferida = true;
+      if (e.tipo === "encerrar") encerrada = true;
     }
     // Nenhuma resposta pode ter o CPF do cliente.
     for (const r of passo.respostas) {
@@ -469,14 +491,15 @@ async function rodar(caso: Caso, verbose: boolean) {
       for (const r of passo.respostas) console.log(`  maisa:   ${r.replace(/\n/g, "\n           ")}`);
     }
     estado = passo.estado;
-    if (transferida) break;
+    if (transferida || encerrada) break;
   }
 
   assert.equal(estado?.etapa, caso.etapaFinal, "etapa final");
-  assert.equal(transferida, caso.etapaFinal === "finalizada", "transferida");
+  assert.equal(transferida || encerrada, caso.etapaFinal === "finalizada", "finalizada");
+  assert.equal(encerrada, Boolean(caso.encerra), "encerrada sem a equipe");
   if (caso.saida) assert.equal(estado?.saida, caso.saida, "saida");
   // A tela do atendente depende disso para dizer o próximo passo.
-  if (transferida) assert.ok(estado?.saida && estado.paradaEm, "transferência sem saida ou paradaEm");
+  if (transferida || encerrada) assert.ok(estado?.saida && estado.paradaEm, "fim sem saida ou paradaEm");
   if (caso.respostaContem) {
     assert.ok(todasRespostas.some((r) => r.includes(caso.respostaContem!)), `nenhuma resposta com "${caso.respostaContem}"`);
   }

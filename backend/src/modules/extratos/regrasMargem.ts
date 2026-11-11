@@ -25,6 +25,31 @@ export function percentuais(convenio: Convenio, especie: number | null): Percent
   return { total: 0.45, emprestimo: 0.35, rmc: 0.05, rcc: 0.05 };
 }
 
+// Portabilidade (roteiro operacional SIAPE da Facta, 04.11.2026). CONFIRMAR a cada versão.
+export const REGRAS_PORTABILIDADE = {
+  // Parcelas pagas que o banco de origem exige antes de portar. Os demais: 0.
+  minimoPagasPorBanco: [
+    [/agibank|agiplan/, 15],
+    [/\bbmg\b/, 12],
+    [/\bc6\b/, 12],
+    [/daycoval/, 24],
+    [/\bpan\b|panamericano/, 30],
+    [/parana/, 15],
+    [/santander|\bole\b/, 12],
+  ] as [RegExp, number][],
+  // Bancos de onde a Facta não compra contrato.
+  bancosSemPortabilidade: [/inbursa/, /\bpine\b/, /socicred/],
+  // Saldo devedor mínimo para portar.
+  saldoMinimo: 2000,
+  // Sem taxa no documento, o saldo é estimado com esta taxa ao mês. Taxa menor dá saldo
+  // maior, ou seja, troco menor: a estimativa fica do lado conservador.
+  taxaPadraoSaldo: 1.6,
+  // Refin da portabilidade: valor bruto e troco mínimos, e o prazo pedido na simulação.
+  refinBrutoMinimo: 15000,
+  trocoMinimo: 50,
+  prazoRefin: 96,
+};
+
 export const REGRAS_OPERACAO = {
   // Abaixo disso, não compensa oferecer empréstimo novo.
   parcelaMinimaReais: 20,

@@ -16,6 +16,7 @@ import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo } from
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
 import { TEXTOS } from "./textos.js";
 import { guardarAnalise } from "../extratos/guardadas.js";
+import { buscarAlternativa } from "./alternativas.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
 export const PREFIXO_NUMERO_TESTE = "5500000";
@@ -115,6 +116,10 @@ async function aplicarEfeito(conversa: ConversaMaisa, efeito: Efeito) {
     case "transferir":
       // Sai da Maisa e entra em "Na fila". Quem estava atribuído continua.
       await prisma.conversa.update({ where: { id: conversa.id }, data: { comMaisa: false } });
+      return;
+    case "encerrar":
+      // Nada a oferecer: fecha sem ir para a fila. Se o cliente voltar, abre outra conversa.
+      await prisma.conversa.update({ where: { id: conversa.id }, data: { status: "encerrada" } });
       return;
   }
 }
@@ -248,13 +253,13 @@ async function processar(conversaId: string, gatilho: Gatilho) {
       }
       // Registro de acesso a documento sensível, sem dado pessoal.
       console.log(`Maisa leu extrato ${convenio} da conversa ${conversa.id}: ${leitura.tipo} ${Date.now() - inicio}ms`);
+      const cpf = await cpfDoContato(conversa.contatoId);
+      // Sem empréstimo novo: antes de desistir, vê se dá para portar ou refinanciar.
+      const alternativa = () => buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento });
+      if (leitura.tipo === "sem_saldo" && !leitura.revisar) return (await alternativa()) ?? leitura;
       if (leitura.tipo !== "ok") return leitura;
-      const resultado = await banco.simularConsignado({
-        convenio,
-        cpf: await cpfDoContato(conversa.contatoId),
-        dataNascimento,
-        parcelaMaxima: leitura.parcelaMaxima,
-      });
+      const resultado = await banco.simularConsignado({ convenio, cpf, dataNascimento, parcelaMaxima: leitura.parcelaMaxima });
+      if (resultado.tipo === "sem_saldo") return (await alternativa()) ?? resultado;
       return resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie } : resultado;
     },
     digitacaoAtiva: env.MAISA_DIGITA_PROPOSTA && (banco === bancoSimulado || (banco === bancoFacta && digitacaoConfigurada())),

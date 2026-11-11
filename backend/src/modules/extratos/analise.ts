@@ -1,7 +1,7 @@
 // Recebe o extrato lido e decide, com regras fixas, quanto de margem sobra e o que dá
 // para oferecer. Nada aqui chama o modelo: os números saem de conta, não de opinião.
 import type { ContratoLido, ExtratoLido } from "./leitor.js";
-import { REGRAS_OPERACAO, percentuais, ESPECIES_LOAS, type Convenio } from "./regrasMargem.js";
+import { REGRAS_OPERACAO, REGRAS_PORTABILIDADE, percentuais, ESPECIES_LOAS, type Convenio } from "./regrasMargem.js";
 
 export type Possibilidade =
   | { tipo: "novo"; possivel: boolean; parcelaMaxima: number; motivo: string }
@@ -10,11 +10,14 @@ export type Possibilidade =
 
 export interface ContratoAnalisado {
   banco: string;
+  bancoCodigo: string | null;
   numero: string | null;
   parcela: number | null;
+  parcelasPagas: number | null;
   parcelasRestantes: number | null;
+  totalParcelas: number | null;
   taxaMensal: number | null;
-  // Estimativa pelo valor presente das parcelas que faltam. Só existe se a taxa aparece.
+  // Valor presente das parcelas que faltam. Sem a taxa no documento, usa a taxa padrão.
   saldoDevedorEstimado: number | null;
 }
 
@@ -45,6 +48,7 @@ function meses(data: string | null): number | null {
 }
 
 function parcelasRestantes(c: ContratoLido, competencia: string | null): number | null {
+  if (c.parcelas_restantes != null) return c.parcelas_restantes;
   if (c.total_parcelas != null && c.parcelas_pagas != null) return Math.max(0, c.total_parcelas - c.parcelas_pagas);
   const fim = meses(c.fim);
   const hoje = meses(competencia);
@@ -58,23 +62,42 @@ function parcelasPagas(c: ContratoLido, competencia: string | null): number | nu
   return c.total_parcelas != null && restantes != null ? c.total_parcelas - restantes : null;
 }
 
-// Valor presente das parcelas que faltam: parcela * (1 - (1+i)^-n) / i.
+// Valor presente das parcelas que faltam: parcela * (1 - (1+i)^-n) / i. Sem a taxa no
+// documento, usa a taxa padrão das regras (estimativa conservadora).
 function saldoEstimado(c: ContratoLido, restantes: number | null): number | null {
-  if (c.parcela == null || restantes == null || !c.taxa_mensal) return null;
-  const i = c.taxa_mensal / 100;
+  if (c.parcela == null || restantes == null) return null;
+  const i = (c.taxa_mensal || REGRAS_PORTABILIDADE.taxaPadraoSaldo) / 100;
   return r2((c.parcela * (1 - Math.pow(1 + i, -restantes))) / i);
 }
+
+const normalizar = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 function analisarContrato(c: ContratoLido, competencia: string | null): ContratoAnalisado {
   const restantes = parcelasRestantes(c, competencia);
   return {
     banco: [c.banco_codigo, c.banco_nome].filter(Boolean).join(" - ") || "banco não identificado",
+    bancoCodigo: c.banco_codigo,
     numero: c.numero,
     parcela: c.parcela,
+    parcelasPagas: c.parcelas_pagas,
     parcelasRestantes: restantes,
+    totalParcelas: c.total_parcelas,
     taxaMensal: c.taxa_mensal,
     saldoDevedorEstimado: saldoEstimado(c, restantes),
   };
+}
+
+// Por que a Facta não compra este contrato, ou null se pode portar. Parcelas pagas
+// desconhecidas não barram: a equipe confere na digitação.
+function recusaPortabilidade(c: ContratoAnalisado): string | null {
+  const banco = normalizar(c.banco);
+  if (REGRAS_PORTABILIDADE.bancosSemPortabilidade.some((re) => re.test(banco))) return "banco não porta para a Facta";
+  const minimo = REGRAS_PORTABILIDADE.minimoPagasPorBanco.find(([re]) => re.test(banco))?.[1] ?? 0;
+  if (minimo && c.parcelasPagas != null && c.parcelasPagas < minimo) return `banco exige ${minimo} parcelas pagas`;
+  if (c.saldoDevedorEstimado == null || c.saldoDevedorEstimado < REGRAS_PORTABILIDADE.saldoMinimo) {
+    return `saldo abaixo de ${reais(REGRAS_PORTABILIDADE.saldoMinimo)}`;
+  }
+  return null;
 }
 
 function margem(base: number | null, pct: number, descontos: number, informada: number | null, alertas: string[], nome: string): Margem {
@@ -168,7 +191,9 @@ export function analisarExtrato(e: ExtratoLido): AnaliseExtrato {
 
   const emprestimos = ativos.filter((c) => c.tipo === "emprestimo");
 
-  const refin = emprestimos
+  // Refin só no banco de origem: aqui, só contrato que já é da Facta.
+  const daFacta = emprestimos.filter((c) => /facta/.test(normalizar(`${c.banco_codigo ?? ""} ${c.banco_nome ?? ""}`)));
+  const refin = daFacta
     .filter((c) => (parcelasPagas(c, e.competencia) ?? 0) >= REGRAS_OPERACAO.refinMinimoParcelasPagas)
     .map((c) => analisarContrato(c, e.competencia));
   possibilidades.push({
@@ -176,23 +201,26 @@ export function analisarExtrato(e: ExtratoLido): AnaliseExtrato {
     possivel: !bloqueado && refin.length > 0,
     contratos: refin,
     motivo: refin.length
-      ? `${refin.length} contrato(s) com ${REGRAS_OPERACAO.refinMinimoParcelasPagas}+ parcelas pagas. Refin só no banco de origem: na Facta, conferir em contratos-refinanciamento.`
-      : `Nenhum contrato com ${REGRAS_OPERACAO.refinMinimoParcelasPagas} parcelas pagas ou mais.`,
+      ? `${refin.length} contrato(s) da Facta com ${REGRAS_OPERACAO.refinMinimoParcelasPagas}+ parcelas pagas. Conferir em contratos-refinanciamento.`
+      : daFacta.length
+        ? `Contrato da Facta ainda sem ${REGRAS_OPERACAO.refinMinimoParcelasPagas} parcelas pagas.`
+        : "Nenhum contrato da Facta para refinanciar.",
   });
 
-  const porta = emprestimos
-    .map((c) => analisarContrato(c, e.competencia))
-    .filter((c) => (c.parcelasRestantes ?? 0) >= REGRAS_OPERACAO.portabilidadeMinimoParcelasRestantes);
+  // Portabilidade (com ou sem refin): regras do roteiro da Facta. Pode com margem zerada.
+  const analisados = emprestimos.filter((c) => !/facta/.test(normalizar(c.banco_nome ?? ""))).map((c) => analisarContrato(c, e.competencia));
+  const porta = analisados.filter((c) => !recusaPortabilidade(c));
   const caras = porta.filter((c) => c.taxaMensal != null && c.taxaMensal > REGRAS_OPERACAO.taxaReferenciaMensal);
+  const recusas = analisados.map((c) => recusaPortabilidade(c)).filter(Boolean);
   possibilidades.push({
     tipo: "portabilidade",
     possivel: !bloqueado && porta.length > 0,
     contratos: porta,
     motivo: porta.length
-      ? caras.length
-        ? `${caras.length} contrato(s) com taxa acima de ${REGRAS_OPERACAO.taxaReferenciaMensal}% ao mês: bons candidatos.`
-        : `${porta.length} contrato(s) com ${REGRAS_OPERACAO.portabilidadeMinimoParcelasRestantes}+ parcelas restantes. Comparar a taxa antes de oferecer.`
-      : "Nenhum contrato com parcelas suficientes pela frente.",
+      ? `${porta.length} contrato(s) para portar para a Facta${caras.length ? `, ${caras.length} com taxa acima de ${REGRAS_OPERACAO.taxaReferenciaMensal}% ao mês` : ""}. Saldo estimado: confirmar na CIP.`
+      : recusas.length
+        ? `Nenhum contrato pode ser portado: ${[...new Set(recusas)].join("; ")}.`
+        : "Nenhum empréstimo de outro banco para portar.",
   });
 
   const viaveis = possibilidades.filter((p) => p.possivel).map((p) => NOME_POSSIBILIDADE[p.tipo]);

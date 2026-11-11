@@ -214,7 +214,11 @@ async function operacoesDisponiveis(cpf: string, dataNascimento: string, valorPa
     },
   });
   if (j.erro) return { tabelas: [] as Tabela[], mensagem: String(j.mensagem ?? "") };
-  const tabelas: Tabela[] = (j.tabelas ?? []).map((t: Record<string, unknown>) => ({
+  return { tabelas: lerTabelas(j.tabelas), mensagem: String(j.mensagem ?? "") };
+}
+
+function lerTabelas(lista: unknown): Tabela[] {
+  return (Array.isArray(lista) ? lista : []).map((t: Record<string, unknown>) => ({
     tabela: String(t.tabela ?? ""),
     codigoTabela: Number(t.codigoTabela),
     coeficiente: Number(t.coeficiente),
@@ -222,10 +226,50 @@ async function operacoesDisponiveis(cpf: string, dataNascimento: string, valorPa
     prazo: Number(t.prazo),
     taxa: Number(t.taxa),
     parcela: Number(t.parcela),
-    valorLiquido: Number(t.valor_liquido),
+    valorLiquido: Number(t.valor_liquido ?? 0),
     valorSeguro: Number(t.valor_seguro ?? 0),
   }));
-  return { tabelas, mensagem: String(j.mensagem ?? "") };
+}
+
+// Portabilidade CIP + refin da portabilidade do SIAPE (manual Portabilidade SIAPE v1.0,
+// tipo de operação 003500). Só simula: devolve as tabelas da port e do refin, com o troco.
+// O saldo devedor é estimado pelo extrato; o real vem da CIP na digitação.
+export interface SimulacaoPortRefin {
+  portabilidade: Tabela[];
+  refin: Tabela[];
+  mensagem: string;
+}
+
+export async function simularPortRefinSiape(p: {
+  cpf: string;
+  dataNascimento: string;
+  parcela: number;
+  prazoRestante: number;
+  prazoOriginal: number;
+  saldoDevedor: number;
+  prazo: number;
+}): Promise<SimulacaoPortRefin> {
+  const j = await chamar("/proposta/operacoes-disponiveis", p.cpf, {
+    method: "GET",
+    query: {
+      produto: PRODUTO,
+      tipo_operacao: "003500",
+      averbador: AVERBADOR_EXTRATO.siape,
+      convenio: CONVENIO,
+      opcao_valor: "2",
+      valor_parcela: p.parcela.toFixed(2),
+      prazo: String(p.prazo),
+      cpf: cpf11(p.cpf),
+      data_nascimento: dataBr(p.dataNascimento),
+      prazo_restante: String(p.prazoRestante),
+      saldo_devedor: p.saldoDevedor.toFixed(2),
+      valor_parcela_original: p.parcela.toFixed(2),
+      prazo_original: String(p.prazoOriginal),
+    },
+  });
+  const mensagem = String(j.mensagem ?? "");
+  if (j.erro) return { portabilidade: [], refin: [], mensagem };
+  return { portabilidade: lerTabelas(j.tabelas_portabilidade), refin: lerTabelas(j.tabelas_refin_portabilidade), mensagem };
 }
 
 export const factaConfigurada = () => Boolean(env.FACTA_USER && env.FACTA_PASS);
