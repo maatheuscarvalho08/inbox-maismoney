@@ -48,7 +48,22 @@ async function lerJson(r: Response): Promise<Record<string, any>> {
   }
 }
 
-async function chamar(
+// Simulações em fila: chamadas paralelas fizeram a Facta devolver o refin sem tabela
+// em parte delas. Uma de cada vez, o resultado é estável.
+let filaSimulacao: Promise<unknown> = Promise.resolve();
+
+function chamar(
+  endpoint: string,
+  cpf: string,
+  init: { method: "GET" | "POST"; query?: Record<string, string>; form?: Record<string, string> },
+): Promise<Record<string, any>> {
+  if (endpoint !== "/proposta/operacoes-disponiveis") return chamarDireto(endpoint, cpf, init);
+  const vez = filaSimulacao.then(() => chamarDireto(endpoint, cpf, init));
+  filaSimulacao = vez.catch(() => undefined);
+  return vez;
+}
+
+async function chamarDireto(
   endpoint: string,
   cpf: string,
   init: { method: "GET" | "POST"; query?: Record<string, string>; form?: Record<string, string> },
@@ -503,8 +518,10 @@ const BANCO_POR_NOME: [RegExp, string][] = [
   [/\bcef\b|caixa/, "104"],
   [/bradesc/, "237"],
   [/\bitau\b|unibanco/, "341"],
+  // Olé tem código próprio, que não está confirmado: sem código, a equipe digita.
+  [/\bole\b/, ""],
   [/santander/, "33"],
-  [/banco do brasil|\bbb\b|\bbco brasil/, "1"],
+  [/banco do brasil|\bbb\b|\bbco bras/, "1"],
   [/\bpan\b|panamericano/, "623"],
   [/\bbmg\b/, "318"],
   [/daycoval|daybco/, "707"],
@@ -525,5 +542,5 @@ export function codigoBancoPorNome(nome: string): string | null {
   const n = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const direto = n.match(/^(\d{1,3})\b/)?.[1];
   if (direto) return String(Number(direto));
-  return BANCO_POR_NOME.find(([re]) => re.test(n))?.[1] ?? null;
+  return BANCO_POR_NOME.find(([re]) => re.test(n))?.[1] || null;
 }
