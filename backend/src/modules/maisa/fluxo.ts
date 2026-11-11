@@ -24,6 +24,8 @@ export type Etapa =
   | "nascimento"
   | "extrato"
   | "oferta"
+  // Sem margem para novo, mas a Facta abriu port ou refin: ela oferta e a equipe digita.
+  | "oferta_port"
   | "coleta"
   | "confirmacao"
   | "finalizada";
@@ -58,6 +60,8 @@ export interface EstadoMaisa {
     renda?: number | null;
     especie?: number | null;
   };
+  // Port, port + refin ou refin que a Facta abriu, ofertado ao cliente.
+  alternativa?: { operacao: "port_refin" | "portabilidade" | "refin"; trocoCentavos: number | null; motivo: string };
   // Cadastro para digitar a proposta. Sai do estado assim que ela passa para a equipe.
   contrato?: { dados: DadosContrato; pergunta: string };
   motivoTransferencia?: string;
@@ -120,6 +124,7 @@ const PERGUNTA_DA_ETAPA: Record<Etapa, string> = {
   nascimento: TEXTOS.nascimentoInvalido,
   extrato: TEXTOS.lembraExtrato,
   oferta: TEXTOS.perguntaOferta,
+  oferta_port: TEXTOS.perguntaOferta,
   coleta: TEXTOS.continuarCadastro,
   confirmacao: TEXTOS.perguntaConfirmacao,
   finalizada: "",
@@ -135,6 +140,7 @@ const NOME_ETAPA: Record<Etapa, string> = {
   nascimento: "data de nascimento",
   extrato: "extrato",
   oferta: "oferta",
+  oferta_port: "oferta de portabilidade",
   coleta: "dados do contrato",
   confirmacao: "confirmação dos dados",
   finalizada: "fim",
@@ -343,7 +349,8 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
   }
   if (resultado.tipo === "alternativa") {
     const troco = resultado.trocoCentavos ? formatarReais(resultado.trocoCentavos) : null;
-    return transferir(estado, `sem margem para novo; ${resultado.motivo}`, TEXTOS.alternativa(resultado.operacao, troco), "alternativa", [], "alternativa");
+    const { operacao, trocoCentavos, motivo } = resultado;
+    return ir(estado, "oferta_port", [TEXTOS.ofertaPort(operacao, troco)], "alternativa", [], { alternativa: { operacao, trocoCentavos, motivo } });
   }
   if (resultado.tipo === "servidor_outro") {
     return transferir(estado, resultado.motivo, TEXTOS.servidorNaoFederal, "servidor_outro", [], "servidor_outro");
@@ -451,6 +458,15 @@ async function etapaAguardando(estado: EstadoMaisa, texto: string, deps: Depende
   if (texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
   // Qualquer outra coisa ("autorizei", "pronto") faz ela olhar no banco na hora.
   return consultarAgora(estado, deps, "cliente_respondeu", true);
+}
+
+// Aceitou a port ou o refin: a equipe confirma o saldo na CIP e digita. Recusou: encerra.
+async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  const resposta = await deps.classificador.simNao(texto);
+  const motivo = estado.alternativa?.motivo ?? "portabilidade";
+  if (resposta === "sim") return transferir(estado, `aceitou: ${motivo}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
+  if (resposta === "nao") return encerrar(estado, "recusou a portabilidade", TEXTOS.recusou, "recusou");
+  return foraDaEtapa(estado, texto);
 }
 
 async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
@@ -597,6 +613,8 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
       return etapaExtrato(estado, { texto }, deps);
     case "oferta":
       return etapaOferta(estado, texto, deps);
+    case "oferta_port":
+      return etapaOfertaPort(estado, texto, deps);
     case "coleta":
       return etapaColeta(estado, { texto }, deps);
     case "confirmacao":

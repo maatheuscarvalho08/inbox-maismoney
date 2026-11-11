@@ -256,7 +256,9 @@ async function processar(conversaId: string, gatilho: Gatilho) {
       const cpf = await cpfDoContato(conversa.contatoId);
       // Sem empréstimo novo: antes de desistir, vê se dá para portar ou refinanciar.
       const alternativa = () => buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento });
-      if (leitura.tipo === "sem_saldo" && !leitura.revisar) return (await alternativa()) ?? leitura;
+      // Mesmo com leitura em dúvida: se a Facta abrir tabela, ela oferta. Se não abrir e
+      // houver dúvida, a equipe confere (o fluxo trata "revisar").
+      if (leitura.tipo === "sem_saldo") return (await alternativa()) ?? leitura;
       if (leitura.tipo !== "ok") return leitura;
       const resultado = await banco.simularConsignado({ convenio, cpf, dataNascimento, parcelaMaxima: leitura.parcelaMaxima });
       if (resultado.tipo === "sem_saldo") return (await alternativa()) ?? resultado;

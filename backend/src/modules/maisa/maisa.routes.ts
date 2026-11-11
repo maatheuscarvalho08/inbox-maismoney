@@ -11,6 +11,9 @@ import { entregarMensagem } from "../mensagens/entrega.js";
 import { getConversaById, marcarConversaRespondida } from "../conversas/conversas.service.js";
 import { PREFIXO_NUMERO_TESTE, bancoConfigurado, processarComMaisa, verificarAutorizacao } from "./maisa.service.js";
 import { bancoSimulado } from "./bancos.js";
+import { FORMATOS_EXTRATO } from "./midia.js";
+import type { EstadoMaisa } from "./fluxo.js";
+import type { Prisma } from "@prisma/client";
 
 const router = Router();
 router.use(authenticate);
@@ -130,5 +133,43 @@ simulador.post(
 );
 
 router.use("/simulador", simulador);
+
+// Devolve à Maisa uma conversa de INSS ou SIAPE que parou no extrato: ela lê de novo o
+// último extrato do cliente e segue dali (oferta, port ou fim), sem recomeçar a conversa.
+router.post(
+  "/conversas/:id/reanalisar-extrato",
+  requireRole("admin"),
+  asyncHandler(async (req, res) => {
+    const conversa = await prisma.conversa.findUnique({ where: { id: req.params.id }, include: { instancia: true } });
+    if (!conversa) return res.status(404).json({ error: "Conversa não encontrada" });
+    if (!conversa.instancia.maisaAtiva) return res.status(400).json({ error: "A Maisa não está ligada neste número" });
+    const estado = (conversa.maisaEstado ?? {}) as Partial<EstadoMaisa>;
+    if ((estado.produto !== "inss" && estado.produto !== "siape") || !estado.dataNascimento) {
+      return res.status(400).json({ error: "A conversa não tem produto INSS ou SIAPE com data de nascimento" });
+    }
+    const extrato = await prisma.mensagem.findFirst({
+      where: { conversaId: conversa.id, remetenteTipo: "cliente", tipoMidia: { in: FORMATOS_EXTRATO }, midiaDeleted: false, midiaPath: { not: null } },
+      orderBy: { timestamp: "desc" },
+    });
+    if (!extrato) return res.status(400).json({ error: "Nenhum extrato do cliente ainda guardado" });
+
+    const novo: EstadoMaisa = {
+      ...(estado as EstadoMaisa),
+      etapa: "extrato",
+      tentativas: 0,
+      saida: undefined,
+      paradaEm: undefined,
+      motivoTransferencia: undefined,
+    };
+    await prisma.conversa.update({
+      where: { id: conversa.id },
+      data: { comMaisa: true, operadorId: null, maisaEstado: novo as unknown as Prisma.InputJsonValue },
+    });
+    const atualizada = await getConversaById(conversa.id);
+    if (atualizada) emitConversaAtualizada(atualizada);
+    void processarComMaisa(conversa.id, extrato.id);
+    res.json({ ok: true });
+  }),
+);
 
 export default router;

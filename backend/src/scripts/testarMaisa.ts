@@ -350,11 +350,24 @@ const CASOS: Caso[] = [
     saida: "revisar_extrato",
   },
   {
-    nome: "Sem margem, mas com port + refin: fala o troco e passa para a equipe",
+    nome: "Sem margem, mas com port + refin: oferta o dinheiro extra e espera a resposta",
     acoes: [...ATE_EXTRATO, { extrato: "alternativa" }],
+    etapaFinal: "oferta_port",
+    respostaContem: "dinheiro extra de até R$",
+  },
+  {
+    nome: "Aceita a port + refin: vai para a equipe digitar",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "sim, quero"],
     etapaFinal: "finalizada",
     saida: "alternativa",
-    respostaContem: "troco de até R$",
+    respostaContem: "confirma o saldo com o seu banco",
+  },
+  {
+    nome: "Recusa a port + refin: encerra sem a equipe",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "não"],
+    etapaFinal: "finalizada",
+    saida: "recusou",
+    encerra: true,
   },
   {
     nome: "SIAPE com contracheque de estado vai para a equipe explicando",

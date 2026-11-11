@@ -107,13 +107,16 @@ export const TEXTOS = {
     "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
   semMargemFim:
     "Olhei o seu documento com atenção. No momento não sobra margem para um empréstimo novo, e também não dá para fazer portabilidade ou refinanciamento dos seus contratos. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
-  alternativa: (operacao: "port_refin" | "portabilidade" | "refin", troco: string | null) =>
+  // Nunca valor garantido: o saldo real só vem do banco de origem, na digitação.
+  ofertaPort: (operacao: "port_refin" | "portabilidade" | "refin", troco: string | null) =>
     (operacao === "port_refin" && troco
-      ? `Para empréstimo novo não sobra margem, mas encontrei uma saída: trazer um dos seus contratos para a Facta, com taxa menor, e ainda liberar um troco de até ${troco}. É uma estimativa e depende do saldo que o seu banco informar.`
+      ? `Para empréstimo novo não sobra margem, mas encontrei uma saída: trazer um dos seus contratos para a Facta, com taxa menor, e ainda liberar um dinheiro extra de até ${troco} na sua conta, sem aumentar a parcela.\n\nÉ uma estimativa: o valor final depende do saldo que o seu banco informar.`
       : operacao === "refin"
         ? "Para empréstimo novo não sobra margem, mas dá para refinanciar um contrato que você já tem e liberar um valor novo."
-        : "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que pode baixar a sua parcela.") +
-    "\n\nVou te passar para um especialista da nossa equipe, que fecha isso com você.",
+        : "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que baixa um pouco a sua parcela.") +
+    "\n\nQuer seguir? Responda SIM ou NÃO.",
+  aceitouPort:
+    "Ótimo! Vou te passar para um especialista da nossa equipe. Ele confirma o saldo com o seu banco e fecha a proposta com você. Já já alguém continua aqui.",
   semSaldo:
     "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Vou te passar para um atendente ver outras opções com você.",
   erroBanco: "Não consegui consultar o banco agora. Vou te passar para um atendente continuar daqui.",

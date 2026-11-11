@@ -66,6 +66,7 @@ const POSICAO: Record<string, number> = {
   nascimento: 1,
   extrato: 2,
   oferta: 3,
+  oferta_port: 3,
   coleta: 4,
   confirmacao: 4,
 };
