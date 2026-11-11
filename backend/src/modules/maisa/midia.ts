@@ -58,7 +58,14 @@ export async function parcelaPeloExtrato(
     | Exclude<ResultadoExtrato, { tipo: "com_saldo" | "erro" }>;
   registro: AnaliseGuardada;
 }> {
-  const leitura = await lerExtrato(conteudo, mimetype, mimetype === "application/pdf" ? "extrato.pdf" : "extrato");
+  const nome = mimetype === "application/pdf" ? "extrato.pdf" : "extrato";
+  let leitura = await lerExtrato(conteudo, mimetype, nome);
+  // "Estadual" já saiu errado em contracheque SIAPE (o modelo varia). Lê de novo e só
+  // aceita se as duas leituras concordarem.
+  if (leitura.extrato.tipo_documento === "servidor_outro") {
+    const segunda = await lerExtrato(conteudo, mimetype, nome);
+    if (segunda.extrato.tipo_documento !== "servidor_outro") leitura = segunda;
+  }
   const { extrato } = leitura;
   const analise = analisarExtrato(extrato);
   const registro: AnaliseGuardada = {
