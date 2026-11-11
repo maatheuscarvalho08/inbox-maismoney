@@ -43,6 +43,8 @@ export interface EstadoMaisa {
   produto?: Produto;
   // INSS e SIAPE: AAAA-MM-DD, a Facta pede na simulação.
   dataNascimento?: string;
+  // Data com ano impossível (ex.: 1852): a que ela acha que o cliente quis dizer, esperando confirmação.
+  dataSugerida?: string;
   // Nome completo, que o banco exige no pedido de autorização.
   nome?: string;
   // Espera pela autorização do cliente no link do banco (ISO).
@@ -397,9 +399,31 @@ export function lerDataNascimento(texto: string, agora: Date): string | null {
 
 const produtoExtrato = (estado: EstadoMaisa): ProdutoExtrato => (porExtrato(estado.produto) ? estado.produto : "inss");
 
+// Ano impossível com cara de erro de digitação (1852 no lugar de 1952): a data que
+// provavelmente era. null se não der para adivinhar com segurança.
+export function sugerirDataNascimento(texto: string, agora: Date): string | null {
+  const m = texto.match(/\b(\d{1,2})\s*[/.\- ]\s*(\d{1,2})\s*[/.\- ]\s*(\d{4})\b/);
+  if (!m || m[3].startsWith("19")) return null;
+  return lerDataNascimento(`${m[1]}/${m[2]}/19${m[3].slice(2)}`, agora);
+}
+
+const dataBr = (iso: string) => iso.split("-").reverse().join("/");
+
 async function etapaNascimento(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  // Confirmou a data que ela sugeriu ("isso", "sim", "tá certa").
+  if (estado.dataSugerida && ((await deps.classificador.simNao(texto)) === "sim" || /(cert|corret|exato|essa mesma|isso)/.test(t))) {
+    return ir(estado, "extrato", [TEXTOS.pedeExtrato(produtoExtrato(estado))], "nascimento_valido", [], {
+      dataNascimento: estado.dataSugerida,
+      dataSugerida: undefined,
+    });
+  }
   const data = lerDataNascimento(texto, deps.agora());
-  if (data) return ir(estado, "extrato", [TEXTOS.pedeExtrato(produtoExtrato(estado))], "nascimento_valido", [], { dataNascimento: data });
+  if (data) {
+    return ir(estado, "extrato", [TEXTOS.pedeExtrato(produtoExtrato(estado))], "nascimento_valido", [], { dataNascimento: data, dataSugerida: undefined });
+  }
+  const sugerida = sugerirDataNascimento(texto, deps.agora());
+  if (sugerida) return ir(estado, "nascimento", [TEXTOS.confirmaData(dataBr(sugerida))], "nascimento_sugerido", [], { dataSugerida: sugerida });
   if (texto.includes("?")) return foraDaEtapa(estado, texto);
   return tentarDeNovo(estado, TEXTOS.nascimentoInvalido, "nascimento_invalido");
 }
@@ -583,8 +607,14 @@ async function etapaNumeroContrato(estado: EstadoMaisa, texto: string): Promise<
   if (/nao sei|nao tenho|nao lembro|nao acho|onde (vejo|acho|encontro)/.test(t)) {
     return transferir(estado, "não sabe o número do contrato", TEXTOS.semNumeroContrato, "sem_numero_contrato", [], "alternativa");
   }
-  const numero = texto.replace(/[^0-9A-Za-z]/g, "");
-  if (numero.length < 5 || numero.length > 30 || (numero.match(/\d/g) ?? []).length < 4) {
+  // Mandou o contrato de outro banco (ex.: Santander quando o pedido era o Hoje): não aceita.
+  const banco = estado.alternativa?.digitacao?.banco ?? "";
+  const outro = outroBancoCitado(t, banco);
+  if (outro) {
+    return tentarDeNovo(estado, TEXTOS.contratoOutroBanco(outro, banco), "contrato_outro_banco", "alternativa");
+  }
+  const numero = extrairNumeroContrato(texto);
+  if (!numero) {
     return tentarDeNovo(estado, TEXTOS.numeroContratoInvalido, "numero_contrato_invalido", "alternativa");
   }
   const dados: DadosContrato = {};
@@ -593,6 +623,45 @@ async function etapaNumeroContrato(estado: EstadoMaisa, texto: string): Promise<
     alternativa: { ...estado.alternativa!, numeroContrato: numero },
     contrato: { dados, pergunta },
   });
+}
+
+// O número do contrato: o maior trecho com pelo menos 4 dígitos ("Hoje 20250464573").
+export function extrairNumeroContrato(texto: string): string | null {
+  const trechos = (texto.match(/[0-9A-Za-z.\-/]+/g) ?? [])
+    .map((x) => x.replace(/[^0-9A-Za-z]/g, ""))
+    .filter((x) => x.length >= 5 && x.length <= 30 && (x.match(/\d/g) ?? []).length >= 4);
+  return trechos.sort((a, b) => b.length - a.length)[0] ?? null;
+}
+
+// Bancos que o cliente costuma escrever. Usado só para perceber contrato de outro banco.
+const NOMES_BANCO: [RegExp, string][] = [
+  [/santander|\bole\b/, "Santander/Olé"],
+  [/bradesc/, "Bradesco"],
+  [/\bitau\b/, "Itaú"],
+  [/\bcaixa\b|\bcef\b/, "Caixa"],
+  [/banco do brasil|\bbb\b/, "Banco do Brasil"],
+  [/\bpan\b/, "PAN"],
+  [/\bbmg\b/, "BMG"],
+  [/daycoval/, "Daycoval"],
+  [/agibank/, "Agibank"],
+  [/\bc6\b/, "C6"],
+  [/digio/, "Digio"],
+  [/safra/, "Safra"],
+  [/mercantil/, "Mercantil"],
+  [/\bhoje\b/, "Hoje"],
+  [/\bqi\b/, "QI"],
+  [/sabemi/, "SABEMI"],
+  [/futuro/, "Futuro"],
+  [/digimais/, "Digimais"],
+];
+
+// Nome do banco que o cliente citou, quando não é o do contrato pedido. null se não citou
+// banco nenhum ou citou o certo.
+function outroBancoCitado(t: string, bancoPedido: string): string | null {
+  const pedido = bancoPedido.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const citados = NOMES_BANCO.filter(([re]) => re.test(t));
+  if (!citados.length || citados.some(([re]) => re.test(pedido))) return null;
+  return citados[0][1];
 }
 
 // Na oferta, o que não é SIM é objeção: dúvida com resposta pronta ela responde e repete a
@@ -604,7 +673,7 @@ function objecao(estado: EstadoMaisa, texto: string, motivo: string): Passo {
   if (PENSANDO.test(texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "")) && !texto.includes("?")) {
     return { estado, respostas: [TEXTOS.semPressa], efeitos: [], rotulo: "pensando" };
   }
-  const t = texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   // Receio de verdade pede acolhimento e a equipe, mesmo que fale de dinheiro.
   if (RECEIO.test(t)) return transferir(estado, motivo, TEXTOS.objecao, "objecao", [], "objecao");
   // Pergunta sobre a própria oferta: ela sabe a resposta, então responde com os números.
@@ -683,6 +752,24 @@ async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null;
   const dados = estado.contrato?.dados ?? {};
   const pergunta = estado.contrato?.pergunta ?? proximaPergunta(dados, produto) ?? TEXTOS.continuarCadastro;
   const texto = entrada.texto?.trim() ?? "";
+  // No meio da coleta o cliente mandou o número do contrato do banco certo ("Hoje 2025..."):
+  // anota no lugar do anterior e segue com a mesma pergunta.
+  const dig = estado.alternativa?.digitacao;
+  if (dig && texto && !entrada.documento) {
+    const t = texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    const citaBancoPedido = NOMES_BANCO.some(
+      ([re]) => re.test(t) && re.test(dig.banco.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()),
+    );
+    const numero = citaBancoPedido ? extrairNumeroContrato(texto) : null;
+    if (numero) {
+      return {
+        estado: { ...estado, alternativa: { ...estado.alternativa!, numeroContrato: numero } },
+        respostas: [TEXTOS.contratoAnotado(dig.banco, numero), pergunta],
+        efeitos: [],
+        rotulo: "numero_contrato_corrigido",
+      };
+    }
+  }
   if (!entrada.documento && texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
 
   let novos: DadosContrato;

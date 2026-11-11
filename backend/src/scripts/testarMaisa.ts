@@ -273,6 +273,12 @@ const CASOS: Caso[] = [
     etapaFinal: "coleta",
     respostaContem: "na sua folha de pagamento",
   },
+  {
+    nome: "Ano impossível na data (1852): sugere 1952, cliente confirma e segue",
+    acoes: ["oi", "3", CPF_SALDO, "08/03/1852", "Ela tá certa"],
+    etapaFinal: "extrato",
+    respostaContem: "Você quis dizer 08/03/1952",
+  },
   { nome: "SIAPE pede o extrato de consignações", acoes: ["oi", "sou servidor federal", CPF_SALDO, "15/03/1958"], etapaFinal: "extrato", respostaContem: "extrato de consignações" },
   {
     nome: "SIAPE fecha o contrato: aceita, manda os dados, confirma e a proposta é digitada",
@@ -370,6 +376,18 @@ const CASOS: Caso[] = [
     etapaFinal: "finalizada",
     saida: "contrato_enviado",
     respostaContem: "número do contrato do 104 - CEF",
+  },
+  {
+    nome: "Manda contrato de outro banco: Maisa pede o do banco certo",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "sim", "Santander Ole 877096220."],
+    etapaFinal: "numero_contrato",
+    respostaContem: "Esse parece ser o contrato do Santander/Olé",
+  },
+  {
+    nome: "Manda o contrato certo no meio da coleta: anota e repete a pergunta",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "sim", "1234567890", "CEF 9876543210"],
+    etapaFinal: "coleta",
+    respostaContem: "Anotei o número do contrato do 104 - CEF: 9876543210",
   },
   {
     nome: "Port + refin: cliente não sabe o número do contrato, vai para a equipe",

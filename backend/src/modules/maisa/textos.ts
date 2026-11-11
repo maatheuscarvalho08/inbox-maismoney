@@ -63,6 +63,7 @@ export const TEXTOS = {
   cpfInvalido: "Esse CPF não parece válido. Pode conferir e me mandar de novo?",
   pedeNome: "Obrigada! Agora me manda o seu nome completo, igual está no documento.",
   pedeNascimento: "Obrigada! Agora me manda a sua data de nascimento. Por exemplo: 15/03/1958.",
+  confirmaData: (data: string) => `Acho que o ano saiu trocado. Você quis dizer ${data}? Se for isso, é só me responder SIM.`,
   nascimentoInvalido: "Não entendi a data. Pode mandar assim: 15/03/1958?",
   pedeExtrato: (produto: "inss" | "siape") =>
     produto === "inss"
@@ -177,6 +178,9 @@ export const TEXTOS = {
         : `Pela simulação na Facta, dá para trazer o seu contrato do ${banco} com uma taxa menor.`,
   pedeNumeroContrato: (banco: string, parcela: string) =>
     `Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
+  contratoOutroBanco: (citado: string, pedido: string) =>
+    `Esse parece ser o contrato do ${citado}. Para essa proposta eu preciso do número do contrato do ${pedido}. Pode me mandar esse?`,
+  contratoAnotado: (banco: string, numero: string) => `Anotei o número do contrato do ${banco}: ${numero}. Obrigada!`,
   numeroContratoInvalido: "Não consegui entender o número do contrato. Pode mandar de novo, só o número? Se não souber onde achar, me diga.",
   semNumeroContrato:
     "Sem problema! Vou te passar para um especialista da nossa equipe, que te ajuda a achar o número do contrato e fecha a proposta com você. Já já alguém continua aqui.",
