@@ -125,6 +125,10 @@ export const TEXTOS = {
   semPressa: "Claro, sem pressa! Quando decidir, é só me responder SIM ou NÃO por aqui.",
   objecao:
     "Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.",
+  retomaDigitacao: (banco: string, parcela: string) =>
+    `Oi! Retomando o seu pedido: eu mesma vou digitar o seu contrato na Facta. Preciso só de algumas informações, uma de cada vez.
+
+Primeiro, o número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
   pedeNumeroContrato: (banco: string, parcela: string) =>
     `Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
   numeroContratoInvalido: "Não consegui entender o número do contrato. Pode mandar de novo, só o número? Se não souber onde achar, me diga.",

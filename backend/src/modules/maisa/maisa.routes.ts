@@ -160,6 +160,8 @@ router.post(
       saida: undefined,
       paradaEm: undefined,
       motivoTransferencia: undefined,
+      // aceitou: o cliente já tinha dito SIM. Ela não oferta de novo, segue para o contrato.
+      ...(req.body?.aceitou === true ? { aceitouOferta: true } : {}),
     };
     await prisma.conversa.update({
       where: { id: conversa.id },

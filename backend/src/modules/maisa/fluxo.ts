@@ -62,6 +62,8 @@ export interface EstadoMaisa {
     renda?: number | null;
     especie?: number | null;
   };
+  // O cliente já tinha aceitado (conversa retomada): ela não oferta de novo, vai direto ao contrato.
+  aceitouOferta?: boolean;
   // Port, port + refin ou refin que a Facta abriu, ofertado ao cliente.
   alternativa?: {
     operacao: "port_refin" | "portabilidade" | "refin";
@@ -422,6 +424,20 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
     // ela não oferta o que não simulou. A equipe simula e mostra ao cliente.
     if (!resultado.simulada) {
       return transferir(estado, `sem margem para novo; ${motivo}`, TEXTOS.semMargemExtrato, "alternativa", [], "alternativa");
+    }
+    // Já tinha dito SIM: avisa que vai digitar e pede o que falta, começando pelo contrato.
+    if (estado.aceitouOferta && digitacao && deps.digitacaoAtiva) {
+      return ir(
+        estado,
+        "numero_contrato",
+        [TEXTOS.retomaDigitacao(digitacao.banco, formatarReais(Math.round(digitacao.parcela * 100)))],
+        "retoma_contrato",
+        [],
+        {
+          aceitouOferta: undefined,
+          alternativa: { operacao, trocoCentavos, motivo, digitacao, ...(reducoes?.length ? { reducoes } : {}) },
+        },
+      );
     }
     return ir(estado, "oferta_port", [TEXTOS.ofertaPort(operacao, troco, reducoes)], "alternativa", [], {
       alternativa: { operacao, trocoCentavos, motivo, ...(digitacao ? { digitacao } : {}), ...(reducoes?.length ? { reducoes } : {}) },
