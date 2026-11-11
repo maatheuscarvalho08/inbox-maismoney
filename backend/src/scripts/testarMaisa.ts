@@ -53,7 +53,7 @@ function cpfTerminadoEm(ultimo: number) {
 // banco, a checagem automática ou o relógio andar.
 // extrato: o cliente manda um PDF; o valor diz o que a leitura encontra.
 // dados: o cliente responde e a leitura encontra esses campos. digitacao: o que a Facta devolve.
-type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "invalido" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
+type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "invalido" | "estadual" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
 
 interface Caso {
   nome: string;
@@ -339,6 +339,13 @@ const CASOS: Caso[] = [
     respostaContem: "não sobra margem",
   },
   {
+    nome: "SIAPE com contracheque de estado vai para a equipe explicando",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "estadual" }],
+    etapaFinal: "finalizada",
+    saida: "servidor_outro",
+    respostaContem: "servidor do estado ou da prefeitura",
+  },
+  {
     nome: "INSS com arquivo que não é extrato pede de novo",
     acoes: [...ATE_EXTRATO, { extrato: "invalido" }],
     etapaFinal: "extrato",
@@ -386,7 +393,7 @@ async function rodar(caso: Caso, verbose: boolean) {
   bancoSimulado.reiniciar();
   let cpfGravado: string | null = null;
   let relogio = new Date("2026-11-09T12:00:00Z");
-  let leituraExtrato: "com_margem" | "sem_margem" | "invalido" = "com_margem";
+  let leituraExtrato: "com_margem" | "sem_margem" | "invalido" | "estadual" = "com_margem";
   let proximosDados: DadosContrato = {};
   let digitacao: "ok" | "erro" = "ok";
   const deps: Dependencias = {
@@ -398,6 +405,7 @@ async function rodar(caso: Caso, verbose: boolean) {
     simularPorExtrato: async (_produto, dataNascimento) => {
       assert.equal(dataNascimento, "1958-03-15", "data de nascimento");
       if (leituraExtrato === "invalido") return { tipo: "extrato_invalido", motivo: "não é extrato do INSS" };
+      if (leituraExtrato === "estadual") return { tipo: "servidor_outro", motivo: "contracheque estadual" };
       if (leituraExtrato === "sem_margem") return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
       return bancoSimulado.simularConsignado({ convenio: _produto, cpf: cpfGravado!, dataNascimento, parcelaMaxima: 300 });
     },

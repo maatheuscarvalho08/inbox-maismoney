@@ -87,7 +87,7 @@ function margem(base: number | null, pct: number, descontos: number, informada: 
 
 export function analisarExtrato(e: ExtratoLido): AnaliseExtrato {
   const alertas: string[] = [...e.problemas.map((p) => `Leitura: ${p}`)];
-  const convenio: Convenio | null = e.tipo_documento === "outro" ? null : e.tipo_documento;
+  const convenio: Convenio | null = e.tipo_documento === "inss" || e.tipo_documento === "siape" ? e.tipo_documento : null;
   const vazia = { calculada: null, informada: null, usada: 0 };
 
   if (!e.legivel || !convenio) {

@@ -107,6 +107,7 @@ export const SAIDAS_MAISA: Record<string, Saida> = {
   contrato_enviado: { titulo: "Contrato feito na Facta", proximoPasso: "Acompanhar a assinatura do link até o pagamento.", quente: true },
   erro_digitacao: { titulo: "Contrato não entrou na Facta", proximoPasso: "Digitar a proposta direto na Facta.", quente: true },
   dados_contrato: { titulo: "Parou no cadastro do contrato", proximoPasso: "Terminar o cadastro com o cliente e digitar.", quente: true },
+  servidor_outro: { titulo: "Servidor estadual ou municipal", proximoPasso: "Atender pelo convênio do estado ou da prefeitura." },
   extrato_invalido: { titulo: "Extrato não deu para ler", proximoPasso: "Pedir o PDF do documento e analisar o extrato." },
   sem_extrato: { titulo: "Não mandou o extrato", proximoPasso: "Ajudar o cliente a tirar o extrato ou o contracheque." },
 };
@@ -129,6 +130,7 @@ export const SAIDAS_NO_GUIA = [
   "acompanhar_proposta",
   "link_nao_autorizado",
   "telefone_outro_cpf",
+  "servidor_outro",
   "extrato_invalido",
   "sem_extrato",
   "midia",

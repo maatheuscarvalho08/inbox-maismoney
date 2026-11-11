@@ -40,10 +40,13 @@ export async function limparMidiaExpirada() {
     }
   }
 
+  const ids = mensagensComMidia.map((m) => m.id);
   await prisma.mensagem.updateMany({
-    where: { id: { in: mensagensComMidia.map((m) => m.id) } },
+    where: { id: { in: ids } },
     data: { midiaDeleted: true, midiaPath: null },
   });
+  // A leitura do extrato tem dados pessoais: sai junto com o arquivo. Fica só o resumo.
+  await prisma.analiseExtrato.deleteMany({ where: { mensagemId: { in: ids } } });
 
   return { conversas: conversasInativas.length, arquivos: arquivosRemovidos };
 }

@@ -15,6 +15,7 @@ import type { DadosContrato } from "./contrato.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo } from "./fluxo.js";
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
 import { TEXTOS } from "./textos.js";
+import { guardarAnalise } from "../extratos/guardadas.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
 export const PREFIXO_NUMERO_TESTE = "5500000";
@@ -238,7 +239,13 @@ async function processar(conversaId: string, gatilho: Gatilho) {
       if (!banco) return semBanco();
       if (!arquivo) return { tipo: "extrato_invalido", motivo: "arquivo não encontrado" };
       const inicio = Date.now();
-      const leitura = await parcelaPeloExtrato(await lerArquivo(arquivo.midiaPath), arquivo.tipo, convenio);
+      const { resultado: leitura, registro } = await parcelaPeloExtrato(await lerArquivo(arquivo.midiaPath), arquivo.tipo, convenio);
+      // A equipe vê no balão do arquivo o que ela leu e por que não passou.
+      if ("mensagemId" in gatilho) {
+        await guardarAnalise(gatilho.mensagemId, registro).catch((err) =>
+          console.error(`Não foi possível guardar a análise do extrato da conversa ${conversa.id}:`, err),
+        );
+      }
       // Registro de acesso a documento sensível, sem dado pessoal.
       console.log(`Maisa leu extrato ${convenio} da conversa ${conversa.id}: ${leitura.tipo} ${Date.now() - inicio}ms`);
       if (leitura.tipo !== "ok") return leitura;

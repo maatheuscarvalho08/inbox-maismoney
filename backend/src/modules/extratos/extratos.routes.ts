@@ -8,6 +8,7 @@ import { uploadsRoot } from "../../middleware/upload.js";
 import { prisma } from "../../db/prisma.js";
 import { lerExtrato, leituraConfigurada } from "./leitor.js";
 import { analisarExtrato } from "./analise.js";
+import { analiseGuardada, guardarAnalise, type AnaliseGuardada } from "./guardadas.js";
 
 const router = Router();
 router.use(authenticate);
@@ -70,9 +71,21 @@ router.post(
     const caminho = path.resolve(process.cwd(), mensagem.midiaPath);
     if (!caminho.startsWith(uploadsRoot + path.sep)) return res.status(400).json({ error: "Caminho inválido" });
 
+    // Já lido pela Maisa ou por alguém da equipe: mostra o que foi guardado, sem nova leitura.
+    // ?refazer=1 lê de novo.
+    if (req.query.refazer !== "1") {
+      const guardada = await analiseGuardada(mensagem.id);
+      if (guardada) return res.json(guardada);
+    }
+
     const conteudo = await fs.readFile(caminho);
     const tipo = mensagem.tipoMidia;
-    await responder(res, () => analisar(conteudo, tipo, path.basename(caminho), req.user!.id, `mensagem:${mensagem.id}`));
+    await responder(res, async () => {
+      const r = await analisar(conteudo, tipo, path.basename(caminho), req.user!.id, `mensagem:${mensagem.id}`);
+      const registro: AnaliseGuardada = { ...r, origem: req.user!.id, lidoEm: new Date().toISOString() };
+      await guardarAnalise(mensagem.id, registro);
+      return registro;
+    });
   }),
 );
 

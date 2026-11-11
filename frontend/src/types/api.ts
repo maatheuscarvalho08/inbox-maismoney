@@ -62,6 +62,8 @@ export interface Mensagem {
   externalId: string | null;
   statusEntrega: StatusEntrega | null;
   erroEntrega?: string | null;
+  // Resumo da análise do extrato guardada (da Maisa ou da equipe).
+  analiseResumo?: string | null;
   editadaEm: string | null;
   respondeA?: { id: string; conteudoTexto: string | null; tipoMidia: string | null; remetenteTipo: RemetenteTipo } | null;
   timestamp: string;

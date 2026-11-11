@@ -100,6 +100,8 @@ export const TEXTOS = {
     `Para ${rotulo}, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.`,
   servidorComEquipe:
     "Para servidor público, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
+  servidorNaoFederal:
+    "Pelo seu contracheque, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",
   semSaldo:
     "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Vou te passar para um atendente ver outras opções com você.",

@@ -40,6 +40,10 @@ interface Resultado {
     possibilidades: Possibilidade[];
   };
   leitura: { especie_codigo: number | null; especie_descricao: string | null; base_calculo: number | null; competencia: string | null };
+  // Guardada: quem leu ("maisa" ou id do usuário), quando, e o motivo se a Maisa recusou o documento.
+  origem?: string;
+  lidoEm?: string;
+  recusa?: string;
 }
 
 const NOME: Record<Possibilidade["tipo"], string> = {
@@ -82,15 +86,21 @@ export function AnaliseExtratoModal({ mensagem, onFechar }: Props) {
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
+  // Pedido de leitura nova, preso à mensagem em que foi feito.
+  const [releitura, setReleitura] = useState<{ id: string; n: number } | null>(null);
+  const refazer = Boolean(mensagem && releitura?.id === mensagem.id);
+  const nReleitura = releitura?.n ?? 0;
+
   useEffect(() => {
     if (!mensagem) return;
     setResultado(null);
     setErro(null);
+    // Abre a análise guardada. "Ler de novo" pede uma leitura nova.
     api
-      .post<Resultado>(`/extratos/mensagens/${mensagem.id}`)
+      .post<Resultado>(`/extratos/mensagens/${mensagem.id}${refazer ? "?refazer=1" : ""}`)
       .then(setResultado)
       .catch((err) => setErro(err instanceof ApiError ? err.message : "Não foi possível analisar o extrato"));
-  }, [mensagem]);
+  }, [mensagem, refazer, nReleitura]);
 
   useEffect(() => {
     if (!mensagem) return;
@@ -147,7 +157,16 @@ export function AnaliseExtratoModal({ mensagem, onFechar }: Props) {
                     {resultado?.leitura.especie_codigo ? ` · espécie ${resultado.leitura.especie_codigo}` : ""}
                     {resultado?.leitura.base_calculo ? ` · base ${reais(resultado.leitura.base_calculo)}` : ""}
                   </p>
-                  <p className="mt-1 text-lg font-bold text-ink">{a.resumo}</p>
+                  <p className="mt-1 text-lg font-bold text-ink">{resultado?.recusa ? `Não passou: ${resultado.recusa}.` : a.resumo}</p>
+                  {resultado?.lidoEm && (
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted">
+                      {resultado.origem === "maisa" ? "Lido pela Maisa" : "Lido pela equipe"} em{" "}
+                      {new Date(resultado.lidoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                      <button onClick={() => mensagem && setReleitura((r) => ({ id: mensagem.id, n: (r?.n ?? 0) + 1 }))} className="font-semibold text-accent hover:underline">
+                        Ler de novo
+                      </button>
+                    </p>
+                  )}
                   {!a.confiavel && (
                     <p className="mt-1 text-xs font-semibold text-accent">Leitura com dúvida: confira os números com o extrato.</p>
                   )}

@@ -7,6 +7,7 @@ import { env } from "../../config/env.js";
 import { uploadsRoot } from "../../middleware/upload.js";
 import { lerExtrato } from "../extratos/leitor.js";
 import { analisarExtrato } from "../extratos/analise.js";
+import type { AnaliseGuardada } from "../extratos/guardadas.js";
 import type { ResultadoExtrato } from "./bancos.js";
 
 export const FORMATOS_EXTRATO = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
@@ -46,19 +47,45 @@ export async function transcreverAudio(conteudo: Buffer, mimetype: string): Prom
 
 // Lê o extrato e devolve a parcela máxima para um empréstimo novo, ou o motivo de
 // não dar. Quem simula com essa parcela é o banco.
+// "registro" é a leitura completa, para guardar na mensagem e a equipe ver o motivo.
 export async function parcelaPeloExtrato(
   conteudo: Buffer,
   mimetype: string,
   convenio: "inss" | "siape",
-): Promise<{ tipo: "ok"; parcelaMaxima: number; renda: number | null; especie: number | null } | Exclude<ResultadoExtrato, { tipo: "com_saldo" | "erro" }>> {
-  const { extrato } = await lerExtrato(conteudo, mimetype, mimetype === "application/pdf" ? "extrato.pdf" : "extrato");
-  if (!extrato.legivel || extrato.tipo_documento !== convenio) {
-    return { tipo: "extrato_invalido", motivo: extrato.legivel ? `não é extrato do ${convenio.toUpperCase()}` : "extrato ilegível" };
-  }
+): Promise<{
+  resultado:
+    | { tipo: "ok"; parcelaMaxima: number; renda: number | null; especie: number | null }
+    | Exclude<ResultadoExtrato, { tipo: "com_saldo" | "erro" }>;
+  registro: AnaliseGuardada;
+}> {
+  const leitura = await lerExtrato(conteudo, mimetype, mimetype === "application/pdf" ? "extrato.pdf" : "extrato");
+  const { extrato } = leitura;
   const analise = analisarExtrato(extrato);
+  const registro: AnaliseGuardada = {
+    leitura: extrato,
+    analise,
+    modelo: leitura.modelo,
+    tokens: { entrada: leitura.tokensEntrada, saida: leitura.tokensSaida },
+    origem: "maisa",
+    lidoEm: new Date().toISOString(),
+  };
+  // Escolheu SIAPE, mas o contracheque é de estado ou prefeitura: é com a equipe.
+  if (extrato.legivel && extrato.tipo_documento === "servidor_outro") {
+    const motivo = "contracheque de servidor estadual ou municipal, não federal";
+    return { resultado: { tipo: "servidor_outro", motivo }, registro: { ...registro, recusa: motivo } };
+  }
+  if (!extrato.legivel || extrato.tipo_documento !== convenio) {
+    const motivo = extrato.legivel
+      ? `não é ${convenio === "siape" ? "contracheque do SIAPE" : "extrato do INSS"}`
+      : "documento ilegível";
+    return { resultado: { tipo: "extrato_invalido", motivo }, registro: { ...registro, recusa: motivo } };
+  }
   const novo = analise.possibilidades.find((p) => p.tipo === "novo");
   if (!novo || novo.tipo !== "novo" || !novo.possivel) {
-    return { tipo: "sem_saldo", banco: "extrato", motivo: novo?.motivo ?? "sem margem para empréstimo novo" };
+    return { resultado: { tipo: "sem_saldo", banco: "extrato", motivo: novo?.motivo ?? "sem margem para empréstimo novo" }, registro };
   }
-  return { tipo: "ok", parcelaMaxima: novo.parcelaMaxima, renda: extrato.base_calculo, especie: extrato.especie_codigo };
+  return {
+    resultado: { tipo: "ok", parcelaMaxima: novo.parcelaMaxima, renda: extrato.base_calculo, especie: extrato.especie_codigo },
+    registro,
+  };
 }

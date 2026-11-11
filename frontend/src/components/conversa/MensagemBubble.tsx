@@ -172,13 +172,16 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
         ) : mensagem.tipoMidia && mensagem.midiaPath ? (
           <>
             <MidiaMensagem mensagemId={mensagem.id} tipoMidia={mensagem.tipoMidia} />
+            {mensagem.analiseResumo && (
+              <p className="mt-1.5 max-w-xs text-[11px] leading-snug text-indigo-claro">{mensagem.analiseResumo}</p>
+            )}
             {onAnalisarExtrato && mensagem.remetenteTipo === "cliente" && pareceExtrato(mensagem.tipoMidia) && (
               <button
                 onClick={() => onAnalisarExtrato(mensagem)}
                 className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
               >
                 <FileText size={12} aria-hidden="true" />
-                Analisar extrato
+                {mensagem.analiseResumo ? "Ver análise" : "Analisar extrato"}
               </button>
             )}
           </>

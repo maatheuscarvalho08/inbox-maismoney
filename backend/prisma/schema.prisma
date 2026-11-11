@@ -359,6 +359,8 @@ model Mensagem {
   // Resposta citada (reply do WhatsApp) — aponta pra mensagem original dentro da
   // mesma conversa. Nulo = mensagem normal, sem citação.
   respondeAId   String?       @map("responde_a_id")
+  // Resumo da última análise de extrato, sem dado pessoal: aparece no balão do arquivo.
+  analiseResumo String?       @map("analise_resumo")
   timestamp     DateTime      @default(now())
   createdAt     DateTime      @default(now()) @map("created_at")
 
@@ -366,6 +368,7 @@ model Mensagem {
   operador      Usuario? @relation("OperadorMensagens", fields: [operadorId], references: [id])
   respondeA     Mensagem?  @relation("RespostaMensagem", fields: [respondeAId], references: [id], onDelete: SetNull)
   respostas     Mensagem[] @relation("RespostaMensagem")
+  analiseExtrato AnaliseExtrato?
 
   @@index([loteId])
   @@map("mensagens")
@@ -418,4 +421,17 @@ model MetricaRetrato {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("metricas_retratos")
+}
+
+// Leitura e análise de um extrato ou contracheque, feita pela Maisa ou pela equipe.
+// Guardada para não ler de novo na OpenAI. Apagada junto com o arquivo (regra dos 4 dias).
+model AnaliseExtrato {
+  mensagemId String   @id @map("mensagem_id")
+  dados      Json
+  origem     String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  mensagem Mensagem @relation(fields: [mensagemId], references: [id], onDelete: Cascade)
+
+  @@map("analises_extrato")
 }

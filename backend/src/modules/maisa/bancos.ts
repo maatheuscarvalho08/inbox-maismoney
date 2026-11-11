@@ -22,7 +22,11 @@ export type ResultadoBanco =
 export type ResultadoAutorizacao = facta.ResultadoAutorizacao;
 
 // INSS e SIAPE: o extrato pode não servir (outro documento, ilegível) antes de chegar ao banco.
-export type ResultadoExtrato = ResultadoBanco | { tipo: "extrato_invalido"; motivo: string };
+// "servidor_outro": o cliente disse SIAPE, mas o contracheque é de estado ou prefeitura.
+export type ResultadoExtrato =
+  | ResultadoBanco
+  | { tipo: "extrato_invalido"; motivo: string }
+  | { tipo: "servidor_outro"; motivo: string };
 
 // Antes de consultar, o cliente precisa autorizar num link que o banco manda.
 export type ResultadoConsulta = { tipo: "nao_autorizado" } | { tipo: "link_expirado" } | { tipo: "indisponivel" } | ResultadoBanco;

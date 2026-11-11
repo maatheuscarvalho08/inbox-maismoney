@@ -324,6 +324,9 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
   } catch (err) {
     resultado = { tipo: "erro", banco: "desconhecido", motivo: err instanceof Error ? err.message : "falha na leitura do extrato" };
   }
+  if (resultado.tipo === "servidor_outro") {
+    return transferir(estado, resultado.motivo, TEXTOS.servidorNaoFederal, "servidor_outro", [], "servidor_outro");
+  }
   if (resultado.tipo === "extrato_invalido") {
     return tentarDeNovo(estado, TEXTOS.extratoInvalido(produtoExtrato(estado)), "extrato_invalido", "extrato_invalido");
   }
