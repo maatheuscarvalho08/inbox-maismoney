@@ -12,7 +12,7 @@ Leia a oferta (contexto) e a resposta do cliente. Classifique:
 - tipo "pergunta": quer saber algo da oferta (qual contrato, quanto, troco, parcela, prazo, como funciona) sem recusar.
 - tipo "objecao": não recusou de vez, mas levantou uma barreira.
 - tipo "pensar": quer pensar, ver depois, falar com alguém da família.
-- tipo "humano": quer falar com uma pessoa ou pergunta se está falando com robô ou máquina.
+- tipo "humano": quer falar com uma pessoa ou pergunta se está falando com robô ou máquina. Pedir telefone, contato ou SAC do banco ou da empresa NÃO é "humano": é "pergunta".
 objecao (só em recusa ou objecao):
 - "pouco_valor": achou pouco dinheiro ou pouco troco.
 - "prazo_longo": não quer esticar o prazo ou acha muitas parcelas.
