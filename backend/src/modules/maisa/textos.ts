@@ -90,7 +90,7 @@ export const TEXTOS = {
     "Você vai receber um link do banco para confirmar.\n\n" +
     "Posso seguir? Responda SIM ou NÃO.",
   perguntaConsentimento: "Posso consultar o seu crédito no banco Facta? Responda SIM ou NÃO.",
-  perguntaOferta: "Quer seguir com a proposta? Responda SIM ou NÃO.",
+  perguntaOferta: "Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.",
   naoEntendi: "Desculpa, não entendi.",
   transferindo: "Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.",
   // Resposta padrão da política de segurança (politicaSeguranca.ts, seção 6).
@@ -108,21 +108,27 @@ export const TEXTOS = {
   semMargemFim:
     "Olhei o seu documento com atenção. No momento não sobra margem para um empréstimo novo, e também não dá para fazer portabilidade ou refinanciamento dos seus contratos. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
   // Nunca valor garantido: o saldo real só vem do banco de origem, na digitação.
+  // prazo: em quantas parcelas fica o contrato na Facta. Port + refin recomeça (ex.: 120x);
+  // port pura mantém as parcelas que faltavam, só com taxa e parcela menores.
   ofertaPort: (
     operacao: "port_refin" | "portabilidade" | "refin",
     troco: string | null,
     reducoes: { banco: string; atual: number; nova: number }[] = [],
+    prazo: number | null = null,
   ) =>
     (operacao === "port_refin" && troco
-      ? `Para empréstimo novo não sobra margem, mas encontrei uma saída: trazer um dos seus contratos para a Facta, com taxa menor, e ainda liberar um dinheiro extra de até ${troco} na sua conta, sem aumentar a parcela.\n\nÉ uma estimativa: o valor final depende do saldo que o seu banco informar.`
+      ? `Para empréstimo novo não sobra margem, mas encontrei uma saída: trazer um dos seus contratos para a Facta, com taxa menor, e ainda liberar um dinheiro extra de até ${troco} na sua conta, sem aumentar a parcela.` +
+        (prazo ? ` O contrato recomeça do zero, em ${prazo} parcelas.` : "") +
+        "\n\nÉ uma estimativa: o valor final depende do saldo que o seu banco informar."
       : operacao === "refin"
         ? "Para empréstimo novo não sobra margem, mas dá para refinanciar um contrato que você já tem e liberar um valor novo."
         : reducoes.length
           ? "Para empréstimo novo não sobra margem, mas dá para trazer contrato seu para a Facta com uma taxa menor, e a parcela cai:\n" +
-            reducoes.map((r) => `• ${r.banco}: de ${formatarReais(Math.round(r.atual * 100))} para ${formatarReais(Math.round(r.nova * 100))}`).join("\n")
+            reducoes.map((r) => `• ${r.banco}: de ${formatarReais(Math.round(r.atual * 100))} para ${formatarReais(Math.round(r.nova * 100))}`).join("\n") +
+            "\n\nVocê continua com as mesmas parcelas que faltam, só que pagando menos em cada uma."
           : "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que baixa um pouco a sua parcela.") +
-    "\n\nQuer seguir? Responda SIM ou NÃO.",
-  semPressa: "Claro, sem pressa! Quando decidir, é só me responder SIM ou NÃO por aqui.",
+    "\n\nSe fizer sentido para você, eu mesma cuido de tudo. É só me responder SIM que eu já começo. Ficou alguma dúvida? Pode me perguntar.",
+  semPressa: "Claro, sem pressa! Quando decidir, é só me responder por aqui.",
   objecao:
     "Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.",
   // Retomada de quem já aceitou: primeiro lembra o que ele ganha, depois pede o contrato.
@@ -151,7 +157,7 @@ export const TEXTOS = {
   // Nunca prometer valor garantido: sempre "até" e "estimativa".
   oferta: (valor: string, prazo: number, parcela: string, desconto = "no seu salário") =>
     `Boa notícia! Você pode receber até ${valor}, em ${prazo} parcelas de ${parcela}, descontadas direto ${desconto}.\n\n` +
-    "Esse valor é uma estimativa e ainda passa pela análise do banco. Quer seguir? Responda SIM ou NÃO.",
+    "Esse valor é uma estimativa e ainda passa pela análise do banco. Se fizer sentido para você, é só me responder SIM que eu já começo. Ficou alguma dúvida? Pode me perguntar.",
   // Uma vez só, 10 minutos depois da oferta sem resposta.
   followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",
   inicioContrato: "Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta.",

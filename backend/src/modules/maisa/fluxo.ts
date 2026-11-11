@@ -450,7 +450,7 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
         },
       );
     }
-    return ir(estado, "oferta_port", [TEXTOS.ofertaPort(operacao, troco, reducoes)], "alternativa", [], {
+    return ir(estado, "oferta_port", [TEXTOS.ofertaPort(operacao, troco, reducoes, digitacao?.refin?.prazo ?? null)], "alternativa", [], {
       alternativa: { operacao, trocoCentavos, motivo, ...(digitacao ? { digitacao } : {}), ...(reducoes?.length ? { reducoes } : {}) },
     });
   }
