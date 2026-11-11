@@ -127,6 +127,11 @@ async function validar(m: Record<CampoModelo, string | null>, faltando: Set<Camp
     const sigla = semAcento(m.orgao_emissor).replace(/[^A-Z]/g, "");
     const orgaos = await facta.orgaosEmissores();
     if (orgaos[sigla]) d.orgaoEmissor = sigla;
+    // Secretarias de segurança de cada estado (SEGUP no Pará, SDS em Pernambuco, SESEG...):
+    // a Facta só tem a sigla genérica SSP.
+    else if (/^(SEGUP|SDS|SESEG|SEDS|SSPDS|SESDEC|SSPPC|SSPAL|SSPSP|SSPBA|SSPGO|SSPMA|SSPPA|SSPPI|SSPRO|SSPRR|SSPTO|SSPSE|SSPMT|SSPMS|SSPES|SSPDF|SSPCE|SSPAM|SSPAC|SSPAP|SSPRN|SSPPB|SSPRJ)$/.test(sigla)) {
+      d.orgaoEmissor = "SSP";
+    }
   }
   if (quer("estadoRg") && uf(m.estado_rg)) d.estadoRg = uf(m.estado_rg)!;
   if (quer("dataExpedicao") && data(m.data_expedicao)) d.dataExpedicao = data(m.data_expedicao)!;
