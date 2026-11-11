@@ -470,8 +470,22 @@ async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Depende
   const resposta = await deps.classificador.simNao(texto);
   const motivo = estado.alternativa?.motivo ?? "portabilidade";
   if (resposta === "sim") return transferir(estado, `aceitou: ${motivo}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
-  if (resposta === "nao") return encerrar(estado, "recusou a portabilidade", TEXTOS.recusou, "recusou");
-  return foraDaEtapa(estado, texto);
+  // NÃO, receio ou dúvida: a Facta já aprovou, é cliente para a equipe convencer.
+  return objecao(estado, texto, resposta === "nao" ? "recusou a portabilidade" : "objeção na oferta de portabilidade");
+}
+
+// Na oferta, o que não é SIM é objeção: dúvida com resposta pronta ela responde e repete a
+// pergunta. O resto (receio, NÃO, pergunta sem resposta) vai para a equipe como lead quente.
+const PENSANDO = /(pensar|pensando|depois|mais tarde|amanh|vou ver|ver com|conversar com|falar com (a|o|minha|meu))/i;
+
+function objecao(estado: EstadoMaisa, texto: string, motivo: string): Passo {
+  // "Deixa eu pensar" não é objeção: ela espera (follow-up e Carrinho cuidam do resto).
+  if (PENSANDO.test(texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "")) && !texto.includes("?")) {
+    return { estado, respostas: [TEXTOS.semPressa], efeitos: [], rotulo: "pensando" };
+  }
+  const faq = buscarFaq(texto);
+  if (faq) return { estado, respostas: [faq, PERGUNTA_DA_ETAPA[estado.etapa]], efeitos: [], rotulo: "faq" };
+  return transferir(estado, motivo, TEXTOS.objecao, "objecao", [], "objecao");
 }
 
 async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
@@ -490,7 +504,7 @@ async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencia
   }
   if (resposta === "sim") return transferir(estado, "aceitou a oferta", TEXTOS.aceitou, "aceitou");
   if (resposta === "nao") return transferir(estado, "recusou a oferta", TEXTOS.recusou, "recusou");
-  return foraDaEtapa(estado, texto);
+  return objecao(estado, texto, "objeção na oferta");
 }
 
 // Cada resposta do cliente (texto, foto do documento ou áudio já transcrito) preenche

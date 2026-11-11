@@ -370,11 +370,23 @@ const CASOS: Caso[] = [
     respostaContem: "confirma o saldo com o seu banco",
   },
   {
-    nome: "Recusa a port + refin: encerra sem a equipe",
+    nome: "Recusa a port + refin: vai para a equipe tentar converter",
     acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "não"],
     etapaFinal: "finalizada",
-    saida: "recusou",
-    encerra: true,
+    saida: "objecao",
+  },
+  {
+    nome: "Receio na oferta de port vira lead para a equipe, sem 'não entendi'",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "Mas no Reclame Aqui a Facta demora liberar e muitas vezes não libera. Tenho receio."],
+    etapaFinal: "finalizada",
+    saida: "objecao",
+    respostaContem: "Entendo a sua preocupação",
+  },
+  {
+    nome: "Deixa eu pensar na oferta de port: ela espera",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "deixa eu pensar"],
+    etapaFinal: "oferta_port",
+    respostaContem: "sem pressa",
   },
   {
     nome: "SIAPE com contracheque de estado vai para a equipe explicando",

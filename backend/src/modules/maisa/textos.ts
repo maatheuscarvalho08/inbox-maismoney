@@ -115,6 +115,9 @@ export const TEXTOS = {
         ? "Para empréstimo novo não sobra margem, mas dá para refinanciar um contrato que você já tem e liberar um valor novo."
         : "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que baixa um pouco a sua parcela.") +
     "\n\nQuer seguir? Responda SIM ou NÃO.",
+  semPressa: "Claro, sem pressa! Quando decidir, é só me responder SIM ou NÃO por aqui.",
+  objecao:
+    "Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.",
   aceitouPort:
     "Ótimo! Vou te passar para um especialista da nossa equipe. Ele confirma o saldo com o seu banco e fecha a proposta com você. Já já alguém continua aqui.",
   semSaldo:
