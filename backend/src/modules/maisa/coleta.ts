@@ -124,12 +124,19 @@ async function validar(m: Record<CampoModelo, string | null>, faltando: Set<Camp
   const rg = limpo(m.rg).replace(/[^0-9Xx]/g, "");
   if (quer("rg") && rg.length >= 5 && rg.length <= 14) d.rg = rg.toUpperCase();
   if (quer("orgaoEmissor") && m.orgao_emissor) {
-    const sigla = semAcento(m.orgao_emissor).replace(/[^A-Z]/g, "");
+    const bruto = semAcento(m.orgao_emissor);
+    const sigla = bruto.replace(/[^A-Z]/g, "");
+    // "SEGUP/PA", "SSP-RJ": a UF vem grudada. Sem ela sobra a sigla do órgão; a UF vale
+    // como estado do RG se ainda não veio.
+    const ufFinal = bruto.match(/[\s/-]([A-Z]{2})$/)?.[1];
+    const semUf = ufFinal && UFS.includes(ufFinal) ? sigla.slice(0, -2) : sigla;
+    if (ufFinal && UFS.includes(ufFinal) && !d.estadoRg && quer("estadoRg")) d.estadoRg = ufFinal;
     const orgaos = await facta.orgaosEmissores();
     if (orgaos[sigla]) d.orgaoEmissor = sigla;
+    else if (orgaos[semUf]) d.orgaoEmissor = semUf;
     // Secretarias de segurança de cada estado (SEGUP no Pará, SDS em Pernambuco, SESEG...):
     // a Facta só tem a sigla genérica SSP.
-    else if (/^(SEGUP|SDS|SESEG|SEDS|SSPDS|SESDEC|SSPPC|SSPAL|SSPSP|SSPBA|SSPGO|SSPMA|SSPPA|SSPPI|SSPRO|SSPRR|SSPTO|SSPSE|SSPMT|SSPMS|SSPES|SSPDF|SSPCE|SSPAM|SSPAC|SSPAP|SSPRN|SSPPB|SSPRJ)$/.test(sigla)) {
+    else if (/^(SEGUP|SDS|SESEG|SEDS|SSPDS|SESDEC|SSPPC|SSP)$/.test(semUf) || /^(SSP|SEGUP)[A-Z]{2}$/.test(sigla)) {
       d.orgaoEmissor = "SSP";
     }
   }

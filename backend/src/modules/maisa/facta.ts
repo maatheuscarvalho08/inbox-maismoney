@@ -533,6 +533,8 @@ const BANCO_POR_NOME: [RegExp, string][] = [
   [/daycoval|daybco/, "707"],
   [/agibank|agiplan/, "121"],
   [/\bc6\b/, "336"],
+  // Nubank: código 260 da lista de bancos da Facta (Nu Bank Pagamentos).
+  [/nubank|nu bank|nu pagamentos/, "260"],
   [/digio/, "335"],
   [/safra/, "422"],
   [/mercantil/, "389"],
