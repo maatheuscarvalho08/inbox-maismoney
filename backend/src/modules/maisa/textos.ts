@@ -162,6 +162,10 @@ export const TEXTOS = {
     return corpo + "\n\nSe fizer sentido para você, eu mesma cuido de tudo. É só me responder SIM que eu já começo. Ficou alguma dúvida? Pode me perguntar.";
   },
   semPressa: "Claro, sem pressa! Quando decidir, é só me responder por aqui.",
+  recusaValor:
+    "Entendi, faz sentido você querer mais. Esse valor é uma estimativa feita com o saldo aproximado do seu contrato. Vou pedir para um especialista da nossa equipe olhar o saldo real e ver se consegue uma condição melhor para você. Já já alguém continua aqui.",
+  recusaSimples:
+    "Tudo bem! Se mudar de ideia ou quiser ver outras opções, um especialista da nossa equipe fica à disposição por aqui.",
   duvidaParaEquipe:
     "Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.",
   objecao:

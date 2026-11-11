@@ -439,6 +439,13 @@ const CASOS: Caso[] = [
     respostaContem: "você recebe até R$",
   },
   {
+    nome: "Recusa por pouco troco: não repete a oferta, reconhece e chama a equipe",
+    acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "Não vô aceita muito pouco troco pra 120 mes"],
+    etapaFinal: "finalizada",
+    saida: "objecao",
+    respostaContem: "faz sentido você querer mais",
+  },
+  {
     nome: "Pede o contato da Facta na oferta: manda o SAC e continua na oferta",
     acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "não me envia o contato da Facta por favor"],
     etapaFinal: "oferta_port",

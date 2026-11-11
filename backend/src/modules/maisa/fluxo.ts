@@ -627,7 +627,7 @@ async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Depende
   }
   if (resposta === "sim") return transferir(estado, `aceitou: ${motivo}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
   // NÃO, receio ou dúvida: a Facta já aprovou, é cliente para a equipe convencer.
-  return objecao(estado, texto, resposta === "nao" ? "recusou a portabilidade" : "objeção na oferta de portabilidade");
+  return objecao(estado, texto, resposta === "nao" ? "recusou a portabilidade" : "objeção na oferta de portabilidade", resposta === "nao");
 }
 
 // Número do contrato no banco de origem: a Facta precisa dele para comprar a dívida.
@@ -706,7 +706,7 @@ function outroBancoCitado(t: string, bancoPedido: string): string | null {
 // pergunta. O resto (receio, NÃO, pergunta sem resposta) vai para a equipe como lead quente.
 const PENSANDO = /(pensar|pensando|depois|mais tarde|amanh|vou ver|ver com|conversar com|falar com (a|o|minha|meu))/i;
 
-function objecao(estado: EstadoMaisa, texto: string, motivo: string): Passo {
+function objecao(estado: EstadoMaisa, texto: string, motivo: string, recusou = false): Passo {
   // "Deixa eu pensar" não é objeção: ela espera (follow-up e Carrinho cuidam do resto).
   if (PENSANDO.test(texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "")) && !texto.includes("?")) {
     return { estado, respostas: [TEXTOS.semPressa], efeitos: [], rotulo: "pensando" };
@@ -714,6 +714,14 @@ function objecao(estado: EstadoMaisa, texto: string, motivo: string): Passo {
   const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   // Receio de verdade pede acolhimento e a equipe, mesmo que fale de dinheiro.
   if (RECEIO.test(t)) return transferir(estado, motivo, TEXTOS.objecao, "objecao", [], "objecao");
+  // Recusou (NÃO): nunca repetir a oferta. Pedido com resposta pronta (contato da Facta) ela
+  // atende; senão a equipe tenta outra condição, com resposta que reconhece o motivo.
+  if (recusou) {
+    const faqRecusa = buscarFaq(texto);
+    if (faqRecusa) return { estado, respostas: [faqRecusa, PERGUNTA_DA_ETAPA[estado.etapa]], efeitos: [], rotulo: "faq" };
+    const motivoValor = /(pouco|baixo|pequeno|valor|troco|dinheiro|prazo|meses|mes|parcela|caro|juros|taxa)/.test(t);
+    return transferir(estado, `${motivo}: ${texto.slice(0, 120)}`, motivoValor ? TEXTOS.recusaValor : TEXTOS.recusaSimples, "recusou", [], "objecao");
+  }
   // Pergunta sobre a própria oferta: ela sabe a resposta, então responde com os números.
   const sobreOferta = respostaSobreOferta(estado, t);
   if (sobreOferta) return { estado, respostas: [sobreOferta, PERGUNTA_DA_ETAPA[estado.etapa]], efeitos: [], rotulo: "duvida_oferta" };
@@ -799,7 +807,7 @@ async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencia
   }
   if (resposta === "sim") return transferir(estado, "aceitou a oferta", TEXTOS.aceitou, "aceitou");
   if (resposta === "nao") return transferir(estado, "recusou a oferta", TEXTOS.recusou, "recusou");
-  return objecao(estado, texto, "objeção na oferta");
+  return objecao(estado, texto, "objeção na oferta", false);
 }
 
 // Cada resposta do cliente (texto, foto do documento ou áudio já transcrito) preenche
