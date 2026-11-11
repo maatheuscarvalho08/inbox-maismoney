@@ -76,10 +76,12 @@ const PEDE_HUMANO =
 // Ordem importa: o mais específico vem antes do mais genérico.
 // O número da lista de produtos é lido antes, em convenio(). Aqui só texto livre.
 const CONVENIOS: [RegExp, ConvenioEntendido][] = [
-  [/\bclt\b|carteira assinada|carteira de trabalho|registrad|empresa privada|\bcarteira\b/, "clt"],
+  // Grafias que a transcrição de áudio costuma devolver também valem (celetista, "ce ele te").
+  [/\b(clt|celetista|celete|ce ele te|c l t)\b|carteira assinada|carteira de trabalho|registrad|empresa privada|\bcarteira\b/, "clt"],
   [/\bloas\b|\bbpc\b|prestacao continuada/, "loas"],
+  // Antes do INSS: "pensionista SIAPE" é SIAPE. CIAP, ciape e siap são o SIAPE falado.
+  [/\b(siape|siap|siapi|ciap|ciape|ciapi|ciappe)\b|servidor federal|federal/, "siape"],
   [/\binss\b|aposentad|pensionista|beneficio/, "inss"],
-  [/\bsiape\b|servidor federal|federal/, "siape"],
   [/prefeitura|municipal/, "servidor_prefeitura"],
   [/\bmarinha\b/, "marinha"],
   [/\bmilitar|exercito|aeronautica/, "militar"],

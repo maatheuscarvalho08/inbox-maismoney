@@ -34,6 +34,13 @@ export async function transcreverAudio(conteudo: Buffer, mimetype: string): Prom
   form.append("file", new Blob([new Uint8Array(conteudo)], { type: mimetype.split(";")[0] }), `audio.${ext}`);
   form.append("model", env.OPENAI_MODELO_AUDIO);
   form.append("language", "pt");
+  // Vocabulário do consignado e números em algarismos: sem isso, "SIAPE" virava "CIAP" e
+  // CPF e datas vinham por extenso.
+  form.append(
+    "prompt",
+    "Conversa de crédito consignado no WhatsApp com a Maisa, da Mais Money. Termos: SIAPE, INSS, CLT, LOAS, FGTS, Facta, portabilidade, refinanciamento, troco, margem consignável, contracheque, extrato de consignações, SouGov, Meu INSS. " +
+      "Escreva números com algarismos: CPF 12345678901, data 09/06/1963, valor R$ 1.234,56.",
+  );
   const r = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST",
     headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}` },
