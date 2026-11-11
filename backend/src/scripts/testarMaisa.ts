@@ -246,6 +246,16 @@ const CASOS: Caso[] = [
   },
   { nome: "Manda foto", acoes: ["oi", { midia: true }], etapaFinal: "finalizada", saida: "midia" },
   {
+    nome: "Mensagem pronta do anúncio recebe a saudação, não vai para a equipe",
+    acoes: ["Olá! Posso ter mais informações sobre isso?"],
+    etapaFinal: "convenio",
+  },
+  {
+    nome: "Mensagem do anúncio seguida de SIAPE pede o CPF",
+    acoes: ["Olá! Tenho interesse e queria mais informações, por favor.", "siape"],
+    etapaFinal: "cpf",
+  },
+  {
     nome: "INSS completo: CPF, nascimento, extrato, oferta e começo do contrato",
     acoes: [...ATE_EXTRATO, { extrato: "com_margem" }, "sim"],
     etapaFinal: "coleta",

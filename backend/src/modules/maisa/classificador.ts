@@ -70,6 +70,11 @@ export const classificadorRegras: Classificador = {
     if (/\b(emprestimo|credito|consignado|dinheiro|simula|simular|simulacao|margem|saldo|antecipa|valor)/.test(t)) {
       return "credito";
     }
+    // Mensagem pronta do botão dos anúncios ("Posso ter mais informações sobre isso?",
+    // "Tenho interesse"): é pedido de crédito, não dúvida.
+    if (/\b(mais informac|informacoes|saber mais|tenho interesse|me interessei|interessad|vi o anuncio|vi seu anuncio)/.test(t)) {
+      return "credito";
+    }
     if (t.includes("?")) return "duvida";
     if (/^(oi|ola|opa|eai|e ai|bom dia|boa tarde|boa noite|tudo bem|hello)\b/.test(t)) return "saudacao";
     return "outro";
