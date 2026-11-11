@@ -89,11 +89,16 @@ function analisarContrato(c: ContratoLido, competencia: string | null): Contrato
 
 // Por que a Facta não compra este contrato, ou null se pode portar. Parcelas pagas
 // desconhecidas não barram: a equipe confere na digitação.
-function recusaPortabilidade(c: ContratoAnalisado): string | null {
+function recusaPortabilidade(c: ContratoAnalisado, convenio: Convenio): string | null {
   const banco = normalizar(c.banco);
   if (REGRAS_PORTABILIDADE.bancosSemPortabilidade.some((re) => re.test(banco))) return "banco não porta para a Facta";
   const minimo = REGRAS_PORTABILIDADE.minimoPagasPorBanco.find(([re]) => re.test(banco))?.[1] ?? 0;
   if (minimo && c.parcelasPagas != null && c.parcelasPagas < minimo) return `banco exige ${minimo} parcelas pagas`;
+  // SIAPE sem o total: pagas no máximo = 120 - restantes. Contrato novo demais não porta.
+  if (minimo && c.parcelasPagas == null && convenio === "siape" && c.parcelasRestantes != null) {
+    const pagasNoMaximo = REGRAS_PORTABILIDADE.prazoMaximoSiape - c.parcelasRestantes;
+    if (pagasNoMaximo < minimo) return `contrato novo demais: banco exige ${minimo} parcelas pagas`;
+  }
   if (c.saldoDevedorEstimado == null || c.saldoDevedorEstimado < REGRAS_PORTABILIDADE.saldoMinimo) {
     return `saldo abaixo de ${reais(REGRAS_PORTABILIDADE.saldoMinimo)}`;
   }
@@ -209,9 +214,9 @@ export function analisarExtrato(e: ExtratoLido): AnaliseExtrato {
 
   // Portabilidade (com ou sem refin): regras do roteiro da Facta. Pode com margem zerada.
   const analisados = emprestimos.filter((c) => !/facta/.test(normalizar(c.banco_nome ?? ""))).map((c) => analisarContrato(c, e.competencia));
-  const porta = analisados.filter((c) => !recusaPortabilidade(c));
+  const porta = analisados.filter((c) => !recusaPortabilidade(c, convenio));
   const caras = porta.filter((c) => c.taxaMensal != null && c.taxaMensal > REGRAS_OPERACAO.taxaReferenciaMensal);
-  const recusas = analisados.map((c) => recusaPortabilidade(c)).filter(Boolean);
+  const recusas = analisados.map((c) => recusaPortabilidade(c, convenio)).filter(Boolean);
   possibilidades.push({
     tipo: "portabilidade",
     possivel: !bloqueado && porta.length > 0,

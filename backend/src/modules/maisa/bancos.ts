@@ -3,7 +3,7 @@
 import * as facta from "./facta.js";
 import { REGRAS, avaliarVinculo } from "./regras.js";
 import type { ContratoAnalisado } from "../extratos/analise.js";
-import { REGRAS_PORTABILIDADE } from "../extratos/regrasMargem.js";
+import { REGRAS_PORTABILIDADE, prazoMaximoPorIdade } from "../extratos/regrasMargem.js";
 
 export type ResultadoBanco =
   | {
@@ -130,6 +130,9 @@ export const bancoFacta: BancoClt = {
   async simularPortabilidadeSiape({ cpf, dataNascimento, contrato }) {
     const restantes = contrato.parcelasRestantes!;
     const original = contrato.totalParcelas ?? (contrato.parcelasPagas != null ? restantes + contrato.parcelasPagas : restantes);
+    // O maior prazo que a idade permite: é o que dá mais troco.
+    const prazo = prazoMaximoPorIdade(dataNascimento);
+    if (!prazo) return { trocoCentavos: null, temPortabilidade: false, parcelaPortabilidade: null, motivo: "idade fora da política da Facta" };
     const s = await facta.simularPortRefinSiape({
       cpf,
       dataNascimento,
@@ -137,7 +140,7 @@ export const bancoFacta: BancoClt = {
       prazoRestante: restantes,
       prazoOriginal: original,
       saldoDevedor: contrato.saldoDevedorEstimado!,
-      prazo: REGRAS_PORTABILIDADE.prazoRefin,
+      prazo,
     });
     // Troco do refin: sem seguro, com o bruto e o troco mínimos do roteiro.
     const refins = s.refin.filter(

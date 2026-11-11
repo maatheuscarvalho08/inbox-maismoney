@@ -109,6 +109,25 @@ const CASOS: [string, () => void | Promise<void>][] = [
     },
   ],
   [
+    "SIAPE: contrato do Agibank com 119 restantes é novo demais para portar",
+    () => {
+      const a = analisarExtrato(
+        extrato({
+          tipo_documento: "siape",
+          especie_codigo: null,
+          margens_informadas: { emprestimo: 0, rmc: 0, rcc: 0 },
+          contratos: [
+            contrato({ banco_nome: "AGIBANK", parcela: 394.76, total_parcelas: null, parcelas_pagas: null, parcelas_restantes: 119, taxa_mensal: null }),
+            contrato({ banco_nome: "AGIBANK", parcela: 394.76, total_parcelas: null, parcelas_pagas: null, parcelas_restantes: 90, taxa_mensal: null }),
+          ],
+        }),
+      );
+      const porta = pos(a, "portabilidade");
+      assert.ok(porta.tipo === "portabilidade" && porta.contratos.length === 1, "só o com 30 pagas no máximo");
+      assert.equal(porta.tipo === "portabilidade" && porta.contratos[0].parcelasRestantes, 90);
+    },
+  ],
+  [
     "Portabilidade segue o roteiro: banco que não porta, mínimo de pagas e saldo mínimo",
     () => {
       const a = analisarExtrato(

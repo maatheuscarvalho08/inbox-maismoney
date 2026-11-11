@@ -44,11 +44,28 @@ export const REGRAS_PORTABILIDADE = {
   // Sem taxa no documento, o saldo é estimado com esta taxa ao mês. Taxa menor dá saldo
   // maior, ou seja, troco menor: a estimativa fica do lado conservador.
   taxaPadraoSaldo: 1.6,
-  // Refin da portabilidade: valor bruto e troco mínimos, e o prazo pedido na simulação.
+  // Refin da portabilidade: valor bruto e troco mínimos.
   refinBrutoMinimo: 15000,
   trocoMinimo: 50,
-  prazoRefin: 96,
+  // Prazo máximo do SIAPE. Com o total de parcelas desconhecido, as pagas são no máximo
+  // 120 menos as restantes: se nem isso chega ao mínimo do banco, não porta.
+  prazoMaximoSiape: 120,
+  // Prazo máximo por idade na assinatura (roteiro SIAPE): [idade até, prazo].
+  prazoPorIdade: [
+    [71, 120],
+    [72, 108],
+    [73, 96],
+    [74, 84],
+  ] as [number, number][],
 };
+
+// Maior prazo que a Facta aceita para a idade. null: idade fora da política.
+export function prazoMaximoPorIdade(dataNascimento: string, hoje = new Date()): number | null {
+  const nasc = new Date(dataNascimento);
+  const aniversarioPassou = hoje >= new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
+  const idade = hoje.getFullYear() - nasc.getFullYear() - (aniversarioPassou ? 0 : 1);
+  return REGRAS_PORTABILIDADE.prazoPorIdade.find(([ate]) => idade <= ate)?.[1] ?? null;
+}
 
 export const REGRAS_OPERACAO = {
   // Abaixo disso, não compensa oferecer empréstimo novo.
