@@ -251,7 +251,8 @@ async function processar(conversaId: string, gatilho: Gatilho) {
     if (!mensagem || mensagem.remetenteTipo !== "cliente") return;
     const tipo = mensagem.tipoMidia?.split(";")[0].trim() ?? null;
     if (tipo && mensagem.midiaPath && !mensagem.midiaDeleted) arquivo = { midiaPath: mensagem.midiaPath, tipo };
-    entrada = { texto: mensagem.conteudoTexto, temMidia: Boolean(tipo), documento: Boolean(arquivo && FORMATOS_EXTRATO.includes(arquivo.tipo)) };
+    const documento = Boolean(arquivo && FORMATOS_EXTRATO.includes(arquivo.tipo));
+    entrada = { texto: mensagem.conteudoTexto, temMidia: Boolean(tipo), documento, ...(documento ? { documentoId: mensagem.id } : {}) };
     // Áudio: ela escuta e segue como se o cliente tivesse escrito. Se falhar, vai para a equipe.
     if (arquivo?.tipo.startsWith("audio/") && env.OPENAI_API_KEY) {
       try {
@@ -278,14 +279,23 @@ async function processar(conversaId: string, gatilho: Gatilho) {
         : semBanco(),
     consultar: async () => (banco ? banco.consultar(await cpfDoContato(conversa.contatoId)) : semBanco()),
     statusProposta: () => ultimaProposta(conversa.contatoId),
-    simularPorExtrato: async (convenio, dataNascimento) => {
+    simularPorExtrato: async (convenio, dataNascimento, documentoId) => {
       if (!banco) return semBanco();
-      if (!arquivo) return { tipo: "extrato_invalido", motivo: "arquivo não encontrado" };
+      // Extrato que chegou antes da hora: lê o arquivo daquela mensagem.
+      let doc = arquivo;
+      let docId = "mensagemId" in gatilho ? gatilho.mensagemId : null;
+      if (documentoId) {
+        const m = await prisma.mensagem.findUnique({ where: { id: documentoId } });
+        const tipo = m?.tipoMidia?.split(";")[0].trim();
+        doc = m?.midiaPath && tipo && !m.midiaDeleted ? { midiaPath: m.midiaPath, tipo } : null;
+        docId = documentoId;
+      }
+      if (!doc) return { tipo: "extrato_invalido", motivo: "arquivo não encontrado" };
       const inicio = Date.now();
-      const { resultado: leitura, registro } = await parcelaPeloExtrato(await lerArquivo(arquivo.midiaPath), arquivo.tipo, convenio);
+      const { resultado: leitura, registro } = await parcelaPeloExtrato(await lerArquivo(doc.midiaPath), doc.tipo, convenio);
       // A equipe vê no balão do arquivo o que ela leu e por que não passou.
-      if ("mensagemId" in gatilho) {
-        await guardarAnalise(gatilho.mensagemId, registro).catch((err) =>
+      if (docId) {
+        await guardarAnalise(docId, registro).catch((err) =>
           console.error(`Não foi possível guardar a análise do extrato da conversa ${conversa.id}:`, err),
         );
       }

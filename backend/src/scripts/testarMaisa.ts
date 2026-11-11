@@ -282,6 +282,12 @@ const CASOS: Caso[] = [
     etapaFinal: "extrato",
     respostaContem: "Você quis dizer 08/03/1952",
   },
+  {
+    nome: "Extrato antes do CPF: guarda, pede CPF e data e simula sem pedir de novo",
+    acoes: ["oi", "3", { extrato: "com_margem" }, CPF_SALDO, "15/03/1958"],
+    etapaFinal: "oferta",
+    respostaContem: "Recebi o seu documento, obrigada",
+  },
   { nome: "SIAPE pede o extrato de consignações", acoes: ["oi", "sou servidor federal", CPF_SALDO, "15/03/1958"], etapaFinal: "extrato", respostaContem: "extrato de consignações" },
   {
     nome: "SIAPE fecha o contrato: aceita, manda os dados, confirma e a proposta é digitada",
@@ -564,7 +570,7 @@ async function rodar(caso: Caso, verbose: boolean) {
       entrada = { texto: "resposta do cliente", temMidia: false };
     } else if ("extrato" in acao) {
       leituraExtrato = acao.extrato;
-      entrada = { texto: null, temMidia: true, documento: true };
+      entrada = { texto: null, temMidia: true, documento: true, documentoId: "doc-teste" };
     }
     else if ("verificaOferta" in acao) entrada = { evento: "verificar_oferta" };
     else entrada = { evento: "verificar_autorizacao" };

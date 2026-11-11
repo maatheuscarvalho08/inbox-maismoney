@@ -45,6 +45,8 @@ export interface EstadoMaisa {
   dataNascimento?: string;
   // Data com ano impossível (ex.: 1852): a que ela acha que o cliente quis dizer, esperando confirmação.
   dataSugerida?: string;
+  // Extrato que chegou antes da hora (na etapa do CPF, por exemplo): é lido quando tiver a data.
+  extratoPendenteId?: string;
   // Nome completo, que o banco exige no pedido de autorização.
   nome?: string;
   // Espera pela autorização do cliente no link do banco (ISO).
@@ -92,7 +94,7 @@ export interface EstadoMaisa {
 
 // Mensagem do cliente, ou uma checagem automática do relógio (sem texto).
 // documento = PDF ou imagem, que pode ser o extrato. Áudio chega já transcrito em texto.
-export type Entrada = { texto: string | null; temMidia: boolean; documento?: boolean } | { evento: "verificar_autorizacao" | "verificar_oferta" };
+export type Entrada = { texto: string | null; temMidia: boolean; documento?: boolean; documentoId?: string } | { evento: "verificar_autorizacao" | "verificar_oferta" };
 
 export interface Dependencias {
   classificador: Classificador;
@@ -102,7 +104,8 @@ export interface Dependencias {
   consultar(): Promise<ResultadoConsulta>;
   statusProposta(): Promise<{ banco: string; status: string } | null>;
   // Lê o extrato que acabou de chegar e simula com a margem dele.
-  simularPorExtrato(produto: ProdutoExtrato, dataNascimento: string): Promise<ResultadoExtrato>;
+  // documentoId: extrato que o cliente mandou antes da hora. Sem ele, o da mensagem atual.
+  simularPorExtrato(produto: ProdutoExtrato, dataNascimento: string, documentoId?: string): Promise<ResultadoExtrato>;
   // Digitação na Facta (INSS e SIAPE). Desligada, o "sim" vai para a equipe.
   digitacaoAtiva: boolean;
   extrairDados(pergunta: string, entrada: { texto: string | null; documento?: boolean }, faltando: CampoContrato[]): Promise<DadosContrato>;
@@ -415,19 +418,21 @@ export function sugerirDataNascimento(texto: string, agora: Date): string | null
 
 const dataBr = (iso: string) => iso.split("-").reverse().join("/");
 
+// Com a data em mãos: se o extrato já chegou antes, lê e simula agora; senão, pede o extrato.
+async function seguirParaExtrato(estado: EstadoMaisa, data: string, deps: Dependencias): Promise<Passo> {
+  const pronto: EstadoMaisa = { ...estado, etapa: "extrato", tentativas: 0, dataNascimento: data, dataSugerida: undefined, extratoPendenteId: undefined };
+  if (estado.extratoPendenteId) return etapaExtrato(pronto, { texto: null, documento: true }, deps, estado.extratoPendenteId);
+  return { estado: pronto, respostas: [TEXTOS.pedeExtrato(produtoExtrato(estado))], efeitos: [], rotulo: "nascimento_valido" };
+}
+
 async function etapaNascimento(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   // Confirmou a data que ela sugeriu ("isso", "sim", "tá certa").
   if (estado.dataSugerida && ((await deps.classificador.simNao(texto)) === "sim" || /(cert|corret|exato|essa mesma|isso)/.test(t))) {
-    return ir(estado, "extrato", [TEXTOS.pedeExtrato(produtoExtrato(estado))], "nascimento_valido", [], {
-      dataNascimento: estado.dataSugerida,
-      dataSugerida: undefined,
-    });
+    return seguirParaExtrato(estado, estado.dataSugerida, deps);
   }
   const data = lerDataNascimento(texto, deps.agora());
-  if (data) {
-    return ir(estado, "extrato", [TEXTOS.pedeExtrato(produtoExtrato(estado))], "nascimento_valido", [], { dataNascimento: data, dataSugerida: undefined });
-  }
+  if (data) return seguirParaExtrato(estado, data, deps);
   const sugerida = sugerirDataNascimento(texto, deps.agora());
   if (sugerida) return ir(estado, "nascimento", [TEXTOS.confirmaData(dataBr(sugerida))], "nascimento_sugerido", [], { dataSugerida: sugerida });
   if (texto.includes("?")) return foraDaEtapa(estado, texto);
@@ -435,7 +440,12 @@ async function etapaNascimento(estado: EstadoMaisa, texto: string, deps: Depende
 }
 
 // Chegou um PDF ou foto: lê como extrato e simula. Texto: explica como tirar o extrato.
-async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null; documento?: boolean }, deps: Dependencias): Promise<Passo> {
+async function etapaExtrato(
+  estado: EstadoMaisa,
+  entrada: { texto: string | null; documento?: boolean },
+  deps: Dependencias,
+  documentoId?: string,
+): Promise<Passo> {
   if (!entrada.documento) {
     const texto = entrada.texto?.trim() ?? "";
     if (texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
@@ -443,7 +453,7 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
   }
   let resultado: ResultadoExtrato;
   try {
-    resultado = await deps.simularPorExtrato(produtoExtrato(estado), estado.dataNascimento ?? "");
+    resultado = await deps.simularPorExtrato(produtoExtrato(estado), estado.dataNascimento ?? "", documentoId);
   } catch (err) {
     resultado = { tipo: "erro", banco: "desconhecido", motivo: err instanceof Error ? err.message : "falha na leitura do extrato" };
   }
@@ -874,6 +884,15 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 
   // Na etapa do extrato, PDF ou foto é o que ela pediu. Fora dela, arquivo vai para a equipe.
   if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps);
+  // Extrato antes da hora (INSS ou SIAPE, ainda no CPF, nome ou data): guarda e pede o que falta.
+  if (entrada.documento && entrada.documentoId && porExtrato(estado.produto) && ["cpf", "nome", "nascimento"].includes(estado.etapa)) {
+    return {
+      estado: { ...estado, extratoPendenteId: entrada.documentoId },
+      respostas: [TEXTOS.extratoGuardado, PERGUNTA_DA_ETAPA[estado.etapa]],
+      efeitos: [],
+      rotulo: "extrato_antecipado",
+    };
+  }
   if (estado.etapa === "coleta" && entrada.documento) return etapaColeta(estado, entrada, deps);
   if (entrada.temMidia) return transferir(estado, "cliente enviou arquivo", TEXTOS.midiaRecebida, "midia");
 

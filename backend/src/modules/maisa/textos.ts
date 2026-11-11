@@ -63,6 +63,7 @@ export const TEXTOS = {
   cpfInvalido: "Esse CPF não parece válido. Pode conferir e me mandar de novo?",
   pedeNome: "Obrigada! Agora me manda o seu nome completo, igual está no documento.",
   pedeNascimento: "Obrigada! Agora me manda a sua data de nascimento. Por exemplo: 15/03/1958.",
+  extratoGuardado: "Recebi o seu documento, obrigada! Já guardei aqui para a sua simulação.",
   confirmaData: (data: string) => `Acho que o ano saiu trocado. Você quis dizer ${data}? Se for isso, é só me responder SIM.`,
   nascimentoInvalido: "Não entendi a data. Pode mandar assim: 15/03/1958?",
   pedeExtrato: (produto: "inss" | "siape") =>
