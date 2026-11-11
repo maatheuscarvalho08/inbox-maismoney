@@ -14,6 +14,7 @@ import { extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo } from "./fluxo.js";
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
+import { TEXTOS } from "./textos.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
 export const PREFIXO_NUMERO_TESTE = "5500000";
@@ -320,6 +321,35 @@ function enfileirar(conversaId: string, gatilho: Gatilho): Promise<void> {
         console.error("Não foi possível passar a conversa para a fila:", erroFila);
       }
     });
+  filas.set(conversaId, atual);
+  atual.finally(() => {
+    if (filas.get(conversaId) === atual) filas.delete(conversaId);
+  });
+  return atual;
+}
+
+// Devolvida pela equipe: ela não espera o cliente escrever. Manda a saudação com a
+// lista de produtos e fica na etapa do convênio.
+async function retomar(conversaId: string) {
+  if (env.MAISA_MODO === "desligado") return;
+  const conversa = await prisma.conversa.findUnique({
+    where: { id: conversaId },
+    include: { contato: true, instancia: true },
+  });
+  if (!conversa || !conversa.comMaisa || !conversa.instancia.maisaAtiva || conversa.status === "encerrada") return;
+  const estado: EstadoMaisa = { etapa: "convenio", tentativas: 0 };
+  await prisma.conversa.update({
+    where: { id: conversaId },
+    data: { maisaEstado: estado as unknown as Prisma.InputJsonValue },
+  });
+  await enviarResposta(conversa, TEXTOS.saudacao);
+}
+
+export function retomarComMaisa(conversaId: string): Promise<void> {
+  const anterior = filas.get(conversaId) ?? Promise.resolve();
+  const atual = anterior
+    .then(() => retomar(conversaId))
+    .catch((err) => console.error(`Maisa não conseguiu retomar a conversa ${conversaId}:`, err));
   filas.set(conversaId, atual);
   atual.finally(() => {
     if (filas.get(conversaId) === atual) filas.delete(conversaId);

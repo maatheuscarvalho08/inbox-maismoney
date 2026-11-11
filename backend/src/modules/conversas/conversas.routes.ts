@@ -17,6 +17,7 @@ import {
 } from "./conversas.service.js";
 import { emitConversaAtualizada } from "../../ws/events.js";
 import { definirEtapa } from "../funil/funil.service.js";
+import { retomarComMaisa } from "../maisa/maisa.service.js";
 
 const router = Router();
 router.use(authenticate);
@@ -186,6 +187,8 @@ router.patch(
 
     const conversa = await atualizarConversa(req.params.id, data);
     emitConversaAtualizada(conversa);
+    // Devolvida: a Maisa já manda a lista de produtos, sem esperar o cliente.
+    if (data.comMaisa) void retomarComMaisa(req.params.id);
     res.json({ conversa });
   }),
 );
