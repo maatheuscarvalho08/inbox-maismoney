@@ -113,10 +113,10 @@ const SCHEMA = {
   },
 };
 
-const INSTRUCOES = `Você transcreve extratos de crédito consignado brasileiros: o Histórico de Empréstimo Consignado do INSS (HISCON) ou o extrato/contracheque de servidor federal (SIAPE).
+const INSTRUCOES = `Você transcreve extratos de crédito consignado brasileiros: o Histórico de Empréstimo Consignado do INSS (HISCON) ou o extrato de consignações (ou o contracheque) de servidor federal (SIAPE).
 
 Regras:
-- tipo_documento: "siape" só para servidor federal: contracheque do SouGov.br ou SIGEPE, órgão federal, campo "MAT. SIAPE" ou ex-território federal (Amapá, Roraima, Rondônia). "servidor_outro" para contracheque de governo de estado, prefeitura ou outro órgão que não é federal. "inss" para o extrato do INSS. "outro" para qualquer outra coisa.
+- tipo_documento: "siape" só para servidor federal: extrato de consignações ou contracheque do SouGov.br ou SIGEPE, órgão federal, campo "MAT. SIAPE" ou ex-território federal (Amapá, Roraima, Rondônia). "servidor_outro" para contracheque de governo de estado, prefeitura ou outro órgão que não é federal. "inss" para o extrato do INSS. "outro" para qualquer outra coisa.
 - Copie só o que está escrito. Nunca invente, estime ou calcule valores. Se um campo não aparece ou está ilegível, use null.
 - Valores em reais como número com ponto decimal: "R$ 1.234,56" vira 1234.56. Taxas em % ao mês como número: "1,85%" vira 1.85.
 - Datas: competência e início/fim de contrato no formato AAAA-MM. Data de nascimento no formato AAAA-MM-DD.

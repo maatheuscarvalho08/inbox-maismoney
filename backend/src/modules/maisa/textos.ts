@@ -56,19 +56,19 @@ export const TEXTOS = {
       ? "Agora preciso do seu extrato de empréstimos do INSS. É ele que mostra quanto ainda sobra de margem no seu benefício.\n\n" +
         "No aplicativo Meu INSS, entre em \"Extrato de Empréstimos\" e baixe o PDF. Pode mandar aqui o PDF ou uma foto bem nítida. " +
         "Uso o extrato só para fazer a sua simulação."
-      : "Agora preciso do seu contracheque mais recente. É ele que mostra quanto ainda sobra de margem consignável.\n\n" +
-        "No aplicativo SouGov.br, baixe o contracheque em PDF. Pode mandar aqui o PDF ou uma foto bem nítida. " +
+      : "Agora preciso do seu extrato de consignações, que é o extrato dos seus empréstimos. É ele que mostra quanto ainda sobra de margem e quais contratos você tem.\n\n" +
+        "No aplicativo SouGov.br, entre em \"Consignações\" e baixe o extrato em PDF. Pode mandar aqui o PDF ou uma foto bem nítida. " +
         "Uso o documento só para fazer a sua simulação.",
   lembraExtrato: "Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.",
   comoTirarExtrato: (produto: "inss" | "siape") =>
     (produto === "inss"
       ? "Para tirar o extrato: abra o aplicativo ou o site Meu INSS, entre com a sua conta gov.br e toque em \"Extrato de Empréstimos\". "
-      : "Para tirar o contracheque: abra o aplicativo SouGov.br, entre com a sua conta gov.br e procure o contracheque do último mês. ") +
+      : "Para tirar o extrato de consignações: abra o aplicativo SouGov.br, entre com a sua conta gov.br e toque em \"Consignações\". ") +
     "Baixe o PDF e mande aqui.\n\nSe preferir, é só pedir que eu chamo um atendente.",
   extratoInvalido: (produto: "inss" | "siape") =>
     produto === "inss"
       ? "Não consegui ler esse arquivo como extrato de empréstimos do INSS. Pode mandar o PDF do Meu INSS ou uma foto mais nítida?"
-      : "Não consegui ler esse arquivo como contracheque de servidor federal. Pode mandar o PDF do SouGov.br ou uma foto mais nítida?",
+      : "Não consegui ler esse arquivo como extrato de consignações de servidor federal. Pode mandar o PDF do SouGov.br, em Consignações, ou uma foto mais nítida?",
   semMargemExtrato:
     "Olhei o seu documento e, no momento, não sobra margem para um empréstimo novo. Vou te passar para um atendente ver outras opções com você.",
   nomeInvalido: "Preciso do nome completo, com sobrenome. Pode mandar de novo?",
@@ -101,7 +101,7 @@ export const TEXTOS = {
   servidorComEquipe:
     "Para servidor público, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   servidorNaoFederal:
-    "Pelo seu contracheque, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
+    "Pelo seu documento, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",
   semSaldoFim:
     "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",

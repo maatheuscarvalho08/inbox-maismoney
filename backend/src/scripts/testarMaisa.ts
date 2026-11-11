@@ -268,12 +268,12 @@ const CASOS: Caso[] = [
     respostaContem: "no seu benefício",
   },
   {
-    nome: "SIAPE completo: contracheque, oferta e começo do contrato",
+    nome: "SIAPE completo: extrato de consignações, oferta e começo do contrato",
     acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim"],
     etapaFinal: "coleta",
-    respostaContem: "no seu contracheque",
+    respostaContem: "na sua folha de pagamento",
   },
-  { nome: "SIAPE pede o contracheque", acoes: ["oi", "sou servidor federal", CPF_SALDO, "15/03/1958"], etapaFinal: "extrato", respostaContem: "SouGov" },
+  { nome: "SIAPE pede o extrato de consignações", acoes: ["oi", "sou servidor federal", CPF_SALDO, "15/03/1958"], etapaFinal: "extrato", respostaContem: "extrato de consignações" },
   {
     nome: "SIAPE fecha o contrato: aceita, manda os dados, confirma e a proposta é digitada",
     acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }, "sim"],

@@ -89,7 +89,7 @@ export const GRUPOS: Grupo[] = [
     pergunta: (p) =>
       p === "inss"
         ? "Qual o número do seu benefício? Ele aparece no extrato do Meu INSS e tem 10 dígitos."
-        : "Qual a sua matrícula SIAPE? Ela aparece no seu contracheque.",
+        : "Qual a sua matrícula SIAPE? Ela aparece no SouGov.br e no seu extrato de consignações.",
   },
   {
     id: "credito",

@@ -297,7 +297,7 @@ function proximaVerificacao(pedidaEm: Date, agora: Date) {
   return new Date(agora.getTime() + intervalo).toISOString();
 }
 
-const DESCONTO: Record<Produto, string> = { clt: "no seu salário", inss: "no seu benefício", siape: "no seu contracheque" };
+const DESCONTO: Record<Produto, string> = { clt: "no seu salário", inss: "no seu benefício", siape: "na sua folha de pagamento" };
 
 function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora: Date): Passo {
   const efeito: Efeito = { tipo: "simulacao", convenio: estado.produto ?? "clt", resultado };
