@@ -54,7 +54,7 @@ export async function parcelaPeloExtrato(
   convenio: "inss" | "siape",
 ): Promise<{
   resultado:
-    | { tipo: "ok"; parcelaMaxima: number; renda: number | null; especie: number | null }
+    | { tipo: "ok"; parcelaMaxima: number; renda: number | null; especie: number | null; matricula: string | null }
     | Exclude<ResultadoExtrato, { tipo: "com_saldo" | "erro" }>;
   registro: AnaliseGuardada;
 }> {
@@ -94,7 +94,13 @@ export async function parcelaPeloExtrato(
     return { resultado: { tipo: "sem_saldo", banco: "extrato", motivo, revisar: !analise.confiavel }, registro };
   }
   return {
-    resultado: { tipo: "ok", parcelaMaxima: novo.parcelaMaxima, renda: extrato.base_calculo, especie: extrato.especie_codigo },
+    resultado: {
+      tipo: "ok",
+      parcelaMaxima: novo.parcelaMaxima,
+      renda: extrato.renda_bruta ?? extrato.base_calculo,
+      especie: extrato.especie_codigo,
+      matricula: extrato.matricula,
+    },
     registro,
   };
 }

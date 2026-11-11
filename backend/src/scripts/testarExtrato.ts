@@ -32,6 +32,8 @@ const extrato = (e: Partial<ExtratoLido>): ExtratoLido => ({
   especie_descricao: "Aposentadoria por tempo de contribuição",
   bloqueado_emprestimo: false,
   data_nascimento: "1958-04-10",
+  matricula: null,
+  renda_bruta: null,
   base_calculo: 3000,
   margens_informadas: { emprestimo: null, rmc: null, rcc: null },
   contratos: [],

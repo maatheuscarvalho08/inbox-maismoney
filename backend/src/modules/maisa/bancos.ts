@@ -17,6 +17,7 @@ export type ResultadoBanco =
       // Lidos do extrato: entram no cadastro sem perguntar de novo.
       renda?: number | null;
       especie?: number | null;
+      matricula?: string | null;
     }
   // revisar: a leitura do extrato ficou com dúvida, então a equipe confere antes de desistir.
   | { tipo: "sem_saldo"; banco: string; motivo: string; revisar?: boolean }
@@ -38,6 +39,9 @@ export type ResultadoExtrato =
       trocoCentavos: number | null;
       motivo: string;
       simulada: boolean;
+      // Lidos do extrato, para o contrato não perguntar de novo.
+      renda?: number | null;
+      matricula?: string | null;
       // Port + refin: o contrato comprado e as tabelas escolhidas, para a Maisa digitar.
       digitacao?: DigitacaoPort;
       // Port sem troco: quanto cada parcela cai, para a oferta mostrar os valores.

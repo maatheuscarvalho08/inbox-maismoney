@@ -17,6 +17,7 @@ import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } fr
 import { TEXTOS } from "./textos.js";
 import { guardarAnalise } from "../extratos/guardadas.js";
 import { buscarAlternativa } from "./alternativas.js";
+import type { ExtratoLido } from "../extratos/leitor.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
 export const PREFIXO_NUMERO_TESTE = "5500000";
@@ -288,14 +289,20 @@ async function processar(conversaId: string, gatilho: Gatilho) {
       console.log(`Maisa leu extrato ${convenio} da conversa ${conversa.id}: ${leitura.tipo} ${Date.now() - inicio}ms`);
       const cpf = await cpfDoContato(conversa.contatoId);
       // Sem empréstimo novo: antes de desistir, vê se dá para portar ou refinanciar.
-      const alternativa = () => buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento });
+      // Renda e matrícula do documento vão junto: o contrato não pergunta de novo.
+      const lido = registro.leitura as ExtratoLido;
+      const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula };
+      const alternativa = async () => {
+        const alt = await buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento });
+        return alt ? { ...alt, ...lidos } : null;
+      };
       // Mesmo com leitura em dúvida: se a Facta abrir tabela, ela oferta. Se não abrir e
       // houver dúvida, a equipe confere (o fluxo trata "revisar").
       if (leitura.tipo === "sem_saldo") return (await alternativa()) ?? leitura;
       if (leitura.tipo !== "ok") return leitura;
       const resultado = await banco.simularConsignado({ convenio, cpf, dataNascimento, parcelaMaxima: leitura.parcelaMaxima });
       if (resultado.tipo === "sem_saldo") return (await alternativa()) ?? resultado;
-      return resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie } : resultado;
+      return resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie, matricula: leitura.matricula } : resultado;
     },
     digitacaoAtiva: env.MAISA_DIGITA_PROPOSTA && (banco === bancoSimulado || (banco === bancoFacta && digitacaoConfigurada())),
     extrairDados: async (pergunta, recebida, faltando) => {
