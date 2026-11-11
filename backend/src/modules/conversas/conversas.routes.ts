@@ -31,8 +31,8 @@ router.get(
     const statusParsed = statusEnum.safeParse(req.query.status);
     const abaParsed = abaEnum.safeParse(req.query.aba);
     const [conversas, contagens] = await Promise.all([
-      listConversas(req.user!.id, statusParsed.success ? statusParsed.data : undefined, abaParsed.success ? abaParsed.data : undefined),
-      contarAbas(req.user!.id),
+      listConversas(req.user!, statusParsed.success ? statusParsed.data : undefined, abaParsed.success ? abaParsed.data : undefined),
+      contarAbas(req.user!),
     ]);
     res.json({ conversas, contagens });
   }),

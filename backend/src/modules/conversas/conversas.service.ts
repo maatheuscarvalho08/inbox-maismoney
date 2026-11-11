@@ -20,8 +20,13 @@ export type AbaConversas = "maisa" | "sem_atendente" | "atribuidas" | "disparos"
 // respondida:true). As outras três são tudo o resto, separadas por quem está atendendo.
 const JA_EM_ATENDIMENTO = { OR: [{ origemDisparo: false }, { respondida: true }] };
 
-// "atribuidas" mostra só as conversas de quem está logado.
-function filtroDaAba(aba: AbaConversas, usuarioId: string) {
+// Quem está vendo a lista. "atribuidas" mostra ao operador só as dele; ao admin, as de todos.
+export interface Leitor {
+  id: string;
+  role: string;
+}
+
+function filtroDaAba(aba: AbaConversas, leitor: Leitor) {
   switch (aba) {
     case "disparos":
       return { origemDisparo: true, respondida: false };
@@ -30,7 +35,11 @@ function filtroDaAba(aba: AbaConversas, usuarioId: string) {
     case "sem_atendente":
       return { ...JA_EM_ATENDIMENTO, comMaisa: false, operadorId: null };
     case "atribuidas":
-      return { ...JA_EM_ATENDIMENTO, comMaisa: false, operadorId: usuarioId };
+      return {
+        ...JA_EM_ATENDIMENTO,
+        comMaisa: false,
+        operadorId: leitor.role === "admin" ? { not: null } : leitor.id,
+      };
     // Ofertados que não responderam em 24h. Também aparecem na Fila ou em Atribuídas.
     case "carrinho":
       return { carrinhoEm: { not: null } };
@@ -38,9 +47,9 @@ function filtroDaAba(aba: AbaConversas, usuarioId: string) {
 }
 
 // Contagem das conversas ainda ativas em cada aba, mostrada no topo da lista.
-export async function contarAbas(usuarioId: string) {
+export async function contarAbas(leitor: Leitor) {
   const contar = (aba: AbaConversas) =>
-    prisma.conversa.count({ where: { ...filtroDaAba(aba, usuarioId), status: { not: "encerrada" } } });
+    prisma.conversa.count({ where: { ...filtroDaAba(aba, leitor), status: { not: "encerrada" } } });
   const [maisa, sem_atendente, atribuidas, disparos, carrinho] = await Promise.all([
     contar("maisa"),
     contar("sem_atendente"),
@@ -51,11 +60,11 @@ export async function contarAbas(usuarioId: string) {
   return { maisa, sem_atendente, atribuidas, disparos, carrinho };
 }
 
-export async function listConversas(usuarioId: string, status?: StatusConversa, aba?: AbaConversas) {
+export async function listConversas(leitor: Leitor, status?: StatusConversa, aba?: AbaConversas) {
   return prisma.conversa.findMany({
     where: {
       ...(status ? { status } : {}),
-      ...(aba ? filtroDaAba(aba, usuarioId) : {}),
+      ...(aba ? filtroDaAba(aba, leitor) : {}),
     },
     orderBy: { lastMessageAt: "desc" },
     include: {

@@ -252,7 +252,7 @@ export function ConversasSplitLayout() {
                   key={a.id}
                   role="tab"
                   aria-selected={ativa}
-                  title={a.descricao}
+                  title={a.id === "atribuidas" && usuario?.role === "admin" ? "Conversas atribuídas a toda a equipe" : a.descricao}
                   onClick={() => setAba(a.id)}
                   className={`flex h-10 items-center justify-center gap-1 whitespace-nowrap text-xs ${
                     ativa ? "font-semibold text-ink" : "font-medium text-muted hover:text-ink"
@@ -286,7 +286,9 @@ export function ConversasSplitLayout() {
             <p className="p-4 text-center text-xs text-muted">
               {busca || etiquetaFiltro || instanciaFiltro || vendedorFiltro || filtroStatus
                 ? "Nenhuma conversa com esses filtros."
-                : ABAS.find((a) => a.id === aba)?.vazio}
+                : aba === "atribuidas" && usuario?.role === "admin"
+                  ? "Nenhuma conversa atribuída na equipe."
+                  : ABAS.find((a) => a.id === aba)?.vazio}
             </p>
           )}
           {conversasFiltradas.map((c) => {
