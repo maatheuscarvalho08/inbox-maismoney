@@ -174,7 +174,8 @@ export function ConversaDetalhePage() {
 
   return (
     <div className="flex h-full">
-      <div className="flex h-full flex-1 flex-col">
+      {/* min-w-0: a conversa encolhe para o painel "Mais opções" caber, em vez de empurrá-lo para fora da tela. */}
+      <div className="flex h-full min-w-0 flex-1 flex-col">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-8 py-4">
           <div className="flex items-center gap-3">
             <Avatar
