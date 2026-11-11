@@ -25,7 +25,7 @@ export type ResultadoAutorizacao = facta.ResultadoAutorizacao;
 export type ResultadoExtrato = ResultadoBanco | { tipo: "extrato_invalido"; motivo: string };
 
 // Antes de consultar, o cliente precisa autorizar num link que o banco manda.
-export type ResultadoConsulta = { tipo: "nao_autorizado" } | { tipo: "indisponivel" } | ResultadoBanco;
+export type ResultadoConsulta = { tipo: "nao_autorizado" } | { tipo: "link_expirado" } | { tipo: "indisponivel" } | ResultadoBanco;
 
 export interface BancoClt {
   nome: string;
@@ -74,6 +74,7 @@ export const bancoFacta: BancoClt = {
   async consultar(cpf) {
     const consulta = await facta.consultarTrabalhador(cpf);
     if (consulta.tipo === "nao_autorizado") return { tipo: "nao_autorizado" };
+    if (consulta.tipo === "link_expirado") return { tipo: "link_expirado" };
     if (consulta.tipo === "indisponivel") return { tipo: "indisponivel" };
     if (consulta.tipo === "erro") return { tipo: "erro", banco: this.nome, motivo: consulta.mensagem };
 

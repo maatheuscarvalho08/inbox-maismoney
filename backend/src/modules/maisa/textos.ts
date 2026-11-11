@@ -80,6 +80,9 @@ export const TEXTOS = {
     "Ainda não apareceu a sua autorização. Procure a mensagem do banco Facta no seu WhatsApp e toque no link.\n\n" +
     "Se a mensagem não chegou, me responda: não chegou.",
   linkReenviado: "Pedi para o banco mandar o link de novo. Ele chega no seu WhatsApp, por outro número.",
+  linkVencido:
+    "O link do banco venceu antes de a autorização aparecer. Pedi um novo, ele chega no seu WhatsApp por outro número.\n\n" +
+    "Abra e autorize assim que chegar. Depois é só me avisar.",
   viradaFolha: "O sistema do banco está atualizando agora. Assim que voltar, eu te mando o valor aqui.",
   pedeConsentimento:
     "Para eu consultar o seu crédito, preciso da sua autorização para consultar os seus dados de vínculo e margem " +

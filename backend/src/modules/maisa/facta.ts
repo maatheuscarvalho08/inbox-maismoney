@@ -140,6 +140,7 @@ export interface Vinculo {
 export type ResultadoConsulta =
   | { tipo: "autorizado"; vinculos: Vinculo[] }
   | { tipo: "nao_autorizado" }
+  | { tipo: "link_expirado" }
   | { tipo: "indisponivel"; mensagem: string }
   | { tipo: "erro"; mensagem: string };
 
@@ -147,7 +148,9 @@ export async function consultarTrabalhador(cpf: string): Promise<ResultadoConsul
   const j = await chamar("/consignado-trabalhador/autoriza-consulta", cpf, { method: "GET", query: { cpf: cpf11(cpf) } });
   const mensagem = String(j.mensagem ?? "");
   if (j.erro) {
-    if (/solicita-autorizacao|token expirado/i.test(mensagem)) return { tipo: "nao_autorizado" };
+    // O link ou a autorização venceu: só um pedido novo resolve.
+    if (/token expirado/i.test(mensagem)) return { tipo: "link_expirado" };
+    if (/solicita-autorizacao/i.test(mensagem)) return { tipo: "nao_autorizado" };
     // Virada de folha: indisponível por um tempo. Tenta de novo mais tarde.
     if (/virada de folha|indispon/i.test(mensagem)) return { tipo: "indisponivel", mensagem };
     return { tipo: "erro", mensagem };

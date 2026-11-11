@@ -330,7 +330,13 @@ async function etapaExtrato(estado: EstadoMaisa, entrada: { texto: string | null
   return mostrarResultado(estado, resultado, deps.agora());
 }
 
-async function pedirAutorizacao(estado: EstadoMaisa, deps: Dependencias, rotulo: string, reenvio = false): Promise<Passo> {
+async function pedirAutorizacao(
+  estado: EstadoMaisa,
+  deps: Dependencias,
+  rotulo: string,
+  reenvio = false,
+  aviso?: string,
+): Promise<Passo> {
   let resultado: ResultadoAutorizacao;
   try {
     resultado = await deps.solicitarAutorizacao(estado.nome ?? "");
@@ -346,10 +352,11 @@ async function pedirAutorizacao(estado: EstadoMaisa, deps: Dependencias, rotulo:
     return transferir(estado, "erro no banco: pedido de autorização recusado", TEXTOS.erroBanco, rotulo, [], "erro_banco");
   }
   // Já autorizou nos últimos 30 dias: consulta direto.
-  if (resultado === "ja_autorizado") return consultarAgora(estado, deps, rotulo, true);
+  // Sem renovar de novo, para não ficar num ciclo se a Facta insistir em "expirado".
+  if (resultado === "ja_autorizado") return consultarAgora(estado, deps, rotulo, true, false);
 
   const agora = deps.agora();
-  return ir(estado, "aguardando", [reenvio ? TEXTOS.linkReenviado : TEXTOS.avisoLink], rotulo, [], {
+  return ir(estado, "aguardando", [aviso ?? (reenvio ? TEXTOS.linkReenviado : TEXTOS.avisoLink)], rotulo, [], {
     autorizacaoPedidaEm: reenvio && estado.autorizacaoPedidaEm ? estado.autorizacaoPedidaEm : agora.toISOString(),
     proximaVerificacao: new Date(agora.getTime() + 60_000).toISOString(),
     reenvios: reenvio ? (estado.reenvios ?? 0) + 1 : 0,
@@ -357,7 +364,13 @@ async function pedirAutorizacao(estado: EstadoMaisa, deps: Dependencias, rotulo:
 }
 
 // Consulta o banco. "avisar" = o cliente está esperando uma resposta agora.
-async function consultarAgora(estado: EstadoMaisa, deps: Dependencias, rotulo: string, avisar: boolean): Promise<Passo> {
+async function consultarAgora(
+  estado: EstadoMaisa,
+  deps: Dependencias,
+  rotulo: string,
+  avisar: boolean,
+  podeRenovar = true,
+): Promise<Passo> {
   let resultado: ResultadoConsulta;
   try {
     resultado = await deps.consultar();
@@ -381,6 +394,13 @@ async function consultarAgora(estado: EstadoMaisa, deps: Dependencias, rotulo: s
       return transferir(esperando, "cliente diz que autorizou, mas o banco não mostra", TEXTOS.transferindo, rotulo, [], "link_nao_autorizado");
     }
     return { estado: { ...esperando, tentativas, proximaVerificacao: proxima }, respostas: [TEXTOS.aindaNaoAutorizou], efeitos: [], rotulo };
+  }
+  // O link venceu antes de o cliente autorizar: pede outro e avisa, até o limite de reenvios.
+  if (resultado.tipo === "link_expirado") {
+    if (!podeRenovar || (estado.reenvios ?? 0) >= MAX_REENVIOS) {
+      return transferir(esperando, "o link do banco venceu e o pedido novo não resolveu", TEXTOS.transferindo, rotulo, [], "link_nao_autorizado");
+    }
+    return pedirAutorizacao(esperando, deps, "link_expirado", true, TEXTOS.linkVencido);
   }
   if (resultado.tipo === "indisponivel") {
     // Virada de folha: o banco volta em algumas horas. Checa de novo em 1 hora.
