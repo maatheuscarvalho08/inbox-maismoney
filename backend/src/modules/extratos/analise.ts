@@ -91,6 +91,9 @@ function analisarContrato(c: ContratoLido, competencia: string | null): Contrato
 // desconhecidas não barram: a equipe confere na digitação.
 function recusaPortabilidade(c: ContratoAnalisado, convenio: Convenio): string | null {
   const banco = normalizar(c.banco);
+  if (REGRAS_PORTABILIDADE.previdenciaSemPortabilidade.some((re) => re.test(banco))) {
+    return "previdência, não banco: só portamos contrato de banco";
+  }
   if (REGRAS_PORTABILIDADE.bancosSemPortabilidade.some((re) => re.test(banco))) return "banco não porta para a Facta";
   const minimo = REGRAS_PORTABILIDADE.minimoPagasPorBanco.find(([re]) => re.test(banco))?.[1] ?? 0;
   if (minimo && c.parcelasPagas != null && c.parcelasPagas < minimo) return `banco exige ${minimo} parcelas pagas`;

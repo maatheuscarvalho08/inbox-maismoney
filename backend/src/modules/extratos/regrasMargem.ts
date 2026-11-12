@@ -39,6 +39,12 @@ export const REGRAS_PORTABILIDADE = {
   ] as [RegExp, number][],
   // Bancos de onde a Facta não compra contrato.
   bancosSemPortabilidade: [/inbursa/, /\bpine\b/, /socicred/],
+  // Só portamos contrato de banco. Entidade de previdência, pecúlio ou seguradora não
+  // (regra do dono, 12.11.2026).
+  previdenciaSemPortabilidade: [
+    /previd/, /\bsabemi\b/, /\bprevim/, /\bcomprev\b/, /\bfuturo\b/, /capemisa/, /gboex/,
+    /mongeral/, /aspecir/, /icatu/, /montepio/, /pecul/, /segurador/,
+  ],
   // Saldo devedor mínimo para portar.
   saldoMinimo: 2000,
   // Sem taxa no documento, o saldo é estimado com esta taxa ao mês. Taxa menor dá saldo
