@@ -6,6 +6,22 @@ import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
 import { camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato } from "./contrato.js";
 import type { ResultadoContratacao } from "./facta.js";
+import { NAO_QUERO, SIM_FORTE, normalizar, temReceio } from "./classificador.js";
+import {
+  ACEITE_NO_FIM,
+  CORRECAO,
+  HESITACAO,
+  SEM_REFIN,
+  temCondicao,
+  OUTRO_VALOR,
+  PEDE_EXPLICACAO,
+  RECOMECAR,
+  RESPOSTA_SOCIAL,
+  datasNoTexto,
+  idadeEm,
+  mensagemSocial,
+  socialPositivo,
+} from "./mensagens.js";
 
 // O fluxograma da Maisa. Cada etapa só sabe tratar a resposta da pergunta que ela
 // fez. Este arquivo não fala com o banco de dados nem com o WhatsApp: recebe o estado
@@ -70,6 +86,12 @@ export interface EstadoMaisa {
   };
   // Quantas objeções ela já tentou contornar nesta oferta.
   contornos?: number;
+  // Ela pediu "posso seguir?" depois de um "ok" ou aceite com condição: o próximo sim vale.
+  confirmarAceite?: boolean;
+  // Os 4 últimos dígitos do CPF informado: basta para saber se um CPF mandado depois é outro.
+  cpfFim?: string;
+  // Mensagens sociais seguidas ("ok", "valeu", emoji) sem responder a pergunta da etapa.
+  sociais?: number;
   // O cliente já tinha aceitado (conversa retomada): ela não oferta de novo, vai direto ao contrato.
   aceitouOferta?: boolean;
   // Port, port + refin ou refin que a Facta abriu, ofertado ao cliente.
@@ -147,11 +169,11 @@ const PRAZO_AUTORIZACAO_MS = 48 * 60 * 60_000;
 const PERGUNTA_DA_ETAPA: Record<Etapa, string> = {
   inicio: TEXTOS.perguntaConvenio,
   convenio: TEXTOS.perguntaConvenio,
-  cpf: TEXTOS.pedeCpf,
+  cpf: "Pode me mandar o seu CPF? Só os números.",
   nome: TEXTOS.nomeInvalido,
   consentimento: TEXTOS.perguntaConsentimento,
   aguardando: TEXTOS.aindaNaoAutorizou,
-  nascimento: TEXTOS.nascimentoInvalido,
+  nascimento: "Qual a sua data de nascimento? Pode mandar assim: 15/03/1958.",
   extrato: TEXTOS.lembraExtrato,
   oferta: TEXTOS.perguntaOferta,
   oferta_port: TEXTOS.perguntaOferta,
@@ -190,7 +212,7 @@ const NOME_ETAPA: Record<Etapa, string> = {
 };
 
 function ir(estado: EstadoMaisa, etapa: Etapa, respostas: string[], rotulo: string, efeitos: Efeito[] = [], extra: Partial<EstadoMaisa> = {}): Passo {
-  return { estado: { ...estado, ...extra, etapa, tentativas: 0 }, respostas, efeitos, rotulo };
+  return { estado: { ...estado, ...extra, etapa, tentativas: 0, sociais: 0 }, respostas, efeitos, rotulo };
 }
 
 function transferir(
@@ -429,7 +451,7 @@ async function etapaInicio(estado: EstadoMaisa, texto: string, deps: Dependencia
   // aqui porque "quero outro empréstimo" não diz nada sobre o vínculo.
   // Um número solto antes de ver a lista não é escolha de produto.
   const convenio = /^\d+\W*$/.test(texto) ? null : await deps.classificador.convenio(texto);
-  if (convenio && convenio !== "outro") return decidirConvenio(estado, convenio, [TEXTOS.apresentacao]);
+  if (convenio && convenio !== "outro") return decidirEContinuar(estado, convenio, texto, deps, [TEXTOS.apresentacao]);
 
   if (intencao === "duvida") {
     const faq = buscarFaq(texto);
@@ -442,15 +464,33 @@ async function etapaInicio(estado: EstadoMaisa, texto: string, deps: Dependencia
 
 async function etapaConvenio(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const convenio = await deps.classificador.convenio(texto);
-  return convenio ? decidirConvenio(estado, convenio) : ouvirCliente(estado, texto, deps);
+  return convenio ? decidirEContinuar(estado, convenio, texto, deps) : ouvirCliente(estado, texto, deps);
+}
+
+// "sou siape, meu cpf é ...": decide o produto e já usa o CPF (e a data) da mesma mensagem,
+// em vez de pedir de novo.
+async function decidirEContinuar(estado: EstadoMaisa, convenio: ConvenioEntendido, texto: string, deps: Dependencias, prefixo: string[] = []): Promise<Passo> {
+  const faq = buscarFaq(texto);
+  const p = decidirConvenio(estado, convenio, faq ? [...prefixo, faq] : prefixo);
+  if (p.estado.etapa !== "cpf" || !extrairCpf(texto)) return p;
+  const q = await etapaCpf(p.estado, texto, deps);
+  return { ...q, respostas: [...prefixo, ...q.respostas], efeitos: [...p.efeitos, ...q.efeitos] };
 }
 
 async function etapaCpf(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const cpf = extrairCpf(texto);
   if (cpf) {
     if (!cpfValido(cpf)) return tentarDeNovo(estado, TEXTOS.cpfInvalido, "cpf_invalido");
-    if (porExtrato(estado.produto)) return ir(estado, "nascimento", [TEXTOS.pedeNascimento], "cpf_valido", [{ tipo: "cpf", cpf }]);
-    return ir(estado, "nome", [TEXTOS.pedeNome], "cpf_valido", [{ tipo: "cpf", cpf }]);
+    if (porExtrato(estado.produto)) {
+      // "CPF 15/03/1958": a data veio junto, segue direto para o extrato.
+      const data = lerDataNascimento(texto.replace(/\d{3}\.?\s?\d{3}\.?\s?\d{3}\s?-?\s?\d{2}/, " "), deps.agora());
+      if (data) {
+        const q = await seguirParaExtrato({ ...estado, etapa: "nascimento", cpfFim: cpf.slice(-4) }, data, deps);
+        return { ...q, efeitos: [{ tipo: "cpf", cpf }, ...q.efeitos], rotulo: "cpf_e_data" };
+      }
+      return ir(estado, "nascimento", [TEXTOS.pedeNascimento], "cpf_valido", [{ tipo: "cpf", cpf }], { cpfFim: cpf.slice(-4) });
+    }
+    return ir(estado, "nome", [TEXTOS.pedeNome], "cpf_valido", [{ tipo: "cpf", cpf }], { cpfFim: cpf.slice(-4) });
   }
   if ((await deps.classificador.simNao(texto)) === "nao") {
     return transferir(estado, "não quis informar o CPF", TEXTOS.semConsentimento, "recusou_cpf");
@@ -470,19 +510,15 @@ async function etapaNome(estado: EstadoMaisa, texto: string): Promise<Passo> {
   return tentarDeNovo(estado, TEXTOS.nomeInvalido, "nome_invalido");
 }
 
-// "15/03/1958", "15-03-58", "15 03 1958" ou "15031958". Devolve AAAA-MM-DD.
+// "15/03/1958", "15-03-58", "15 03 1958", "15031958", "150358", "1958-03-15" ou "15 de março de
+// 1958". Com mais de uma data ("15/03/1958, ah não, é 16/03/1958"), vale a última. Devolve
+// AAAA-MM-DD, ou null se nenhuma data tiver idade entre 18 e 100 anos.
 export function lerDataNascimento(texto: string, agora: Date): string | null {
-  const m = texto.match(/\b(\d{1,2})\s*[/.\- ]\s*(\d{1,2})\s*[/.\- ]\s*(\d{4}|\d{2})\b/) ?? texto.match(/\b(\d{2})(\d{2})(\d{4})\b/);
-  if (!m) return null;
-  const dia = Number(m[1]);
-  const mes = Number(m[2]);
-  let ano = Number(m[3]);
-  if (m[3].length === 2) ano += ano > agora.getFullYear() % 100 ? 1900 : 2000;
-  const data = new Date(Date.UTC(ano, mes - 1, dia));
-  if (data.getUTCDate() !== dia || data.getUTCMonth() !== mes - 1) return null;
-  const idade = (agora.getTime() - data.getTime()) / (365.25 * 24 * 60 * 60_000);
-  if (idade < 18 || idade > 100) return null;
-  return data.toISOString().slice(0, 10);
+  const validas = datasNoTexto(texto, agora).filter((d) => {
+    const idade = idadeEm(d.iso, agora);
+    return idade >= 18 && idade <= 100;
+  });
+  return validas.length ? validas[validas.length - 1].iso : null;
 }
 
 const produtoExtrato = (estado: EstadoMaisa): ProdutoExtrato => (porExtrato(estado.produto) ? estado.produto : "inss");
@@ -512,6 +548,13 @@ async function etapaNascimento(estado: EstadoMaisa, texto: string, deps: Depende
   }
   const data = lerDataNascimento(texto, deps.agora());
   if (data) return seguirParaExtrato(estado, data, deps);
+  const datas = datasNoTexto(texto, deps.agora());
+  const ultima = datas[datas.length - 1];
+  if (ultima && idadeEm(ultima.iso, deps.agora()) < 18) return tentarDeNovo(estado, TEXTOS.menorDeIdade, "menor_de_idade");
+  // "70 anos faz?": a idade entra na análise; a data é que diz o prazo.
+  if (!datas.length && (/\b\d{2,3}\s*anos\b/.test(t) || /(ate que idade|idade (maxima|limite)|qual a idade|tem limite de idade)/.test(t))) {
+    return { estado, respostas: [TEXTOS.perguntaIdade], efeitos: [], rotulo: "pergunta_idade" };
+  }
   const sugerida = sugerirDataNascimento(texto, deps.agora());
   if (sugerida) return ir(estado, "nascimento", [TEXTOS.confirmaData(dataBr(sugerida))], "nascimento_sugerido", [], { dataSugerida: sugerida });
   // Sem número nenhum, é conversa: responde antes de pedir a data de novo.
@@ -533,8 +576,18 @@ async function etapaExtrato(
     // Só quando fala do extrato ou do aplicativo. "Não tenho margem" é outra conversa.
     const comoTirar =
       /(como|onde) (eu )?(tiro|tirar|baixo|baixar|pego|pegar|acho|achar|faco|fazer)|nao (sei|consigo) (tirar|baixar|pegar|achar|entrar|abrir|fazer)|nao tenho (o |a )?(extrato|aplicativo|app|sougov|senha|gov|celular)|sougov|meu inss|aplicativo|senha do gov|^nao (tenho|sei)( isso| esse| ele| nao)?[\s.!]*$/;
-    // "Serve de ontem?": serve. Responde sem contar como tentativa.
-    if (/(serve|vale|pode ser|tem problema|da certo|aceita).*(ontem|antig|passad|velho|de hoje|recente|anterior|outro dia)/.test(t)) {
+    // Data de novo, ou corrigida ("errei, é 16/03/1958"): atualiza de verdade antes da simulação.
+    const novaData = lerDataNascimento(texto, deps.agora());
+    if (novaData) {
+      if (novaData === estado.dataNascimento) return { estado, respostas: [TEXTOS.dataJaAnotada, RETOMA_ETAPA.extrato!], efeitos: [], rotulo: "data_repetida" };
+      return { estado: { ...estado, dataNascimento: novaData }, respostas: [TEXTOS.dataCorrigida(dataBr(novaData)), RETOMA_ETAPA.extrato!], efeitos: [], rotulo: "data_corrigida" };
+    }
+    if (/senha.{0,25}(expir|aspir|venc|bloque|caduc)|(esqueci|perdi|nao lembro)( a| minha)? senha/.test(t)) {
+      return { estado, respostas: [TEXTOS.senhaGov(produtoExtrato(estado))], efeitos: [], rotulo: "senha_gov" };
+    }
+    if (/mensagem nao suportada|message type unknown/.test(t)) return { estado, respostas: [TEXTOS.mensagemNaoSuportada], efeitos: [], rotulo: "mensagem_nao_suportada" };
+    // "Serve de ontem?" ou "o do mês passado serve?": serve. Responde sem contar como tentativa.
+    if (/(serve|vale|pode ser|tem problema|da certo|aceita).*(ontem|antig|passad|velho|de hoje|recente|anterior|outro dia)|(ontem|antig|passad|velho|anterior|outro dia).*(serve|vale|pode ser|da certo)/.test(t)) {
       return { estado, respostas: [TEXTOS.extratoRecente], efeitos: [], rotulo: "extrato_recente" };
     }
     // Link do Acrobat, Drive etc.: ela não abre link, explica como mandar o arquivo.
@@ -720,44 +773,166 @@ async function etapaAguardando(estado: EstadoMaisa, texto: string, deps: Depende
 
 // Aceitou a port ou o refin: a equipe confirma o saldo na CIP e digita. Recusou: encerra.
 async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
-  // O modelo (com reserva nas regras) diz se aceitou, recusou, perguntou ou levantou objeção.
-  const leitura = await deps.classificador.lerOferta(texto, contextoOfertaPort(estado));
-  const resposta = leitura
-    ? leitura.tipo === "aceita"
-      ? "sim"
-      : leitura.tipo === "recusa" && !leitura.objecao
-        ? "nao"
-        : null
-    : await deps.classificador.simNao(texto);
-  const motivo = estado.alternativa?.motivo ?? "portabilidade";
-  const dig = estado.alternativa?.digitacao;
-  if (leitura?.tipo === "humano") {
-    return transferir(estado, "quer falar com uma pessoa", TEXTOS.transferindo, "humano", [], "objecao");
-  }
-  if (leitura?.tipo === "pensar") return { estado, respostas: [TEXTOS.semPressa], efeitos: [], rotulo: "pensando" };
-  // Pergunta que a oferta responde ("quanto eu ficaria?", "não entendi"): responde com os
-  // números em vez de chamar a equipe. Depois de três respostas seguidas, a equipe assume.
-  const tOferta = texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  if (PEDE_EXPLICACAO.test(tOferta) || (resposta == null && (!leitura?.objecao || texto.includes("?")))) {
-    const sobre = respostaSobreOferta(estado, tOferta);
-    if (sobre && estado.tentativas < 3) {
-      return { estado: { ...estado, tentativas: estado.tentativas + 1 }, respostas: [sobre, PERGUNTA_DA_ETAPA.oferta_port], efeitos: [], rotulo: "duvida_oferta" };
+  return tratarOferta(estado, texto, deps);
+}
+
+// Quantas dúvidas seguidas ela responde na oferta antes de chamar a equipe.
+const MAX_DUVIDAS_OFERTA = 3;
+
+// A resposta à oferta (port ou empréstimo novo). A ordem importa: primeiro o que o código
+// reconhece com certeza (pedido de explicação, cumprimento, "ok", dado repetido), depois a
+// leitura do modelo, com travas. Aceite só segue sem condição; "ok" e "valeu" pedem
+// confirmação; outro valor ou prazo vai para a equipe; data ou CPF corrigidos também.
+async function tratarOferta(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  const port = estado.etapa === "oferta_port";
+  const t = normalizar(texto);
+  const pergunta = PERGUNTA_DA_ETAPA[estado.etapa];
+  const fica = (respostas: string[], rotulo: string, extra: Partial<EstadoMaisa> = {}): Passo => ({ estado: { ...estado, ...extra }, respostas, efeitos: [], rotulo });
+  const duvida = (respostas: string[], rotulo: string): Passo => {
+    const n = estado.tentativas + 1;
+    if (n > MAX_DUVIDAS_OFERTA) return transferir(estado, "muitas dúvidas seguidas na oferta", TEXTOS.duvidaParaEquipe, "duvidas_oferta", [], "objecao");
+    return { estado: { ...estado, tentativas: n }, respostas, efeitos: [], rotulo };
+  };
+
+  if (PEDE_EXPLICACAO.test(t)) return duvida([explicarOferta(estado), pergunta], "explicacao_oferta");
+
+  const social = mensagemSocial(texto);
+  if (social) {
+    if (estado.confirmarAceite && socialPositivo(social, texto)) return seguirComAceite(estado, deps, texto);
+    if (social === "confuso") return duvida([explicarOferta(estado), pergunta], "explicacao_oferta");
+    const antes = RESPOSTA_SOCIAL[social] ? [RESPOSTA_SOCIAL[social]!] : [];
+    // "ok", "👍", "valeu": não é sim nem não. Pergunta de novo, e o próximo "sim" ou "ok" vale.
+    if (social === "confirmacao_curta" || social === "emoji" || social === "agradecimento") {
+      return fica([...antes, TEXTOS.confirmaAceite], `confirma_${social}`, { confirmarAceite: true });
     }
+    return fica([...antes, TEXTOS.relembraOferta], `social_${social}`);
   }
-  // Objeção, ou recusa com motivo: ela tenta contornar com os argumentos aprovados.
+
+  const dado = dadoNaOferta(estado, texto, deps.agora());
+  if (dado) return dado;
+  if (RECOMECAR.test(t)) return fica([TEXTOS.recomecar], "recomecar");
+
+  // O modelo lê (com reserva nas regras). O código trava o aceite.
+  const leitura = await deps.classificador.lerOferta(texto, contextoOferta(estado));
+  if (leitura?.tipo === "humano") return transferir(estado, "quer falar com uma pessoa", TEXTOS.transferindo, "humano", [], "objecao");
+  const simForte = (SIM_FORTE.test(t) || ACEITE_NO_FIM.test(t)) && !NAO_QUERO.test(t);
+  const simRegra = (/^(sim+|s|ss|claro|quero|aceito|isso|bora)\b/.test(t) || simForte) && !NAO_QUERO.test(t);
+  let aceite = leitura ? leitura.tipo === "aceita" || simForte : simRegra;
+  // "pode ser que sim", "talvez": não é aceite. Pergunta de novo, sem pressa.
+  if (HESITACAO.test(t) && !simForte) return fica([TEXTOS.semPressa], "hesitacao");
+  // Na port + refin, "quero só a portabilidade, sem troco": oferece a port sem refin.
+  if (port && estado.alternativa?.digitacao?.refin && SEM_REFIN.test(t)) return contornar(estado, texto, { tipo: "objecao", objecao: "prazo_longo", outraOferta: null });
+  // "sim?" e "e se eu quiser?" são perguntas, não aceite.
+  if (aceite && /\?\s*$/.test(texto) && !simForte && !/^(sim+|quero|aceito)\b.{4,}/.test(t)) aceite = false;
+  if (aceite) {
+    if (OUTRO_VALOR.test(t)) {
+      return transferir(estado, `aceitou com outro valor ou prazo: "${texto.slice(0, 120)}"`, TEXTOS.outroValorEquipe, "outro_valor", [], "alternativa");
+    }
+    if (temCondicao(t)) {
+      if (port && leitura && (leitura.objecao === "prazo_longo" || leitura.objecao === "pouco_valor")) return contornar(estado, texto, leitura);
+      const sobre = respostaSobreOferta(estado, t);
+      return fica(sobre ? [sobre, TEXTOS.confirmaCondicao] : [TEXTOS.confirmaAntes], "aceite_condicional", { confirmarAceite: true });
+    }
+    // Aceite com pergunta ou pedido junto ("sim, quando cai?", "quero, e me manda o contato"):
+    // responde e segue.
+    const antes = [respostaSobreOferta(estado, t), buscarFaq(texto)].filter((x): x is string => Boolean(x));
+    return seguirComAceite(estado, deps, texto, antes);
+  }
+  if (leitura?.tipo === "pensar") return fica([TEXTOS.semPressa], "pensando");
+  // Pergunta que a oferta responde vem antes da objeção ("e o prazo?" não é reclamar do prazo).
+  const sobrePergunta = texto.includes("?") ? respostaSobreOferta(estado, t) : null;
+  if (sobrePergunta && leitura?.tipo !== "recusa") return duvida([sobrePergunta, pergunta], "duvida_oferta");
   if (leitura && (leitura.tipo === "objecao" || (leitura.tipo === "recusa" && leitura.objecao))) {
-    return contornar(estado, texto, leitura);
+    if (port) return contornar(estado, texto, leitura);
+    return objecao(estado, texto, "objeção na oferta", leitura.tipo === "recusa");
   }
-  // Com a simulação em mãos ela conduz: número do contrato, dados e, se a API permitir, a
-  // digitação. Só passa para a equipe se travar no caminho.
-  if (resposta === "sim" && dig && deps.digitacaoAtiva) {
-    // O extrato já trouxe o número do contrato: vai direto para os dados.
-    if (dig.numeroContrato) return iniciarColetaPort(estado, dig.numeroContrato, "aceitou_port", [TEXTOS.inicioContrato]);
-    return ir(estado, "numero_contrato", [TEXTOS.pedeNumeroContrato(dig.banco, formatarReais(Math.round(dig.parcela * 100)))], "aceitou_port");
+  const recusa = leitura ? leitura.tipo === "recusa" : NAO_QUERO.test(t) || /^(nao|n|nn)\W*$/.test(t);
+  if (recusa) {
+    if (port) return objecao(estado, texto, "recusou a portabilidade", true);
+    return transferir(estado, "recusou a oferta", TEXTOS.recusou, "recusou");
   }
-  if (resposta === "sim") return transferir(estado, `aceitou: ${motivo}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
-  // NÃO, receio ou dúvida: a Facta já aprovou, é cliente para a equipe convencer.
-  return objecao(estado, texto, resposta === "nao" ? "recusou a portabilidade" : "objeção na oferta de portabilidade", resposta === "nao");
+  const sobre = respostaSobreOferta(estado, t);
+  if (sobre) return duvida([sobre, pergunta], "duvida_oferta");
+  const faq = buscarFaq(texto);
+  if (faq) return fica([faq, pergunta], "faq");
+  // "dá pra fazer em 48x?", "consegue 5 mil?": outro valor ou prazo é com a equipe.
+  if (OUTRO_VALOR.test(t) && /\b(da pra|pode ser|consegue|quero|queria|faz|fazer|tem como|seria possivel|aceito|prefiro)\b/.test(t) && !/\bpor que\b|\bporque\b/.test(t)) return transferir(estado, `pediu outro valor ou prazo: "${texto.slice(0, 120)}"`, TEXTOS.outroValorEquipe, "outro_valor", [], "alternativa");
+  if (temReceio(t)) return transferir(estado, port ? "objeção na oferta de portabilidade" : "objeção na oferta", TEXTOS.objecao, "objecao", [], "objecao");
+  if (texto.includes("?")) {
+    return transferir(estado, `dúvida sem resposta pronta na oferta: ${texto.slice(0, 120)}`, TEXTOS.duvidaParaEquipe, "objecao", [], "objecao");
+  }
+  return duvida([TEXTOS.naoSeiSeEntendi], "oferta_nao_entendida");
+}
+
+// Data ou CPF na oferta. Igual ao que ela já tem: avisa que está anotado. Diferente: a
+// simulação foi feita com o dado antigo, então a equipe refaz.
+function dadoNaOferta(estado: EstadoMaisa, texto: string, agora: Date): Passo | null {
+  const t = normalizar(texto);
+  const pergunta = PERGUNTA_DA_ETAPA[estado.etapa];
+  const soDado = /^[\d\s./,\-]+$/.test(texto.trim());
+  const datas = datasNoTexto(texto, agora);
+  if (datas.length && (soDado || CORRECAO.test(t) || /nasc|data/.test(t))) {
+    const nova = datas[datas.length - 1].iso;
+    if (nova === estado.dataNascimento) return { estado, respostas: [TEXTOS.dataJaAnotada, pergunta], efeitos: [], rotulo: "data_repetida" };
+    const antiga = estado.dataNascimento ? dataBr(estado.dataNascimento) : "sem data";
+    return transferir(estado, `cliente corrigiu a data de nascimento depois da oferta (${antiga} para ${dataBr(nova)}): refazer a simulação`, TEXTOS.dadoCorrigidoEquipe, "dado_corrigido", [], "alternativa");
+  }
+  const cpf = extrairCpf(texto);
+  if (cpf && cpfValido(cpf)) {
+    // Só diz "já está anotado" quando é o mesmo CPF. Outro CPF, ou sem como conferir: a equipe confere.
+    if (estado.cpfFim && cpf.slice(-4) === estado.cpfFim && !CORRECAO.test(t)) return { estado, respostas: [TEXTOS.cpfJaAnotado, pergunta], efeitos: [], rotulo: "cpf_repetido" };
+    return transferir(estado, "cliente informou outro CPF depois da oferta: conferir e refazer a simulação", TEXTOS.dadoCorrigidoEquipe, "dado_corrigido", [], "alternativa");
+  }
+  if (soDado) return { estado, respostas: [TEXTOS.numeroNaOferta, pergunta], efeitos: [], rotulo: "numero_na_oferta" };
+  return null;
+}
+
+// Aceite sem condição: port vai para o número do contrato (ou direto para os dados, se o
+// número veio junto ou está no extrato); empréstimo novo vai para os dados.
+function seguirComAceite(estado: EstadoMaisa, deps: Dependencias, texto: string, antes: string[] = []): Passo {
+  const limpo: EstadoMaisa = { ...estado, confirmarAceite: undefined, tentativas: 0 };
+  if (estado.etapa === "oferta_port") {
+    const dig = estado.alternativa?.digitacao;
+    if (dig && deps.digitacaoAtiva) {
+      const numero = dig.numeroContrato ?? (/\d{5,}/.test(texto) ? extrairNumeroContrato(texto) : null);
+      if (numero) return iniciarColetaPort(limpo, numero, "aceitou_port", [...antes, TEXTOS.inicioContrato]);
+      return ir(limpo, "numero_contrato", [...antes, TEXTOS.pedeNumeroContrato(dig.banco, formatarReais(Math.round(dig.parcela * 100)))], "aceitou_port");
+    }
+    return transferir(limpo, `aceitou: ${estado.alternativa?.motivo ?? "portabilidade"}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
+  }
+  // INSS e SIAPE com a digitação ligada: ela mesma faz o contrato.
+  if (porExtrato(estado.produto) && deps.digitacaoAtiva && estado.oferta?.tabela) {
+    const dados: DadosContrato = {};
+    if (estado.oferta.renda) dados.renda = estado.oferta.renda;
+    if (estado.oferta.matricula) dados.matricula = estado.oferta.matricula;
+    if (estado.produto === "siape" && estado.oferta.contaSalario) Object.assign(dados, estado.oferta.contaSalario);
+    if (estado.produto === "inss" && estado.oferta.especie) dados.tipoBeneficio = String(estado.oferta.especie);
+    const pergunta = proximaPergunta(dados, estado.produto)!;
+    return ir(limpo, "coleta", [...antes, TEXTOS.inicioContrato, pergunta], "aceitou_contrato", [], {
+      contrato: { dados, pergunta },
+      ofertaEm: undefined,
+      followupEnviado: undefined,
+    });
+  }
+  return transferir(limpo, "aceitou a oferta", TEXTOS.aceitou, "aceitou");
+}
+
+// A oferta de empréstimo novo em texto, para o modelo ler a resposta.
+function contextoOferta(estado: EstadoMaisa): string {
+  if (estado.alternativa) return contextoOfertaPort(estado);
+  const o = estado.oferta;
+  if (!o) return "oferta de crédito consignado";
+  return `Operação: empréstimo novo (dinheiro na conta).\nValor: até ${formatarReais(o.valorCentavos)}.\nParcelas: ${o.prazoMeses} de ${formatarReais(o.parcelaCentavos)}.`;
+}
+
+function explicarOferta(estado: EstadoMaisa): string {
+  if (estado.alternativa) return explicarOfertaPort(estado.alternativa);
+  const o = estado.oferta!;
+  return (
+    `Te explico de um jeito simples. A Facta te empresta até ${formatarReais(o.valorCentavos)}, que cai na sua conta. ` +
+    `Você paga ${o.prazoMeses} parcelas de ${formatarReais(o.parcelaCentavos)}, descontadas direto ${DESCONTO[estado.produto ?? "clt"]}. ` +
+    "Não tem nada para pagar para fazer, e o contrato só vale depois que você conferir e assinar pelo link da Facta."
+  );
 }
 
 // A oferta em texto, para o modelo entender a resposta do cliente.
@@ -816,7 +991,7 @@ function contornar(estado: EstadoMaisa, texto: string, l: LeituraOferta): Passo 
 // Número do contrato no banco de origem: a Facta precisa dele para comprar a dívida.
 async function etapaNumeroContrato(estado: EstadoMaisa, texto: string): Promise<Passo> {
   const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  if (/nao sei|nao tenho|nao lembro|nao acho|onde (vejo|acho|encontro)/.test(t)) {
+  if (/nao sei|nao tenho|nao lembro|nao acho|onde (eu )?(vejo|acho|encontro|pego)|voces nao tem/.test(t)) {
     return transferir(estado, "não sabe o número do contrato", TEXTOS.semNumeroContrato, "sem_numero_contrato", [], "alternativa");
   }
   // Mandou o contrato de outro banco (ex.: Santander quando o pedido era o Hoje): não aceita.
@@ -896,7 +1071,7 @@ function objecao(estado: EstadoMaisa, texto: string, motivo: string, recusou = f
   }
   const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   // Receio de verdade pede acolhimento e a equipe, mesmo que fale de dinheiro.
-  if (RECEIO.test(t)) return transferir(estado, motivo, TEXTOS.objecao, "objecao", [], "objecao");
+  if (temReceio(t)) return transferir(estado, motivo, TEXTOS.objecao, "objecao", [], "objecao");
   // Recusou (NÃO): nunca repetir a oferta. Pedido com resposta pronta (contato da Facta) ela
   // atende; senão a equipe tenta outra condição, com resposta que reconhece o motivo.
   if (recusou) {
@@ -914,76 +1089,89 @@ function objecao(estado: EstadoMaisa, texto: string, motivo: string, recusou = f
   return transferir(estado, motivo, TEXTOS.duvidaParaEquipe, "objecao", [], "objecao");
 }
 
-// "Não entendi" começa com "não", mas não é recusa: é pedido de explicação.
-const PEDE_EXPLICACAO = /(nao entendi|nao entendo|nao compreendi|como assim|me explica|explica (melhor|direito|de novo)|o que (e|significa) isso|como (funciona|e) isso)/;
-
-const RECEIO = /(medo|receio|golpe|fraude|reclame|confia|seguro|segura|demora|nao libera|nao paga|enganad|desconfi|perigo|risco)/;
-
-// Troco, dinheiro, valor, parcela, taxa: as perguntas que a oferta já responde.
+// As perguntas que a oferta já responde, cada uma com a sua regra. Antes, regras largas
+// ("qual", "quanto fica", "dinheiro", "parcela") davam a resposta pronta de outra pergunta.
+// Mais de uma pergunta na mesma mensagem: responde todas. Nenhuma reconhecida: null.
 function respostaSobreOferta(estado: EstadoMaisa, t: string): string | null {
   const a = estado.alternativa;
   const o = estado.oferta;
-  const querDinheiro =
-    /(troco|dinheiro|libera|recebo|receber|valor extra|sobra|somando|no total|quanto (eu )?(pego|ganho|recebo|cai|seria|fica|ficaria|vou ficar|eu fico)|valor que eu (fico|ficaria|vou ficar|recebo))/.test(t);
-  // "Não entendi", "como assim": explica a oferta em palavras simples.
-  const querExplicacao = PEDE_EXPLICACAO.test(t);
-  const querParcela = /(parcela|prestacao|desconto|quanto (vou )?pagar|taxa|juros|prazo|quantas vezes)/.test(t);
-  // "Depende do qual", "qual contrato?", "de qual banco?": diz qual contrato e o que muda.
-  const querContrato = /(qual|quais|que contrato|que banco)/.test(t);
-  if (!querDinheiro && !querParcela && !querContrato && !querExplicacao) return null;
+  if (!a && !o) return null;
+  if (PEDE_EXPLICACAO.test(t)) return explicarOferta(estado);
+  const dig = a?.digitacao;
+  const reds = a?.reducoes ?? [];
+  const red = reds[0];
+  const refin = Boolean(a?.trocoCentavos && dig?.refin);
+  const partes: string[] = [];
+  const quer = (re: RegExp) => re.test(t);
 
-  if (a) {
-    const red = a.reducoes?.[0];
-    const dig = a.digitacao;
-    if (querExplicacao) return explicarOfertaPort(a);
-    if (querContrato && !querDinheiro && !querParcela) {
-      if (dig) {
-        return (
-          `É o seu contrato do ${dig.banco}, o de parcela de ${r$(dig.parcela)}, que ainda tem ${dig.prazoRestante} parcelas. ` +
+  if (quer(/(troco|dinheiro (extra|na mao|a mais)|vai sobrar|sobra (algum|dinheiro|alguma coisa)|quanto (eu )?(pego|ganho|recebo|fico|ficaria|vou receber|vou pegar)|cai na (minha )?conta|valor que eu (fico|ficaria|recebo)|somando|libera (quanto|algum))/)) {
+    if (!a) partes.push(`Pela simulação, você recebe até ${formatarReais(o!.valorCentavos)} na sua conta.`);
+    else if (a.trocoCentavos) partes.push(`Pela simulação na Facta, você recebe até ${formatarReais(a.trocoCentavos)} de dinheiro extra na sua conta. É uma estimativa: o valor final depende do saldo que o seu banco informar.`);
+    else if (red) partes.push(economiaPort(reds));
+    else partes.push("Nessa opção não sai dinheiro na mão. O ganho é uma taxa menor no seu contrato.");
+  }
+  if (quer(/(quanto (fica|vai ficar|e|seria) a parcela|parcela (fica|de quanto|vai ser|e de quanto|aumenta|diminui|cai pra|cai para)|a parcela aumenta|quanto (vou )?pagar (por mes|de parcela|por parcela)|valor da parcela|qual (a|e a) parcela|prestacao|^(e )?(a )?parcela\s*\??$)/)) {
+    const citado = reds.find((x) => normalizar(x.banco).split(/[\s-]+/).some((p) => p.length >= 3 && t.includes(p)));
+    if (!a) partes.push(`A parcela é de ${formatarReais(o!.parcelaCentavos)}, descontada direto ${DESCONTO[estado.produto ?? "clt"]}.`);
+    else if (citado) partes.push(`A parcela do ${citado.banco} cai de ${r$(citado.atual)} para ${r$(citado.nova)}.`);
+    else if (refin) partes.push(`A parcela continua ${r$(dig!.refin!.parcela)}, em ${dig!.refin!.prazo} parcelas.`);
+    else if (red) partes.push(`A parcela cai de ${r$(red.atual)} para ${r$(red.nova)}, e você continua com as mesmas parcelas que faltavam.`);
+  }
+  if (quer(/(quantas (parcelas|vezes)|em quantas|qual o prazo|e o prazo|quantos meses)/)) {
+    if (!a) partes.push(`São ${o!.prazoMeses} parcelas de ${formatarReais(o!.parcelaCentavos)}.`);
+    else if (refin) partes.push(`São ${dig!.refin!.prazo} parcelas na Facta: com o refinanciamento, o contrato recomeça.`);
+    else if (red?.restantes) partes.push(`Você continua com as ${red.restantes} parcelas que faltam no contrato do ${red.banco}.`);
+  }
+  if (quer(/\b(taxa|juros)\b/) && !quer(/(mudar|muda|aumentar|fixa|variar)/)) {
+    if (!a) partes.push("Os juros e o custo total aparecem no contrato da Facta, para você conferir antes de assinar.");
+    else if (refin && dig!.refin!.taxa) partes.push(`A taxa do refinanciamento na Facta é de ${dig!.refin!.taxa.toLocaleString("pt-BR")}% ao mês.`);
+    else if (red?.taxa) partes.push(`Na Facta, a taxa fica em ${red.taxa.toLocaleString("pt-BR")}% ao mês.`);
+  }
+  if (quer(/((qual|quais|que|de qual)\s+(contrato|contratos|banco|deles)\b|depende do qual|qual deles)/)) {
+    if (!a) partes.push("É o banco Facta Financeira, o nosso parceiro.");
+    else if (dig) {
+      partes.push(
+        `É o seu contrato do ${dig.banco}, o de parcela de ${r$(dig.parcela)}, que ainda tem ${dig.prazoRestante} parcelas. ` +
           (a.trocoCentavos
             ? `Ele foi o que deu o melhor resultado na simulação: você recebe até ${formatarReais(a.trocoCentavos)} na sua conta${dig.refin ? `, e a parcela continua ${r$(dig.refin.parcela)}` : ""}.`
             : red
               ? `Na Facta, a parcela dele cai para ${r$(red.nova)}.`
-              : "Ele foi o que deu o melhor resultado na simulação.")
-        );
-      }
-      if (red) {
-        return `São estes contratos:\n${(a.reducoes ?? []).map((x) => `• ${x.banco}: de ${r$(x.atual)} para ${r$(x.nova)} por mês`).join("\n")}`;
-      }
-    }
-    if (querDinheiro) {
-      if (a.trocoCentavos) {
-        return `Sim! Pela simulação na Facta, você recebe até ${formatarReais(a.trocoCentavos)} de dinheiro extra na sua conta. É uma estimativa: o valor final depende do saldo que o seu banco informar.`;
-      }
-      if (red) {
-        // Várias reduções: soma tudo, que é o que o cliente perguntou ("somando tudo").
-        const reds = a.reducoes ?? [];
-        const porMes = reds.reduce((s, x) => s + (x.atual - x.nova), 0);
-        const total = reds.reduce((s, x) => s + (x.atual - x.nova) * (x.restantes ?? 0), 0);
-        return (
-          `Nessa opção não sai dinheiro na mão, não tem troco. O ganho é pagar menos todo mês: ` +
-          (reds.length > 1
-            ? `somando os ${reds.length} contratos, você paga ${r$(porMes)} a menos por mês`
-            : `a parcela cai de ${r$(red.atual)} para ${r$(red.nova)}, ${r$(porMes)} a menos por mês`) +
-          (total > 0 ? `, ou ${r$(total)} até o fim dos contratos.` : ".")
-        );
-      }
-      return "Nessa opção não sobra dinheiro extra para você. O ganho é uma taxa menor no seu contrato.";
-    }
-    if (dig?.refin) {
-      return `A parcela continua ${r$(dig.refin.parcela)}, em ${dig.refin.prazo} parcelas${dig.refin.taxa ? `, com taxa de ${dig.refin.taxa.toLocaleString("pt-BR")}% ao mês` : ""}. O contrato recomeça na Facta.`;
-    }
-    if (red) {
-      return `A parcela cai de ${r$(red.atual)} para ${r$(red.nova)}${red.taxa ? `, com taxa de ${red.taxa.toLocaleString("pt-BR")}% ao mês` : ""}, e você continua com as mesmas parcelas que faltavam.`;
-    }
-    return null;
+              : "Ele foi o que deu o melhor resultado na simulação."),
+      );
+    } else if (red) partes.push(`São estes contratos:\n${reds.map((x) => `• ${x.banco}: de ${r$(x.atual)} para ${r$(x.nova)} por mês`).join("\n")}`);
   }
-  if (o) {
-    return querDinheiro
-      ? `Pela simulação, você recebe até ${formatarReais(o.valorCentavos)} na sua conta.`
-      : `São ${o.prazoMeses} parcelas de ${formatarReais(o.parcelaCentavos)}.`;
+  if (quer(/(quando (cai|o dinheiro|recebo|libera|chega|comeca|vai cair|muda)|quanto tempo (demora|leva)|em quantos dias|demora (quanto|muito)|cai (quando|amanha|hoje)|amanha (ja )?cai)/)) {
+    partes.push(
+      a && !a.trocoCentavos
+        ? "A parcela menor começa a valer depois que a portabilidade é aprovada. Não consigo te prometer uma data exata."
+        : "O dinheiro cai depois que a operação é aprovada. Não consigo te prometer um prazo exato.",
+    );
   }
-  return null;
+  if (quer(/\bseguro\b/) && !quer(/seguro desemprego|e seguro|eh seguro|seguro (mandar|passar)/)) {
+    if (!a) partes.push("Não, essa condição é sem seguro.");
+    else if (refin) partes.push("O refinanciamento que simulei é sem seguro.");
+  }
+  if (quer(/(proximo passo|e agora\b|o que eu faco|como (eu )?faco|como funciona agora)/)) {
+    partes.push("É só me responder SIM que eu começo o seu contrato. Depois a Facta manda um link no seu WhatsApp para você conferir e assinar.");
+  }
+  if (a && quer(/(volta (pro|para o|ao) (zero|comeco|inicio)|recomeca|zera)/)) {
+    partes.push(refin ? `Sim. Com o refinanciamento, o contrato recomeça na Facta, em ${dig!.refin!.prazo} parcelas.` : "Não. Na portabilidade você continua com as mesmas parcelas que faltam.");
+  }
+  if (quer(/(como (eu )?assino|assina como|preciso ir (na|em|a) (agencia|loja)|tenho que ir|presencial)/)) {
+    partes.push("É tudo pelo celular: a Facta manda um link no seu WhatsApp e você assina por ele, só se concordar.");
+  }
+  return partes.length ? partes.join("\n\n") : null;
+}
+
+// Port sem troco: soma a economia de todos os contratos.
+function economiaPort(reds: ReducaoParcela[]): string {
+  const porMes = reds.reduce((s, x) => s + (x.atual - x.nova), 0);
+  const total = reds.reduce((s, x) => s + (x.atual - x.nova) * (x.restantes ?? 0), 0);
+  return (
+    "Nessa opção não sai dinheiro na mão, não tem troco. O ganho é pagar menos todo mês: " +
+    (reds.length > 1 ? `somando os ${reds.length} contratos, você paga ${r$(porMes)} a menos por mês` : `a parcela cai de ${r$(reds[0].atual)} para ${r$(reds[0].nova)}, ${r$(porMes)} a menos por mês`) +
+    (total > 0 ? `, ou ${r$(total)} até o fim dos contratos.` : ".")
+  );
 }
 
 // A oferta de port em palavras simples, para quem disse "não entendi".
@@ -1011,24 +1199,7 @@ function explicarOfertaPort(a: NonNullable<EstadoMaisa["alternativa"]>): string 
 }
 
 async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
-  const resposta = await deps.classificador.simNao(texto);
-  // INSS e SIAPE com a digitação ligada: ela mesma faz o contrato.
-  if (resposta === "sim" && porExtrato(estado.produto) && deps.digitacaoAtiva && estado.oferta?.tabela) {
-    const dados: DadosContrato = {};
-    if (estado.oferta.renda) dados.renda = estado.oferta.renda;
-    if (estado.oferta.matricula) dados.matricula = estado.oferta.matricula;
-    if (estado.produto === "siape" && estado.oferta.contaSalario) Object.assign(dados, estado.oferta.contaSalario);
-    if (estado.produto === "inss" && estado.oferta.especie) dados.tipoBeneficio = String(estado.oferta.especie);
-    const pergunta = proximaPergunta(dados, estado.produto)!;
-    return ir(estado, "coleta", [TEXTOS.inicioContrato, pergunta], "aceitou_contrato", [], {
-      contrato: { dados, pergunta },
-      ofertaEm: undefined,
-      followupEnviado: undefined,
-    });
-  }
-  if (resposta === "sim") return transferir(estado, "aceitou a oferta", TEXTOS.aceitou, "aceitou");
-  if (resposta === "nao") return transferir(estado, "recusou a oferta", TEXTOS.recusou, "recusou");
-  return objecao(estado, texto, "objeção na oferta", false);
+  return tratarOferta(estado, texto, deps);
 }
 
 // Cada resposta do cliente (texto, foto do documento ou áudio já transcrito) preenche
@@ -1057,6 +1228,21 @@ async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null;
     }
   }
   if (!entrada.documento && texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
+  if (!entrada.documento && /(desisti|nao quero mais|pode cancelar|cancela tudo|deixa pra la)/.test(normalizar(texto))) {
+    return transferir(estado, "desistiu no meio do cadastro", TEXTOS.recusou, "desistiu", [], "dados_contrato");
+  }
+  // "aliás, o número do contrato certo é ...": anota o número novo.
+  if (dig && texto && !entrada.documento && /contrato/.test(normalizar(texto)) && CORRECAO.test(normalizar(texto))) {
+    const numero = extrairNumeroContrato(texto);
+    if (numero) {
+      return {
+        estado: { ...estado, alternativa: { ...estado.alternativa!, numeroContrato: numero } },
+        respostas: [TEXTOS.contratoAnotado(dig.banco, numero), pergunta],
+        efeitos: [],
+        rotulo: "numero_contrato_corrigido",
+      };
+    }
+  }
 
   let novos: DadosContrato;
   try {
@@ -1078,16 +1264,38 @@ async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null;
     });
   }
   if (!Object.keys(novos).length) {
+    // Pergunta ou recusa no meio do cadastro ("pra que precisa do nome da mãe?", "meu pai é
+    // falecido"): responde com os fatos aprovados e repete a pergunta pendente.
+    const tt = normalizar(texto);
+    // Sem "?", só frases que travam o cadastro: dado que o cliente não tem ou não quer dar.
+    const travou =
+      /\b(falecid|nao (tenho|sei|conheco|lembro) (o |a |do |da |meu |minha )?(pai|mae|rg|cnh|identidade|email|e-mail|cep|endereco|conta)|nao vou (passar|mandar|dar|informar))/.test(tt);
+    if (!entrada.documento && texto && (texto.includes("?") || travou)) {
+      try {
+        const r = deps.responderLivre ? await deps.responderLivre(texto, NOME_ETAPA.coleta, estado.produto, pergunta) : null;
+        if (r) return { estado: { ...estado, contrato: { dados, pergunta }, tentativas: estado.tentativas + 1 }, respostas: [r, pergunta], efeitos: [], rotulo: "resposta_livre" };
+      } catch (err) {
+        console.error("Resposta livre falhou no cadastro:", err instanceof Error ? err.message : err);
+      }
+      return transferir(estado, `dúvida no cadastro: ${texto.slice(0, 120)}`, TEXTOS.duvidaParaEquipe, "duvida_cadastro", [], "dados_contrato");
+    }
     const aviso = entrada.documento ? TEXTOS.fotoSemDado : TEXTOS.naoEntendi;
     return tentarDeNovo({ ...estado, contrato: { dados, pergunta } }, `${aviso} ${pergunta}`, "dado_nao_entendido", "dados_contrato");
   }
   return ir(estado, "coleta", [proxima], "dado_recebido", [], { contrato: { dados: junto, pergunta: proxima } });
 }
 
+// Confirmação: "correto", "confere", "tá certo", "certinho" também são sim.
+const CONFIRMA_DADOS =
+  /^(sim+|s|ss|isso|isso mesmo|correto|certo|ta certo|esta certo|tudo certo|ta tudo certo|esta tudo certo|confere|certinho|exato|perfeito|pode (mandar|seguir|fazer)|tudo ok|ok+|okay|beleza)\b/;
+
 async function etapaConfirmacao(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
-  const resposta = await deps.classificador.simNao(texto);
-  if (resposta !== "sim") {
-    if (texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
+  const t = normalizar(texto);
+  const sim = CONFIRMA_DADOS.test(t) || socialPositivo(mensagemSocial(texto), texto) || (await deps.classificador.simNao(texto)) === "sim";
+  // "sim, mas o CEP é…": tem correção junto. Nunca digita: corrige e mostra o resumo de novo.
+  const temCorrecao = temCondicao(t) || CORRECAO.test(t) || /\d{3,}|@/.test(t) || /\b(menos|so o|so a|exceto|tirando)\b/.test(t);
+  if (!sim || temCorrecao) {
+    if (!temCorrecao && texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
     return corrigirDados(estado, { texto }, deps);
   }
 
@@ -1146,6 +1354,33 @@ async function corrigirDados(estado: EstadoMaisa, entrada: { texto: string | nul
   return { estado: { ...estado, tentativas }, respostas: [TEXTOS.qualCorrigir], efeitos: [], rotulo: "pede_correcao" };
 }
 
+const MAX_SOCIAIS = 4;
+
+// Etapas em que mensagem social recebe resposta curta e a pergunta de novo.
+const ETAPAS_SOCIAIS: Etapa[] = ["cpf", "nome", "nascimento", "extrato", "numero_contrato", "coleta", "confirmacao"];
+
+function retomaDaEtapa(estado: EstadoMaisa): string {
+  if (estado.etapa === "coleta") return estado.contrato?.pergunta ?? TEXTOS.continuarCadastro;
+  if (estado.etapa === "confirmacao") return TEXTOS.perguntaConfirmacao;
+  if (estado.etapa === "numero_contrato") {
+    const banco = estado.alternativa?.digitacao?.banco;
+    return banco ? TEXTOS.retomaNumero(banco) : TEXTOS.numeroContratoInvalido;
+  }
+  if (estado.etapa === "extrato") return RETOMA_ETAPA.extrato!;
+  return RETOMA_ETAPA[estado.etapa] ?? PERGUNTA_DA_ETAPA[estado.etapa];
+}
+
+// "Na verdade sou do INSS", "me enganei, sou siape": só entre INSS e SIAPE (mesmo caminho de
+// extrato), ou para CLT enquanto ainda pede o CPF.
+async function trocaDeProduto(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<{ estado: EstadoMaisa; aviso: string; efeito: Efeito } | null> {
+  const t = normalizar(texto);
+  if (!/(na verdade|na real|me enganei|errei|alias|eu sou|\bsou (do|da|de)\b)/.test(t)) return null;
+  const c = await deps.classificador.convenio(texto.replace(/\d/g, " "));
+  const pode = c === "inss" || c === "siape" || (c === "clt" && estado.etapa === "cpf");
+  if (!c || !pode || c === estado.produto) return null;
+  return { estado: { ...estado, produto: c, tentativas: 0 }, aviso: `Certo, então é ${{ inss: "INSS", siape: "SIAPE", clt: "CLT" }[c as "inss" | "siape" | "clt"]}.`, efeito: { tipo: "convenio", convenio: c } };
+}
+
 const FOLLOWUP_MS = 10 * 60_000;
 const CARRINHO_MS = 24 * 60 * 60_000;
 
@@ -1196,7 +1431,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   if (estado.etapa === "confirmacao" && entrada.documento) return corrigirDados(estado, entrada, deps);
   // Arquivo antes de saber o vínculo: costuma ser o extrato. Guarda e pergunta o vínculo.
   if (entrada.documento && entrada.documentoId && (estado.etapa === "inicio" || estado.etapa === "convenio")) {
-    const respostas = estado.etapa === "inicio" ? [TEXTOS.apresentacao, TEXTOS.arquivoNoInicio, TEXTOS.saudacao] : [TEXTOS.arquivoNoInicio];
+    const respostas = estado.etapa === "inicio" ? [`${TEXTOS.apresentacao} ${TEXTOS.arquivoNoInicio}`, TEXTOS.perguntaConvenio] : [TEXTOS.arquivoNoInicio];
     return ir(estado, "convenio", respostas, "arquivo_no_inicio", [], { extratoPendenteId: entrada.documentoId });
   }
   // Extrato de novo depois da oferta: a simulação já foi feita com ele.
@@ -1218,6 +1453,32 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   if (await deps.classificador.tentativaExtracao(texto)) {
     const pergunta = PERGUNTA_DA_ETAPA[estado.etapa];
     return { estado, respostas: pergunta ? [TEXTOS.seguranca, pergunta] : [TEXTOS.seguranca], efeitos: [], rotulo: "tentativa_extracao" };
+  }
+
+  // Cumprimento, agradecimento, "ok", emoji, riso, desculpa pela demora: responde curto e
+  // retoma a pergunta, sem contar como erro. A oferta tem o seu próprio tratamento.
+  const social = ETAPAS_SOCIAIS.includes(estado.etapa) ? mensagemSocial(texto) : null;
+  if (social && !(estado.etapa === "confirmacao" && (social === "confirmacao_curta" || social === "emoji"))) {
+    const retoma = retomaDaEtapa(estado);
+    const antes = RESPOSTA_SOCIAL[social];
+    const respostas = social === "confuso" ? [PERGUNTA_DA_ETAPA[estado.etapa] || retoma] : antes ? [antes, retoma] : [retoma];
+    // Não conta como erro, mas também não pode girar para sempre: na quinta seguida, a equipe.
+    const sociais = (estado.sociais ?? 0) + 1;
+    if (sociais > MAX_SOCIAIS) return transferir(estado, `muitas mensagens sem responder à etapa ${NOME_ETAPA[estado.etapa]}`, TEXTOS.transferindo, "sociais", [], "nao_entendeu");
+    return { estado: { ...estado, sociais }, respostas, efeitos: [], rotulo: `social_${social}` };
+  }
+
+  // "Na verdade sou do INSS": troca o produto antes de seguir.
+  if (estado.etapa === "cpf" || estado.etapa === "nascimento" || estado.etapa === "extrato") {
+    const troca = await trocaDeProduto(estado, texto, deps);
+    if (troca) {
+      let p: Passo | null = null;
+      if (troca.estado.etapa === "cpf" && extrairCpf(texto)) p = await etapaCpf(troca.estado, texto, deps);
+      else if (troca.estado.etapa === "nascimento" && lerDataNascimento(texto, deps.agora())) p = await etapaNascimento(troca.estado, texto, deps);
+      if (p) return { ...p, respostas: [troca.aviso, ...p.respostas], efeitos: [troca.efeito, ...p.efeitos] };
+      const pergunta = troca.estado.etapa === "extrato" ? TEXTOS.pedeExtrato(produtoExtrato(troca.estado)) : PERGUNTA_DA_ETAPA[troca.estado.etapa];
+      return { estado: troca.estado, respostas: [troca.aviso, pergunta], efeitos: [troca.efeito], rotulo: "troca_produto" };
+    }
   }
 
   switch (estado.etapa) {

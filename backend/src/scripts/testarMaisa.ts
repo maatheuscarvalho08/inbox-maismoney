@@ -412,7 +412,7 @@ const CASOS: Caso[] = [
   },
   {
     nome: "Contrato: resposta sem dado nenhum três vezes vai para a equipe",
-    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", "hum", "hum", "hum"],
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", "xpto", "xpto", "xpto"],
     etapaFinal: "finalizada",
     saida: "dados_contrato",
   },
@@ -564,7 +564,7 @@ const CASOS: Caso[] = [
     acoes: [...ATE_EXTRATO, { extrato: "alternativa" }, "posso pagar com boleto?"],
     etapaFinal: "finalizada",
     saida: "objecao",
-    respostaContem: "Boa pergunta",
+    respostaContem: "especialista da nossa equipe responde melhor",
   },
   {
     nome: "Deixa eu pensar na oferta de port: ela espera",

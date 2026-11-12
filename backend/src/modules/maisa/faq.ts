@@ -4,7 +4,15 @@ import { normalizar } from "./classificador.js";
 // Revisar com o dono antes de ligar em produção: só entra o que a empresa confirma.
 const FAQ: { padrao: RegExp; resposta: string }[] = [
   {
-    padrao: /\b(golpe|confiavel|confiar|seguro|seguranca|verdade|cnpj|empresa seria)\b/,
+    // "A Facta é confiável?": fala da Facta, não da Mais Money. Vem antes da regra geral.
+    padrao: /\bfacta\b.{0,25}(confiavel|seria|segura|banco mesmo|e banco|existe)|(confiavel|confiar).{0,20}\bfacta\b/,
+    resposta:
+      "A Facta Financeira é o banco que faz o contrato. Você pode conferir direto com ela pelo SAC 0800 942 0462, que também atende pelo WhatsApp. " +
+      "A Mais Money é a correspondente que cuida da sua proposta: CNPJ 45.027.472/0001-76, Instagram @maismoneyrj.",
+  },
+  {
+    // Sem "verdade" ("na verdade sou siape") e sem "seguro" solto ("tem seguro?", "seguro desemprego").
+    padrao: /\b(golpe|confiavel|confiar|seguranca|cnpj|empresa seria|voces sao serios|e serio|e de verdade|e verdade isso)\b|\b(e|eh|sera que e) seguro\b|\bseguro (mandar|passar|enviar)\b/,
     resposta:
       "A Mais Money é uma promotora de crédito, correspondente bancário, com CNPJ 45.027.472/0001-76, no Rio de Janeiro. " +
       "Você pode conferir a gente no Instagram @maismoneyrj.",

@@ -180,7 +180,7 @@ export const TEXTOS = {
   recusaSimples:
     "Tudo bem! Se mudar de ideia ou quiser ver outras opções, um especialista da nossa equipe fica à disposição por aqui.",
   duvidaParaEquipe:
-    "Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.",
+    "Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.",
   objecao:
     "Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.",
   // Retomada de quem já aceitou: primeiro lembra o que ele ganha, depois pede o contrato.
@@ -231,6 +231,31 @@ export const TEXTOS = {
   // Confirmação: o cliente apontou erro. Ela corrige ali mesmo, sem passar para a equipe.
   qualCorrigir: "Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.",
   dadosCorrigidos: "Corrigi aqui!",
+  // Oferta: "ok", "👍", "valeu" não são sim nem não. Ela pergunta de novo.
+  confirmaAceite: "Só para confirmar: quer que eu siga com a sua proposta? É só me responder SIM.",
+  relembraOferta: "A sua condição continua de pé. Quer que eu siga? É só me responder SIM.",
+  // Aceite com condição ("sim, mas tem seguro?"): responde e confirma antes de seguir.
+  confirmaCondicao: "Com isso esclarecido, posso seguir com a sua proposta? É só me responder SIM.",
+  // Aceite com condição que ela não sabe responder: confirma sem fingir que esclareceu.
+  confirmaAntes: "Antes de seguir, me confirma: posso fazer a proposta do jeito que te mostrei? É só me responder SIM. Se quiser mudar alguma coisa, me conta.",
+  // Aceite com outro valor ou prazo: a equipe refaz. A Maisa não muda a oferta sozinha.
+  outroValorEquipe:
+    "Anotei o que você quer. Vou pedir para um especialista da nossa equipe refazer a simulação com esse valor ou prazo. Já já alguém continua aqui com você.",
+  // Data ou CPF diferente depois da oferta: a simulação usou o dado antigo.
+  dadoCorrigidoEquipe:
+    "Obrigada por avisar! Como esse dado mudou, um especialista da nossa equipe vai refazer a sua simulação. Já já alguém continua aqui com você.",
+  cpfJaAnotado: "O seu CPF já está anotado aqui 😊",
+  dataJaAnotada: "Essa data já está anotada aqui 😊",
+  dataCorrigida: (data: string) => `Pronto, corrigi a sua data de nascimento para ${data}.`,
+  numeroNaOferta: "Recebi esse número, mas não sei a que ele se refere.",
+  recomecar: "Sem problema! Se quiser refazer, é só me mandar outro extrato aqui. Se preferir, chamo alguém da equipe para olhar com você.",
+  naoSeiSeEntendi: "Não sei se entendi direito. Quer que eu siga com a sua proposta? Responda SIM, ou me conta a sua dúvida.",
+  menorDeIdade: "Pela data, você teria menos de 18 anos, e o crédito é só para maiores de idade. Pode conferir a data e me mandar de novo?",
+  perguntaIdade: "A idade entra na análise: com a sua data de nascimento eu já vejo o prazo possível para você. Qual a sua data de nascimento?",
+  senhaGov: (produto: "inss" | "siape") =>
+    `Se a senha do gov.br venceu ou você esqueceu, dá para criar uma nova no aplicativo gov.br, tocando em "Esqueci minha senha". Depois é só entrar no ${produto === "siape" ? "SouGov.br" : "Meu INSS"} e baixar o extrato.`,
+  mensagemNaoSuportada: "Essa mensagem não abriu aqui para mim. Pode mandar o extrato de novo, em PDF ou foto?",
+  retomaNumero: (banco: string) => `Quando puder, me manda o número do contrato do ${banco}.`,
   // Foto chegou, mas o dado pedido não aparece nela (foto torta, apagada, de lado).
   fotoSemDado: "Recebi a foto, mas não consegui ler esse dado nela.",
   // Arquivo antes de saber o vínculo: guarda (pode ser o extrato) e pergunta o vínculo.
