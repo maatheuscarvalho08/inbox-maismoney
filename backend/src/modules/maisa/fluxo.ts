@@ -1,6 +1,6 @@
 import type { Convenio } from "@prisma/client";
 import type { Classificador, ConvenioEntendido, LeituraOferta } from "./classificador.js";
-import type { DigitacaoPort, ReducaoParcela, ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta, ResultadoExtrato } from "./bancos.js";
+import type { DigitacaoPort, ReducaoParcela, TabelaDigitacao, ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta, ResultadoExtrato } from "./bancos.js";
 import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
@@ -79,6 +79,8 @@ export interface EstadoMaisa {
     motivo: string;
     digitacao?: DigitacaoPort;
     reducoes?: ReducaoParcela[];
+    // Todo contrato em que a Facta abriu tabela, com as tabelas, para a nota da equipe.
+    simulacoes?: DigitacaoPort[];
     numeroContrato?: string;
     // Do extrato, para o contrato não perguntar de novo.
     renda?: number | null;
@@ -240,28 +242,66 @@ export function notaEquipe(estado: EstadoMaisa, motivo: string, efeitos: Efeito[
   const a = estado.alternativa;
   if (a) {
     const nome = { port_refin: "port + refin", portabilidade: "portabilidade", refin: "refin" }[a.operacao];
+    linhas.push(...dadosDoCliente(estado));
     linhas.push(`Simulei na Facta (${nome}, operação 003500): ${a.motivo}.`);
-    const d = a.digitacao;
-    if (d) {
-      linhas.push(
-        `Contrato a comprar: ${d.banco}${d.bancoCodigo ? ` (código ${d.bancoCodigo})` : " (código do banco não identificado)"}, ` +
-          `parcela ${r$(d.parcela)}, faltam ${d.prazoRestante}, saldo estimado ${r$(d.saldoDevedor)} (confirmar na CIP).`,
-      );
-      linhas.push(`Port: tabela ${d.port.codigoTabela}, ${d.port.prazo}x de ${r$(d.port.parcela)}.`);
-      if (d.refin) {
-        linhas.push(`Refin da port: tabela ${d.refin.codigoTabela}, ${d.refin.prazo}x de ${r$(d.refin.parcela)}, bruto ${r$(d.refin.contrato)}.`);
-      }
-    }
-    for (const red of a.reducoes ?? []) linhas.push(`Port ${red.banco}: parcela de ${r$(red.atual)} cai para ${r$(red.nova)}.`);
     if (a.trocoCentavos) linhas.push(`Troco ofertado: até ${formatarReais(a.trocoCentavos)}.`);
     if (a.numeroContrato) linhas.push(`Número do contrato informado pelo cliente: ${a.numeroContrato}.`);
+    if (a.digitacao) linhas.push(`Contrato que ela ofertou: ${a.digitacao.banco}, parcela ${r$(a.digitacao.parcela)}.`);
+    // Tudo o que a Facta abriu, contrato por contrato, para a equipe digitar no portal.
+    if (a.simulacoes?.length) {
+      linhas.push("", "SIMULAÇÕES NA FACTA (SIAPE, averbador 15, operação 003500). Saldo estimado: confirmar na CIP.");
+      a.simulacoes.forEach((s, i) => linhas.push(...blocoSimulacao(s, i + 1, a.numeroContrato, a.digitacao)));
+    }
+  }
+  // Conversa antiga, sem a lista: só o contrato ofertado e as reduções.
+  if (a && !a.simulacoes?.length) {
+    if (a.digitacao) linhas.push("", "SIMULAÇÃO NA FACTA (SIAPE, averbador 15, operação 003500). Saldo estimado: confirmar na CIP.", ...blocoSimulacao(a.digitacao, 1, a.numeroContrato, a.digitacao));
+    for (const red of a.reducoes ?? []) linhas.push(`Port ${red.banco}: parcela de ${r$(red.atual)} cai para ${r$(red.nova)}.`);
   }
 
   const dados = estado.contrato?.dados;
   if (dados && Object.keys(dados).length) {
-    linhas.push(`Dados coletados para o contrato:\n${resumoDados(dados)}`);
+    linhas.push("", `DADOS PARA O CADASTRO:\n${resumoDados(dados, true)}`);
   }
   return linhas.join("\n");
+}
+
+const pct = (n: number) => `${String(Number(n.toFixed(2))).replace(".", ",")}% a.m.`;
+
+function linhaTabela(rotulo: string, t: TabelaDigitacao, refin: boolean): string {
+  return (
+    `   ${rotulo}: tabela ${t.codigoTabela}${t.nome ? ` (${t.nome})` : ""}, ${t.prazo}x de ${r$(t.parcela)}` +
+    (t.taxa ? `, taxa ${pct(t.taxa)}` : "") +
+    `, coeficiente ${t.coeficiente}, ${refin ? "bruto" : "valor da operação"} ${r$(t.contrato)}` +
+    (refin && t.liquido != null ? `, troco ${r$(t.liquido)}` : "")
+  );
+}
+
+// Um contrato simulado, com tudo o que o portal pede para digitar.
+function blocoSimulacao(s: DigitacaoPort, n: number, numeroCliente?: string, ofertado?: DigitacaoPort): string[] {
+  const foiOfertado = ofertado && ofertado.banco === s.banco && ofertado.parcela === s.parcela;
+  const numero = s.numeroContrato || (foiOfertado ? numeroCliente : undefined);
+  const economia = s.parcela - s.port.parcela;
+  return [
+    `${n}) ${s.banco}${s.bancoCodigo ? `, código ${s.bancoCodigo}` : ", código do banco não identificado"}` +
+      `${numero ? `, contrato nº ${numero}` : ", nº do contrato: pegar na BRB"}${foiOfertado ? "  [OFERTADO]" : ""}`,
+    `   Hoje: parcela ${r$(s.parcela)}, faltam ${s.prazoRestante} de ${s.prazoOriginal}, saldo estimado ${r$(s.saldoDevedor)}`,
+    linhaTabela("Port", s.port, false) + (economia > 0 ? `, parcela cai ${r$(economia)} por mês` : ""),
+    s.refin ? linhaTabela("Refin da port", s.refin, true) : "   Refin da port: nenhuma tabela com troco (só port pura)",
+  ];
+}
+
+// Cliente: o que o portal pede além do cadastro, lido do extrato.
+function dadosDoCliente(estado: EstadoMaisa): string[] {
+  const a = estado.alternativa;
+  const partes = [
+    estado.nome ? `nome ${estado.nome}` : null,
+    estado.dataNascimento ? `nascimento ${estado.dataNascimento.slice(0, 10).split("-").reverse().join("/")}` : null,
+    a?.matricula ? `matrícula ${a.matricula}` : null,
+    a?.renda ? `renda bruta ${r$(a.renda)}` : null,
+    a?.contaSalario ? `conta salário: banco ${a.contaSalario.bancoConta}, agência ${a.contaSalario.agencia}, conta ${a.contaSalario.conta}` : null,
+  ].filter(Boolean);
+  return partes.length ? [`Cliente: ${partes.join("; ")}.`] : [];
 }
 
 // Fim sem atendente: nada a oferecer agora. Se o cliente escrever de novo, começa outra conversa.
@@ -503,12 +543,18 @@ async function etapaExtrato(
   }
   if (resultado.tipo === "alternativa") {
     const troco = resultado.trocoCentavos ? formatarReais(resultado.trocoCentavos) : null;
-    const { operacao, trocoCentavos, motivo, digitacao, reducoes, renda, matricula, contaSalario } = resultado;
-    const lidos = { ...(renda ? { renda } : {}), ...(matricula ? { matricula } : {}), ...(contaSalario ? { contaSalario } : {}) };
+    const { operacao, trocoCentavos, motivo, digitacao, reducoes, simulacoes, renda, matricula, contaSalario } = resultado;
+    const lidos = {
+      ...(renda ? { renda } : {}),
+      ...(matricula ? { matricula } : {}),
+      ...(contaSalario ? { contaSalario } : {}),
+      ...(simulacoes?.length ? { simulacoes } : {}),
+    };
     // Sem simulação na Facta (INSS, refin ou simulação que falhou): pode passar, mas
     // ela não oferta o que não simulou. A equipe simula e mostra ao cliente.
     if (!resultado.simulada) {
-      return transferir(estado, `sem margem para novo; ${motivo}`, TEXTOS.semMargemExtrato, "alternativa", [], "alternativa");
+      const comAlternativa: EstadoMaisa = { ...estado, alternativa: { operacao, trocoCentavos, motivo, ...lidos } };
+      return transferir(comAlternativa, `sem margem para novo; ${motivo}`, TEXTOS.semMargemExtrato, "alternativa", [], "alternativa");
     }
     // Já tinha dito SIM: avisa que vai digitar e pede o que falta, começando pelo contrato.
     if (estado.aceitouOferta && digitacao && deps.digitacaoAtiva) {

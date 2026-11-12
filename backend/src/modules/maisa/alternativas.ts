@@ -33,11 +33,13 @@ export async function buscarAlternativa(p: {
     let falhou = false;
     const portas: string[] = [];
     const reducoes: ReducaoParcela[] = [];
+    const simulacoes: DigitacaoPort[] = [];
     // Port pura: o contrato que mais baixa a parcela é o que ela conduz.
     let melhorPort: { reducao: number; digitacao: DigitacaoPort } | null = null;
     for (const contrato of candidatos) {
       try {
         const s = await p.banco.simularPortabilidadeSiape({ cpf: p.cpf, dataNascimento: p.dataNascimento, contrato });
+        if (s.digitacao) simulacoes.push(s.digitacao);
         if (s.temPortabilidade) {
           algumaPort = true;
           portas.push(`parcela de ${contrato.parcela} cai para ${s.parcelaPortabilidade ?? "?"} na Facta`);
@@ -66,6 +68,7 @@ export async function buscarAlternativa(p: {
         trocoCentavos: melhor.trocoCentavos,
         motivo: `port + refin: ${melhor.motivo}`,
         simulada: true,
+        simulacoes,
         ...(melhor.digitacao ? { digitacao: melhor.digitacao } : {}),
       };
     }
@@ -75,6 +78,7 @@ export async function buscarAlternativa(p: {
       return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: `port sem refin: ${portas.join("; ")}`,
         simulada: true,
         reducoes,
+        simulacoes,
         ...(melhorPort ? { digitacao: melhorPort.digitacao } : {}),
       };
     }

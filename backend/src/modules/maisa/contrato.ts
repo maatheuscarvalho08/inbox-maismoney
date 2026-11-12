@@ -155,17 +155,18 @@ export function proximaPergunta(dados: DadosContrato, produto: ProdutoContrato):
 const dataBr = (iso?: string) => (iso ? iso.split("-").reverse().join("/") : "");
 
 // O que o cliente confere antes de a Maisa digitar. Sem CPF nem RG completo.
-export function resumoDados(d: DadosContrato): string {
+// completo: para a nota da equipe, que digita no portal. Ao cliente, RG e conta saem mascarados.
+export function resumoDados(d: DadosContrato, completo = false): string {
   const endereco = [d.endereco, d.numero, d.complemento].filter(Boolean).join(", ");
   return [
     `Nome: ${d.nome}`,
     `Naturalidade: ${d.cidadeNaturalNome}/${d.estadoNatural}`,
-    `RG: final ${String(d.rg).slice(-3)}, ${d.orgaoEmissor}/${d.estadoRg}, expedido em ${dataBr(d.dataExpedicao)}`,
+    `RG: ${completo ? d.rg : `final ${String(d.rg).slice(-3)}`}, ${d.orgaoEmissor}/${d.estadoRg}, expedido em ${dataBr(d.dataExpedicao)}`,
     `Mãe: ${d.nomeMae}`,
     `Pai: ${d.nomePai}`,
     `Estado civil: ${d.estadoCivilNome}`,
     `Endereço: ${endereco}, ${d.bairro}, ${d.cidadeNome}/${d.estado}, CEP ${d.cep}`,
     `E-mail: ${d.email}`,
-    ...(d.conta ? [`Conta para receber: banco ${d.bancoConta}, agência ${d.agencia}, conta final ${String(d.conta).slice(-3)}`] : []),
+    ...(d.conta ? [`Conta para receber: banco ${d.bancoConta}, agência ${d.agencia}, ${completo ? `conta ${d.conta}` : `conta final ${String(d.conta).slice(-3)}`}`] : []),
   ].join("\n");
 }

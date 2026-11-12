@@ -48,6 +48,8 @@ export type ResultadoExtrato =
       digitacao?: DigitacaoPort;
       // Port sem troco: quanto cada parcela cai, para a oferta mostrar os valores.
       reducoes?: ReducaoParcela[];
+      // Todo contrato em que a Facta abriu tabela, para a nota da equipe.
+      simulacoes?: DigitacaoPort[];
     };
 
 export interface ReducaoParcela {
@@ -67,6 +69,10 @@ export interface TabelaDigitacao {
   coeficiente: number;
   // % ao mês, para a oferta dizer a taxa nova.
   taxa?: number;
+  // Nome da tabela na Facta, para a equipe achar no portal.
+  nome?: string;
+  // Refin: o que sobra para o cliente.
+  liquido?: number;
 }
 
 export interface DigitacaoPort {
@@ -209,6 +215,8 @@ export const bancoFacta: BancoClt = {
       parcela: t.parcela,
       coeficiente: t.coeficiente,
       taxa: t.taxa,
+      nome: t.tabela,
+      liquido: t.valorLiquido,
     });
     return {
       trocoCentavos: melhor ? reais(melhor.valorLiquido) : null,
