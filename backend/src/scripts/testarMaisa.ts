@@ -56,7 +56,7 @@ function cpfTerminadoEm(ultimo: number) {
 // banco, a checagem automática ou o relógio andar.
 // extrato: o cliente manda um PDF; o valor diz o que a leitura encontra.
 // dados: o cliente responde e a leitura encontra esses campos. digitacao: o que a Facta devolve.
-type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "alternativa_com_numero" | "invalido" | "estadual" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
+type Acao = string | { midia: true } | { dados: DadosContrato } | { digitacao: "ok" | "erro" } | { extrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "alternativa_com_numero" | "port_pura" | "invalido" | "estadual" } | { autoriza: true } | { verifica: true } | { verificaOferta: true } | { horas: number } | { minutos: number };
 
 interface Caso {
   nome: string;
@@ -327,16 +327,76 @@ const CASOS: Caso[] = [
     respostaContem: "Confere se está tudo certo",
   },
   {
-    nome: "Contrato: resumo não mostra o RG inteiro",
+    nome: "Contrato: resumo mostra o RG inteiro, para o cliente não achar que está incompleto",
     acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }],
     etapaFinal: "confirmacao",
-    respostaContem: "RG: final 789",
+    respostaContem: "RG: 123456789",
   },
   {
-    nome: "Contrato: cliente diz que os dados estão errados vai para a equipe",
+    nome: "Contrato: cliente diz que os dados estão errados, ela pede o dado certo",
     acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }, "não"],
+    etapaFinal: "confirmacao",
+    respostaContem: "Me manda só o dado certo",
+  },
+  {
+    nome: "Contrato: cliente manda o dado certo, ela corrige e mostra o resumo de novo",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }, "não", { dados: { rg: "987654321" } }],
+    etapaFinal: "confirmacao",
+    respostaContem: "RG: 987654321",
+  },
+  {
+    nome: "Contrato: não consegue corrigir três vezes, a equipe corrige",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }, "não", "não", "não"],
     etapaFinal: "finalizada",
     saida: "dados_contrato",
+  },
+  {
+    nome: "Arquivo antes do vínculo: guarda e pergunta o vínculo",
+    acoes: [{ extrato: "com_margem" }],
+    etapaFinal: "convenio",
+    respostaContem: "já guardei aqui",
+  },
+  {
+    nome: "Extrato de novo depois da oferta: não passa para a equipe",
+    acoes: [...ATE_EXTRATO, { extrato: "port_pura" }, { extrato: "port_pura" }],
+    etapaFinal: "oferta_port",
+    respostaContem: "já foi feita com o seu extrato",
+  },
+  {
+    nome: "Port pura, não entendi: explica em palavras simples",
+    acoes: [...ATE_EXTRATO, { extrato: "port_pura" }, "Não entendi"],
+    etapaFinal: "oferta_port",
+    respostaContem: "Te explico de um jeito simples",
+  },
+  {
+    nome: "Port pura, quanto eu ficaria: diz que não tem troco e soma a economia",
+    acoes: [...ATE_EXTRATO, { extrato: "port_pura" }, "Quanto seria o valor que eu ficaria?"],
+    etapaFinal: "oferta_port",
+    respostaContem: "somando os 2 contratos",
+  },
+  {
+    nome: "Port pura, somando tudo dá quanto de troco: não tem troco",
+    acoes: [...ATE_EXTRATO, { extrato: "port_pura" }, "Mas somando tudo da quanto de troco pra mim"],
+    etapaFinal: "oferta_port",
+    respostaContem: "não tem troco",
+  },
+  {
+    nome: "Extrato de ontem serve: responde que sim",
+    acoes: [...ATE_EXTRATO, "Serve de ontem"],
+    etapaFinal: "extrato",
+    respostaContem: "Serve sim",
+  },
+  {
+    nome: "Diz que já mandou o extrato: avisa que não chegou",
+    acoes: [...ATE_EXTRATO, "Já está aí 👆"],
+    etapaFinal: "extrato",
+    respostaContem: "não chegou nenhum arquivo",
+  },
+  {
+    nome: "Manda link do Acrobat: explica como mandar o arquivo",
+    acoes: [...ATE_EXTRATO, "Abra o documento compartilhado: https://acrobat.adobe.com/id/urn:aaid:sc:VA6C2"],
+    etapaFinal: "extrato",
+    respostaContem: "Não consigo abrir links",
   },
   {
     nome: "Contrato: erro na Facta vai para a equipe",
@@ -567,7 +627,7 @@ async function rodar(caso: Caso, verbose: boolean) {
   bancoSimulado.reiniciar();
   let cpfGravado: string | null = null;
   let relogio = new Date("2026-11-09T12:00:00Z");
-  let leituraExtrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "alternativa_com_numero" | "invalido" | "estadual" = "com_margem";
+  let leituraExtrato: "com_margem" | "sem_margem" | "sem_margem_duvida" | "alternativa" | "alternativa_sem_simular" | "alternativa_digitavel" | "alternativa_com_numero" | "port_pura" | "invalido" | "estadual" = "com_margem";
   let proximosDados: DadosContrato = {};
   let digitacao: "ok" | "erro" = "ok";
   const deps: Dependencias = {
@@ -603,6 +663,15 @@ async function rodar(caso: Caso, verbose: boolean) {
           motivo: "teste",
           simulada: true,
           digitacao: { banco: "104 - CEF", bancoCodigo: "104", parcela: 400, prazoRestante: 80, prazoOriginal: 120, saldoDevedor: 19000, port: { ...t, parcela: 390 }, refin: t },
+        };
+      }
+      if (leituraExtrato === "port_pura") {
+        return {
+          tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: "teste", simulada: true,
+          reducoes: [
+            { banco: "CEF", atual: 390.47, nova: 387.5, restantes: 68, taxa: 1.5 },
+            { banco: "DIGIO", atual: 119.5, nova: 118.22, restantes: 81, taxa: 1.5 },
+          ],
         };
       }
       if (leituraExtrato === "alternativa_sem_simular") return { tipo: "alternativa", operacao: "portabilidade", trocoCentavos: null, motivo: "teste", simulada: false };

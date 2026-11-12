@@ -228,6 +228,20 @@ export const TEXTOS = {
     "\n\nUm atendente da nossa equipe acompanha com você até o dinheiro cair.",
   erroDigitacao: "Tive um problema para fazer o contrato no sistema do banco. Vou passar para um atendente terminar com você.",
   corrigirDados: "Sem problema. Vou passar para um atendente corrigir os dados com você.",
+  // Confirmação: o cliente apontou erro. Ela corrige ali mesmo, sem passar para a equipe.
+  qualCorrigir: "Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.",
+  dadosCorrigidos: "Corrigi aqui!",
+  // Foto chegou, mas o dado pedido não aparece nela (foto torta, apagada, de lado).
+  fotoSemDado: "Recebi a foto, mas não consegui ler esse dado nela.",
+  // Arquivo antes de saber o vínculo: guarda (pode ser o extrato) e pergunta o vínculo.
+  arquivoNoInicio: "Recebi o seu arquivo e já guardei aqui. Antes de olhar, me conta qual é o seu vínculo.",
+  // Mandou o extrato de novo depois da oferta: a simulação já foi feita com ele.
+  extratoRepetido: "Recebi! A sua simulação já foi feita com o seu extrato. Os valores estão na mensagem aqui em cima.",
+  extratoRecente: "Serve sim! O extrato de ontem ou dos últimos dias está ótimo. Pode mandar aqui, em PDF ou foto.",
+  extratoNaoChegou:
+    "Ainda não chegou nenhum arquivo aqui para mim. Pode mandar de novo? Toque no clipe 📎 aqui no WhatsApp, escolha Documento e selecione o PDF.",
+  extratoPorLink:
+    "Não consigo abrir links. Me manda o próprio arquivo aqui na conversa: no Acrobat, toque em Compartilhar, depois em Enviar uma cópia, e escolha o WhatsApp. Também pode ser uma foto bem nítida.",
   pixRecusado: "Tudo bem. Vou passar para um atendente ver outra forma de pagamento com você.",
   aceitou:"Ótimo! Vou te passar para um atendente finalizar a sua proposta. Já já alguém da equipe continua com você.",
   recusou: "Tudo bem! Se mudar de ideia, é só me chamar aqui.",

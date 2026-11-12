@@ -135,6 +135,11 @@ const gruposDo = (produto: ProdutoContrato) => GRUPOS.filter((g) => !g.so || g.s
 
 const falta = (dados: DadosContrato, campo: CampoContrato) => dados[campo] === undefined || dados[campo] === "";
 
+// Todos os campos do cadastro: na correção, o cliente pode mudar qualquer um.
+export function todosCampos(produto: ProdutoContrato): CampoContrato[] {
+  return gruposDo(produto).flatMap((g) => g.campos);
+}
+
 export function camposFaltando(dados: DadosContrato, produto: ProdutoContrato): CampoContrato[] {
   return gruposDo(produto).flatMap((g) => g.campos.filter((c) => falta(dados, c)));
 }
