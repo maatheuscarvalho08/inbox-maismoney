@@ -285,7 +285,10 @@ function blocoSimulacao(s: DigitacaoPort, n: number, numeroCliente?: string, ofe
   return [
     `${n}) ${s.banco}${s.bancoCodigo ? `, código ${s.bancoCodigo}` : ", código do banco não identificado"}` +
       `${numero ? `, contrato nº ${numero}` : ", nº do contrato: pegar na BRB"}${foiOfertado ? "  [OFERTADO]" : ""}`,
-    `   Hoje: parcela ${r$(s.parcela)}, faltam ${s.prazoRestante} de ${s.prazoOriginal}, saldo estimado ${r$(s.saldoDevedor)}`,
+    // Sem o total no extrato, o prazo original enviado à Facta é o próprio restante.
+    `   Hoje: parcela ${r$(s.parcela)}, faltam ${s.prazoRestante}` +
+      (s.prazoOriginal > s.prazoRestante ? ` de ${s.prazoOriginal}` : " (total e pagas não informados no extrato: conferir na BRB)") +
+      `, saldo estimado ${r$(s.saldoDevedor)}`,
     linhaTabela("Port", s.port, false) + (economia > 0 ? `, parcela cai ${r$(economia)} por mês` : ""),
     s.refin ? linhaTabela("Refin da port", s.refin, true) : "   Refin da port: nenhuma tabela com troco (só port pura)",
   ];
