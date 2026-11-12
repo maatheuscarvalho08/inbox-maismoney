@@ -44,7 +44,7 @@ export const REGRAS_PORTABILIDADE = {
   previdenciaSemPortabilidade: [
     /previd/, /\bsabemi\b/, /\bprevim/, /\bcomprev\b/, /\bfuturo\b/, /capemisa/, /gboex/,
     /mongeral/, /aspecir/, /icatu/, /montepio/, /pecul/, /segurador/,
-    /\blar\b/, /amaggi/, /bcref/, /equator/, /\beagle\b/,
+    /\blar\b/, /amaggi/, /bcref/, /equator/, /\beagle\b/, /\bhoje\b/,
   ],
   // Saldo devedor mínimo para portar.
   saldoMinimo: 2000,
