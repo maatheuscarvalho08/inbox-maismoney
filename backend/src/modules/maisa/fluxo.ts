@@ -1141,7 +1141,7 @@ async function etapaContratoPorArquivo(estado: EstadoMaisa, documentoId: string 
     const memoria = { ...(estado.memoria ?? emMemoriaVazia()), contratoProposto: { numero, banco: lido.banco, origem: "arquivo" as const, em: deps.agora().toISOString() } };
     return { estado: { ...estado, memoria, tentativas: 0 }, respostas: [TEXTOS.contratoDoArquivo(numero, lido.banco)], efeitos: [], rotulo: "contrato_do_arquivo_confirmar" };
   }
-  return tentarDeNovo(estado, TEXTOS.arquivoSemContrato(banco), "arquivo_sem_contrato", "alternativa");
+  return tentarDeNovo(estado, estado.produto === "siape" ? TEXTOS.arquivoSemContratoSiape(banco) : TEXTOS.arquivoSemContrato(banco), "arquivo_sem_contrato", "alternativa");
 }
 
 // Começa o cadastro da port com o número do contrato em mãos. Renda, matrícula e conta

@@ -327,6 +327,22 @@ await caso("Cenário 2: não sabe onde achar, sem procedimento inventado da Caix
   assert.match(p.respostas[0], /Ainda não tenho uma instrução segura|equipe/);
 });
 
+await caso("SIAPE: onde achar o número vem da orientação aprovada (extrato de consignações)", async () => {
+  const deps = depsBase(roteiro([interp({ intencao: "nao_sabe_encontrar", topicoAjuda: "numero_contrato" })]));
+  const p = await diga({ ...estadoCef(), produto: "siape" }, "Não sei onde acho.", deps);
+  assert.match(p.respostas[0], /extrato de consignações/);
+  assert.equal(p.estado.memoria?.orientacoes[0]?.id, "numero_contrato.siape.extrato");
+});
+
+await caso("SIAPE: arquivo sem número lembra que o contracheque não traz e pede o extrato", async () => {
+  const deps = depsBase(roteiro([]));
+  deps.conversa = { ...deps.conversa!, lerContratoDeArquivo: async () => ({ legivel: true, numero: null, banco: null }) };
+  const p = await diga({ ...estadoCef(), produto: "siape" }, "", deps, { documento: true, temMidia: true });
+  assert.equal(p.estado.etapa, "numero_contrato");
+  assert.match(p.respostas[0], /contracheque/);
+  assert.match(p.respostas[0], /extrato de consignações/);
+});
+
 await caso("Cenário 3: já mandei confere o arquivo antes de pedir de novo", async () => {
   const motor = criarMotor({ interpretador: roteiro([interp({ intencao: "impaciencia", reclamaRepeticao: true, tom: "irritado" })]), redator: redatorReserva, confiancaMin: 0.6 });
   const deps = depsBase(roteiro([]));

@@ -207,6 +207,8 @@ export const TEXTOS = {
     `Esse arquivo parece ser de um contrato do ${citado}. Para essa proposta eu preciso do contrato do ${pedido}. Pode me mandar o desse banco?`,
   arquivoSemContrato: (banco: string) =>
     `Recebi o arquivo, mas não consegui achar nele o número do contrato do ${banco}. Pode digitar o número por aqui, ou mandar uma foto mais nítida?`,
+  arquivoSemContratoSiape: (banco: string) =>
+    `Recebi o arquivo, mas não achei nele o número do contrato do ${banco}. Se for o contracheque, ele não traz o número. O número fica no extrato de consignações, na coluna Número do Contrato. Pode me mandar esse extrato?`,
   cadastroAnterior: "Já tenho os seus dados do atendimento anterior, então não vou pedir tudo de novo.",
   cadastroParcial: "Já tenho parte dos seus dados do atendimento anterior. Falta só o resto.",
   contratoAnotado: (banco: string, numero: string) => `Anotei o número do contrato do ${banco}: ${numero}. Obrigada!`,

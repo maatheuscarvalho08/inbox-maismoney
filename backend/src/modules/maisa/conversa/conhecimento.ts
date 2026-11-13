@@ -29,6 +29,18 @@ const FONTE_TEXTOS = "texto já enviado a clientes pelo código (textos.ts), agu
 
 export const BASE: ItemConhecimento[] = [
   {
+    id: "numero_contrato.siape.extrato",
+    versao: "1",
+    topico: "numero_contrato",
+    titulo: "Onde está o número do contrato no extrato de consignações (SIAPE)",
+    produtos: ["siape"],
+    status: "aprovado",
+    fonte: "informado pelo dono em 13/11/2026, conferido no extrato de consignações enviado por cliente (coluna Número do Contrato)",
+    validadoPor: "dono",
+    validadoEm: "2026-11-13",
+    texto: () => "O número de cada contrato aparece no extrato de consignações, na coluna Número do Contrato.",
+  },
+  {
     id: "numero_contrato.geral",
     versao: "1",
     topico: "numero_contrato",
@@ -87,7 +99,11 @@ const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 // A orientação mais específica que a Maisa pode usar: do banco, depois a geral do produto.
 export function orientacaoPara(topico: string, ctx: { produto?: string; banco?: string }, base: ItemConhecimento[] = BASE): ItemConhecimento | null {
   const banco = ctx.banco ? norm(ctx.banco) : "";
-  const candidatos = base.filter((i) => i.topico === topico && usavel(i) && (!i.produtos || !ctx.produto || (i.produtos as string[]).includes(ctx.produto)));
+  // Aprovado vale mais que o texto que já estava em produção.
+  const rank = (i: ItemConhecimento) => (i.status === "aprovado" ? 0 : 1);
+  const candidatos = base
+    .filter((i) => i.topico === topico && usavel(i) && (!i.produtos || !ctx.produto || (i.produtos as string[]).includes(ctx.produto)))
+    .sort((a, b) => rank(a) - rank(b));
   const doBanco = candidatos.find((i) => i.bancos?.some((b) => banco.includes(b)));
   return doBanco ?? candidatos.find((i) => !i.bancos?.length) ?? null;
 }
