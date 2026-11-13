@@ -26,6 +26,7 @@ import { instanteEnvio, invalidaConfirmacao, mandadaDepoisOuJunto } from "./orde
 export { portasMaisa, tempoDigitando } from "./portasMaisa.js";
 export { aguardarDespachos, despachar, recuperarSaidas } from "./saidaMaisa.js";
 import { INTERVALO_AVISO_ACEITE_MS, ehAceiteTardio } from "./aceiteTardio.js";
+import { conversaAtiva, dadosDoRegistro, limparConversa, modoConversa, rodarSombra } from "./conversa/montagem.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
 export const PREFIXO_NUMERO_TESTE = "5500000";
@@ -286,7 +287,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     if (arquivo?.tipo.startsWith("audio/") && env.OPENAI_API_KEY) {
       try {
         const texto = await transcreverAudio(await lerArquivo(arquivo.midiaPath), arquivo.tipo);
-        if (texto) entrada = { texto, temMidia: false, mensagemId: mensagem.id };
+        if (texto) entrada = { texto, temMidia: false, mensagemId: mensagem.id, viaAudio: true };
         console.log(`Maisa transcreveu áudio da conversa ${conversa.id} (${texto.length} caracteres)`);
       } catch (err) {
         console.error(`Maisa não conseguiu transcrever o áudio da conversa ${conversa.id}:`, err instanceof Error ? err.message : err);
@@ -301,6 +302,8 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
   const passo: Passo = await avancar(estadoAntes, entrada, {
     classificador: comModelo(classificadorRegras),
     responderLivre,
+    // Camada conversacional (fase 7): só no modo ativo. Desligada ou em sombra, o fluxo é o de sempre.
+    conversa: modoConversa() === "ativo" && !ehTeste(conversa) ? conversaAtiva(conversa.id, arquivo) : undefined,
     agora: portasMaisa.agora,
     solicitarAutorizacao: async (nome) =>
       banco
@@ -414,6 +417,9 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
         motivo: transferencia?.tipo === "transferir" ? transferencia.motivo : null,
       },
     });
+    if (passo.interpretacao) {
+      await tx.maisaInterpretacao.create({ data: dadosDoRegistro(conversa.id, lida?.id ?? null, { ...passo.interpretacao, rotuloReal: passo.rotulo }) });
+    }
     const notas = transferencia?.tipo === "transferir" && transferencia.nota ? [await criarNota(tx, conversa.id, transferencia.nota)] : [];
     const mensagens = await registrarSaidas(tx, conversa.id, respostas, enviar);
     return { notas, mensagens };
@@ -430,6 +436,11 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     throw err;
   });
 
+
+  // Modo sombra: depois do passo real já gravado, a camada nova só olha e registra. Não envia nada.
+  if (modoConversa() === "sombra" && estadoAntes && "texto" in entrada && entrada.texto && !ehTeste(conversa)) {
+    void rodarSombra({ conversaId: conversa.id, mensagemId: lida?.id ?? null, estado: estadoAntes, texto: entrada.texto, viaAudio: entrada.viaAudio === true, rotuloReal: passo.rotulo, respostaReal: passo.respostas, agora: portasMaisa.agora() });
+  }
 
   for (const m of [...gravado.notas, ...gravado.mensagens]) emitirSemFalhar(() => emitNovaMensagem(m));
   if (passo.rotulo === "digitacao_incerta" || passo.rotulo === "digitacao_bloqueada_cliente") {
@@ -584,7 +595,8 @@ async function retomar(conversaId: string) {
   if (!conversa || !conversa.comMaisa || !conversa.instancia.maisaAtiva || conversa.status === "encerrada") return;
   // As mensagens de antes da devolução já foram vistas pela equipe: a Maisa começa daqui.
   const ultima = await prisma.mensagem.findFirst({ where: { conversaId, remetenteTipo: "cliente" }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
-  const estado: EstadoMaisa = { etapa: "convenio", tentativas: 0, ...(ultima ? { ultimaMensagemId: ultima.id, ultimaMensagemEm: ultima.createdAt.toISOString() } : {}) };
+  const salvo = (conversa.maisaEstado as EstadoMaisa | null)?.contratoSalvo;
+  const estado: EstadoMaisa = { etapa: "convenio", tentativas: 0, ...(salvo ? { contratoSalvo: salvo } : {}), ...(ultima ? { ultimaMensagemId: ultima.id, ultimaMensagemEm: ultima.createdAt.toISOString() } : {}) };
   const enviar = env.MAISA_MODO === "automatico" && !ehTeste(conversa);
   const mensagens = await prisma.$transaction(async (tx) => {
     await tx.conversa.update({ where: { id: conversaId }, data: { maisaEstado: estado as unknown as Prisma.InputJsonValue, maisaVersao: { increment: 1 } } });
@@ -756,6 +768,15 @@ export function startMaisaJobs() {
       await verificarOfertasPendentes();
     } catch (err) {
       console.error("Erro nas checagens de tempo da Maisa:", err);
+    }
+  });
+  // Todo dia às 3h: cadastro anterior vencido e registros de interpretação antigos.
+  cron.schedule("0 3 * * *", async () => {
+    try {
+      const r = await limparConversa();
+      console.log(`Limpeza da conversa: ${r.cadastros} cadastro(s) antigo(s), ${r.registros} registro(s) de interpretação`);
+    } catch (err) {
+      console.error("Erro na limpeza da camada conversacional:", err);
     }
   });
   // A cada 5 segundos: fila de saída, digitações com a janela vencida e mensagens não lidas.

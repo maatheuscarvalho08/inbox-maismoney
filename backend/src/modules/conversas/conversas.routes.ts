@@ -5,6 +5,7 @@ import { authenticate, requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { prisma } from "../../db/prisma.js";
 import { findOrCreateContato } from "../contatos/contatos.service.js";
+import { estadoLimpoPreservandoCadastro } from "../maisa/estadoLimpo.js";
 import {
   adicionarEtiqueta,
   atualizarConversa,
@@ -185,7 +186,7 @@ router.patch(
       // Devolvida para a Maisa: ela recomeça o fluxo do início. O que já foi
       // gravado no contato e na conversa, como CPF e convênio, continua lá.
       // A versão sobe: um processamento da Maisa em andamento não grava por cima.
-      await prisma.conversa.update({ where: { id: req.params.id }, data: { maisaEstado: Prisma.DbNull, maisaVersao: { increment: 1 } } });
+      await prisma.conversa.update({ where: { id: req.params.id }, data: { maisaEstado: estadoLimpoPreservandoCadastro(atual.maisaEstado), maisaVersao: { increment: 1 } } });
     } else if (data.operadorId) {
       // Atribuir a um operador tira a conversa da Maisa na hora.
       data.comMaisa = false;

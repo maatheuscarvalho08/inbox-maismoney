@@ -208,18 +208,19 @@ model Conversa {
   maisaLeaseAte  DateTime?      @map("maisa_lease_ate")
   maisaLeaseDono String?        @map("maisa_lease_dono")
 
-  instancia      Instancia              @relation(fields: [instanciaId], references: [id])
-  contato        Contato                @relation(fields: [contatoId], references: [id])
-  operador       Usuario?               @relation("OperadorConversas", fields: [operadorId], references: [id])
-  mensagens      Mensagem[]
-  etiquetas      ConversaEtiqueta[]
-  visualizacoes  ConversaVisualizacao[]
-  eventosFunil   FunilEvento[]
-  propostas      Proposta[]
-  simulacoes     Simulacao[]
-  eventosMaisa   MaisaEvento[]
-  operacoesFacta OperacaoFacta[]
-  saidasMaisa    SaidaMaisa[]
+  instancia           Instancia              @relation(fields: [instanciaId], references: [id])
+  contato             Contato                @relation(fields: [contatoId], references: [id])
+  operador            Usuario?               @relation("OperadorConversas", fields: [operadorId], references: [id])
+  mensagens           Mensagem[]
+  etiquetas           ConversaEtiqueta[]
+  visualizacoes       ConversaVisualizacao[]
+  eventosFunil        FunilEvento[]
+  propostas           Proposta[]
+  simulacoes          Simulacao[]
+  eventosMaisa        MaisaEvento[]
+  operacoesFacta      OperacaoFacta[]
+  saidasMaisa         SaidaMaisa[]
+  interpretacoesMaisa MaisaInterpretacao[]
 
   @@index([carrinhoEm])
   @@map("conversas")
@@ -350,6 +351,42 @@ model MaisaEvento {
   @@index([conversaId])
   @@index([createdAt])
   @@map("maisa_eventos")
+}
+
+// Interpretação conversacional da Maisa (fase 7). Guarda o que ela entendeu e decidiu, nunca o
+// texto do cliente nem CPF. Em modo sombra, texto_sombra guarda o que ela teria dito (nunca enviado).
+model MaisaInterpretacao {
+  id            String   @id @default(uuid())
+  conversaId    String   @map("conversa_id")
+  mensagemId    String?  @map("mensagem_id")
+  modo          String
+  etapa         String
+  intencao      String?
+  confianca     Float?
+  tom           String?
+  campos        String[]
+  descartados   Int      @default(0)
+  acao          String
+  estrategia    String?
+  tentativa     Int?
+  reformulou    Boolean  @default(false)
+  fonteTexto    String?  @map("fonte_texto")
+  falha         String?
+  latenciaMs    Int?     @map("latencia_ms")
+  modelo        String?
+  tokensEntrada Int?     @map("tokens_entrada")
+  tokensSaida   Int?     @map("tokens_saida")
+  rotuloReal    String?  @map("rotulo_real")
+  divergiu      Boolean?
+  textoSombra   String?  @map("texto_sombra")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  conversa Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+
+  @@index([conversaId])
+  @@index([createdAt])
+  @@index([modo, createdAt])
+  @@map("maisa_interpretacoes")
 }
 
 // Quando cada conversa chegou em cada etapa do funil.

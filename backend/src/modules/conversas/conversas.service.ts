@@ -1,3 +1,4 @@
+import { estadoLimpoPreservandoCadastro } from "../maisa/estadoLimpo.js";
 import { Prisma, type Convenio, type StatusConversa } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 import { avancarEtapa } from "../funil/funil.service.js";
@@ -153,7 +154,7 @@ export async function marcarConversaRespondida(conversaId: string) {
     data: {
       respondida: true,
       carrinhoEm: null,
-      ...(entraComMaisa ? { comMaisa: true, ...((conversa?.maisaEstado as { etapa?: string } | null)?.etapa === "finalizada" ? { maisaEstado: Prisma.DbNull, maisaVersao: { increment: 1 } } : {}) } : {}),
+      ...(entraComMaisa ? { comMaisa: true, ...((conversa?.maisaEstado as { etapa?: string } | null)?.etapa === "finalizada" ? { maisaEstado: estadoLimpoPreservandoCadastro(conversa?.maisaEstado), maisaVersao: { increment: 1 } } : {}) } : {}),
     },
   });
   // Cliente escreveu: a conversa passa a contar como lead no funil.
