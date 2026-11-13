@@ -5,7 +5,7 @@ import { authenticate } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { upload } from "../../middleware/upload.js";
 import { prisma } from "../../db/prisma.js";
-import { criarMensagem, listMensagensPorConversa } from "./mensagens.service.js";
+import { criarMensagem, listMensagensPorConversa, situacaoNaFila } from "./mensagens.service.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { editarMensagemEvolution, mensagemErroEvolution } from "../../integrations/evolutionApi.js";
 import { entregarMensagem } from "./entrega.js";
@@ -143,6 +143,15 @@ router.post(
     }
     if (mensagem.midiaDeleted) {
       return res.status(400).json({ error: "A mídia dessa mensagem já foi removida" });
+    }
+    // Mensagem da Maisa na fila de saída: pendente ou em envio, quem envia é o despachante.
+    // Entrega incerta (pode ter chegado): só reenvia se a pessoa confirmar, porque duplica.
+    const naFila = mensagem.remetenteTipo === "maisa" ? await situacaoNaFila(mensagem.id) : null;
+    if (naFila === "pendente" || naFila === "processando") {
+      return res.status(409).json({ error: "Essa mensagem ainda está na fila de envio da Maisa" });
+    }
+    if (naFila === "incerto" && req.body?.confirmarIncerto !== true) {
+      return res.status(409).json({ error: "A entrega é incerta: a mensagem pode ter chegado. Confirme para reenviar mesmo assim", codigo: "entrega_incerta" });
     }
 
     const { conversa, ...resto } = mensagem;

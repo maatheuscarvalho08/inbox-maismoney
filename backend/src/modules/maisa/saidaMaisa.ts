@@ -37,7 +37,8 @@ export async function registrarSaidas(tx: Prisma.TransactionClient, conversaId: 
   for (const texto of textos) {
     const m = await tx.mensagem.create({ data: { conversaId, remetenteTipo: "maisa", conteudoTexto: texto }, include: INCLUDE });
     if (enviar) await tx.saidaMaisa.create({ data: { conversaId, mensagemId: m.id, ordem: proximaOrdem(), proximaEm: new Date() } });
-    criadas.push(m);
+    // A tela usa saidaStatus para não tratar mensagem na fila como "sugestão não enviada".
+    criadas.push({ ...m, saidaStatus: enviar ? "pendente" : null });
   }
   return criadas;
 }
@@ -108,9 +109,11 @@ async function enviarReservada(s: Reservada) {
   }
   const r = await entregarMensagem(mensagem, conversa, null, { digitandoMs: s.tentativas === 1 ? portasMaisa.digitando(mensagem.conteudoTexto ?? "") : 0 });
   await prisma.mensagem.update({ where: { id: mensagem.id }, data: { tentativasEntrega: s.tentativas } });
-  emitirSemFalhar(() => emitNovaMensagem({ ...mensagem, statusEntrega: r.entregue ? "enviado" : "falhou", erroEntrega: r.erroEntrega ?? null, tentativasEntrega: s.tentativas }));
+  const avisar = (saidaStatus: string) =>
+    emitirSemFalhar(() => emitNovaMensagem({ ...mensagem, statusEntrega: r.entregue ? "enviado" : "falhou", erroEntrega: r.erroEntrega ?? null, tentativasEntrega: s.tentativas, saidaStatus }));
   if (r.entregue) {
     await finalizar(s, "enviado", null);
+    avisar("enviado");
     return;
   }
   registrar("falha_envio", s, r.falha, r.erroEntrega);
@@ -120,9 +123,11 @@ async function enviarReservada(s: Reservada) {
       where: { id: s.id, status: "processando", travadoPor: DONO_PROCESSO },
       data: { status: "pendente", travadoAte: null, travadoPor: null, erro: r.erroEntrega ?? null, proximaEm: new Date(Date.now() + portasMaisa.esperaReenvioMs(s.tentativas)) },
     });
+    avisar("pendente");
     return;
   }
   const final = r.falha === "incerta" ? "incerto" : "falhou";
+  avisar(final);
   if (await finalizar(s, final, r.erroEntrega ?? "falha desconhecida")) {
     await tirarDaMaisaPorEntrega(s.conversaId, s.mensagemId, final, `${r.falha}: ${r.erroEntrega ?? "sem detalhe"}, ${s.tentativas} tentativa(s)`);
   }

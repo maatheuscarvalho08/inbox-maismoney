@@ -12,6 +12,7 @@ import { getConversaById, marcarConversaRespondida } from "../conversas/conversa
 import { PREFIXO_NUMERO_TESTE, bancoConfigurado, processarComMaisa, relerComMaisa, verificarAutorizacao } from "./maisa.service.js";
 import { bancoSimulado } from "./bancos.js";
 import { liberarOperacao, listarOperacoes } from "./operacaoFacta.js";
+import { situacaoNaFila } from "../mensagens/mensagens.service.js";
 import { FORMATOS_EXTRATO } from "./midia.js";
 import type { EstadoMaisa } from "./fluxo.js";
 import type { Prisma } from "@prisma/client";
@@ -36,6 +37,11 @@ router.post(
     }
     if (mensagem.externalId) {
       return res.status(400).json({ error: "Essa mensagem já foi enviada" });
+    }
+    // Mensagem que está na fila de saída é enviada pelo despachante. Enviar na mão duplicaria.
+    const naFila = await situacaoNaFila(mensagem.id);
+    if (naFila) {
+      return res.status(409).json({ error: "Essa mensagem está na fila de envio da Maisa: não precisa enviar" });
     }
     if (mensagem.conversa.contato.numeroWhatsapp.startsWith(PREFIXO_NUMERO_TESTE)) {
       return res.status(400).json({ error: "Conversa de teste: nada é enviado pelo WhatsApp" });

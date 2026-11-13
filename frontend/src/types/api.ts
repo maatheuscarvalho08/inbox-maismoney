@@ -64,6 +64,9 @@ export interface Mensagem {
   erroEntrega?: string | null;
   // Quantas vezes a Maisa tentou entregar. Reenvio usa a mesma mensagem.
   tentativasEntrega?: number;
+  // Situação na fila de saída da Maisa: pendente, processando, enviado, falhou, incerto.
+  // Mensagem com situação não é "sugestão do copiloto": quem envia é o sistema.
+  saidaStatus?: "pendente" | "processando" | "enviado" | "falhou" | "incerto" | null;
   // Resumo da análise do extrato guardada (da Maisa ou da equipe).
   analiseResumo?: string | null;
   editadaEm: string | null;

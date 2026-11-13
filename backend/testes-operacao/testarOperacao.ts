@@ -643,6 +643,79 @@ async function main() {
     });
   }
 
+  // G6b: botão Enviar e Reenviar não duplicam mensagem da fila de saída (fase 7, correção do botão)
+  const { default: jwt } = await import("jsonwebtoken");
+  const { app } = await import("../src/app.js");
+  const srvApp = http.createServer(app);
+  const portaApp = await ouvir(srvApp);
+  const admin = await prisma.usuario.create({ data: { nome: "Admin Teste", email: `adm${Date.now()}@teste.local`, senhaHash: "x", role: "admin" } });
+  const token = jwt.sign({ sub: admin.id, role: "admin" }, process.env.JWT_SECRET!, { expiresIn: "10m" });
+  const chamar = (metodo: string, rota: string, corpo: unknown = {}) =>
+    fetch(`http://127.0.0.1:${portaApp}/api${rota}`, { method: metodo, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: metodo === "GET" ? undefined : JSON.stringify(corpo) });
+  async function mensagemNaFila(conversaId: string, status: string, extra: Record<string, unknown> = {}) {
+    const m = await prisma.mensagem.create({ data: { conversaId, remetenteTipo: "maisa", conteudoTexto: "Resposta da Maisa na fila", ...extra } });
+    await prisma.saidaMaisa.create({ data: { conversaId, mensagemId: m.id, ordem: BigInt(Date.now()) * 1000n, status, proximaEm: new Date() } });
+    return m;
+  }
+  for (const status of ["pendente", "processando", "enviado", "incerto", "falhou"]) {
+    caso("Botão Enviar", `"Enviar" numa mensagem da fila (${status}) é recusado e não chama a Evolution`, async () => {
+      const c = await novaConversa(null);
+      const m = await mensagemNaFila(c.id, status);
+      const antes = evolution.chamadas;
+      const r = await chamar("POST", `/maisa/mensagens/${m.id}/enviar`);
+      assert.equal(r.status, 409);
+      assert.equal(evolution.chamadas - antes, 0);
+    });
+  }
+  for (const status of ["pendente", "processando"]) {
+    caso("Botão Enviar", `"Reenviar" numa mensagem ${status} é recusado`, async () => {
+      const c = await novaConversa(null);
+      const m = await mensagemNaFila(c.id, status, { statusEntrega: "falhou", erroEntrega: "x" });
+      const antes = evolution.chamadas;
+      const r = await chamar("POST", `/mensagens/${m.id}/reenviar`);
+      assert.equal(r.status, 409);
+      assert.equal(evolution.chamadas - antes, 0);
+    });
+  }
+  caso("Botão Enviar", "Reenviar entrega incerta sem confirmação é recusado; com confirmação envia uma vez", async () => {
+    const c = await novaConversa(null);
+    const m = await mensagemNaFila(c.id, "incerto", { statusEntrega: "falhou", erroEntrega: "tempo esgotado" });
+    const antes = evolution.chamadas;
+    const sem = await chamar("POST", `/mensagens/${m.id}/reenviar`);
+    assert.equal(sem.status, 409);
+    assert.equal(evolution.chamadas - antes, 0, "sem confirmação não envia");
+    const com = await chamar("POST", `/mensagens/${m.id}/reenviar`, { confirmarIncerto: true });
+    assert.equal(com.status, 200);
+    assert.equal(evolution.chamadas - antes, 1, "com confirmação envia uma vez");
+  });
+  caso("Botão Enviar", "Despachante e cliques de \"Enviar\" ao mesmo tempo: uma entrega só", async () => {
+    const c = await novaConversa(estadoConfirmacao({ etapa: "cpf", contrato: undefined, oferta: undefined }));
+    await prisma.$transaction((tx: any) => (svc as any).registrarSaidasParaTeste?.(tx, c.id, ["Uma só vez"]) ?? tx.mensagem.create({ data: { conversaId: c.id, remetenteTipo: "maisa", conteudoTexto: "Uma só vez" } }).then((m: any) => tx.saidaMaisa.create({ data: { conversaId: c.id, mensagemId: m.id, ordem: BigInt(Date.now()) * 1000n, proximaEm: new Date() } })));
+    const m = await prisma.mensagem.findFirstOrThrow({ where: { conversaId: c.id, remetenteTipo: "maisa" } });
+    const antes = evolution.chamadas;
+    await Promise.all([svc.despachar(c.id), chamar("POST", `/maisa/mensagens/${m.id}/enviar`), chamar("POST", `/maisa/mensagens/${m.id}/enviar`), chamar("POST", `/mensagens/${m.id}/reenviar`)]);
+    await svc.aguardarFilas();
+    assert.equal(evolution.chamadas - antes, 1, "uma única entrega");
+  });
+  caso("Botão Enviar", "A lista de mensagens traz a situação da fila (saidaStatus)", async () => {
+    const c = await novaConversa(null);
+    const m = await mensagemNaFila(c.id, "pendente");
+    const r = await chamar("GET", `/mensagens?conversaId=${c.id}`);
+    const j = (await r.json()) as { mensagens: { id: string; saidaStatus: string | null }[] };
+    assert.equal(j.mensagens.find((x) => x.id === m.id)?.saidaStatus, "pendente");
+  });
+  caso("Botão Enviar", "Modo copiloto (sem fila): a sugestão ainda pode ser enviada, uma vez", async () => {
+    const c = await novaConversa(null);
+    const m = await prisma.mensagem.create({ data: { conversaId: c.id, remetenteTipo: "maisa", conteudoTexto: "Sugestão do copiloto" } });
+    const antes = evolution.chamadas;
+    const r = await chamar("POST", `/maisa/mensagens/${m.id}/enviar`);
+    assert.equal(r.status, 200);
+    assert.equal(evolution.chamadas - antes, 1);
+    const de_novo = await chamar("POST", `/maisa/mensagens/${m.id}/enviar`);
+    assert.equal(de_novo.status, 400, "já enviada");
+    assert.equal(evolution.chamadas - antes, 1);
+  });
+
   // G7: aceite depois da transferência
   const finalizada = (saida: string, extra: Partial<EstadoMaisa> = {}) =>
     estadoConfirmacao({ etapa: "finalizada", saida, motivoTransferencia: saida, contrato: undefined, ...extra });
@@ -760,6 +833,7 @@ async function main() {
 
   await prisma.$disconnect();
   io.close();
+  srvApp.close();
   await fechar(servidorFacta);
   await fechar(servidorEvolution);
   await pg.stop();

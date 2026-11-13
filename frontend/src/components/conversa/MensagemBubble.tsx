@@ -41,7 +41,10 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
   // Mensagem que sai da empresa, seja da equipe ou da Maisa: fica do lado direito.
   const saida = doOperador || daMaisa;
   // No modo copiloto a Maisa só sugere. A sugestão ainda não foi para o WhatsApp.
-  const sugestao = daMaisa && !mensagem.externalId && mensagem.statusEntrega !== "falhou";
+  // Mensagem na fila de saída (saidaStatus) nunca é sugestão: o botão Enviar duplicaria.
+  const naFila = daMaisa && (mensagem.saidaStatus === "pendente" || mensagem.saidaStatus === "processando");
+  const entregaIncerta = daMaisa && mensagem.saidaStatus === "incerto";
+  const sugestao = daMaisa && !mensagem.externalId && mensagem.statusEntrega !== "falhou" && !mensagem.saidaStatus;
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(mensagem.conteudoTexto ?? "");
   const [salvando, setSalvando] = useState(false);
@@ -75,10 +78,12 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
   const [erroReenvio, setErroReenvio] = useState<string | null>(null);
 
   async function reenviar() {
+    // Entrega incerta: pode ter chegado. Só reenvia com confirmação de uma pessoa.
+    if (entregaIncerta && !window.confirm("A entrega dessa mensagem é incerta: ela pode ter chegado ao cliente. Reenviar mesmo assim pode duplicar. Reenviar?")) return;
     setReenviando(true);
     setErroReenvio(null);
     try {
-      const res = await api.post<{ mensagem: Mensagem; erroEntrega?: string }>(`/mensagens/${mensagem.id}/reenviar`, {});
+      const res = await api.post<{ mensagem: Mensagem; erroEntrega?: string }>(`/mensagens/${mensagem.id}/reenviar`, entregaIncerta ? { confirmarIncerto: true } : {});
       onEditada?.(res.mensagem);
       if (res.erroEntrega) setErroReenvio("Falhou de novo");
     } catch (err) {
@@ -235,6 +240,12 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
           )}
         </div>
 
+        {naFila && (
+          <div className="mt-1 flex items-center justify-end gap-2 text-[11px]">
+            <span className="italic text-muted">Na fila de envio</span>
+          </div>
+        )}
+
         {sugestao && (
           <div className="mt-1 flex items-center justify-end gap-2 text-[11px]">
             {erroReenvio && <span className="text-accent">{erroReenvio}</span>}
@@ -253,7 +264,7 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
 
         {saida && mensagem.statusEntrega === "falhou" && (
           <div className="mt-1 flex items-center justify-end gap-2 text-[11px]">
-            <span className="text-accent">Não entregue</span>
+            <span className="text-accent">{entregaIncerta ? "Entrega incerta" : "Não entregue"}</span>
             {erroReenvio && <span className="text-accent">{erroReenvio}</span>}
             <button onClick={reenviar} disabled={reenviando} className="font-medium text-accent hover:underline disabled:opacity-50">
               {reenviando ? "Reenviando..." : "Reenviar"}

@@ -9,11 +9,21 @@ const INCLUDE_RESPOSTA = {
 } as const;
 
 export async function listMensagensPorConversa(conversaId: string) {
-  return prisma.mensagem.findMany({
+  const mensagens = await prisma.mensagem.findMany({
     where: { conversaId },
     orderBy: { timestamp: "asc" },
     include: INCLUDE_RESPOSTA,
   });
+  // Situação na fila de saída da Maisa: pendente, processando, enviado, falhou ou incerto.
+  // Mensagem na fila não é "sugestão": a tela não oferece o botão Enviar para ela.
+  const saidas = await prisma.saidaMaisa.findMany({ where: { conversaId }, select: { mensagemId: true, status: true } });
+  const porMensagem = new Map(saidas.map((s) => [s.mensagemId, s.status]));
+  return mensagens.map((m) => ({ ...m, saidaStatus: porMensagem.get(m.id) ?? null }));
+}
+
+// A mensagem está (ou esteve) na fila de saída da Maisa? Enviar na mão duplicaria.
+export async function situacaoNaFila(mensagemId: string) {
+  return (await prisma.saidaMaisa.findUnique({ where: { mensagemId }, select: { status: true } }))?.status ?? null;
 }
 
 interface CriarMensagemInput {
