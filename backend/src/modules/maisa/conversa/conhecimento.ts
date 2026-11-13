@@ -41,18 +41,6 @@ export const BASE: ItemConhecimento[] = [
     texto: () => "O número de cada contrato aparece no extrato de consignações, na coluna Número do Contrato.",
   },
   {
-    id: "numero_contrato.geral",
-    versao: "1",
-    topico: "numero_contrato",
-    titulo: "Onde achar o número do contrato de empréstimo (servidor federal)",
-    produtos: ["siape"],
-    status: "em_producao",
-    fonte: FONTE_TEXTOS + " (pedeNumeroContrato)",
-    validadoPor: null,
-    validadoEm: null,
-    texto: () => "O número do contrato aparece no aplicativo do banco ou no SouGov.br, em Consignações.",
-  },
-  {
     id: "extrato_siape.geral",
     versao: "1",
     topico: "extrato_siape",

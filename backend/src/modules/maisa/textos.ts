@@ -52,6 +52,10 @@ export interface OfertaPortTexto {
   reducoes?: { banco: string; atual: number; nova: number; restantes?: number; taxa?: number }[];
 }
 
+// Onde achar o número do contrato. Só o SIAPE tem orientação aprovada (extrato de consignações,
+// coluna Número do Contrato). Nos outros produtos não se diz onde achar: não há instrução aprovada.
+const ondeAcharContrato = (produto?: string) => (produto === "siape" ? " Ele aparece no extrato de consignações, na coluna Número do Contrato." : "");
+
 export const TEXTOS = {
   apresentacao: "Olá! Eu sou a Maisa, assistente virtual da Mais Money.",
   saudacao:
@@ -184,9 +188,9 @@ export const TEXTOS = {
   objecao:
     "Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.",
   // Retomada de quem já aceitou: primeiro lembra o que ele ganha, depois pede o contrato.
-  retomaDigitacao: (banco: string, parcela: string, ganho: string) =>
+  retomaDigitacao: (banco: string, parcela: string, ganho: string, produto?: string) =>
     `Oi! Retomando o seu pedido. ${ganho}\n\nEu mesma vou digitar o seu contrato na Facta. Preciso só de algumas informações, uma de cada vez.\n\n` +
-    `Primeiro, o número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
+    `Primeiro, o número do contrato do ${banco} com parcela de ${parcela}.${ondeAcharContrato(produto)} Pode mandar só o número.`,
   retomaSemNumero: (ganho: string) =>
     `Oi! Retomando o seu pedido. ${ganho}\n\nEu mesma vou digitar o seu contrato na Facta. Preciso só de alguns dados seus, um de cada vez.`,
   // O que a port rende para o cliente, em uma frase. Nunca valor garantido.
@@ -196,8 +200,8 @@ export const TEXTOS = {
       : nova
         ? `Pela simulação na Facta, a parcela do ${banco} cai de ${atual} para ${nova}, com uma taxa menor.`
         : `Pela simulação na Facta, dá para trazer o seu contrato do ${banco} com uma taxa menor.`,
-  pedeNumeroContrato: (banco: string, parcela: string) =>
-    `Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
+  pedeNumeroContrato: (banco: string, parcela: string, produto?: string) =>
+    `Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}.${ondeAcharContrato(produto)} Pode mandar só o número.`,
   contratoOutroBanco: (citado: string, pedido: string) =>
     `Esse parece ser o contrato do ${citado}. Para essa proposta eu preciso do número do contrato do ${pedido}. Pode me mandar esse?`,
   contratoDoAudio: (numero: string) => `Entendi o número ${numero} no seu áudio. É esse mesmo? Responda sim para eu seguir, ou me mande o número certo.`,

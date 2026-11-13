@@ -804,6 +804,170 @@ async function main() {
     assert.equal((await conversaDe(c.id)).carrinhoEm, null);
   });
 
+  // ---------- Modo sombra (fase 7, etapa 3) ----------
+  // O interpretador real fica sem chave (OPENAI_API_KEY vazia): nenhuma chamada sai. Um motor falso
+  // devolve o que o cenário pedir, para provar o que a camada nova faria sem enviar nada.
+  const montagem = await import("../src/modules/maisa/conversa/montagem.js");
+  const estadoContrato = (): EstadoMaisa => ({
+    etapa: "numero_contrato", tentativas: 0, produto: "siape",
+    alternativa: {
+      operacao: "port_refin", trocoCentavos: 90000, motivo: "teste",
+      digitacao: { banco: "104 - CEF", bancoCodigo: "104", parcela: 390.47, prazoRestante: 80, prazoOriginal: 120, saldoDevedor: 19000, port: { codigoTabela: 1, prazo: 96, contrato: 20000, parcela: 390, coeficiente: 0.02 }, refin: { codigoTabela: 1, prazo: 96, contrato: 20000, parcela: 390, coeficiente: 0.02 } },
+    },
+  });
+  const META0 = { latenciaMs: 5, modelo: "falso", tokensEntrada: 10, tokensSaida: 5 };
+  const registroFalso = (extra: Record<string, unknown> = {}) => ({
+    modo: "sombra" as const, etapa: "numero_contrato", intencao: "aguardando_orientacao", confianca: 0.9, tom: "neutro", campos: [] as string[], descartados: 0,
+    acao: "responder:explicar_proximo_passo", estrategia: "reformular", tentativa: 1, reformulou: true, fonteTexto: "reserva", falha: null,
+    latenciaMs: 5, modelo: "falso", tokensEntrada: 10, tokensSaida: 5, rotuloReal: null, divergiu: null, textoSombra: null, ...extra,
+  });
+  const TEXTO_SOMBRA = "TEXTO-DA-SOMBRA Pode deixar, estou aguardando e falta só o número do contrato.";
+  const motorFalso = (modo: "responder" | "erro") => ({
+    async decidir() {
+      if (modo === "erro") throw new Error("motor quebrou");
+      return {
+        tipo: "responder" as const, respostas: [TEXTO_SOMBRA], rotulo: "conversa_explicar_proximo_passo", interpretacao: {} as never,
+        memoria: { perguntas: {}, orientacoes: [], irritacoes: 0, reclamacoesRepeticao: 0, baixaConfianca: 0, falhasModelo: 0, ajudasSemProgresso: 0 },
+        registro: registroFalso(),
+      };
+    },
+  });
+  const comModo = async (modo: "desligado" | "sombra", fn: () => Promise<void>) => {
+    const antes = env.MAISA_CONVERSA_MODO;
+    env.MAISA_CONVERSA_MODO = modo;
+    try {
+      await fn();
+    } finally {
+      env.MAISA_CONVERSA_MODO = antes;
+      montagem.substituirMotorParaTeste(null);
+    }
+  };
+  const linhas = (id: string) => prisma.maisaInterpretacao.findMany({ where: { conversaId: id } });
+  const resumo = async (id: string) => {
+    const e = await estadoDe(id);
+    return { etapa: e.etapa, tentativas: e.tentativas, respostas: (await respostasMaisa(id)).map((r) => r.conteudoTexto) };
+  };
+
+  caso("Modo sombra", "Desligado: comportamento antigo, nada gravado na tabela nova", async () => {
+    await comModo("desligado", async () => {
+      const c = await novaConversa(estadoContrato());
+      await cliente(c.id, "Estou só esperando você");
+      const r = await resumo(c.id);
+      assert.deepEqual(r.respostas, [TEXTOS.numeroContratoInvalido]);
+      assert.equal(await linhas(c.id).then((x) => x.length), 0);
+    });
+  });
+
+  caso("Modo sombra", "Sombra: a resposta enviada é a mesma do modo desligado e a sombra nunca é enviada", async () => {
+    let desligado: Awaited<ReturnType<typeof resumo>>;
+    await comModo("desligado", async () => {
+      const c = await novaConversa(estadoContrato());
+      await cliente(c.id, "Estou só esperando você");
+      desligado = await resumo(c.id);
+    });
+    await comModo("sombra", async () => {
+      montagem.substituirMotorParaTeste(motorFalso("responder") as never);
+      const enviadasAntes = evolution.textos.length;
+      const c = await novaConversa(estadoContrato());
+      await cliente(c.id, "Estou só esperando você");
+      await montagem.aguardarSombras();
+      const r = await resumo(c.id);
+      assert.deepEqual(r, desligado!, "estado e respostas iguais ao modo desligado");
+      assert.ok(!evolution.textos.some((t) => t.includes("TEXTO-DA-SOMBRA")), "texto da sombra foi enviado ao cliente");
+      assert.equal(evolution.textos.length - enviadasAntes, 1, "só a resposta real sai pelo WhatsApp");
+      assert.equal((await prisma.mensagem.findMany({ where: { conversaId: c.id, remetenteTipo: "maisa" } })).length, 1);
+      assert.equal(await prisma.saidaMaisa.count({ where: { conversaId: c.id } }), 1);
+    });
+  });
+
+  caso("Modo sombra", "Sombra não consulta, simula, autoriza nem digita", async () => {
+    await comModo("sombra", async () => {
+      montagem.substituirMotorParaTeste(motorFalso("responder") as never);
+      const antes = facta.chamadas.length;
+      const c = await novaConversa(estadoContrato());
+      await cliente(c.id, "pode digitar a proposta, eu autorizo");
+      await montagem.aguardarSombras();
+      assert.equal(facta.chamadas.length - antes, 0, "chamadas à Facta");
+      assert.equal(await prisma.operacaoFacta.count({ where: { conversaId: c.id } }), 0);
+      assert.equal(await prisma.proposta.count({ where: { conversaId: c.id } }), 0);
+    });
+  });
+
+  caso("Modo sombra", "O registro permite achar a divergência e não guarda texto do cliente nem CPF", async () => {
+    await comModo("sombra", async () => {
+      montagem.substituirMotorParaTeste(motorFalso("responder") as never);
+      const c = await novaConversa(estadoContrato());
+      await cliente(c.id, `meu cpf é ${CPF_VALIDO} e estou só esperando você`);
+      await montagem.aguardarSombras();
+      const l = await linhas(c.id);
+      assert.equal(l.length, 1);
+      assert.equal(l[0].modo, "sombra");
+      // O fluxo antigo leu o CPF como número do contrato (comportamento anterior à fase 7,
+      // registrado como risco). O registro guarda a decisão antiga para comparar.
+      assert.equal(l[0].rotuloReal, "numero_contrato", "decisão antiga");
+      assert.equal(l[0].acao, "responder:explicar_proximo_passo", "decisão nova");
+      assert.equal(l[0].divergiu, true);
+      assert.ok(l[0].textoSombra?.startsWith("TEXTO-DA-SOMBRA"));
+      const bruto = JSON.stringify(l[0]);
+      assert.ok(!bruto.includes(CPF_VALIDO), "CPF no registro");
+      assert.ok(!/esperando você/.test(bruto), "texto do cliente no registro");
+      assert.ok(l[0].mensagemId, "liga a linha à mensagem");
+    });
+  });
+
+  caso("Modo sombra", "Erro do motor da sombra não interrompe o atendimento", async () => {
+    await comModo("sombra", async () => {
+      montagem.substituirMotorParaTeste(motorFalso("erro") as never);
+      const c = await novaConversa(estadoContrato());
+      await cliente(c.id, "Estou só esperando você");
+      await montagem.aguardarSombras();
+      const r = await resumo(c.id);
+      assert.deepEqual(r.respostas, [TEXTOS.numeroContratoInvalido]);
+      assert.equal(r.etapa, "numero_contrato");
+    });
+  });
+
+  caso("Modo sombra", "Interpretador real sem chave: registra a falha, sem chamada externa, atendimento normal", async () => {
+    await comModo("sombra", async () => {
+      montagem.substituirMotorParaTeste(null);
+      const c = await novaConversa(estadoContrato());
+      await cliente(c.id, "Estou só esperando você");
+      await montagem.aguardarSombras();
+      const r = await resumo(c.id);
+      assert.deepEqual(r.respostas, [TEXTOS.numeroContratoInvalido]);
+      const l = await linhas(c.id);
+      assert.equal(l.length, 1);
+      assert.equal(l[0].falha, "sem_chave");
+      assert.equal(l[0].intencao, null);
+      assert.equal(l[0].divergiu, false);
+    });
+  });
+
+  caso("Modo sombra", "Interruptor: voltar para desligado para de gravar na hora", async () => {
+    await comModo("sombra", async () => {
+      montagem.substituirMotorParaTeste(motorFalso("responder") as never);
+      const c = await novaConversa(estadoContrato());
+      await cliente(c.id, "oi, aguardando");
+      await montagem.aguardarSombras();
+      assert.equal((await linhas(c.id)).length, 1);
+      env.MAISA_CONVERSA_MODO = "desligado";
+      await cliente(c.id, "continuo aguardando");
+      await montagem.aguardarSombras();
+      assert.equal((await linhas(c.id)).length, 1, "gravou depois de desligar");
+    });
+  });
+
+  caso("Modo sombra", "Sombra não guarda nem reaproveita cadastro anterior (só o modo ativo faz isso)", async () => {
+    await comModo("sombra", async () => {
+      montagem.substituirMotorParaTeste(motorFalso("responder") as never);
+      const c = await novaConversa({ ...estadoContrato(), etapa: "coleta", contrato: { dados: { nome: "Maria da Silva" } as any, pergunta: "Qual é o seu RG?" } });
+      await cliente(c.id, "quero falar com uma pessoa");
+      await montagem.aguardarSombras();
+      const e = await estadoDe(c.id);
+      assert.equal((e as any).contratoSalvo, undefined);
+    });
+  });
+
   // ---------- execução ----------
   const lista = filtro ? casos.filter((c) => `${c.grupo} ${c.nome}`.toLowerCase().includes(filtro)) : casos;
   let ok = 0;

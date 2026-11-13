@@ -6,6 +6,7 @@ import { classificadorRegras } from "../modules/maisa/classificador.js";
 import { conferirInterpretacao } from "../modules/maisa/conversa/interpretacao.js";
 import type { Interpretador, ResultadoInterpretacao } from "../modules/maisa/conversa/interpretador.js";
 import { criarConversaDeps } from "../modules/maisa/conversa/ligacao.js";
+import { TEXTOS } from "../modules/maisa/textos.js";
 import { criarMotor } from "../modules/maisa/conversa/motor.js";
 import { redatorReserva } from "../modules/maisa/conversa/redator.js";
 import type { Interpretacao } from "../modules/maisa/conversa/tipos.js";
@@ -341,6 +342,17 @@ await caso("SIAPE: arquivo sem número lembra que o contracheque não traz e ped
   assert.equal(p.estado.etapa, "numero_contrato");
   assert.match(p.respostas[0], /contracheque/);
   assert.match(p.respostas[0], /extrato de consignações/);
+});
+
+await caso("Textos do número do contrato: SIAPE cita o extrato, outros produtos não citam local nenhum", async () => {
+  const siape = TEXTOS.pedeNumeroContrato("CEF", "R$ 390,47", "siape");
+  assert.match(siape, /extrato de consignações, na coluna Número do Contrato/);
+  const retoma = TEXTOS.retomaDigitacao("CEF", "R$ 390,47", "ganho", "siape");
+  assert.match(retoma, /extrato de consignações, na coluna Número do Contrato/);
+  for (const t of [siape, retoma, TEXTOS.pedeNumeroContrato("CEF", "R$ 390,47", "inss"), TEXTOS.pedeNumeroContrato("CEF", "R$ 390,47"), TEXTOS.retomaDigitacao("CEF", "R$ 390,47", "ganho", "inss")]) {
+    assert.doesNotMatch(t, /aplicativo do banco|SouGov/);
+  }
+  assert.doesNotMatch(TEXTOS.pedeNumeroContrato("CEF", "R$ 390,47", "inss"), /Ele aparece/);
 });
 
 await caso("Cenário 3: já mandei confere o arquivo antes de pedir de novo", async () => {

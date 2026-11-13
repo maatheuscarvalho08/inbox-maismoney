@@ -27,6 +27,16 @@ export function motorDoServico(): MotorConversacional {
   motor ??= criarMotor({ interpretador: criarInterpretadorOpenAI(), redator: criarRedatorOpenAI() });
   return motor;
 }
+// Só para os testes: troca o motor por um falso (null volta ao real).
+export const substituirMotorParaTeste = (m: MotorConversacional | null) => {
+  motor = m;
+};
+
+// A sombra roda em segundo plano. Esta lista deixa os testes esperarem por ela.
+const sombras = new Set<Promise<void>>();
+export const aguardarSombras = async () => {
+  while (sombras.size) await Promise.all([...sombras]);
+};
 
 // Histórico recente da conversa, do horário do WhatsApp (createdAt), sem notas internas.
 export async function contextoDaConversa(conversaId: string): Promise<ContextoExtra> {
@@ -89,7 +99,13 @@ export const dadosDoRegistro = (conversaId: string, mensagemId: string | null, r
 
 // Modo sombra: interpreta e decide como se fosse responder, grava o que teria feito e NÃO envia
 // nada. Roda depois da resposta real, em segundo plano, e nunca derruba o atendimento.
-export async function rodarSombra(p: {
+export function rodarSombra(p: Parameters<typeof rodarSombraInterno>[0]): Promise<void> {
+  const t = rodarSombraInterno(p).finally(() => sombras.delete(t));
+  sombras.add(t);
+  return t;
+}
+
+async function rodarSombraInterno(p: {
   conversaId: string;
   mensagemId: string | null;
   estado: EstadoMaisa;
@@ -135,7 +151,7 @@ export async function limparConversa(): Promise<{ cadastros: number; registros: 
   const cadastros = await prisma.$executeRaw`
     UPDATE conversas SET maisa_estado = maisa_estado - 'contratoSalvo'
     WHERE maisa_estado ? 'contratoSalvo'
-      AND (maisa_estado #>> '{contratoSalvo,salvoEm}')::timestamptz < now() - make_interval(days => ${dias})`;
+      AND (maisa_estado #>> '{contratoSalvo,salvoEm}')::timestamptz < now() - make_interval(days => ${dias}::int)`;
   const registros = await prisma.maisaInterpretacao.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 90 * 86_400_000) } } });
   return { cadastros: Number(cadastros), registros: registros.count };
 }

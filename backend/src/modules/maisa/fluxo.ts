@@ -747,6 +747,7 @@ async function etapaExtrato(
               r$(digitacao.parcela),
               digitacao.refin ? null : r$(digitacao.port.parcela),
             ),
+            estado.produto,
           ),
         ],
         "retoma_contrato",
@@ -1006,7 +1007,7 @@ function seguirComAceite(estado: EstadoMaisa, deps: Dependencias, texto: string,
     if (dig && deps.digitacaoAtiva) {
       const numero = dig.numeroContrato ?? (/\d{5,}/.test(texto) ? extrairNumeroContrato(texto) : null);
       if (numero) return iniciarColetaPort(limpo, numero, "aceitou_port", [...antes, TEXTOS.inicioContrato], deps.agora());
-      return ir(limpo, "numero_contrato", [...antes, TEXTOS.pedeNumeroContrato(dig.banco, formatarReais(Math.round(dig.parcela * 100)))], "aceitou_port");
+      return ir(limpo, "numero_contrato", [...antes, TEXTOS.pedeNumeroContrato(dig.banco, formatarReais(Math.round(dig.parcela * 100)), limpo.produto)], "aceitou_port");
     }
     return transferir(limpo, `aceitou: ${estado.alternativa?.motivo ?? "portabilidade"}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
   }
@@ -1908,7 +1909,7 @@ export function descreverPendencia(estado: EstadoMaisa): Pendencia {
       }
       return {
         ...base, chave: "numero_contrato", tipo: "dado", topico: "numero_contrato",
-        pergunta: d ? TEXTOS.pedeNumeroContrato(d.banco, formatarReais(Math.round(d.parcela * 100))) : TEXTOS.numeroContratoInvalido,
+        pergunta: d ? TEXTOS.pedeNumeroContrato(d.banco, formatarReais(Math.round(d.parcela * 100)), estado.produto) : TEXTOS.numeroContratoInvalido,
         dadoPedido: `o número do contrato do ${banco}`,
       };
     }
