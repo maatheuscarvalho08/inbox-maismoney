@@ -164,7 +164,7 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
         {daMaisa && <p className="mb-0.5 text-[11px] font-medium text-indigo-claro">Maisa</p>}
 
         {mensagem.respondeA && (
-          <div className="mb-2 rounded border-l-2 border-primary/60 bg-bg/30 px-2 py-1">
+          <div className="mb-2 rounded-md bg-bg/40 px-2 py-1.5 ring-1 ring-border">
             <p className="text-[11px] font-medium text-accent">
               {mensagem.respondeA.remetenteTipo === "operador" ? "Você" : mensagem.respondeA.remetenteTipo === "maisa" ? "Maisa" : "Cliente"}
             </p>

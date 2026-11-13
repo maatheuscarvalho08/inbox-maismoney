@@ -160,7 +160,9 @@ export interface ConversaDeps {
 }
 
 // Dias em que o cadastro de um atendimento anterior vale. Ajustado pelo serviço, de env.
-export const configFluxo = { reaproveitaDias: 7 };
+// cadastroAtivo: o reaproveitamento de cadastro é um comportamento da fase 7 e só vale com
+// MAISA_CONVERSA_MODO=ativo. Desligado ou em sombra, o fluxo é o de antes da fase 7.
+export const configFluxo = { reaproveitaDias: 7, cadastroAtivo: false, confiancaMin: 0.6 };
 
 export interface ContratoSalvo {
   dados: DadosContrato;
@@ -295,6 +297,7 @@ function ir(estado: EstadoMaisa, etapa: Etapa, respostas: string[], rotulo: stri
 
 // Cadastro com ao menos um dado validado vira ContratoSalvo. Sem cadastro novo, mantém o que já havia.
 function guardarCadastro(estado: EstadoMaisa): ContratoSalvo | undefined {
+  if (!configFluxo.cadastroAtivo) return undefined;
   const c = estado.contrato;
   if (!c || !Object.keys(c.dados).length) return estado.contratoSalvo;
   return { dados: c.dados, origem: c.origem, correcoes: c.correcoes, produto: estado.produto, salvoEm: new Date().toISOString() };
@@ -1154,7 +1157,7 @@ function iniciarColetaPort(estado: EstadoMaisa, numero: string, rotulo: string, 
 // Cadastro de um atendimento anterior, se ainda vale: mesmo produto e dentro do prazo.
 function cadastroAnterior(estado: EstadoMaisa, agora: Date): ContratoSalvo | null {
   const s = estado.contratoSalvo;
-  if (!s || configFluxo.reaproveitaDias <= 0) return null;
+  if (!configFluxo.cadastroAtivo || !s || configFluxo.reaproveitaDias <= 0) return null;
   if (s.produto && s.produto !== estado.produto) return null;
   const idadeMs = agora.getTime() - new Date(s.salvoEm).getTime();
   if (idadeMs > configFluxo.reaproveitaDias * 24 * 60 * 60_000) return null;
@@ -1834,6 +1837,19 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   }
   const passo = await despachar(estado, entrada, texto, deps);
   if (!decisao) return passo;
+  // Concordância obrigatória: num passo que aceita algo financeiro (consentimento, oferta,
+  // confirmação dos dados, PIX), as regras de sempre e a interpretação precisam concordar.
+  // Se a interpretação não leu um "confirmar" com confiança, vale a mais restritiva: nada avança.
+  const pend = descreverPendencia(estado);
+  if (decisao.tipo === "delegar" && decisao.interpretacao !== null && (pend.tipo === "confirmacao" || pend.tipo === "decisao") && aceitouAlgo(estado, passo) && !interpretacaoConfirma(decisao)) {
+    return {
+      estado: { ...estado, memoria: decisao.memoria },
+      respostas: [TEXTOS.confirmeComSimOuNao],
+      efeitos: [],
+      rotulo: "conversa_veto_sem_concordancia",
+      interpretacao: { ...decisao.registro, acao: "veto:sem_concordancia" },
+    };
+  }
   // A proposta de contrato (arquivo ou áudio) pertence ao motor operacional: vale o que ele deixou.
   let memoria: MemoriaConversa = { ...decisao.memoria, contratoProposto: passo.estado.memoria?.contratoProposto };
   if (passo.estado.etapa !== estado.etapa) memoria = { ...memoria, ajudasSemProgresso: 0 };
@@ -1851,6 +1867,18 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     }
   }
   return { ...passo, estado: { ...passo.estado, memoria }, interpretacao: decisao.registro };
+}
+
+const interpretacaoConfirma = (d: SaidaMotor) =>
+  d.tipo === "delegar" && d.interpretacao !== null && d.interpretacao.intencao === "confirmar" && d.interpretacao.confianca >= configFluxo.confiancaMin;
+
+// O passo das regras de sempre aceitou algo? Consentimento ou oferta que seguem, "sim" dos dados
+// que abre a janela, PIX autorizado.
+function aceitouAlgo(antes: EstadoMaisa, passo: Passo): boolean {
+  const depois = passo.estado;
+  if (depois.confirmacaoPendente && !antes.confirmacaoPendente) return true;
+  if (depois.contrato?.dados.pixCpf === true && antes.contrato?.dados.pixCpf !== true) return true;
+  return ["consentimento", "oferta", "oferta_port"].includes(antes.etapa) && depois.etapa !== antes.etapa && depois.etapa !== "finalizada";
 }
 
 const FALHAS_DE_ENTENDIMENTO = new Set(["nao_entendeu", "numero_contrato_invalido", "nascimento_invalido", "dado_nao_entendido", "cpf_invalido", "sem_extrato", "extrato_invalido"]);
@@ -1884,6 +1912,11 @@ export function descreverPendencia(estado: EstadoMaisa): Pendencia {
         dadoPedido: `o número do contrato do ${banco}`,
       };
     }
+    case "consentimento":
+    case "oferta":
+    case "oferta_port":
+    case "confirmacao":
+      return { ...base, chave: etapa, tipo: "confirmacao", topico: null, pergunta: estado.contrato?.pergunta ?? PERGUNTA_DA_ETAPA[etapa] ?? "", dadoPedido: "a sua confirmação" };
     case "extrato":
       return { ...base, chave: "extrato", tipo: "arquivo", topico: estado.produto === "inss" ? "extrato_inss" : "extrato_siape", pergunta: TEXTOS.lembraExtrato, dadoPedido: "o extrato" };
     case "cpf":

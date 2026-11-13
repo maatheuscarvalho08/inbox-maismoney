@@ -109,6 +109,7 @@ export function criarMotor(deps: { interpretador: Interpretador; redator: Redato
         confiancaMin,
         temOrientacao: (t) => orientacaoPara(t, { produto: e.produto, banco: e.banco }, base) !== null,
         temFatosDaOferta: e.fatosOferta.length > 0,
+        temArquivoRecebido: e.arquivos.length > 0,
       });
 
       // Contadores de sinais do cliente, depois da decisão (a decisão olha o que veio antes).

@@ -5,6 +5,8 @@ import { formatarReais } from "../textos.js";
 import type { MensagemHistorico } from "./contexto.js";
 import type { MotorConversacional } from "./motor.js";
 
+export const ETAPAS_SO_DO_MOTOR: ReadonlySet<string> = new Set(["consentimento", "oferta", "oferta_port", "aguardando"]);
+
 export interface ContextoExtra {
   historico: MensagemHistorico[];
   arquivos: { quando: Date; tipo: string; resumo: string | null }[];
@@ -19,7 +21,9 @@ export function criarConversaDeps(opts: {
   lerContratoDeArquivo?: ConversaDeps["lerContratoDeArquivo"];
 }): ConversaDeps {
   return {
-    etapas: new Set(opts.etapas),
+    // Etapas em que o motor aceita, consulta ou autoriza (consentimento, oferta, aguardando) ficam
+    // sempre só com as regras de sempre: ali um passo já faz efeito antes de qualquer veto.
+    etapas: new Set([...opts.etapas].filter((e) => !ETAPAS_SO_DO_MOTOR.has(e))),
     lerContratoDeArquivo: opts.lerContratoDeArquivo,
     async decidir(p) {
       const extra = opts.contexto ? await opts.contexto(p.estado).catch(() => null) : null;

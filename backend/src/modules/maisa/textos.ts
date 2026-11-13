@@ -229,6 +229,7 @@ export const TEXTOS = {
   inicioContrato: "Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta.",
   continuarCadastro: "Vamos continuar o seu cadastro.",
   confirmaDados: (resumo: string) => `Confere se está tudo certo:\n\n${resumo}\n\nEstá tudo certo? Responda SIM ou NÃO.`,
+  confirmeComSimOuNao: "Só para ter certeza de que entendi: você confirma? Responda SIM ou NÃO.",
   perguntaConfirmacao: "Os dados estão certos? Responda SIM ou NÃO.",
   contratoEnviado: (url: string) =>
     "Pronto! O seu contrato foi feito no banco Facta. Agora o banco vai te mandar no WhatsApp um link para assinar. " +

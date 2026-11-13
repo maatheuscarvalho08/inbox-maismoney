@@ -595,7 +595,7 @@ async function retomar(conversaId: string) {
   if (!conversa || !conversa.comMaisa || !conversa.instancia.maisaAtiva || conversa.status === "encerrada") return;
   // As mensagens de antes da devolução já foram vistas pela equipe: a Maisa começa daqui.
   const ultima = await prisma.mensagem.findFirst({ where: { conversaId, remetenteTipo: "cliente" }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
-  const salvo = (conversa.maisaEstado as EstadoMaisa | null)?.contratoSalvo;
+  const salvo = env.MAISA_CONVERSA_MODO === "ativo" ? (conversa.maisaEstado as EstadoMaisa | null)?.contratoSalvo : undefined;
   const estado: EstadoMaisa = { etapa: "convenio", tentativas: 0, ...(salvo ? { contratoSalvo: salvo } : {}), ...(ultima ? { ultimaMensagemId: ultima.id, ultimaMensagemEm: ultima.createdAt.toISOString() } : {}) };
   const enviar = env.MAISA_MODO === "automatico" && !ehTeste(conversa);
   const mensagens = await prisma.$transaction(async (tx) => {

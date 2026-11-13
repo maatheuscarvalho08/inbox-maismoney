@@ -18,6 +18,8 @@ export interface EntradaDialogo {
   temOrientacao: (topico: string) => boolean;
   // Há fatos já simulados para responder pergunta sobre a oferta?
   temFatosDaOferta: boolean;
+  // O cliente já mandou arquivo nesta conversa (para "já mandei").
+  temArquivoRecebido?: boolean;
 }
 
 const ESPERA_AJUDA = new Set(["disponibilidade", "aguardando_orientacao", "nao_sabe_encontrar", "pedir_ajuda", "ininteligivel"]);
@@ -43,7 +45,8 @@ export function decidirDialogo(e: EntradaDialogo): AcaoDialogo {
   // Irritação ou "você já me perguntou isso": reconhece e muda de abordagem. Na segunda vez, a equipe.
   if (i.reclamaRepeticao || i.intencao === "impaciencia" || i.tom === "irritado") {
     if (sinaisDeIrritacao(m) >= 1) return { tipo: "encaminhar", categoria: "irritacao_repetida", motivo: "o cliente demonstrou irritação ou reclamou de repetição mais de uma vez" };
-    const acao = i.reclamaRepeticao && p.coletados.length > 0 ? "aproveitar_dado" : "reconhecer_e_mudar_abordagem";
+    // "Já mandei": antes de pedir de novo, confere o que já chegou (dado coletado ou arquivo).
+    const acao = i.reclamaRepeticao && p.coletados.length > 0 ? "aproveitar_dado" : i.reclamaRepeticao && e.temArquivoRecebido && p.tipo === "dado" ? "documento_sem_dado" : "reconhecer_e_mudar_abordagem";
     return { tipo: "responder", acao, estrategia: proximaEstrategiaOuEquipe(m, p.chave, tent), topico: p.topico, chave: p.chave };
   }
 

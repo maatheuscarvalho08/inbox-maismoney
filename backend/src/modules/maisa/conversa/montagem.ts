@@ -14,9 +14,13 @@ import { criarRedatorOpenAI } from "./redator.js";
 import type { RegistroInterpretacao } from "./tipos.js";
 
 export const modoConversa = () => env.MAISA_CONVERSA_MODO;
-export const etapasConversa = () => env.MAISA_CONVERSA_ETAPAS.split(",").map((s) => s.trim()).filter(Boolean);
+// consentimento, oferta e confirmação não entram na lista por configuração: ali manda o motor.
+export const etapasConversa = () => env.MAISA_CONVERSA_ETAPAS.split(",").map((s) => s.trim()).filter((s) => s && !["consentimento", "oferta", "oferta_port", "confirmacao", "aguardando"].includes(s));
 
 configFluxo.reaproveitaDias = env.MAISA_CADASTRO_REAPROVEITA_DIAS;
+// Reaproveitar cadastro é comportamento da fase 7: só com a camada ativa.
+configFluxo.cadastroAtivo = env.MAISA_CONVERSA_MODO === "ativo";
+configFluxo.confiancaMin = env.MAISA_CONVERSA_CONFIANCA_MIN;
 
 let motor: MotorConversacional | null = null;
 export function motorDoServico(): MotorConversacional {
