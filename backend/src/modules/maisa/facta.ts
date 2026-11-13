@@ -560,6 +560,9 @@ const BANCO_POR_NOME: [RegExp, string][] = [
   // Olé tem código próprio, que não está confirmado: sem código, a equipe digita.
   [/\bole\b/, ""],
   [/santander/, "33"],
+  // PRB, como aparece no extrato do SouGov: Paraná Banco, código 254 (confirmado pela
+  // equipe; é o código do Paraná Banco S.A. na tabela de compensação do Banco Central).
+  [/\bprb\b|parana banco/, "254"],
   [/banco do brasil|\bbb\b|\bbco bras/, "1"],
   [/\bpan\b|panamericano/, "623"],
   [/\bbmg\b/, "318"],
