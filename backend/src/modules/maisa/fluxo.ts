@@ -4,10 +4,13 @@ import type { DigitacaoPort, ReducaoParcela, TabelaDigitacao, ResultadoAutorizac
 import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
-import { camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato } from "./contrato.js";
+import { ROTULO_CAMPO, camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato } from "./contrato.js";
 import type { ResultadoContratacao } from "./facta.js";
 import { NAO_QUERO, SIM_FORTE, normalizar, temReceio } from "./classificador.js";
 import { motivoTravaDigitacao } from "./travaDigitacao.js";
+import type { Pendencia } from "./conversa/contexto.js";
+import type { SaidaMotor } from "./conversa/motor.js";
+import type { MemoriaConversa, RegistroInterpretacao } from "./conversa/tipos.js";
 import { invalidaConfirmacao } from "./ordemMensagens.js";
 import {
   ACEITE_NO_FIM,
@@ -116,7 +119,13 @@ export interface EstadoMaisa {
   // correcoes: o que o cliente mudou na confirmação, com o valor de antes.
   // correcaoPendente: o cliente apontou um erro que a Maisa não conseguiu aplicar. Enquanto
   // existir, nenhum "sim" confirma os dados antigos.
-  contrato?: { dados: DadosContrato; pergunta: string; origem?: Partial<Record<CampoContrato, "extrato">>; correcoes?: Correcao[]; correcaoPendente?: string };
+  contrato?: { dados: DadosContrato; pergunta: string; origem?: Partial<Record<CampoContrato, "extrato" | "anterior">>; correcoes?: Correcao[]; correcaoPendente?: string };
+  // Cadastro validado de um atendimento anterior, guardado quando a conversa passa para a equipe.
+  // Reaproveitado por poucos dias, sempre com nova confirmação do cliente. Não guarda autorização
+  // nenhuma (PIX, aceite, confirmação): essas são pedidas de novo.
+  contratoSalvo?: ContratoSalvo;
+  // Memória conversacional (fase 7): perguntas já feitas, orientações dadas, sinais do cliente.
+  memoria?: MemoriaConversa;
   // "sim" da confirmação esperando a janela. Mensagem relevante do cliente cancela;
   // a digitação só acontece no evento "executar_digitacao", depois da revalidação.
   confirmacaoPendente?: { recebidoEm: string; executarEm: string; mensagemId?: string; consentimento: string };
@@ -136,12 +145,34 @@ export interface EstadoMaisa {
 // Mensagem do cliente, ou uma checagem automática do relógio (sem texto).
 // documento = PDF ou imagem, que pode ser o extrato. Áudio chega já transcrito em texto.
 export type Entrada =
-  | { texto: string | null; temMidia: boolean; documento?: boolean; documentoId?: string; mensagemId?: string }
+  | { texto: string | null; temMidia: boolean; documento?: boolean; documentoId?: string; mensagemId?: string; viaAudio?: boolean }
   | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" };
+type EntradaTexto = Exclude<Entrada, { evento: string }>;
+
+// Camada conversacional (fase 7). Ausente ou desligada: tudo funciona como antes.
+export interface ConversaDeps {
+  etapas: ReadonlySet<string>;
+  decidir(p: { estado: EstadoMaisa; texto: string; pendencia: Pendencia; viaAudio: boolean; agora: Date }): Promise<SaidaMotor>;
+  // A Maisa de hoje não entendeu a resposta: devolve uma reformulação com outra abordagem, ou null.
+  reformular?(p: { estado: EstadoMaisa; texto: string; pendencia: Pendencia; agora: Date; memoria: MemoriaConversa }): Promise<{ respostas: string[]; memoria: MemoriaConversa; rotulo: string; registro: RegistroInterpretacao } | null>;
+  // Lê um arquivo que o cliente mandou no lugar do número do contrato.
+  lerContratoDeArquivo?(documentoId?: string): Promise<{ legivel: boolean; numero: string | null; banco: string | null } | null>;
+}
+
+// Dias em que o cadastro de um atendimento anterior vale. Ajustado pelo serviço, de env.
+export const configFluxo = { reaproveitaDias: 7 };
+
+export interface ContratoSalvo {
+  dados: DadosContrato;
+  origem?: Partial<Record<CampoContrato, "extrato" | "anterior">>;
+  correcoes?: Correcao[];
+  produto?: Produto;
+  salvoEm: string;
+}
 
 export interface Correcao {
   campo: CampoContrato;
-  origem: "extrato" | "cliente";
+  origem: "extrato" | "cliente" | "anterior";
   anterior: unknown;
   novo: unknown;
   em: string;
@@ -180,6 +211,7 @@ export interface Dependencias {
   mensagemDepoisDoSim?(simMensagemId: string | undefined, recebidoEm: string): Promise<boolean>;
   // Lembrete e Carrinho também na oferta de portabilidade.
   followupPort?: boolean;
+  conversa?: ConversaDeps;
   // Responde ao que o cliente disse fora do esperado (ex.: "estou negativo"), só com fatos
   // aprovados. null: não tem o que dizer. Ausente nos testes: valem as regras.
   responderLivre?(texto: string, etapa: string, produto: string | undefined, pergunta: string): Promise<string | null>;
@@ -201,6 +233,8 @@ export interface Passo {
   efeitos: Efeito[];
   // O que ela entendeu da mensagem. Vai para o registro, nunca o texto do cliente.
   rotulo: string;
+  // Registro da interpretação conversacional (fase 7), gravado sem o texto do cliente.
+  interpretacao?: RegistroInterpretacao;
 }
 
 // Não entendeu duas vezes: pergunta de novo. Na terceira, passa para a equipe.
@@ -259,6 +293,13 @@ function ir(estado: EstadoMaisa, etapa: Etapa, respostas: string[], rotulo: stri
   return { estado: { ...estado, ...extra, etapa, tentativas: 0, sociais: 0 }, respostas, efeitos, rotulo };
 }
 
+// Cadastro com ao menos um dado validado vira ContratoSalvo. Sem cadastro novo, mantém o que já havia.
+function guardarCadastro(estado: EstadoMaisa): ContratoSalvo | undefined {
+  const c = estado.contrato;
+  if (!c || !Object.keys(c.dados).length) return estado.contratoSalvo;
+  return { dados: c.dados, origem: c.origem, correcoes: c.correcoes, produto: estado.produto, salvoEm: new Date().toISOString() };
+}
+
 function transferir(
   estado: EstadoMaisa,
   motivo: string,
@@ -268,8 +309,9 @@ function transferir(
   saida = rotulo,
 ): Passo {
   return {
-    // Os dados do cadastro (RG, endereço, filiação) não ficam guardados depois daqui.
-    estado: { ...estado, etapa: "finalizada", tentativas: 0, motivoTransferencia: motivo, paradaEm: estado.etapa, saida, contrato: undefined },
+    // O cadastro sai do estado ativo. Uma cópia estruturada fica por poucos dias, para a conversa
+    // devolvida à Maisa não recomeçar do zero. Notas livres da equipe não são fonte de dado.
+    estado: { ...estado, etapa: "finalizada", tentativas: 0, motivoTransferencia: motivo, paradaEm: estado.etapa, saida, contrato: undefined, contratoSalvo: guardarCadastro(estado) },
     respostas: resposta ? [resposta] : [],
     efeitos: [...efeitos, { tipo: "transferir", motivo, nota: notaEquipe(estado, motivo, efeitos) }],
     rotulo,
@@ -385,7 +427,7 @@ function dadosDoCliente(estado: EstadoMaisa): string[] {
 // Fim sem atendente: nada a oferecer agora. Se o cliente escrever de novo, começa outra conversa.
 function encerrar(estado: EstadoMaisa, motivo: string, resposta: string, rotulo: string, efeitos: Efeito[] = [], saida = rotulo): Passo {
   return {
-    estado: { ...estado, etapa: "finalizada", tentativas: 0, motivoTransferencia: motivo, paradaEm: estado.etapa, saida, contrato: undefined },
+    estado: { ...estado, etapa: "finalizada", tentativas: 0, motivoTransferencia: motivo, paradaEm: estado.etapa, saida, contrato: undefined, contratoSalvo: guardarCadastro(estado) },
     respostas: [resposta],
     efeitos: [...efeitos, { tipo: "encerrar", motivo }],
     rotulo,
@@ -687,7 +729,7 @@ async function etapaExtrato(
           aceitouOferta: undefined,
           alternativa: { operacao, trocoCentavos, motivo, digitacao, ...(reducoes?.length ? { reducoes } : {}), ...lidos },
         };
-        return iniciarColetaPort(comAlternativa, digitacao.numeroContrato, "retoma_contrato", [TEXTOS.retomaSemNumero(ganho)]);
+        return iniciarColetaPort(comAlternativa, digitacao.numeroContrato, "retoma_contrato", [TEXTOS.retomaSemNumero(ganho)], deps.agora());
       }
       return ir(
         estado,
@@ -960,7 +1002,7 @@ function seguirComAceite(estado: EstadoMaisa, deps: Dependencias, texto: string,
     const dig = estado.alternativa?.digitacao;
     if (dig && deps.digitacaoAtiva) {
       const numero = dig.numeroContrato ?? (/\d{5,}/.test(texto) ? extrairNumeroContrato(texto) : null);
-      if (numero) return iniciarColetaPort(limpo, numero, "aceitou_port", [...antes, TEXTOS.inicioContrato]);
+      if (numero) return iniciarColetaPort(limpo, numero, "aceitou_port", [...antes, TEXTOS.inicioContrato], deps.agora());
       return ir(limpo, "numero_contrato", [...antes, TEXTOS.pedeNumeroContrato(dig.banco, formatarReais(Math.round(dig.parcela * 100)))], "aceitou_port");
     }
     return transferir(limpo, `aceitou: ${estado.alternativa?.motivo ?? "portabilidade"}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
@@ -972,12 +1014,7 @@ function seguirComAceite(estado: EstadoMaisa, deps: Dependencias, texto: string,
     if (estado.oferta.matricula) dados.matricula = estado.oferta.matricula;
     if (estado.produto === "siape" && estado.oferta.contaSalario) Object.assign(dados, estado.oferta.contaSalario);
     if (estado.produto === "inss" && estado.oferta.especie) dados.tipoBeneficio = String(estado.oferta.especie);
-    const pergunta = proximaPergunta(dados, estado.produto)!;
-    return ir(limpo, "coleta", [...antes, TEXTOS.inicioContrato, pergunta], "aceitou_contrato", [], {
-      contrato: { dados, pergunta, origem: origemExtrato(dados) },
-      ofertaEm: undefined,
-      followupEnviado: undefined,
-    });
+    return iniciarCadastro(limpo, dados, "aceitou_contrato", [...antes, TEXTOS.inicioContrato], deps.agora(), { ofertaEm: undefined, followupEnviado: undefined });
   }
   return transferir(limpo, "aceitou a oferta", TEXTOS.aceitou, "aceitou");
 }
@@ -1054,8 +1091,18 @@ function contornar(estado: EstadoMaisa, texto: string, l: LeituraOferta): Passo 
 }
 
 // Número do contrato no banco de origem: a Facta precisa dele para comprar a dívida.
-async function etapaNumeroContrato(estado: EstadoMaisa, texto: string): Promise<Passo> {
+// confirmarAntes (camada conversacional ligada): número vindo de áudio ou de arquivo nunca vale
+// sem o "sim" explícito do cliente, porque o número compra um contrato do cliente.
+async function etapaNumeroContrato(estado: EstadoMaisa, texto: string, deps: Dependencias, viaAudio = false): Promise<Passo> {
   const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const confirmarAntes = Boolean(deps.conversa?.etapas.has("numero_contrato"));
+  const prop = estado.memoria?.contratoProposto;
+  if (prop) {
+    const sim = (SIM_FORTE.test(t) || /^(sim+|s|isso|isso mesmo|esse mesmo|correto|certo|exato|ta certo|pode ser esse)\b/.test(t)) && !NAO_QUERO.test(t) && !texto.includes("?");
+    const semProposta = { ...estado, memoria: { ...estado.memoria!, contratoProposto: undefined } };
+    if (sim) return iniciarColetaPort(semProposta, prop.numero, "numero_contrato_confirmado", [TEXTOS.inicioContrato], deps.agora());
+    estado = semProposta; // "não", outro número ou outra coisa: descarta a proposta e segue com a mensagem
+  }
   if (/nao sei|nao tenho|nao lembro|nao acho|onde (eu )?(vejo|acho|encontro|pego)|voces nao tem/.test(t)) {
     return transferir(estado, "não sabe o número do contrato", TEXTOS.semNumeroContrato, "sem_numero_contrato", [], "alternativa");
   }
@@ -1069,21 +1116,77 @@ async function etapaNumeroContrato(estado: EstadoMaisa, texto: string): Promise<
   if (!numero) {
     return tentarDeNovo(estado, TEXTOS.numeroContratoInvalido, "numero_contrato_invalido", "alternativa");
   }
-  return iniciarColetaPort(estado, numero, "numero_contrato", [TEXTOS.inicioContrato]);
+  if (viaAudio && confirmarAntes) {
+    const memoria = { ...(estado.memoria ?? emMemoriaVazia()), contratoProposto: { numero, banco: null, origem: "audio" as const, em: deps.agora().toISOString() } };
+    return { estado: { ...estado, memoria, tentativas: 0 }, respostas: [TEXTOS.contratoDoAudio(numero)], efeitos: [], rotulo: "contrato_do_audio_confirmar" };
+  }
+  return iniciarColetaPort(estado, numero, "numero_contrato", [TEXTOS.inicioContrato], deps.agora());
+}
+
+const emMemoriaVazia = (): MemoriaConversa => ({ perguntas: {}, orientacoes: [], irritacoes: 0, reclamacoesRepeticao: 0, baixaConfianca: 0, falhasModelo: 0, ajudasSemProgresso: 0 });
+
+// Arquivo no lugar do número: lê, valida e PEDE CONFIRMAÇÃO antes de aceitar. null: não deu para
+// tratar e o arquivo segue o caminho de sempre (equipe).
+async function etapaContratoPorArquivo(estado: EstadoMaisa, documentoId: string | undefined, deps: Dependencias): Promise<Passo | null> {
+  const lido = await deps.conversa!.lerContratoDeArquivo!(documentoId).catch(() => null);
+  if (!lido) return null;
+  const banco = estado.alternativa?.digitacao?.banco ?? "o banco do contrato";
+  const numero = lido.legivel && lido.numero ? extrairNumeroContrato(lido.numero) : null;
+  if (numero) {
+    const outro = lido.banco ? outroBancoCitado(normalizar(lido.banco), estado.alternativa?.digitacao?.banco ?? "") : null;
+    if (outro) return tentarDeNovo(estado, TEXTOS.contratoArquivoOutroBanco(lido.banco ?? outro, banco), "contrato_arquivo_outro_banco", "alternativa");
+    const memoria = { ...(estado.memoria ?? emMemoriaVazia()), contratoProposto: { numero, banco: lido.banco, origem: "arquivo" as const, em: deps.agora().toISOString() } };
+    return { estado: { ...estado, memoria, tentativas: 0 }, respostas: [TEXTOS.contratoDoArquivo(numero, lido.banco)], efeitos: [], rotulo: "contrato_do_arquivo_confirmar" };
+  }
+  return tentarDeNovo(estado, TEXTOS.arquivoSemContrato(banco), "arquivo_sem_contrato", "alternativa");
 }
 
 // Começa o cadastro da port com o número do contrato em mãos. Renda, matrícula e conta
 // salário já lidas do extrato entram preenchidas: ela não pergunta de novo.
-function iniciarColetaPort(estado: EstadoMaisa, numero: string, rotulo: string, antes: string[]): Passo {
+function iniciarColetaPort(estado: EstadoMaisa, numero: string, rotulo: string, antes: string[], agora: Date = new Date()): Passo {
   const dados: DadosContrato = {};
   if (estado.alternativa?.renda) dados.renda = estado.alternativa.renda;
   if (estado.alternativa?.matricula) dados.matricula = estado.alternativa.matricula;
   if (estado.produto === "siape" && estado.alternativa?.contaSalario) Object.assign(dados, estado.alternativa.contaSalario);
-  const pergunta = proximaPergunta(dados, produtoExtrato(estado))!;
-  return ir(estado, "coleta", [...antes, pergunta], rotulo, [], {
-    alternativa: { ...estado.alternativa!, numeroContrato: numero },
-    contrato: { dados, pergunta, origem: origemExtrato(dados) },
-  });
+  return iniciarCadastro({ ...estado, alternativa: { ...estado.alternativa!, numeroContrato: numero } }, dados, rotulo, antes, agora);
+}
+
+// Cadastro de um atendimento anterior, se ainda vale: mesmo produto e dentro do prazo.
+function cadastroAnterior(estado: EstadoMaisa, agora: Date): ContratoSalvo | null {
+  const s = estado.contratoSalvo;
+  if (!s || configFluxo.reaproveitaDias <= 0) return null;
+  if (s.produto && s.produto !== estado.produto) return null;
+  const idadeMs = agora.getTime() - new Date(s.salvoEm).getTime();
+  if (idadeMs > configFluxo.reaproveitaDias * 24 * 60 * 60_000) return null;
+  return s;
+}
+
+// O ponto único de entrada do cadastro. dadosBase: o que veio do extrato (vale mais que o
+// anterior). Dado de atendimento anterior entra marcado como "anterior", sem PIX nem qualquer
+// autorização: o cliente confirma o cadastro inteiro de novo.
+function iniciarCadastro(estado: EstadoMaisa, dadosBase: DadosContrato, rotulo: string, antes: string[], agora: Date, extra: Partial<EstadoMaisa> = {}): Passo {
+  const produto = produtoExtrato(estado);
+  const anterior = cadastroAnterior(estado, agora);
+  const reaproveitados = anterior ? Object.fromEntries(Object.entries(anterior.dados).filter(([k, v]) => k !== "pixCpf" && v !== undefined && v !== null && v !== "" && !(k in dadosBase))) as DadosContrato : {};
+  const dados: DadosContrato = { ...reaproveitados, ...dadosBase };
+  const origem: Partial<Record<CampoContrato, "extrato" | "anterior">> = {
+    ...Object.fromEntries(Object.keys(reaproveitados).map((k) => [k, "anterior"])),
+    ...origemExtrato(dadosBase),
+  };
+  const contrato = { dados, origem, correcoes: anterior?.correcoes };
+  if (anterior && Object.keys(reaproveitados).length) {
+    if (!camposFaltando(dados, produto).length) {
+      // Tudo já tinha: vai direto para a confirmação, que é pedida de novo.
+      return ir(estado, "confirmacao", [...antes, TEXTOS.cadastroAnterior, TEXTOS.confirmaDados(resumoDados(dados, true))], `${rotulo}_cadastro_anterior`, [], {
+        ...extra,
+        contrato: { ...contrato, pergunta: TEXTOS.perguntaConfirmacao },
+      });
+    }
+    const pergunta = proximaPergunta(dados, produto)!;
+    return ir(estado, "coleta", [...antes, TEXTOS.cadastroParcial, pergunta], `${rotulo}_cadastro_parcial`, [], { ...extra, contrato: { ...contrato, pergunta } });
+  }
+  const pergunta = proximaPergunta(dados, produto)!;
+  return ir(estado, "coleta", [...antes, pergunta], rotulo, [], { ...extra, contrato: { dados, pergunta, origem: origemExtrato(dados) } });
 }
 
 // Campos lidos do extrato no início do cadastro: renda, matrícula, conta salário e espécie.
@@ -1665,6 +1768,11 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   if (entrada.documento && (estado.etapa === "oferta" || estado.etapa === "oferta_port")) {
     return { estado, respostas: [TEXTOS.extratoRepetido, PERGUNTA_DA_ETAPA[estado.etapa]], efeitos: [], rotulo: "extrato_repetido" };
   }
+  // Arquivo no lugar do número do contrato (camada conversacional): lê, valida e confirma.
+  if (entrada.documento && estado.etapa === "numero_contrato" && deps.conversa?.etapas.has("numero_contrato") && deps.conversa.lerContratoDeArquivo) {
+    const p = await etapaContratoPorArquivo(estado, entrada.documentoId, deps);
+    if (p) return p;
+  }
   if (entrada.temMidia) return transferir(estado, "cliente enviou arquivo", TEXTOS.midiaRecebida, "midia");
 
   const texto = entrada.texto?.trim() ?? "";
@@ -1708,6 +1816,91 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     }
   }
 
+  // Camada conversacional (fase 7). Só age nas etapas configuradas e só conversa: responde,
+  // orienta, reformula ou encaminha. O que muda estado financeiro segue no motor abaixo, que valida
+  // tudo com as regras de sempre. Qualquer falha da camada: vale o fluxo de sempre.
+  let decisao: SaidaMotor | null = null;
+  if (deps.conversa?.etapas.has(estado.etapa)) {
+    decisao = await deps.conversa
+      .decidir({ estado, texto, pendencia: descreverPendencia(estado), viaAudio: entrada.viaAudio === true, agora: deps.agora() })
+      .catch(() => null);
+    if (decisao?.tipo === "responder") {
+      return { estado: { ...estado, memoria: decisao.memoria }, respostas: decisao.respostas, efeitos: [], rotulo: decisao.rotulo, interpretacao: decisao.registro };
+    }
+    if (decisao?.tipo === "encaminhar") {
+      const p = transferir({ ...estado, memoria: decisao.memoria }, `conversa: ${decisao.motivo}`, decisao.respostas[0] ?? TEXTOS.transferindo, decisao.rotulo, [], "nao_entendeu");
+      return { ...p, interpretacao: decisao.registro };
+    }
+  }
+  const passo = await despachar(estado, entrada, texto, deps);
+  if (!decisao) return passo;
+  let memoria = decisao.memoria;
+  if (passo.estado.etapa !== estado.etapa) memoria = { ...memoria, ajudasSemProgresso: 0 };
+  // A Maisa de hoje não entendeu: em vez de repetir "não entendi", reformula com outra abordagem.
+  if (decisao.tipo === "delegar" && FALHAS_DE_ENTENDIMENTO.has(passo.rotulo) && !passo.efeitos.length && deps.conversa?.reformular) {
+    const alt = await deps.conversa.reformular({ estado, texto, pendencia: descreverPendencia(estado), agora: deps.agora(), memoria }).catch(() => null);
+    if (alt) {
+      return {
+        ...passo,
+        estado: { ...passo.estado, memoria: alt.memoria },
+        respostas: alt.respostas,
+        rotulo: `${passo.rotulo}+${alt.rotulo}`,
+        interpretacao: { ...decisao.registro, acao: `${decisao.registro.acao}>${alt.registro.acao}`, reformulou: true, fonteTexto: alt.registro.fonteTexto },
+      };
+    }
+  }
+  return { ...passo, estado: { ...passo.estado, memoria }, interpretacao: decisao.registro };
+}
+
+const FALHAS_DE_ENTENDIMENTO = new Set(["nao_entendeu", "numero_contrato_invalido", "nascimento_invalido", "dado_nao_entendido", "cpf_invalido", "sem_extrato", "extrato_invalido"]);
+
+const ROTULO_EXTRA: Partial<Record<CampoContrato, string>> = {
+  sexo: "sexo", estadoCivil: "estado civil", email: "e-mail", renda: "salário bruto", matricula: "matrícula",
+  tipoCreditoNb: "forma de recebimento do benefício", pixCpf: "autorização do PIX na chave CPF",
+};
+const rotuloDoCampo = (c: CampoContrato) => ROTULO_CAMPO[c] ?? ROTULO_EXTRA[c] ?? null;
+
+// A pergunta que a Maisa deixou pendente, descrita para a camada conversacional.
+export function descreverPendencia(estado: EstadoMaisa): Pendencia {
+  const etapa = estado.etapa;
+  const base = { etapa, faltando: [] as string[], coletados: [] as string[] };
+  switch (etapa) {
+    case "numero_contrato": {
+      const d = estado.alternativa?.digitacao;
+      const banco = d?.banco ?? "do banco";
+      return {
+        ...base, chave: "numero_contrato", tipo: "dado", topico: "numero_contrato",
+        pergunta: d ? TEXTOS.pedeNumeroContrato(d.banco, formatarReais(Math.round(d.parcela * 100))) : TEXTOS.numeroContratoInvalido,
+        dadoPedido: `o número do contrato do ${banco}`,
+      };
+    }
+    case "extrato":
+      return { ...base, chave: "extrato", tipo: "arquivo", topico: estado.produto === "inss" ? "extrato_inss" : "extrato_siape", pergunta: TEXTOS.lembraExtrato, dadoPedido: "o extrato" };
+    case "cpf":
+      return { ...base, chave: "cpf", tipo: "dado", topico: "cpf", pergunta: PERGUNTA_DA_ETAPA.cpf, dadoPedido: "o seu CPF" };
+    case "nascimento":
+      return { ...base, chave: "nascimento", tipo: "dado", topico: "data_nascimento", pergunta: PERGUNTA_DA_ETAPA.nascimento, dadoPedido: "a sua data de nascimento" };
+    case "coleta": {
+      const dados = estado.contrato?.dados ?? {};
+      const produto = produtoExtrato(estado);
+      const falta = camposFaltando(dados, produto);
+      const faltando = falta.map(rotuloDoCampo).filter((x): x is string => Boolean(x));
+      const coletados = (Object.keys(dados) as CampoContrato[]).map(rotuloDoCampo).filter((x): x is string => Boolean(x));
+      const primeiro = falta[0];
+      return {
+        etapa, faltando, coletados, chave: `coleta:${primeiro ?? "resumo"}`, topico: null,
+        tipo: primeiro === "pixCpf" ? "decisao" : "dado",
+        pergunta: estado.contrato?.pergunta ?? TEXTOS.continuarCadastro,
+        dadoPedido: primeiro ? `${rotuloDoCampo(primeiro) ?? "o próximo dado"} do cadastro` : "os dados do cadastro",
+      };
+    }
+    default:
+      return { ...base, chave: etapa, tipo: "dado", topico: null, pergunta: PERGUNTA_DA_ETAPA[etapa] || "", dadoPedido: "a informação que eu pedi" };
+  }
+}
+
+// Despacha a mensagem para a etapa em que a conversa está.
+async function despachar(estado: EstadoMaisa, entrada: EntradaTexto, texto: string, deps: Dependencias): Promise<Passo> {
   switch (estado.etapa) {
     case "inicio":
       return etapaInicio(estado, texto, deps);
@@ -1730,7 +1923,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     case "oferta_port":
       return etapaOfertaPort(estado, texto, deps);
     case "numero_contrato":
-      return etapaNumeroContrato(estado, texto);
+      return etapaNumeroContrato(estado, texto, deps, entrada.viaAudio === true);
     case "coleta":
       return etapaColeta(estado, { texto }, deps);
     case "confirmacao":

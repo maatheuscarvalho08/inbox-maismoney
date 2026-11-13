@@ -79,6 +79,20 @@ const envSchema = z.object({
   MAISA_ENTREGA_TENTATIVAS: z.coerce.number().min(1).max(5).default(3),
   // Tempo máximo de cada chamada à Facta.
   FACTA_TIMEOUT_MS: z.coerce.number().min(100).default(30_000),
+  // Fase 7: inteligência conversacional (interpretador, gerenciador de diálogo, redator).
+  // desligado = a Maisa de sempre. sombra = interpreta e registra, sem responder nada.
+  // ativo = responde com a camada nova nas etapas de MAISA_CONVERSA_ETAPAS.
+  MAISA_CONVERSA_MODO: z.enum(["desligado", "sombra", "ativo"]).default("desligado"),
+  // Etapas em que a camada nova age. Começa pelas de menor risco.
+  MAISA_CONVERSA_ETAPAS: z.string().default("numero_contrato,extrato,cpf,nascimento,coleta"),
+  // Modelo da camada conversacional. Vazio: o mesmo de OPENAI_MODELO_EXTRATO.
+  OPENAI_MODELO_CONVERSA: z.string().default(""),
+  // Tempo máximo da interpretação e da redação. Estourou: vale o fluxo de sempre.
+  MAISA_CONVERSA_PRAZO_MS: z.coerce.number().min(1000).max(60_000).default(12_000),
+  // Abaixo desta confiança a Maisa reformula em vez de agir sobre a interpretação.
+  MAISA_CONVERSA_CONFIANCA_MIN: z.coerce.number().min(0).max(1).default(0.6),
+  // Dias em que o cadastro validado de um atendimento anterior pode ser reaproveitado.
+  MAISA_CADASTRO_REAPROVEITA_DIAS: z.coerce.number().min(0).max(30).default(7),
   // OpenAI. A leitura de extrato usa um modelo com visão; as etapas simples, um barato.
   OPENAI_API_KEY: z.string().default(""),
   OPENAI_MODELO_EXTRATO: z.string().default("gpt-6.1-sol"),

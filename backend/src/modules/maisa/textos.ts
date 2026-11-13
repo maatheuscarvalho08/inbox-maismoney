@@ -200,6 +200,15 @@ export const TEXTOS = {
     `Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.`,
   contratoOutroBanco: (citado: string, pedido: string) =>
     `Esse parece ser o contrato do ${citado}. Para essa proposta eu preciso do número do contrato do ${pedido}. Pode me mandar esse?`,
+  contratoDoAudio: (numero: string) => `Entendi o número ${numero} no seu áudio. É esse mesmo? Responda sim para eu seguir, ou me mande o número certo.`,
+  contratoDoArquivo: (numero: string, banco: string | null) =>
+    `Achei no arquivo o contrato número ${numero}${banco ? ` do ${banco}` : ""}. É esse mesmo? Responda sim para eu seguir, ou me mande o número certo.`,
+  contratoArquivoOutroBanco: (citado: string, pedido: string) =>
+    `Esse arquivo parece ser de um contrato do ${citado}. Para essa proposta eu preciso do contrato do ${pedido}. Pode me mandar o desse banco?`,
+  arquivoSemContrato: (banco: string) =>
+    `Recebi o arquivo, mas não consegui achar nele o número do contrato do ${banco}. Pode digitar o número por aqui, ou mandar uma foto mais nítida?`,
+  cadastroAnterior: "Já tenho os seus dados do atendimento anterior, então não vou pedir tudo de novo.",
+  cadastroParcial: "Já tenho parte dos seus dados do atendimento anterior. Falta só o resto.",
   contratoAnotado: (banco: string, numero: string) => `Anotei o número do contrato do ${banco}: ${numero}. Obrigada!`,
   numeroContratoInvalido: "Não consegui entender o número do contrato. Pode mandar de novo, só o número? Se não souber onde achar, me diga.",
   semNumeroContrato:
