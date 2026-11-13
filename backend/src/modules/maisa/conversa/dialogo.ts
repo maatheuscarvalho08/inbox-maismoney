@@ -27,9 +27,15 @@ const SEGUE_NO_MOTOR = new Set(["informar_dado", "corrigir_dado", "confirmar", "
 const sinaisDeIrritacao = (m: MemoriaConversa) => m.irritacoes + m.reclamacoesRepeticao;
 
 export function decidirDialogo(e: EntradaDialogo): AcaoDialogo {
-  const i = e.interpretacao;
-  if (!i) return { tipo: "delegar", motivo: "sem_interpretacao" };
+  const bruta = e.interpretacao;
+  if (!bruta) return { tipo: "delegar", motivo: "sem_interpretacao" };
   const { pendencia: p, memoria: m } = e;
+  // "Sim" ou "não" só é confirmação quando a pergunta pendente é uma confirmação. Em resposta a um
+  // pedido de dado, "sim" quer dizer "vou conseguir" e "não" quer dizer "não sei achar".
+  const i =
+    p.tipo !== "confirmacao" && p.tipo !== "decisao" && (bruta.intencao === "confirmar" || bruta.intencao === "negar")
+      ? { ...bruta, intencao: bruta.intencao === "confirmar" ? ("disponibilidade" as const) : ("nao_sabe_encontrar" as const) }
+      : bruta;
   const tent = tentativasDa(m, p.chave);
 
   if (i.intencao === "pedir_humano") return { tipo: "encaminhar", categoria: "pediu_humano", motivo: "o cliente pediu uma pessoa" };

@@ -1834,7 +1834,8 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   }
   const passo = await despachar(estado, entrada, texto, deps);
   if (!decisao) return passo;
-  let memoria = decisao.memoria;
+  // A proposta de contrato (arquivo ou áudio) pertence ao motor operacional: vale o que ele deixou.
+  let memoria: MemoriaConversa = { ...decisao.memoria, contratoProposto: passo.estado.memoria?.contratoProposto };
   if (passo.estado.etapa !== estado.etapa) memoria = { ...memoria, ajudasSemProgresso: 0 };
   // A Maisa de hoje não entendeu: em vez de repetir "não entendi", reformula com outra abordagem.
   if (decisao.tipo === "delegar" && FALHAS_DE_ENTENDIMENTO.has(passo.rotulo) && !passo.efeitos.length && deps.conversa?.reformular) {
@@ -1842,7 +1843,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     if (alt) {
       return {
         ...passo,
-        estado: { ...passo.estado, memoria: alt.memoria },
+        estado: { ...passo.estado, memoria: { ...alt.memoria, contratoProposto: passo.estado.memoria?.contratoProposto } },
         respostas: alt.respostas,
         rotulo: `${passo.rotulo}+${alt.rotulo}`,
         interpretacao: { ...decisao.registro, acao: `${decisao.registro.acao}>${alt.registro.acao}`, reformulou: true, fonteTexto: alt.registro.fonteTexto },
@@ -1868,6 +1869,15 @@ export function descreverPendencia(estado: EstadoMaisa): Pendencia {
     case "numero_contrato": {
       const d = estado.alternativa?.digitacao;
       const banco = d?.banco ?? "do banco";
+      const prop = estado.memoria?.contratoProposto;
+      // O número já foi lido de um arquivo ou áudio: a pergunta pendente é "é esse mesmo?".
+      if (prop) {
+        return {
+          ...base, chave: "numero_contrato_confirmar", tipo: "confirmacao", topico: "numero_contrato",
+          pergunta: prop.origem === "arquivo" ? TEXTOS.contratoDoArquivo(prop.numero, prop.banco) : TEXTOS.contratoDoAudio(prop.numero),
+          dadoPedido: "a confirmação do número do contrato",
+        };
+      }
       return {
         ...base, chave: "numero_contrato", tipo: "dado", topico: "numero_contrato",
         pergunta: d ? TEXTOS.pedeNumeroContrato(d.banco, formatarReais(Math.round(d.parcela * 100))) : TEXTOS.numeroContratoInvalido,

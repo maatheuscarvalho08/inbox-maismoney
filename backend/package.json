@@ -12,7 +12,8 @@
     "prisma:migrate": "prisma migrate dev",
     "seed": "tsx src/db/seed.ts",
     "maisa:testar": "tsx src/scripts/testarMaisa.ts",
-    "extrato:testar": "tsx src/scripts/testarExtrato.ts"
+    "extrato:testar": "tsx src/scripts/testarExtrato.ts",
+    "conversa:testar": "tsx src/scripts/testarConversa.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",
