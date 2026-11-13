@@ -325,7 +325,7 @@ await caso("Cenário 2: não sabe onde achar, sem procedimento inventado da Caix
   const p = await diga(estadoCef(), "Não sei onde acho.", deps);
   assert.equal(p.estado.etapa, "numero_contrato");
   assert.ok(!SEM_PASSO_DE_APP.test(p.respostas[0]), p.respostas[0]);
-  assert.match(p.respostas[0], /Ainda não tenho uma instrução segura|equipe/);
+  assert.match(p.respostas[0], /Não sei te dizer o caminho exato|equipe/);
 });
 
 await caso("SIAPE: onde achar o número vem da orientação aprovada (extrato de consignações)", async () => {
@@ -572,6 +572,17 @@ await caso("CPF 8: a validação de CPF da etapa do CPF não mudou", async () =>
   const e: EstadoMaisa = { etapa: "cpf", tentativas: 0, produto: "clt" };
   const p = await diga(e, ONZE_INVALIDO, semCamada());
   assert.equal(p.rotulo, "cpf_invalido");
+});
+
+await caso("Redator: texto que fala do funcionamento interno é trocado pelo de reserva", async () => {
+  const { validarSaida, textoReserva } = await import("../modules/maisa/conversa/redator.js");
+  const plano = { acao: "alternativa_sem_orientacao" as const, estrategia: "reformular" as const, dadoPedido: "o número do contrato do CEF", pergunta: "x", faltando: [] as string[], coletados: [] as string[], orientacao: null, fatos: [] as string[], tom: "neutro" as const, ultimasMaisa: [] as string[] };
+  assert.equal(validarSaida("Não tenho a instrução de onde encontrá-lo, mas posso chamar a equipe.", plano), "fala_do_interno");
+  assert.equal(validarSaida("Meu sistema não permite isso agora, desculpe pela demora.", plano), "fala_do_interno");
+  assert.equal(validarSaida(textoReserva(plano), plano), null);
+  for (const acao of ["continuar_com_orientacao", "explicar_proximo_passo", "explicar_onde_achar", "reformular", "confirmar_ambiguo", "reconhecer_e_mudar_abordagem", "aproveitar_dado", "alternativa_sem_orientacao", "documento_sem_dado"] as const) {
+    assert.doesNotMatch(textoReserva({ ...plano, acao, coletados: ["nome"], faltando: ["CEP"] }), /instru|sistema/i, acao);
+  }
 });
 
 await caso("Nenhuma chamada externa foi feita", async () => {

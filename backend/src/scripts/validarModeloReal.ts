@@ -14,7 +14,10 @@ import { criarRedatorOpenAI } from "../modules/maisa/conversa/redator.js";
 import { TEXTOS } from "../modules/maisa/textos.js";
 import type { MemoriaConversa } from "../modules/maisa/conversa/tipos.js";
 
-const LIMITE = 20;
+const LIMITE = process.argv.includes("--limite") ? Math.min(20, Number(process.argv[process.argv.indexOf("--limite") + 1])) : 20;
+const SO = process.argv.includes("--cenarios") ? process.argv[process.argv.indexOf("--cenarios") + 1].split(",") : null;
+// Primeira recusa por falta de crédito: para tudo, sem gastar o resto do limite.
+let semCredito = false;
 const executar = process.argv.includes("--executar");
 const saida = process.argv.includes("--saida") ? process.argv[process.argv.indexOf("--saida") + 1] : null;
 
@@ -30,6 +33,10 @@ globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
     bloqueadas++;
     throw new Error(`bloqueado: ${executar ? "destino não permitido" : "modo de conferência"}`);
   }
+  if (semCredito) {
+    bloqueadas++;
+    throw new Error("bloqueado: conta sem crédito");
+  }
   if (chamadas.length >= LIMITE) {
     bloqueadas++;
     throw new Error("bloqueado: limite de chamadas atingido");
@@ -41,6 +48,7 @@ globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
   const r = await fetchReal(url, init);
   reg.ms = Date.now() - t0;
   reg.status = r.status;
+  if (r.status === 429) semCredito = true;
   try {
     const j = (await r.clone().json()) as { model?: string; usage?: { input_tokens?: number; output_tokens?: number } };
     reg.modelo = j.model ?? null;
@@ -118,10 +126,11 @@ const CENARIOS: Cenario[] = [
 const VAZAMENTO = /\b(instru[cç][aã]o|instru[cç][oõ]es|prompt|json|schema|interpretador|redator|modelo de ia|gpt|openai|sistema interno|regras internas)\b/i;
 
 async function main() {
-  const piorCaso = CENARIOS.length * 2; // interpretador + redator por mensagem
+  const lista = SO ? CENARIOS.filter((c) => SO.includes(c.id)) : CENARIOS;
+  const piorCaso = lista.length * 2; // interpretador + redator por mensagem
   console.log(`Modelo configurado: ${modeloConversa()}`);
   console.log(`Chave da OpenAI presente: ${env.OPENAI_API_KEY ? "sim" : "não"}`);
-  console.log(`Cenários: ${CENARIOS.length}. Pior caso: ${piorCaso} chamadas. Limite rígido: ${LIMITE}.`);
+  console.log(`Cenários: ${lista.map((c) => c.id).join(", ")}. Pior caso: ${piorCaso} chamadas. Limite rígido: ${LIMITE}.`);
   if (piorCaso > LIMITE) {
     console.log("ABORTADO: o pior caso passa do limite.");
     process.exit(1);
@@ -136,7 +145,11 @@ async function main() {
   }
 
   const resultados: unknown[] = [];
-  for (const c of CENARIOS) {
+  for (const c of lista) {
+    if (semCredito) {
+      console.log(`${c.id} não executado: a conta recusou por falta de crédito`);
+      continue;
+    }
     const antesChamadas = chamadas.length;
     const opsAntes = { ...operacoes };
     let p: Passo;

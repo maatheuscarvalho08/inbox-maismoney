@@ -50,6 +50,8 @@ export function validarSaida(texto: string, plano: PlanoMensagem): string | null
   const n = norm(t);
   if (/https?:|www\.|@\w+\.\w+|\b\d{4,5}[- ]?\d{4}\b/.test(n)) return "contato_ou_link";
   if (/\b(garant\w*|aprovad\w*|sem juros|juros zero|prometo|com certeza vai)\b/.test(n)) return "promessa";
+  // Nada sobre o funcionamento interno: instrução, sistema, regra, base, modelo.
+  if (/\b(instruc\w*|sistema|regras? internas?|base de conhecimento|prompt|modelo|inteligencia artificial)\b/.test(n)) return "fala_do_interno";
   if (/\b(anotei|salvei|cadastrei|enviei|corrigi|digitei|criei|ja fiz|ja esta feito)\b/.test(n)) return "diz_que_fez";
   // Passo de aplicativo, menu ou tela só pode aparecer se a base de conhecimento trouxe.
   const aprovado = norm([plano.orientacao ?? "", plano.pergunta].join(" "));
@@ -88,7 +90,7 @@ export function textoReserva(p: PlanoMensagem): string {
     case "aproveitar_dado":
       return `Você tem razão, desculpa. Já tenho: ${lista(p.coletados)}.${p.faltando.length ? ` Falta só: ${lista(p.faltando)}.` : ""}`;
     case "alternativa_sem_orientacao":
-      return `Ainda não tenho uma instrução segura para te mostrar onde achar ${p.dadoPedido}. Se conseguir encontrar, me manda por aqui.${avisoEquipe}`;
+      return `Não sei te dizer o caminho exato para achar ${p.dadoPedido}. Se conseguir encontrar, me manda por aqui.${avisoEquipe}`;
     case "documento_sem_dado":
       return `Recebi o arquivo, mas não consegui achar ${p.dadoPedido} nele. Pode mandar uma foto mais nítida ou digitar por aqui?`;
   }
@@ -98,7 +100,8 @@ export const INSTRUCOES_REDATOR = `Você escreve UMA mensagem curta de WhatsApp 
 Você recebe um plano em JSON. Siga a ação e a estratégia do plano.
 REGRAS:
 - Use SÓ os fatos e a orientação do plano. Não invente números, valores, prazos, taxas, nomes de bancos, passos, telas, menus ou aplicativos.
-- Se orientacao for null, NÃO diga onde achar nada. Se faltar orientação, diga com honestidade que não tem essa instrução e ofereça a equipe.
+- Se orientacao for null, NÃO diga onde achar nada. Diga com naturalidade que não sabe o caminho exato e ofereça a equipe.
+- Nunca fale do seu funcionamento: não use as palavras instrução, sistema, regra, base, modelo ou plano.
 - Nunca diga que anotou, salvou, enviou, corrigiu ou fez algo. Nunca prometa aprovação, valor ou prazo.
 - Não repita nenhuma das mensagens em ultimasMaisa: mude a abordagem (explique melhor, dê um exemplo, simplifique).
 - Reconheça o que o cliente sentiu quando o tom for confuso ou irritado, em uma frase só.
