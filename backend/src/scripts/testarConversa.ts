@@ -501,6 +501,79 @@ await caso("Cenário 8: segurança adversarial, interpretações manipulativas e
   assert.equal(chamadas.digitar + chamadas.autorizacao + chamadas.consulta + chamadas.simulacao, 0, "operação financeira indevida");
 });
 
+
+// ---------- Etapa 4: CPF no lugar do número do contrato (regra determinística, camada desligada) ----------
+const { cpfValido: cpfOk } = await import("../modules/maisa/cpf.js");
+let CPF_REAL = "";
+for (let n = 529982247; !CPF_REAL; n++) for (let d = 0; d <= 99 && !CPF_REAL; d++) { const c = `${n}${String(d).padStart(2, "0")}`; if (cpfOk(c)) CPF_REAL = c; }
+const CPF_FORMATADO = `${CPF_REAL.slice(0, 3)}.${CPF_REAL.slice(3, 6)}.${CPF_REAL.slice(6, 9)}-${CPF_REAL.slice(9)}`;
+let ONZE_INVALIDO = "";
+for (let n = 12345678900; !ONZE_INVALIDO; n++) if (!cpfOk(String(n))) ONZE_INVALIDO = String(n);
+const semCamada = () => ({ ...depsBase(roteiro([])), conversa: undefined });
+
+await caso("CPF 1: CPF válido enviado como contrato não é aceito e não avança", async () => {
+  for (const t of [CPF_REAL, CPF_FORMATADO]) {
+    const p = await diga(estadoCef(), t, semCamada());
+    assert.equal(p.estado.etapa, "numero_contrato", t);
+    assert.equal(p.rotulo, "cpf_no_lugar_do_contrato");
+    assert.match(p.respostas[0], /parece ser um CPF/);
+    assert.match(p.respostas[0], /número do contrato do 104 - CEF/);
+    assert.equal(p.estado.alternativa?.numeroContrato, undefined);
+  }
+});
+
+await caso("CPF 2: 11 dígitos com verificadores inválidos seguem como contrato (regra de antes)", async () => {
+  const p = await diga(estadoCef(), ONZE_INVALIDO, semCamada());
+  assert.equal(p.estado.etapa, "coleta");
+  assert.equal(p.estado.alternativa?.numeroContrato, ONZE_INVALIDO);
+});
+
+await caso("CPF 3: número de contrato legítimo é aceito", async () => {
+  for (const n of ["20250464573", "9876543", "0000000000013998581"]) {
+    const p = await diga(estadoCef(), n, semCamada());
+    assert.equal(p.estado.etapa, "coleta", n);
+    assert.equal(p.estado.alternativa?.numeroContrato, n);
+  }
+});
+
+await caso("CPF 4: contrato com pontuação é aceito sem a pontuação", async () => {
+  const p = await diga(estadoCef(), "175.950.960-1", semCamada());
+  assert.equal(p.estado.etapa, "coleta");
+  assert.equal(p.estado.alternativa?.numeroContrato, "1759509601");
+});
+
+await caso("CPF 5: contrato no meio do texto, mesmo com o CPF junto, vale o contrato", async () => {
+  let p = await diga(estadoCef(), "o contrato da caixa é 175950960, tá aqui", semCamada());
+  assert.equal(p.estado.alternativa?.numeroContrato, "175950960");
+  p = await diga(estadoCef(), `meu cpf é ${CPF_FORMATADO} e o contrato é 20250464573`, semCamada());
+  assert.equal(p.estado.etapa, "coleta");
+  assert.equal(p.estado.alternativa?.numeroContrato, "20250464573");
+  p = await diga(estadoCef(), `segue meu cpf ${CPF_REAL}`, semCamada());
+  assert.equal(p.estado.etapa, "numero_contrato");
+});
+
+await caso("CPF 6: cliente manda o CPF, é avisado e corrige com o número certo", async () => {
+  let p = await diga(estadoCef(), CPF_REAL, semCamada());
+  assert.equal(p.estado.etapa, "numero_contrato");
+  p = await diga(p.estado, "desculpa, o contrato é 175950960", semCamada());
+  assert.equal(p.estado.etapa, "coleta");
+  assert.equal(p.estado.alternativa?.numeroContrato, "175950960");
+});
+
+await caso("CPF 7: arquivo cujo número lido é um CPF não vira proposta de contrato", async () => {
+  const deps = depsBase(roteiro([]));
+  deps.conversa = { ...deps.conversa!, lerContratoDeArquivo: async () => ({ legivel: true, numero: CPF_REAL, banco: "CEF" }) };
+  const p = await diga(estadoCef(), "", deps, { documento: true, temMidia: true });
+  assert.equal(p.estado.memoria?.contratoProposto, undefined);
+  assert.equal(p.estado.etapa, "numero_contrato");
+});
+
+await caso("CPF 8: a validação de CPF da etapa do CPF não mudou", async () => {
+  const e: EstadoMaisa = { etapa: "cpf", tentativas: 0, produto: "clt" };
+  const p = await diga(e, ONZE_INVALIDO, semCamada());
+  assert.equal(p.rotulo, "cpf_invalido");
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

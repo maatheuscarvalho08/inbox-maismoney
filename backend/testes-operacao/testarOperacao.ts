@@ -902,9 +902,8 @@ async function main() {
       const l = await linhas(c.id);
       assert.equal(l.length, 1);
       assert.equal(l[0].modo, "sombra");
-      // O fluxo antigo leu o CPF como número do contrato (comportamento anterior à fase 7,
-      // registrado como risco). O registro guarda a decisão antiga para comparar.
-      assert.equal(l[0].rotuloReal, "numero_contrato", "decisão antiga");
+      // CPF no lugar do contrato: a regra de sempre recusa (etapa 4). O registro guarda a decisão antiga.
+      assert.equal(l[0].rotuloReal, "cpf_no_lugar_do_contrato", "decisão antiga");
       assert.equal(l[0].acao, "responder:explicar_proximo_passo", "decisão nova");
       assert.equal(l[0].divergiu, true);
       assert.ok(l[0].textoSombra?.startsWith("TEXTO-DA-SOMBRA"));

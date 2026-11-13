@@ -23,7 +23,7 @@
       "grupo": "R1 Correção durante o job",
       "nome": "correção 762 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 63 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 62 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
@@ -35,13 +35,13 @@
       "grupo": "R1 Correção durante o job",
       "nome": "correção 862 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 174 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 157 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
       "nome": "correção 635 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção cancelou a tempo"
+      "detalhe": "correção 30 ms antes da chegada da etapa 3; ponto sem volta -3 ms antes do início da gravação da correção; alerta=true"
     },
     {
       "grupo": "R1 Correção durante o job",
@@ -53,13 +53,13 @@
       "grupo": "R1 Correção durante o job",
       "nome": "correção 695 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 8 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção 1 ms antes da chegada da etapa 3; ponto sem volta 28 ms antes do início da gravação da correção; alerta=true"
     },
     {
       "grupo": "R1 Correção durante o job",
       "nome": "correção 819 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 124 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 140 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
@@ -71,13 +71,13 @@
       "grupo": "R1 Correção durante o job",
       "nome": "correção 846 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 143 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 173 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
       "nome": "correção 1064 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 401 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 390 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
@@ -89,7 +89,7 @@
       "grupo": "R1 Correção durante o job",
       "nome": "correção 1010 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 315 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 349 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
@@ -143,13 +143,13 @@
       "grupo": "R1 Correção durante o job",
       "nome": "correção 965 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 296 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 284 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
       "nome": "correção 884 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 189 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 195 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
@@ -167,19 +167,19 @@
       "grupo": "R1 Correção durante o job",
       "nome": "correção 795 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 108 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 94 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
       "nome": "correção 660 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 23 ms antes da chegada da etapa 3; ponto sem volta -1 ms antes do início da gravação da correção; alerta=true"
+      "detalhe": "correção 27 ms antes da chegada da etapa 3; ponto sem volta -1 ms antes do início da gravação da correção; alerta=true"
     },
     {
       "grupo": "R1 Correção durante o job",
       "nome": "correção 808 ms depois de o job começar (mesmo processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção chegou 137 ms depois da etapa 3 (inevitável)"
+      "detalhe": "correção chegou 111 ms depois da etapa 3 (inevitável)"
     },
     {
       "grupo": "R1 Correção durante o job",
@@ -611,7 +611,7 @@
       "grupo": "R6 WhatsApp",
       "nome": "Evolution fora do ar, processo cai na espera do reenvio (100 ms) e o envio sai uma vez quando volta",
       "resultado": "RESISTIU",
-      "detalhe": "entregas=0 "
+      "detalhe": "entregas=1 "
     },
     {
       "grupo": "R6 WhatsApp",
@@ -665,7 +665,7 @@
       "grupo": "R7 Persistência",
       "nome": "Postgres cai depois da etapa 3, antes de gravar a operação",
       "resultado": "RESISTIU",
-      "detalhe": "criadas=1 op=concluida comMaisa=false "
+      "detalhe": "criadas=1 op=desconhecida comMaisa=false "
     },
     {
       "grupo": "R7 Persistência",
@@ -803,43 +803,43 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "áudio 755 ms após o job (etapas 1/2: 81/76 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 556 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 566 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "o número da casa é 200 442 ms após o job (etapas 1/2: 200/145 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 80 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 97 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "espera, o CEP está errado 608 ms após o job (etapas 1/2: 377/24 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 169 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 211 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "não 516 ms após o job (etapas 1/2: 225/145 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 95 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 136 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "áudio 605 ms após o job (etapas 1/2: 171/172 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 250 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 236 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "o número da casa é 200 722 ms após o job (etapas 1/2: 46/339 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 344 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 313 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "espera, o CEP está errado 719 ms após o job (etapas 1/2: 374/155 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 126 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 165 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -863,7 +863,7 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "espera, o CEP está errado 619 ms após o job (etapas 1/2: 250/174 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 149 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 162 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -887,13 +887,13 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "espera, o CEP está errado 377 ms após o job (etapas 1/2: 193/41 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 117 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 121 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "não 612 ms após o job (etapas 1/2: 34/158 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 382 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 344 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -911,7 +911,7 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "espera, o CEP está errado 826 ms após o job (etapas 1/2: 192/229 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 402 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 363 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -923,13 +923,13 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "áudio 754 ms após o job (etapas 1/2: 7/376 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 323 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 355 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "o número da casa é 200 680 ms após o job (etapas 1/2: 69/44 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 558 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 549 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -953,13 +953,13 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "o número da casa é 200 899 ms após o job (etapas 1/2: 389/384 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 143 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 118 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "espera, o CEP está errado 795 ms após o job (etapas 1/2: 309/326 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 126 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 29 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -971,7 +971,7 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "áudio 779 ms após o job (etapas 1/2: 15/298 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 437 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 431 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -983,7 +983,7 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "espera, o CEP está errado 686 ms após o job (etapas 1/2: 335/63 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 240 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 254 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -1001,7 +1001,7 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "o número da casa é 200 531 ms após o job (etapas 1/2: 175/74 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 243 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 214 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -1013,7 +1013,7 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "não 664 ms após o job (etapas 1/2: 53/213 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 371 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 344 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -1025,7 +1025,7 @@
       "grupo": "N1 Ponto sem volta, mesmo processo",
       "nome": "o número da casa é 200 556 ms após o job (etapas 1/2: 8/134 ms)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 371 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 415 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N1 Ponto sem volta, mesmo processo",
@@ -1043,25 +1043,25 @@
       "grupo": "N2 Ponto sem volta, processos diferentes",
       "nome": "áudio 684 ms após a etapa 1 (outro processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 93 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 77 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N2 Ponto sem volta, processos diferentes",
       "nome": "o número da casa é 200 614 ms após a etapa 1 (outro processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 18 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 106 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N2 Ponto sem volta, processos diferentes",
       "nome": "espera, o CEP está errado 632 ms após a etapa 1 (outro processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 31 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 15 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N2 Ponto sem volta, processos diferentes",
       "nome": "não 592 ms após a etapa 1 (outro processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 16 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 15 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N2 Ponto sem volta, processos diferentes",
@@ -1079,7 +1079,7 @@
       "grupo": "N2 Ponto sem volta, processos diferentes",
       "nome": "espera, o CEP está errado 597 ms após a etapa 1 (outro processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 46 ms depois do ponto sem volta, com alerta "
+      "detalhe": "nada criado (operação invalidada) "
     },
     {
       "grupo": "N2 Ponto sem volta, processos diferentes",
@@ -1151,7 +1151,7 @@
       "grupo": "N2 Ponto sem volta, processos diferentes",
       "nome": "espera, o CEP está errado 637 ms após a etapa 1 (outro processo)",
       "resultado": "RESISTIU",
-      "detalhe": "correção 26 ms depois do ponto sem volta, com alerta "
+      "detalhe": "correção 35 ms depois do ponto sem volta, com alerta "
     },
     {
       "grupo": "N3 Ordem das mensagens",
@@ -1523,7 +1523,7 @@
       "grupo": "N7 Queda no despachante",
       "nome": "despachante morto 579 ms depois do 1º envio",
       "resultado": "RESISTIU",
-      "detalhe": "entregues=3 comMaisa=false "
+      "detalhe": "entregues=2 comMaisa=false "
     },
     {
       "grupo": "N7 Queda no despachante",

@@ -202,6 +202,8 @@ export const TEXTOS = {
         : `Pela simulação na Facta, dá para trazer o seu contrato do ${banco} com uma taxa menor.`,
   pedeNumeroContrato: (banco: string, parcela: string, produto?: string) =>
     `Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}.${ondeAcharContrato(produto)} Pode mandar só o número.`,
+  cpfNoLugarDoContrato: (banco: string) =>
+    `Esse número parece ser um CPF. O que eu preciso agora é o número do contrato do ${banco}, que é diferente do CPF. Pode me mandar esse número?`,
   contratoOutroBanco: (citado: string, pedido: string) =>
     `Esse parece ser o contrato do ${citado}. Para essa proposta eu preciso do número do contrato do ${pedido}. Pode me mandar esse?`,
   contratoDoAudio: (numero: string) => `Entendi o número ${numero} no seu áudio. É esse mesmo? Responda sim para eu seguir, ou me mande o número certo.`,

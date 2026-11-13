@@ -1118,6 +1118,8 @@ async function etapaNumeroContrato(estado: EstadoMaisa, texto: string, deps: Dep
   }
   const numero = extrairNumeroContrato(texto);
   if (!numero) {
+    // Mandou o CPF: explica que o pedido é o número do contrato e não avança.
+    if (trouxeCpfNoLugarDoContrato(texto)) return tentarDeNovo(estado, TEXTOS.cpfNoLugarDoContrato(banco || "do banco"), "cpf_no_lugar_do_contrato", "alternativa");
     return tentarDeNovo(estado, TEXTOS.numeroContratoInvalido, "numero_contrato_invalido", "alternativa");
   }
   if (viaAudio && confirmarAntes) {
@@ -1199,13 +1201,23 @@ function origemExtrato(dados: DadosContrato): Partial<Record<CampoContrato, "ext
   return Object.fromEntries(CAMPOS_DO_EXTRATO.filter((c) => dados[c] !== undefined && dados[c] !== null && dados[c] !== "").map((c) => [c, "extrato"]));
 }
 
-// O número do contrato: o maior trecho com pelo menos 4 dígitos ("Hoje 20250464573").
-export function extrairNumeroContrato(texto: string): string | null {
-  const trechos = (texto.match(/[0-9A-Za-z.\-/]+/g) ?? [])
+// Trechos que podem ser número de contrato: 5 a 30 caracteres com pelo menos 4 dígitos.
+const trechosDeNumero = (texto: string) =>
+  (texto.match(/[0-9A-Za-z.\-/]+/g) ?? [])
     .map((x) => x.replace(/[^0-9A-Za-z]/g, ""))
     .filter((x) => x.length >= 5 && x.length <= 30 && (x.match(/\d/g) ?? []).length >= 4);
-  return trechos.sort((a, b) => b.length - a.length)[0] ?? null;
+
+// 11 dígitos com dígitos verificadores de CPF válidos: é CPF, não número de contrato.
+const ehCpf = (x: string) => /^\d{11}$/.test(x) && cpfValido(x);
+
+// O número do contrato: o maior trecho com pelo menos 4 dígitos ("Hoje 20250464573").
+// Um CPF válido nunca vale como contrato. 11 dígitos que não fecham como CPF seguem como antes.
+export function extrairNumeroContrato(texto: string): string | null {
+  return trechosDeNumero(texto).filter((x) => !ehCpf(x)).sort((a, b) => b.length - a.length)[0] ?? null;
 }
+
+// A mensagem trouxe um CPF válido no lugar do número do contrato?
+export const trouxeCpfNoLugarDoContrato = (texto: string) => trechosDeNumero(texto).some(ehCpf);
 
 // Bancos que o cliente costuma escrever. Usado só para perceber contrato de outro banco.
 const NOMES_BANCO: [RegExp, string][] = [
