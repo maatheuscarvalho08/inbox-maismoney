@@ -1,0 +1,2166 @@
+Cenários: 748. Modelo: gpt-6.1-sol.
+  25 cenários...
+  50 cenários...
+  75 cenários...
+  100 cenários...
+  125 cenários...
+  150 cenários...
+  175 cenários...
+  200 cenários...
+  225 cenários...
+  250 cenários...
+  275 cenários...
+  300 cenários...
+  325 cenários...
+  350 cenários...
+  375 cenários...
+  400 cenários...
+  425 cenários...
+  450 cenários...
+  475 cenários...
+  500 cenários...
+  525 cenários...
+  550 cenários...
+  575 cenários...
+  600 cenários...
+  625 cenários...
+  650 cenários...
+  675 cenários...
+  700 cenários...
+  725 cenários...
+Resultado: { REPROVADO: 353, APROVADO: 355, 'ATENÇÃO': 40 }
+
+[REPROVADO] C1-001#1 "obrigado" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: obrigado
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-001#2 "obrigado" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: obrigado
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-002#1 "valeu" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: valeu
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-002#2 "valeu" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: valeu
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-006#1 "🙏" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: 🙏
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-006#2 "🙏" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: 🙏
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-007#1 "kkk" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: kkk
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-007#2 "kkk" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: kkk
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-008#1 "..." na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ...
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-008#2 "..." na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ...
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-010#2 "estava sem internet" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: estava sem internet
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-011#1 "to no trabalho, já já respondo" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: to no trabalho, já já respondo
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-011#2 "to no trabalho, já já respondo" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: to no trabalho, já já respondo
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-012#1 "ok" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ok
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-012#2 "ok" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ok
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-013#1 "beleza" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: beleza
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-013#2 "beleza" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: beleza
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-014#1 "certo" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: certo
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-014#2 "certo" na etapa nascimento (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: certo
+   maisa: Desculpa, não entendi. Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] C1-015#1 "obrigado" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: obrigado
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-015#2 "obrigado" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: obrigado
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-016#1 "valeu" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: valeu
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-016#2 "valeu" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: valeu
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-020#1 "🙏" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: 🙏
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-020#2 "🙏" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: 🙏
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-021#1 "kkk" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: kkk
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-021#2 "kkk" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: kkk
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-022#1 "..." na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ...
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-022#2 "..." na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ...
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-025#1 "to no trabalho, já já respondo" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: to no trabalho, já já respondo
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-025#2 "to no trabalho, já já respondo" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: to no trabalho, já já respondo
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-026#1 "ok" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ok
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-026#2 "ok" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ok
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-027#1 "beleza" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: beleza
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-027#2 "beleza" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: beleza
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-028#1 "certo" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: certo
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-028#2 "certo" na etapa extrato (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: certo
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C1-043#1 "obrigado" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: obrigado
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-043#2 "obrigado" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: obrigado
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-044#1 "valeu" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: valeu
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-044#2 "valeu" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: valeu
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-045#1 "bom dia" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: bom dia
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-045#2 "bom dia" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: bom dia
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-046#1 "boa tarde" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: boa tarde
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-046#2 "boa tarde" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: boa tarde
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-047#1 "oi, tudo bem?" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: oi, tudo bem?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-047#2 "oi, tudo bem?" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: oi, tudo bem?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-048#1 "🙏" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: 🙏
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-048#2 "🙏" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: 🙏
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-049#1 "kkk" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: kkk
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-049#2 "kkk" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: kkk
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-050#1 "..." na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ...
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-050#2 "..." na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ...
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-051#1 "desculpa a demora" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: desculpa a demora
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-051#2 "desculpa a demora" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: desculpa a demora
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-052#1 "estava sem internet" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: estava sem internet
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-052#2 "estava sem internet" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: estava sem internet
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-053#1 "to no trabalho, já já respondo" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: to no trabalho, já já respondo
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-053#2 "to no trabalho, já já respondo" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: to no trabalho, já já respondo
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-054#1 "ok" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ok
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-054#2 "ok" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: ok
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-055#1 "beleza" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: beleza
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-055#2 "beleza" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: beleza
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-056#1 "certo" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: certo
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-056#2 "certo" na etapa coleta (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: certo
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C1-057#1 "obrigado" na etapa oferta_port (nota 7.3)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: obrigado
+   maisa: Tudo bem! Se mudar de ideia ou quiser ver outras opções, um especialista da nossa equipe fica à disposição por aqui.
+
+[REPROVADO] C1-057#2 "obrigado" na etapa oferta_port (nota 7.3)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: obrigado
+   maisa: Tudo bem! Se mudar de ideia ou quiser ver outras opções, um especialista da nossa equipe fica à disposição por aqui.
+
+[REPROVADO] C1-058#1 "valeu" na etapa oferta_port (nota 9.3)
+   x interpretacao: etapa final em [oferta_port], foi numero_contrato
+   cliente: valeu
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C1-058#2 "valeu" na etapa oferta_port (nota 9.3)
+   x interpretacao: etapa final em [oferta_port], foi numero_contrato
+   cliente: valeu
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C1-059#1 "bom dia" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: bom dia
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-059#2 "bom dia" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: bom dia
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-060#1 "boa tarde" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: boa tarde
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-060#2 "boa tarde" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: boa tarde
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-061#1 "oi, tudo bem?" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: oi, tudo bem?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-061#2 "oi, tudo bem?" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: oi, tudo bem?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-062#1 "🙏" na etapa oferta_port (nota 9.3)
+   x interpretacao: etapa final em [oferta_port], foi numero_contrato
+   cliente: 🙏
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C1-062#2 "🙏" na etapa oferta_port (nota 9.3)
+   x interpretacao: etapa final em [oferta_port], foi numero_contrato
+   cliente: 🙏
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C1-063#1 "kkk" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: kkk
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-063#2 "kkk" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: kkk
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-065#1 "desculpa a demora" na etapa oferta_port (nota 7.3)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: desculpa a demora
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-065#2 "desculpa a demora" na etapa oferta_port (nota 7.3)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: desculpa a demora
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-066#1 "estava sem internet" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: estava sem internet
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-066#2 "estava sem internet" na etapa oferta_port (nota 6.7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: estava sem internet
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-068#1 "obrigado" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: obrigado
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-068#2 "obrigado" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: obrigado
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-069#1 "valeu" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: valeu
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-069#2 "valeu" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: valeu
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-070#1 "bom dia" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: bom dia
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-070#2 "bom dia" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: bom dia
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-071#1 "boa tarde" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: boa tarde
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-071#2 "boa tarde" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: boa tarde
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-072#1 "oi, tudo bem?" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: oi, tudo bem?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-072#2 "oi, tudo bem?" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: oi, tudo bem?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-073#1 "🙏" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: 🙏
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-073#2 "🙏" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: 🙏
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-074#1 "kkk" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: kkk
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-074#2 "kkk" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: kkk
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-075#1 "..." na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: ...
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-075#2 "..." na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: ...
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-076#1 "desculpa a demora" na etapa oferta_novo (nota 7.3)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: desculpa a demora
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-076#2 "desculpa a demora" na etapa oferta_novo (nota 7.3)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: desculpa a demora
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-077#1 "estava sem internet" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: estava sem internet
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-077#2 "estava sem internet" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: estava sem internet
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-078#1 "to no trabalho, já já respondo" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: to no trabalho, já já respondo
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C1-078#2 "to no trabalho, já já respondo" na etapa oferta_novo (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: to no trabalho, já já respondo
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-002#1 Vínculo: "perdi minha carteira, sou aposentado do inss" (nota 8)
+   x interpretacao: produto entendido inss, foi clt
+   cliente: perdi minha carteira, sou aposentado do inss
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-002#2 Vínculo: "perdi minha carteira, sou aposentado do inss" (nota 8)
+   x interpretacao: produto entendido inss, foi clt
+   cliente: perdi minha carteira, sou aposentado do inss
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-003#1 Vínculo: "sou consultora de vendas, carteira assinada" (nota 6)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: produto entendido clt, foi nenhum
+   cliente: sou consultora de vendas, carteira assinada
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-003#2 Vínculo: "sou consultora de vendas, carteira assinada" (nota 6)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: produto entendido clt, foi nenhum
+   cliente: sou consultora de vendas, carteira assinada
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-004#1 Vínculo: "sou atendente de loja, trabalho registrada" (nota 6)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: produto entendido clt, foi nenhum
+   cliente: sou atendente de loja, trabalho registrada
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-004#2 Vínculo: "sou atendente de loja, trabalho registrada" (nota 6)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: produto entendido clt, foi nenhum
+   cliente: sou atendente de loja, trabalho registrada
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-005#1 Vínculo: "minha filha que é atendente me indicou, sou aposentada" (nota 6)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: produto entendido inss, foi nenhum
+   cliente: minha filha que é atendente me indicou, sou aposentada
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-005#2 Vínculo: "minha filha que é atendente me indicou, sou aposentada" (nota 6)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: produto entendido inss, foi nenhum
+   cliente: minha filha que é atendente me indicou, sou aposentada
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-008#1 Vínculo: "já fiz empréstimo em outro banco e quero mais" (nota 6)
+   x interpretacao: etapa final em [convenio], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: já fiz empréstimo em outro banco e quero mais
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-008#2 Vínculo: "já fiz empréstimo em outro banco e quero mais" (nota 6)
+   x interpretacao: etapa final em [convenio], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: já fiz empréstimo em outro banco e quero mais
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-010#1 Vínculo: "pensionista do exército" (nota 8)
+   x instrucoes: desfecho em [transferiu], foi continua
+   cliente: pensionista do exército
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-010#2 Vínculo: "pensionista do exército" (nota 8)
+   x instrucoes: desfecho em [transferiu], foi continua
+   cliente: pensionista do exército
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-011#1 Vínculo: "sou aposentado da prefeitura" (nota 8)
+   x instrucoes: desfecho em [transferiu], foi continua
+   cliente: sou aposentado da prefeitura
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-011#2 Vínculo: "sou aposentado da prefeitura" (nota 8)
+   x instrucoes: desfecho em [transferiu], foi continua
+   cliente: sou aposentado da prefeitura
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-012#1 Vínculo: "servidor estadual aposentado" (nota 8)
+   x instrucoes: desfecho em [transferiu], foi continua
+   cliente: servidor estadual aposentado
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-012#2 Vínculo: "servidor estadual aposentado" (nota 8)
+   x instrucoes: desfecho em [transferiu], foi continua
+   cliente: servidor estadual aposentado
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-013#1 Vínculo: "recebo benefício do bolsa família" (nota 8)
+   x interpretacao: resposta NÃO contém /preciso do seu CPF/
+   cliente: recebo benefício do bolsa família
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-013#2 Vínculo: "recebo benefício do bolsa família" (nota 8)
+   x interpretacao: resposta NÃO contém /preciso do seu CPF/
+   cliente: recebo benefício do bolsa família
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C2-014#1 Vínculo: "quero falar com alguém da minha família antes, mas sou siape" (nota 6)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: produto entendido siape, foi nenhum
+   cliente: quero falar com alguém da minha família antes, mas sou siape
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-014#2 Vínculo: "quero falar com alguém da minha família antes, mas sou siape" (nota 6)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: produto entendido siape, foi nenhum
+   cliente: quero falar com alguém da minha família antes, mas sou siape
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-016#1 Extrato: "é verdade que vocês fazem portabilidade?" (nota 7)
+   x precisao: resposta contém /portabilidade/i
+   x interpretacao: resposta NÃO contém /CNPJ/
+   cliente: é verdade que vocês fazem portabilidade?
+   maisa: A Mais Money é uma promotora de crédito, correspondente bancário, com CNPJ 45.027.472/0001-76, no Rio de Janeiro. Você pode conferir a gente no Instagram @maismoneyrj. | Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C2-016#2 Extrato: "é verdade que vocês fazem portabilidade?" (nota 7)
+   x precisao: resposta contém /portabilidade/i
+   x interpretacao: resposta NÃO contém /CNPJ/
+   cliente: é verdade que vocês fazem portabilidade?
+   maisa: A Mais Money é uma promotora de crédito, correspondente bancário, com CNPJ 45.027.472/0001-76, no Rio de Janeiro. Você pode conferir a gente no Instagram @maismoneyrj. | Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C2-017#1 Extrato: "na verdade meu extrato tá no email, posso encaminhar?" (nota 9)
+   x interpretacao: resposta NÃO contém /CNPJ/
+   cliente: na verdade meu extrato tá no email, posso encaminhar?
+   maisa: A Mais Money é uma promotora de crédito, correspondente bancário, com CNPJ 45.027.472/0001-76, no Rio de Janeiro. Você pode conferir a gente no Instagram @maismoneyrj. | Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C2-017#2 Extrato: "na verdade meu extrato tá no email, posso encaminhar?" (nota 9)
+   x interpretacao: resposta NÃO contém /CNPJ/
+   cliente: na verdade meu extrato tá no email, posso encaminhar?
+   maisa: A Mais Money é uma promotora de crédito, correspondente bancário, com CNPJ 45.027.472/0001-76, no Rio de Janeiro. Você pode conferir a gente no Instagram @maismoneyrj. | Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C2-018#1 Extrato: "o seguro desemprego conta como renda?" (nota 9)
+   x interpretacao: resposta NÃO contém /CNPJ/
+   cliente: o seguro desemprego conta como renda?
+   maisa: A Mais Money é uma promotora de crédito, correspondente bancário, com CNPJ 45.027.472/0001-76, no Rio de Janeiro. Você pode conferir a gente no Instagram @maismoneyrj. | Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C2-018#2 Extrato: "o seguro desemprego conta como renda?" (nota 9)
+   x interpretacao: resposta NÃO contém /CNPJ/
+   cliente: o seguro desemprego conta como renda?
+   maisa: A Mais Money é uma promotora de crédito, correspondente bancário, com CNPJ 45.027.472/0001-76, no Rio de Janeiro. Você pode conferir a gente no Instagram @maismoneyrj. | Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] C2-019#1 Extrato: "o atendente do banco falou que não tenho margem" (nota 6)
+   x interpretacao: etapa final em [extrato], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: o atendente do banco falou que não tenho margem
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-019#2 Extrato: "o atendente do banco falou que não tenho margem" (nota 6)
+   x interpretacao: etapa final em [extrato], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: o atendente do banco falou que não tenho margem
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-020#1 Extrato: "meu consultor do banco disse que dá pra fazer port" (nota 6)
+   x interpretacao: etapa final em [extrato], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: meu consultor do banco disse que dá pra fazer port
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-020#2 Extrato: "meu consultor do banco disse que dá pra fazer port" (nota 6)
+   x interpretacao: etapa final em [extrato], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: meu consultor do banco disse que dá pra fazer port
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-022#1 Extrato: "a pessoa de verdade que me atendeu ontem pediu o extrato" (nota 6)
+   x interpretacao: etapa final em [extrato], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: a pessoa de verdade que me atendeu ontem pediu o extrato
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-022#2 Extrato: "a pessoa de verdade que me atendeu ontem pediu o extrato" (nota 6)
+   x interpretacao: etapa final em [extrato], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: a pessoa de verdade que me atendeu ontem pediu o extrato
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-023#1 Oferta: "demora quanto pra cair?" (nota 6)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /preocupação/
+   cliente: demora quanto pra cair?
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-023#2 Oferta: "demora quanto pra cair?" (nota 6)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /preocupação/
+   cliente: demora quanto pra cair?
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-024#1 Oferta: "tem seguro?" (nota 6)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /preocupação|segurança/
+   cliente: tem seguro?
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-024#2 Oferta: "tem seguro?" (nota 6)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /preocupação|segurança/
+   cliente: tem seguro?
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-025#1 Oferta: "tem seguro embutido?" (nota 6)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /preocupação|segurança/
+   cliente: tem seguro embutido?
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-025#2 Oferta: "tem seguro embutido?" (nota 6)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /preocupação|segurança/
+   cliente: tem seguro embutido?
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-032#1 Oferta: "quanto fica a parcela?" (nota 8)
+   x precisao: resposta contém /300,00/
+   cliente: quanto fica a parcela?
+   maisa: Pela simulação, você recebe até R$ 12.500,00 na sua conta. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-032#2 Oferta: "quanto fica a parcela?" (nota 8)
+   x precisao: resposta contém /300,00/
+   cliente: quanto fica a parcela?
+   maisa: Pela simulação, você recebe até R$ 12.500,00 na sua conta. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-033#1 Oferta: "quanto fica no total que vou pagar?" (nota 9)
+   x interpretacao: resposta NÃO contém /não tem troco/
+   cliente: quanto fica no total que vou pagar?
+   maisa: Nessa opção não sai dinheiro na mão, não tem troco. O ganho é pagar menos todo mês: somando os 2 contratos, você paga R$ 4,25 a menos por mês, ou R$ 305,64 até o fim dos contratos. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-033#2 Oferta: "quanto fica no total que vou pagar?" (nota 9)
+   x interpretacao: resposta NÃO contém /não tem troco/
+   cliente: quanto fica no total que vou pagar?
+   maisa: Nessa opção não sai dinheiro na mão, não tem troco. O ganho é pagar menos todo mês: somando os 2 contratos, você paga R$ 4,25 a menos por mês, ou R$ 305,64 até o fim dos contratos. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-034#1 Oferta: "o dinheiro sai do meu salário?" (nota 9)
+   x interpretacao: resposta NÃO contém /não tem troco/
+   cliente: o dinheiro sai do meu salário?
+   maisa: Nessa opção não sai dinheiro na mão, não tem troco. O ganho é pagar menos todo mês: somando os 2 contratos, você paga R$ 4,25 a menos por mês, ou R$ 305,64 até o fim dos contratos. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-034#2 Oferta: "o dinheiro sai do meu salário?" (nota 9)
+   x interpretacao: resposta NÃO contém /não tem troco/
+   cliente: o dinheiro sai do meu salário?
+   maisa: Nessa opção não sai dinheiro na mão, não tem troco. O ganho é pagar menos todo mês: somando os 2 contratos, você paga R$ 4,25 a menos por mês, ou R$ 305,64 até o fim dos contratos. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-035#1 Oferta: "qual cpf você usou?" (nota 8)
+   x interpretacao: resposta NÃO contém /É o seu contrato/
+   cliente: qual cpf você usou?
+   maisa: É o seu contrato do 104 - CEF, o de parcela de R$ 390,47, que ainda tem 68 parcelas. Na Facta, a parcela dele cai para R$ 387,50. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-035#2 Oferta: "qual cpf você usou?" (nota 8)
+   x interpretacao: resposta NÃO contém /É o seu contrato/
+   cliente: qual cpf você usou?
+   maisa: É o seu contrato do 104 - CEF, o de parcela de R$ 390,47, que ainda tem 68 parcelas. Na Facta, a parcela dele cai para R$ 387,50. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-036#1 Oferta: "qual o próximo passo?" (nota 8)
+   x interpretacao: resposta NÃO contém /É o seu contrato/
+   cliente: qual o próximo passo?
+   maisa: É o seu contrato do 104 - CEF, o de parcela de R$ 390,47, que ainda tem 68 parcelas. Na Facta, a parcela dele cai para R$ 387,50. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-036#2 Oferta: "qual o próximo passo?" (nota 8)
+   x interpretacao: resposta NÃO contém /É o seu contrato/
+   cliente: qual o próximo passo?
+   maisa: É o seu contrato do 104 - CEF, o de parcela de R$ 390,47, que ainda tem 68 parcelas. Na Facta, a parcela dele cai para R$ 387,50. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-037#1 Oferta: "qual seu nome?" (nota 8)
+   x interpretacao: resposta NÃO contém /É o seu contrato/
+   cliente: qual seu nome?
+   maisa: É o seu contrato do 104 - CEF, o de parcela de R$ 390,47, que ainda tem 68 parcelas. Na Facta, a parcela dele cai para R$ 387,50. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-037#2 Oferta: "qual seu nome?" (nota 8)
+   x interpretacao: resposta NÃO contém /É o seu contrato/
+   cliente: qual seu nome?
+   maisa: É o seu contrato do 104 - CEF, o de parcela de R$ 390,47, que ainda tem 68 parcelas. Na Facta, a parcela dele cai para R$ 387,50. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-041#1 Oferta: "n entendi" (nota 6)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x precisao: resposta contém /explico/
+   cliente: n entendi
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-041#2 Oferta: "n entendi" (nota 6)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x precisao: resposta contém /explico/
+   cliente: n entendi
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-043#1 Oferta: "não vejo problema, pode seguir" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: não vejo problema, pode seguir
+   maisa: Tudo bem! Se mudar de ideia, é só me chamar aqui.
+
+[REPROVADO] C2-043#2 Oferta: "não vejo problema, pode seguir" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: não vejo problema, pode seguir
+   maisa: Tudo bem! Se mudar de ideia, é só me chamar aqui.
+
+[REPROVADO] C2-046#1 Oferta: "sem pressa, mas quero sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sem pressa, mas quero sim
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-046#2 Oferta: "sem pressa, mas quero sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sem pressa, mas quero sim
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C2-049#1 Oferta: "meu filho é consultor e mandou eu fazer, quero sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: meu filho é consultor e mandou eu fazer, quero sim
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-049#2 Oferta: "meu filho é consultor e mandou eu fazer, quero sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: meu filho é consultor e mandou eu fazer, quero sim
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-050#1 Oferta: "o atendente do INSS disse que posso, então sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: o atendente do INSS disse que posso, então sim
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-050#2 Oferta: "o atendente do INSS disse que posso, então sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: o atendente do INSS disse que posso, então sim
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-051#1 Oferta: "quero falar com alguém? não, pode fazer você mesma" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: quero falar com alguém? não, pode fazer você mesma
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-051#2 Oferta: "quero falar com alguém? não, pode fazer você mesma" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: quero falar com alguém? não, pode fazer você mesma
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-052#1 Oferta: "qual a parcela do Digio?" (nota 8)
+   x precisao: resposta contém /DIGIO|118,22/
+   cliente: qual a parcela do Digio?
+   maisa: A parcela cai de R$ 390,47 para R$ 387,50, com taxa de 1,5% ao mês, e você continua com as mesmas parcelas que faltavam. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C2-052#2 Oferta: "qual a parcela do Digio?" (nota 8)
+   x precisao: resposta contém /DIGIO|118,22/
+   cliente: qual a parcela do Digio?
+   maisa: A parcela cai de R$ 390,47 para R$ 387,50, com taxa de 1,5% ao mês, e você continua com as mesmas parcelas que faltavam. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C3-001#1 Oferta de novo: "fechou" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: fechou
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-001#2 Oferta de novo: "fechou" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: fechou
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-002#1 Oferta de novo: "manda bala" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: manda bala
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-002#2 Oferta de novo: "manda bala" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: manda bala
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-003#1 Oferta de novo: "simmm" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: simmm
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-003#2 Oferta de novo: "simmm" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: simmm
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-004#1 Oferta de novo: "👍" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: 👍
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-004#2 Oferta de novo: "👍" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: 👍
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-005#1 Oferta de novo: "tá, sim" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: tá, sim
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-005#2 Oferta de novo: "tá, sim" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: tá, sim
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-008#1 Oferta de novo: "topo" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: topo
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-008#2 Oferta de novo: "topo" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: topo
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-009#1 Oferta de novo: "demorou" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: demorou
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-009#2 Oferta de novo: "demorou" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: demorou
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-014#1 Oferta de novo: "tem seguro?" (nota 7.3)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: tem seguro?
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-014#2 Oferta de novo: "tem seguro?" (nota 7.3)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: tem seguro?
+   maisa: Entendo a sua preocupação, é importante ter segurança. Vou te passar para um especialista da nossa equipe, que tira as suas dúvidas e mostra como tudo funciona antes de qualquer coisa. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-017#1 Oferta de novo: "dá pra fazer em 48x?" (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: dá pra fazer em 48x?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-017#2 Oferta de novo: "dá pra fazer em 48x?" (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: dá pra fazer em 48x?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-018#1 Oferta de novo: "quando cai?" (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: quando cai?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-018#2 Oferta de novo: "quando cai?" (nota 6.7)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: quando cai?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-020#1 Oferta de novo: "não entendi" (nota 7.3)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: não entendi
+   maisa: Tudo bem! Se mudar de ideia, é só me chamar aqui.
+
+[REPROVADO] C3-020#2 Oferta de novo: "não entendi" (nota 7.3)
+   x interpretacao: etapa final em [oferta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: não entendi
+   maisa: Tudo bem! Se mudar de ideia, é só me chamar aqui.
+
+[REPROVADO] C3-021#1 Oferta de novo: "tá caro" (nota 8)
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: tá caro
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-021#2 Oferta de novo: "tá caro" (nota 8)
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: tá caro
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-023#1 Oferta de novo: "achei pouco" (nota 8)
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: achei pouco
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-023#2 Oferta de novo: "achei pouco" (nota 8)
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: achei pouco
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-026#1 Oferta de novo: "outro banco me ofereceu mais" (nota 8)
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: outro banco me ofereceu mais
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-026#2 Oferta de novo: "outro banco me ofereceu mais" (nota 8)
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: outro banco me ofereceu mais
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C3-027#1 Cadastro: "pra que precisa do nome da minha mãe?" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: pra que precisa do nome da minha mãe?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-027#2 Cadastro: "pra que precisa do nome da minha mãe?" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: pra que precisa do nome da minha mãe?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-029#1 Cadastro: "meu pai é falecido" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: meu pai é falecido
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-029#2 Cadastro: "meu pai é falecido" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: meu pai é falecido
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-030#1 Cadastro: "não tenho RG, só CNH" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: não tenho RG, só CNH
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-030#2 Cadastro: "não tenho RG, só CNH" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: não tenho RG, só CNH
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-031#1 Cadastro: "posso mandar a CNH?" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: posso mandar a CNH?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-031#2 Cadastro: "posso mandar a CNH?" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: posso mandar a CNH?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-032#1 Cadastro: "não sei o CEP" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: não sei o CEP
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-032#2 Cadastro: "não sei o CEP" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: não sei o CEP
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-033#1 Cadastro: "moro de aluguel, serve?" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: moro de aluguel, serve?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-033#2 Cadastro: "moro de aluguel, serve?" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: moro de aluguel, serve?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-034#1 Cadastro: "o email é do meu filho, pode?" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: o email é do meu filho, pode?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-034#2 Cadastro: "o email é do meu filho, pode?" (nota 9.3)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: o email é do meu filho, pode?
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C3-037#1 Confirmação: "correto" (nota 6)
+   x instrucoes: desfecho em [transferiu], foi continua
+   x precisao: resposta contém /contrato foi feito/
+   cliente: correto
+   maisa: Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.
+
+[REPROVADO] C3-037#2 Confirmação: "correto" (nota 6)
+   x instrucoes: desfecho em [transferiu], foi continua
+   x precisao: resposta contém /contrato foi feito/
+   cliente: correto
+   maisa: Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.
+
+[REPROVADO] C3-038#1 Confirmação: "confere" (nota 6)
+   x instrucoes: desfecho em [transferiu], foi continua
+   x precisao: resposta contém /contrato foi feito/
+   cliente: confere
+   maisa: Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.
+
+[REPROVADO] C3-038#2 Confirmação: "confere" (nota 6)
+   x instrucoes: desfecho em [transferiu], foi continua
+   x precisao: resposta contém /contrato foi feito/
+   cliente: confere
+   maisa: Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.
+
+[REPROVADO] C3-039#1 Confirmação: "tá certo sim" (nota 6)
+   x instrucoes: desfecho em [transferiu], foi continua
+   x precisao: resposta contém /contrato foi feito/
+   cliente: tá certo sim
+   maisa: Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.
+
+[REPROVADO] C3-039#2 Confirmação: "tá certo sim" (nota 6)
+   x instrucoes: desfecho em [transferiu], foi continua
+   x precisao: resposta contém /contrato foi feito/
+   cliente: tá certo sim
+   maisa: Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.
+
+[REPROVADO] C3-040#1 Confirmação: "certinho" (nota 6)
+   x instrucoes: desfecho em [transferiu], foi continua
+   x precisao: resposta contém /contrato foi feito/
+   cliente: certinho
+   maisa: Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.
+
+[REPROVADO] C3-040#2 Confirmação: "certinho" (nota 6)
+   x instrucoes: desfecho em [transferiu], foi continua
+   x precisao: resposta contém /contrato foi feito/
+   cliente: certinho
+   maisa: Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.
+
+[REPROVADO] C3-043#1 CLT consentimento: "tá bom, pode" (nota 8)
+   x interpretacao: etapa final em [aguardando], foi consentimento
+   cliente: tá bom, pode
+   maisa: Desculpa, não entendi. Posso consultar o seu crédito no banco Facta? Responda SIM ou NÃO.
+
+[REPROVADO] C3-043#2 CLT consentimento: "tá bom, pode" (nota 8)
+   x interpretacao: etapa final em [aguardando], foi consentimento
+   cliente: tá bom, pode
+   maisa: Desculpa, não entendi. Posso consultar o seu crédito no banco Facta? Responda SIM ou NÃO.
+
+[REPROVADO] C3-044#1 CLT consentimento: "manda o link" (nota 8)
+   x interpretacao: etapa final em [aguardando], foi consentimento
+   cliente: manda o link
+   maisa: O link da Facta é para você assinar o contrato, somente se concordar. Neste momento, preciso apenas da sua autorização para consultar seu crédito no banco. | Posso consultar? É só me responder SIM.
+
+[REPROVADO] C3-044#2 CLT consentimento: "manda o link" (nota 8)
+   x interpretacao: etapa final em [aguardando], foi consentimento
+   cliente: manda o link
+   maisa: Desculpa, não entendi. Posso consultar o seu crédito no banco Facta? Responda SIM ou NÃO.
+
+[REPROVADO] C3-050#1 Vínculo: "trabalho no IBGE" (nota 8)
+   x interpretacao: etapa final em [cpf], foi convenio
+   x interpretacao: produto entendido siape, foi nenhum
+   cliente: trabalho no IBGE
+   maisa: Desculpa, não entendi. Com qual destes produtos posso te ajudar? Responda com o número. 1. INSS, aposentado ou pensionista 2. CLT, de carteira assinada 3. SIAPE, servidor federal 4. Servidor de prefeitura 5. Marinha 6. Militar 7. Crédito na conta de luz 8. LOAS ou BPC 9. Crédito pessoal 10. Antecipa
+
+[REPROVADO] C3-050#2 Vínculo: "trabalho no IBGE" (nota 8)
+   x interpretacao: etapa final em [cpf], foi convenio
+   x interpretacao: produto entendido siape, foi nenhum
+   cliente: trabalho no IBGE
+   maisa: Desculpa, não entendi. Com qual destes produtos posso te ajudar? Responda com o número. 1. INSS, aposentado ou pensionista 2. CLT, de carteira assinada 3. SIAPE, servidor federal 4. Servidor de prefeitura 5. Marinha 6. Militar 7. Crédito na conta de luz 8. LOAS ou BPC 9. Crédito pessoal 10. Antecipa
+
+[REPROVADO] C3-052#1 Vínculo: "sou do ministério da saúde" (nota 8)
+   x interpretacao: etapa final em [cpf], foi convenio
+   x interpretacao: produto entendido siape, foi nenhum
+   cliente: sou do ministério da saúde
+   maisa: Desculpa, não entendi. Com qual destes produtos posso te ajudar? Responda com o número. 1. INSS, aposentado ou pensionista 2. CLT, de carteira assinada 3. SIAPE, servidor federal 4. Servidor de prefeitura 5. Marinha 6. Militar 7. Crédito na conta de luz 8. LOAS ou BPC 9. Crédito pessoal 10. Antecipa
+
+[REPROVADO] C3-052#2 Vínculo: "sou do ministério da saúde" (nota 8)
+   x interpretacao: etapa final em [cpf], foi convenio
+   x interpretacao: produto entendido siape, foi nenhum
+   cliente: sou do ministério da saúde
+   maisa: Entendi, você é do Ministério da Saúde. | Me conta: qual é o seu vínculo? Por exemplo CLT, INSS, SIAPE ou outro.
+
+[REPROVADO] C4-001#1 Oferta de port: "15/03/1958" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: 15/03/1958
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-001#2 Oferta de port: "15/03/1958" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: 15/03/1958
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-004#1 Oferta de port: "ok" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: ok
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-004#2 Oferta de port: "ok" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: ok
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-005#1 Oferta de port: "entendi" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: entendi
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-005#2 Oferta de port: "entendi" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: entendi
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-006#1 Oferta de port: "certo" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: certo
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-006#2 Oferta de port: "certo" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: certo
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-010#1 Oferta de port: "pode ser que sim" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: pode ser que sim
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-010#2 Oferta de port: "pode ser que sim" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: pode ser que sim
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-015#1 Oferta de port: "quero começar de novo" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: quero começar de novo
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-015#2 Oferta de port: "quero começar de novo" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: quero começar de novo
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-020#1 Oferta de port: "sim?" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: sim?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-020#2 Oferta de port: "sim?" (nota 8)
+   x interpretacao: etapa final em [oferta_port, finalizada], foi numero_contrato
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: sim?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-024#1 Oferta de novo: "ok" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: ok
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-024#2 Oferta de novo: "ok" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: ok
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-029#1 Oferta de novo: "beleza, depois eu falo" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: beleza, depois eu falo
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-029#2 Oferta de novo: "beleza, depois eu falo" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: beleza, depois eu falo
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-030#1 Oferta de novo: "pode ser que sim" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: pode ser que sim
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-030#2 Oferta de novo: "pode ser que sim" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: pode ser que sim
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-033#1 Oferta de novo: "quero saber mais" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: quero saber mais
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-033#2 Oferta de novo: "quero saber mais" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: quero saber mais
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-034#1 Oferta de novo: "quero entender melhor" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: quero entender melhor
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-034#2 Oferta de novo: "quero entender melhor" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: quero entender melhor
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-035#1 Oferta de novo: "quero começar de novo" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: quero começar de novo
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-035#2 Oferta de novo: "quero começar de novo" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: quero começar de novo
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-040#1 Oferta de novo: "sim?" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: sim?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-040#2 Oferta de novo: "sim?" (nota 8)
+   x interpretacao: etapa final em [oferta, finalizada], foi coleta
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: sim?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-041#1 Aceite condicional: "sim, mas só 3 mil" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas só 3 mil
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-041#2 Aceite condicional: "sim, mas só 3 mil" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas só 3 mil
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-042#1 Aceite condicional: "sim, mas em 48x" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas em 48x
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-042#2 Aceite condicional: "sim, mas em 48x" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas em 48x
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-043#1 Aceite condicional: "sim se for sem seguro" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim se for sem seguro
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-043#2 Aceite condicional: "sim se for sem seguro" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim se for sem seguro
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-044#1 Aceite condicional: "quero metade do valor" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: quero metade do valor
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-044#2 Aceite condicional: "quero metade do valor" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: quero metade do valor
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-045#1 Aceite condicional: "sim, mas quero 20 mil" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas quero 20 mil
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-045#2 Aceite condicional: "sim, mas quero 20 mil" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas quero 20 mil
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C4-046#1 Aceite condicional: "sim, mas só o CEF" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas só o CEF
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-046#2 Aceite condicional: "sim, mas só o CEF" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas só o CEF
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-052#1 Aceite condicional: "sim, mas quero receber em outra conta" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas quero receber em outra conta
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 443,14. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C4-052#2 Aceite condicional: "sim, mas quero receber em outra conta" (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato agora\. (Preciso|Primeiro)/
+   cliente: sim, mas quero receber em outra conta
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 443,14. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[ATENÇÃO] C5-031#1 Oferta de port: "posso quitar antes?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: posso quitar antes?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-031#2 Oferta de port: "posso quitar antes?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: posso quitar antes?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-034#1 Oferta de port: "tem IOF?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: tem IOF?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-034#2 Oferta de port: "tem IOF?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: tem IOF?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-035#1 Oferta de port: "quanto tempo leva a portabilidade?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: quanto tempo leva a portabilidade?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-035#2 Oferta de port: "quanto tempo leva a portabilidade?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: quanto tempo leva a portabilidade?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-036#1 Oferta de port: "o banco antigo pode recusar?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: o banco antigo pode recusar?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-036#2 Oferta de port: "o banco antigo pode recusar?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: o banco antigo pode recusar?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-038#1 Oferta de port: "meus outros empréstimos mudam?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: meus outros empréstimos mudam?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-038#2 Oferta de port: "meus outros empréstimos mudam?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: meus outros empréstimos mudam?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-039#1 Oferta de port: "o contrato volta pro zero?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: o contrato volta pro zero?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-039#2 Oferta de port: "o contrato volta pro zero?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: o contrato volta pro zero?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-041#1 Oferta de port: "e se eu me arrepender?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: e se eu me arrepender?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-041#2 Oferta de port: "e se eu me arrepender?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: e se eu me arrepender?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-042#1 Oferta de port: "tem multa?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: tem multa?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-042#2 Oferta de port: "tem multa?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: tem multa?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-043#1 Oferta de port: "preciso ir em agência?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: preciso ir em agência?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-043#2 Oferta de port: "preciso ir em agência?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: preciso ir em agência?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-045#1 Oferta de port: "como eu assino?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: como eu assino?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-045#2 Oferta de port: "como eu assino?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: como eu assino?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-046#1 Oferta de port: "quem vai me ligar?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: quem vai me ligar?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-046#2 Oferta de port: "quem vai me ligar?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: quem vai me ligar?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-047#1 Oferta de port: "o saldo devedor é quanto?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: o saldo devedor é quanto?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-047#2 Oferta de port: "o saldo devedor é quanto?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: o saldo devedor é quanto?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-048#1 Oferta de port: "por que só 4 reais de diferença?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: por que só 4 reais de diferença?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-048#2 Oferta de port: "por que só 4 reais de diferença?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: por que só 4 reais de diferença?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-049#1 Oferta de port: "vale a pena mesmo?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: vale a pena mesmo?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-049#2 Oferta de port: "vale a pena mesmo?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: vale a pena mesmo?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-050#1 Oferta de port: "e se eu morrer, a dívida passa pros filhos?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: e se eu morrer, a dívida passa pros filhos?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-050#2 Oferta de port: "e se eu morrer, a dívida passa pros filhos?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: e se eu morrer, a dívida passa pros filhos?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-051#1 Oferta de port: "dá pra fazer com o Digio também?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: dá pra fazer com o Digio também?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-051#2 Oferta de port: "dá pra fazer com o Digio também?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: dá pra fazer com o Digio também?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-052#1 Oferta de port: "posso escolher só um contrato?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: posso escolher só um contrato?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-052#2 Oferta de port: "posso escolher só um contrato?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: posso escolher só um contrato?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-053#1 Oferta de port: "a facta é banco mesmo?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: a facta é banco mesmo?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-053#2 Oferta de port: "a facta é banco mesmo?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: a facta é banco mesmo?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-054#1 Oferta de port: "quanto vocês ganham com isso?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: quanto vocês ganham com isso?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[ATENÇÃO] C5-054#2 Oferta de port: "quanto vocês ganham com isso?" (nota 9.8)
+   x tom: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: quanto vocês ganham com isso?
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C6-001#1 "sou siape, meu cpf é CPF" (nota 8)
+   x interpretacao: etapa final em [nascimento], foi cpf
+   cliente: sou siape, meu cpf é 20000001503
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C6-001#2 "sou siape, meu cpf é CPF" (nota 8)
+   x interpretacao: etapa final em [nascimento], foi cpf
+   cliente: sou siape, meu cpf é 20000001503
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C6-002#1 "inss, cpf CPF" (nota 8)
+   x interpretacao: etapa final em [nascimento], foi cpf
+   cliente: inss, cpf 200.000.015-03
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C6-002#2 "inss, cpf CPF" (nota 8)
+   x interpretacao: etapa final em [nascimento], foi cpf
+   cliente: inss, cpf 200.000.015-03
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C6-003#1 "servidor federal, cpf CPF, nasci em 15/03/1958" (nota 8)
+   x interpretacao: etapa final em [extrato], foi cpf
+   cliente: servidor federal, cpf 20000001503, nasci em 15/03/1958
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C6-003#2 "servidor federal, cpf CPF, nasci em 15/03/1958" (nota 8)
+   x interpretacao: etapa final em [extrato], foi cpf
+   cliente: servidor federal, cpf 20000001503, nasci em 15/03/1958
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C6-005#1 "aposentada do inss, é seguro?" (nota 8)
+   x precisao: resposta contém /CNPJ|45\.027/
+   cliente: aposentada do inss, é seguro?
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C6-005#2 "aposentada do inss, é seguro?" (nota 8)
+   x precisao: resposta contém /CNPJ|45\.027/
+   cliente: aposentada do inss, é seguro?
+   maisa: Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[REPROVADO] C6-006#1 "CPF 15/03/1958" (nota 8)
+   x interpretacao: etapa final em [extrato], foi nascimento
+   cliente: 20000001503 15/03/1958
+   maisa: Obrigada! Agora me manda a sua data de nascimento. Por exemplo: 15/03/1958.
+
+[REPROVADO] C6-006#2 "CPF 15/03/1958" (nota 8)
+   x interpretacao: etapa final em [extrato], foi nascimento
+   cliente: 20000001503 15/03/1958
+   maisa: Obrigada! Agora me manda a sua data de nascimento. Por exemplo: 15/03/1958.
+
+[REPROVADO] C6-008#1 "CPF, mas na verdade sou do inss" (nota 8)
+   x interpretacao: produto entendido inss, foi siape
+   cliente: 20000001503, mas na verdade sou do inss
+   maisa: Obrigada! Agora me manda a sua data de nascimento. Por exemplo: 15/03/1958.
+
+[REPROVADO] C6-008#2 "CPF, mas na verdade sou do inss" (nota 8)
+   x interpretacao: produto entendido inss, foi siape
+   cliente: 20000001503, mas na verdade sou do inss
+   maisa: Obrigada! Agora me manda a sua data de nascimento. Por exemplo: 15/03/1958.
+
+[REPROVADO] C6-013#1 "sim, mas tem seguro?" (nota 8)
+   x precisao: resposta contém /seguro/i
+   cliente: sim, mas tem seguro?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C6-013#2 "sim, mas tem seguro?" (nota 8)
+   x precisao: resposta contém /seguro/i
+   cliente: sim, mas tem seguro?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C6-014#1 "sim, quando cai?" (nota 8)
+   x precisao: resposta contém /aprova|cai/i
+   cliente: sim, quando cai?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C6-014#2 "sim, quando cai?" (nota 8)
+   x precisao: resposta contém /aprova|cai/i
+   cliente: sim, quando cai?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta. | Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C6-015#1 "sim, quando cai?" (nota 8)
+   x precisao: resposta contém /aprova|cai/i
+   cliente: sim, quando cai?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C6-015#2 "sim, quando cai?" (nota 8)
+   x precisao: resposta contém /aprova|cai/i
+   cliente: sim, quando cai?
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C6-016#1 "sim e meu contrato é 1234567890" (nota 8)
+   x interpretacao: etapa final em [coleta], foi numero_contrato
+   cliente: sim e meu contrato é 1234567890
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 443,14. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C6-016#2 "sim e meu contrato é 1234567890" (nota 8)
+   x interpretacao: etapa final em [coleta], foi numero_contrato
+   cliente: sim e meu contrato é 1234567890
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 443,14. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C6-017#1 "quero, e me manda o contato da facta também" (nota 8)
+   x precisao: resposta contém /0800 942 0462/
+   cliente: quero, e me manda o contato da facta também
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C6-017#2 "quero, e me manda o contato da facta também" (nota 8)
+   x precisao: resposta contém /0800 942 0462/
+   cliente: quero, e me manda o contato da facta também
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] C6-020#1 "qual contrato e qual a taxa?" (nota 9)
+   x precisao: resposta contém /CEF/
+   cliente: qual contrato e qual a taxa?
+   maisa: A parcela cai de R$ 390,47 para R$ 387,50, com taxa de 1,5% ao mês, e você continua com as mesmas parcelas que faltavam. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C6-020#2 "qual contrato e qual a taxa?" (nota 9)
+   x precisao: resposta contém /CEF/
+   cliente: qual contrato e qual a taxa?
+   maisa: A parcela cai de R$ 390,47 para R$ 387,50, com taxa de 1,5% ao mês, e você continua com as mesmas parcelas que faltavam. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C6-021#1 "tem troco? e a parcela fica quanto?" (nota 9)
+   x precisao: resposta contém /443,14/
+   cliente: tem troco? e a parcela fica quanto?
+   maisa: Sim! Pela simulação na Facta, você recebe até R$ 2.320,42 de dinheiro extra na sua conta. É uma estimativa: o valor final depende do saldo que o seu banco informar. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C6-021#2 "tem troco? e a parcela fica quanto?" (nota 9)
+   x precisao: resposta contém /443,14/
+   cliente: tem troco? e a parcela fica quanto?
+   maisa: Sim! Pela simulação na Facta, você recebe até R$ 2.320,42 de dinheiro extra na sua conta. É uma estimativa: o valor final depende do saldo que o seu banco informar. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C6-022#1 "quanto cai na conta e em quantas vezes?" (nota 9)
+   x precisao: resposta contém /84/
+   cliente: quanto cai na conta e em quantas vezes?
+   maisa: Pela simulação, você recebe até R$ 12.500,00 na sua conta. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C6-022#2 "quanto cai na conta e em quantas vezes?" (nota 9)
+   x precisao: resposta contém /84/
+   cliente: quanto cai na conta e em quantas vezes?
+   maisa: Pela simulação, você recebe até R$ 12.500,00 na sua conta. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] C6-028#1 "nasci em Niterói, aliás o número do contrato certo é 9876543210" (nota 8)
+   x precisao: resposta contém /9876543210/
+   cliente: nasci em Niterói, aliás o número do contrato certo é 9876543210
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C6-028#2 "nasci em Niterói, aliás o número do contrato certo é 9876543210" (nota 8)
+   x precisao: resposta contém /9876543210/
+   cliente: nasci em Niterói, aliás o número do contrato certo é 9876543210
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+
+[REPROVADO] C6-029#1 "sim, mas o CEP é 24030-000" (nota 6)
+   x interpretacao: etapa final em [confirmacao], foi finalizada
+   x precisao: resposta contém /24030/
+   cliente: sim, mas o CEP é 24030-000
+   maisa: Pronto! O seu contrato foi feito no banco Facta. Agora o banco vai te mandar no WhatsApp um link para assinar. É só abrir, conferir e assinar.  Se a mensagem do banco não chegar, o link é este: https://facta.ly/teste  Um atendente da nossa equipe acompanha com você até o dinheiro cair.
+
+[REPROVADO] C6-029#2 "sim, mas o CEP é 24030-000" (nota 6)
+   x interpretacao: etapa final em [confirmacao], foi finalizada
+   x precisao: resposta contém /24030/
+   cliente: sim, mas o CEP é 24030-000
+   maisa: Pronto! O seu contrato foi feito no banco Facta. Agora o banco vai te mandar no WhatsApp um link para assinar. É só abrir, conferir e assinar.  Se a mensagem do banco não chegar, o link é este: https://facta.ly/teste  Um atendente da nossa equipe acompanha com você até o dinheiro cair.
+
+[REPROVADO] C6-032#1 "sim sim, mas o RG certo é 987654321" (nota 6)
+   x interpretacao: etapa final em [confirmacao], foi finalizada
+   x precisao: resposta contém /987654321/
+   cliente: sim sim, mas o RG certo é 987654321
+   maisa: Pronto! O seu contrato foi feito no banco Facta. Agora o banco vai te mandar no WhatsApp um link para assinar. É só abrir, conferir e assinar.  Se a mensagem do banco não chegar, o link é este: https://facta.ly/teste  Um atendente da nossa equipe acompanha com você até o dinheiro cair.
+
+[REPROVADO] C6-032#2 "sim sim, mas o RG certo é 987654321" (nota 6)
+   x interpretacao: etapa final em [confirmacao], foi finalizada
+   x precisao: resposta contém /987654321/
+   cliente: sim sim, mas o RG certo é 987654321
+   maisa: Pronto! O seu contrato foi feito no banco Facta. Agora o banco vai te mandar no WhatsApp um link para assinar. É só abrir, conferir e assinar.  Se a mensagem do banco não chegar, o link é este: https://facta.ly/teste  Um atendente da nossa equipe acompanha com você até o dinheiro cair.
+
+[REPROVADO] C6-037#1 "boa tarde, quero sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: boa tarde, quero sim
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] C6-037#2 "boa tarde, quero sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: boa tarde, quero sim
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] IX-001#1 Port: "Bom dia" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-001#2 Port: "Bom dia" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-002#1 Port: "desculpa a demora" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-002#2 Port: "desculpa a demora" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-003#1 Port: "estava sem internet" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-003#2 Port: "estava sem internet" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-004#1 Port: "tem seguro?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-004#2 Port: "tem seguro?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-005#1 Port: "demora quanto?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-005#2 Port: "demora quanto?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-006#1 Port: "😅" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-006#2 Port: "😅" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-007#1 Port: "kkk" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-007#2 Port: "kkk" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-008#1 Port: "oi?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-008#2 Port: "oi?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-009#1 Port: "amanhã cai?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-009#2 Port: "amanhã cai?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-011#1 Novo: "Bom dia" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-011#2 Novo: "Bom dia" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-012#1 Novo: "desculpa a demora" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-012#2 Novo: "desculpa a demora" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-013#1 Novo: "estava sem internet" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-013#2 Novo: "estava sem internet" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-014#1 Novo: "tem seguro?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-014#2 Novo: "tem seguro?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-015#1 Novo: "demora quanto?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-015#2 Novo: "demora quanto?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-016#1 Novo: "😅" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-016#2 Novo: "😅" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-017#1 Novo: "kkk" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-017#2 Novo: "kkk" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-018#1 Novo: "oi?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-018#2 Novo: "oi?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-019#1 Novo: "amanhã cai?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-019#2 Novo: "amanhã cai?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-020#1 Novo: "não entendi" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-020#2 Novo: "não entendi" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-022#1 Extrato: "ok", "valeu", "?" não manda para a equipe (nota 7.5)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x tom: não repete o mesmo 'não entendi' em turnos seguidos
+   cliente: ?
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] IX-022#2 Extrato: "ok", "valeu", "?" não manda para a equipe (nota 7.5)
+   x instrucoes: desfecho em [continua], foi transferiu
+   x tom: não repete o mesmo 'não entendi' em turnos seguidos
+   cliente: ?
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[ATENÇÃO] IX-023#1 Cadastro: "ok", "bom dia" e depois o dado (nota 9.7)
+   x tom: não repete o mesmo 'não entendi' em turnos seguidos
+   cliente: Maria da Silva, RG 123456789 SSP RJ
+   maisa: Quase lá! Não consegui ver: data de expedição do RG, nome da mãe e nome do pai. Pode me mandar por escrito?
+
+[ATENÇÃO] IX-023#2 Cadastro: "ok", "bom dia" e depois o dado (nota 9.7)
+   x tom: não repete o mesmo 'não entendi' em turnos seguidos
+   cliente: Maria da Silva, RG 123456789 SSP RJ
+   maisa: Quase lá! Não consegui ver: data de expedição do RG, nome da mãe e nome do pai. Pode me mandar por escrito?
+
+[REPROVADO] IX-027#1 Port: corrige o CPF depois da oferta (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: o cpf certo é 20000006815
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] IX-027#2 Port: corrige o CPF depois da oferta (nota 8)
+   x interpretacao: resposta NÃO contém /Eu mesma faço o seu contrato/
+   cliente: o cpf certo é 20000006815
+   maisa: Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do 104 - CEF com parcela de R$ 390,47. Ele aparece no aplicativo do banco ou no SouGov.br, em Consignações. Pode mandar só o número.
+
+[REPROVADO] IX-028#1 Novo: manda o CPF de novo na oferta (nota 8)
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: 20000001503
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] IX-028#2 Novo: manda o CPF de novo na oferta (nota 8)
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: 20000001503
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] IX-029#1 Novo: some 25h, vai para o Carrinho e depois diz "sim" (nota 9.7)
+   x tom: respondeu algo ao cliente no último turno
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-029#2 Novo: some 25h, vai para o Carrinho e depois diz "sim" (nota 9.7)
+   x tom: respondeu algo ao cliente no último turno
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-035#1 Port: "não" e depois "pensando bem, quero" (nota 9.7)
+   x tom: respondeu algo ao cliente no último turno
+   cliente: pensando bem, quero
+   maisa: 
+
+[REPROVADO] IX-035#2 Port: "não" e depois "pensando bem, quero" (nota 9.7)
+   x tom: respondeu algo ao cliente no último turno
+   cliente: pensando bem, quero
+   maisa: 

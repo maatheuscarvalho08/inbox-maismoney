@@ -1,0 +1,14 @@
+fase5
+Resultado: { APROVADO: 156 }
+fase4
+Resultado: { APROVADO: 409, 'FALHA CRÍTICA': 1 }
+fase3
+Resultado: { APROVADO: 246, REPROVADO: 2 }
+fase2
+Resultado: { APROVADO: 731, REPROVADO: 17 }
+fase1
+Resultado: { APROVADO: 308, 'ATENÇÃO': 2, 'FALHA CRÍTICA': 1 }
+limpo
+baixado
+
+[exited with code 0]

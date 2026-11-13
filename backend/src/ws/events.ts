@@ -20,3 +20,10 @@ export function emitCampanhaAtualizada(payload: unknown) {
 export function emitCarrinhoNovo(conversa: unknown) {
   getIo().emit("carrinho:novo", conversa);
 }
+
+// Aviso da Maisa para a equipe, no topo da tela: aceite depois de a conversa sair dela,
+// mensagem que ela não conseguiu entregar, digitação com resultado incerto.
+export type TipoAvisoMaisa = "aceite_apos_transferencia" | "entrega_falhou" | "digitacao_incerta" | "mensagem_apos_digitacao" | "digitacao_bloqueada";
+export function emitAvisoMaisa(aviso: { tipo: TipoAvisoMaisa; conversaId: string; nome: string | null; detalhe?: string }) {
+  getIo().emit("maisa:aviso", aviso);
+}

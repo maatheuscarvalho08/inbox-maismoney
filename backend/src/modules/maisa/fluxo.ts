@@ -7,6 +7,8 @@ import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "
 import { camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato } from "./contrato.js";
 import type { ResultadoContratacao } from "./facta.js";
 import { NAO_QUERO, SIM_FORTE, normalizar, temReceio } from "./classificador.js";
+import { motivoTravaDigitacao } from "./travaDigitacao.js";
+import { invalidaConfirmacao } from "./ordemMensagens.js";
 import {
   ACEITE_NO_FIM,
   CORRECAO,
@@ -110,7 +112,20 @@ export interface EstadoMaisa {
     contaSalario?: { bancoConta: string; agencia: string; conta: string } | null;
   };
   // Cadastro para digitar a proposta. Sai do estado assim que ela passa para a equipe.
-  contrato?: { dados: DadosContrato; pergunta: string };
+  // origem: campos que vieram do extrato (não são sobrescritos sem a equipe validar).
+  // correcoes: o que o cliente mudou na confirmação, com o valor de antes.
+  // correcaoPendente: o cliente apontou um erro que a Maisa não conseguiu aplicar. Enquanto
+  // existir, nenhum "sim" confirma os dados antigos.
+  contrato?: { dados: DadosContrato; pergunta: string; origem?: Partial<Record<CampoContrato, "extrato">>; correcoes?: Correcao[]; correcaoPendente?: string };
+  // "sim" da confirmação esperando a janela. Mensagem relevante do cliente cancela;
+  // a digitação só acontece no evento "executar_digitacao", depois da revalidação.
+  confirmacaoPendente?: { recebidoEm: string; executarEm: string; mensagemId?: string; consentimento: string };
+  // Última mensagem do cliente lida pela Maisa. A recuperação depois de um reinício
+  // lê o que chegou depois dela; a digitação não roda com mensagem nova sem ler.
+  ultimaMensagemId?: string;
+  ultimaMensagemEm?: string;
+  // Último aviso à equipe de aceite depois de a conversa sair da Maisa.
+  avisoAceiteEm?: string;
   motivoTransferencia?: string;
   // Onde ela estava quando passou para a equipe, e por quê, num rótulo fechado.
   // A tela usa isso para dizer ao atendente o que fazer em seguida.
@@ -120,7 +135,25 @@ export interface EstadoMaisa {
 
 // Mensagem do cliente, ou uma checagem automática do relógio (sem texto).
 // documento = PDF ou imagem, que pode ser o extrato. Áudio chega já transcrito em texto.
-export type Entrada = { texto: string | null; temMidia: boolean; documento?: boolean; documentoId?: string } | { evento: "verificar_autorizacao" | "verificar_oferta" };
+export type Entrada =
+  | { texto: string | null; temMidia: boolean; documento?: boolean; documentoId?: string; mensagemId?: string }
+  | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" };
+
+export interface Correcao {
+  campo: CampoContrato;
+  origem: "extrato" | "cliente";
+  anterior: unknown;
+  novo: unknown;
+  em: string;
+  // false: dado do extrato, guardado só para a equipe validar.
+  aplicada: boolean;
+}
+
+// O que a digitação devolve. "bloqueada": a Facta não foi chamada porque já existe
+// operação para o cliente (em andamento, incerta, ou concluída há pouco); a equipe decide.
+export type ResultadoDigitacao =
+  | ResultadoContratacao
+  | { tipo: "bloqueada"; motivo: string; status: string; codigoAf?: string | null };
 
 export interface Dependencias {
   classificador: Classificador;
@@ -135,7 +168,18 @@ export interface Dependencias {
   // Digitação na Facta (INSS e SIAPE). Desligada, o "sim" vai para a equipe.
   digitacaoAtiva: boolean;
   extrairDados(pergunta: string, entrada: { texto: string | null; documento?: boolean }, faltando: CampoContrato[]): Promise<DadosContrato>;
-  digitar(dados: DadosContrato): Promise<ResultadoContratacao>;
+  // Idempotente: quem chama garante uma digitação por oferta (chave única no banco).
+  digitar(dados: DadosContrato): Promise<ResultadoDigitacao>;
+  // Trava própria da digitação automática (MAISA_DIGITACAO_LIBERADA). Desligada por padrão.
+  digitacaoLiberada?: boolean;
+  // Espera depois do "sim" da confirmação antes de digitar. Ausente: 30 segundos.
+  janelaConfirmacaoMs?: number;
+  // Há mensagem do cliente que chegou e ainda não foi lida? Ausente: não há.
+  // O cliente mandou mensagem relevante depois do "sim" (pelo horário do WhatsApp, ou
+  // recebida depois dele)? Ausente: não mandou.
+  mensagemDepoisDoSim?(simMensagemId: string | undefined, recebidoEm: string): Promise<boolean>;
+  // Lembrete e Carrinho também na oferta de portabilidade.
+  followupPort?: boolean;
   // Responde ao que o cliente disse fora do esperado (ex.: "estou negativo"), só com fatos
   // aprovados. null: não tem o que dizer. Ausente nos testes: valem as regras.
   responderLivre?(texto: string, etapa: string, produto: string | undefined, pergunta: string): Promise<string | null>;
@@ -284,6 +328,15 @@ export function notaEquipe(estado: EstadoMaisa, motivo: string, efeitos: Efeito[
   const dados = estado.contrato?.dados;
   if (dados && Object.keys(dados).length) {
     linhas.push("", `DADOS PARA O CADASTRO:\n${resumoDados(dados, true)}`);
+  }
+  // Rastro de cada correção: de onde veio o dado, o valor de antes e o novo.
+  const correcoes = estado.contrato?.correcoes ?? [];
+  if (correcoes.length) {
+    linhas.push("", "CORREÇÕES DO CLIENTE NA CONFIRMAÇÃO:");
+    for (const c of correcoes) {
+      const fonte = c.origem === "extrato" ? "lido do extrato" : "informado pelo cliente";
+      linhas.push(`- ${c.campo} (${fonte}): ${String(c.anterior ?? "vazio")} para ${String(c.novo)}${c.aplicada ? "" : " [NÃO aplicado: validar com o extrato]"}`);
+    }
   }
   return linhas.join("\n");
 }
@@ -661,6 +714,10 @@ async function etapaExtrato(
     }
     return ir(estado, "oferta_port", [TEXTOS.ofertaPort({ operacao, trocoCentavos, digitacao, reducoes })], "alternativa", [], {
       alternativa: { operacao, trocoCentavos, motivo, ...(digitacao ? { digitacao } : {}), ...(reducoes?.length ? { reducoes } : {}), ...lidos },
+      // Relógio do lembrete e do Carrinho, igual à oferta de empréstimo novo.
+      ofertaEm: deps.agora().toISOString(),
+      ultimoContatoCliente: undefined,
+      followupEnviado: false,
     });
   }
   if (resultado.tipo === "servidor_outro") {
@@ -783,7 +840,11 @@ const MAX_DUVIDAS_OFERTA = 3;
 // reconhece com certeza (pedido de explicação, cumprimento, "ok", dado repetido), depois a
 // leitura do modelo, com travas. Aceite só segue sem condição; "ok" e "valeu" pedem
 // confirmação; outro valor ou prazo vai para a equipe; data ou CPF corrigidos também.
-async function tratarOferta(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  // O "posso seguir?" vale só para a resposta seguinte. Se o cliente perguntou outra coisa
+  // no meio, um "👍" depois pode ser só "entendi a resposta".
+  const pediuConfirmacao = Boolean(atual.confirmarAceite);
+  const estado: EstadoMaisa = { ...atual, confirmarAceite: undefined };
   const port = estado.etapa === "oferta_port";
   const t = normalizar(texto);
   const pergunta = PERGUNTA_DA_ETAPA[estado.etapa];
@@ -798,7 +859,7 @@ async function tratarOferta(estado: EstadoMaisa, texto: string, deps: Dependenci
 
   const social = mensagemSocial(texto);
   if (social) {
-    if (estado.confirmarAceite && socialPositivo(social, texto)) return seguirComAceite(estado, deps, texto);
+    if (pediuConfirmacao && socialPositivo(social, texto)) return seguirComAceite(estado, deps, texto);
     if (social === "confuso") return duvida([explicarOferta(estado), pergunta], "explicacao_oferta");
     const antes = RESPOSTA_SOCIAL[social] ? [RESPOSTA_SOCIAL[social]!] : [];
     // "ok", "👍", "valeu": não é sim nem não. Pergunta de novo, e o próximo "sim" ou "ok" vale.
@@ -816,8 +877,12 @@ async function tratarOferta(estado: EstadoMaisa, texto: string, deps: Dependenci
   const leitura = await deps.classificador.lerOferta(texto, contextoOferta(estado));
   if (leitura?.tipo === "humano") return transferir(estado, "quer falar com uma pessoa", TEXTOS.transferindo, "humano", [], "objecao");
   const simForte = (SIM_FORTE.test(t) || ACEITE_NO_FIM.test(t)) && !NAO_QUERO.test(t);
-  const simRegra = (/^(sim+|s|ss|claro|quero|aceito|isso|bora)\b/.test(t) || simForte) && !NAO_QUERO.test(t);
-  let aceite = leitura ? leitura.tipo === "aceita" || simForte : simRegra;
+  // "quero não", "aceito não", "claro que não": recusa, mesmo que o modelo leia aceite.
+  const negou = NAO_QUERO.test(t) && !simForte;
+  const simRegra = (/^(sim+|s|ss|claro|quero|aceito|isso(?! (e|eh|ai e|nao)\b)|bora)\b/.test(t) || simForte) && !NAO_QUERO.test(t);
+  let aceite = !negou && (leitura ? leitura.tipo === "aceita" || simForte : simRegra);
+  // "aceito?", "sim? o que acontece?": a palavra de aceite virou pergunta.
+  if (aceite && /\b(sim+|quero( sim)?|aceito|pode (fazer|seguir|mandar)|fechado|bora|topo)\s*\?/.test(t)) aceite = false;
   // "pode ser que sim", "talvez": não é aceite. Pergunta de novo, sem pressa.
   if (HESITACAO.test(t) && !simForte) return fica([TEXTOS.semPressa], "hesitacao");
   // Na port + refin, "quero só a portabilidade, sem troco": oferece a port sem refin.
@@ -846,7 +911,7 @@ async function tratarOferta(estado: EstadoMaisa, texto: string, deps: Dependenci
     if (port) return contornar(estado, texto, leitura);
     return objecao(estado, texto, "objeção na oferta", leitura.tipo === "recusa");
   }
-  const recusa = leitura ? leitura.tipo === "recusa" : NAO_QUERO.test(t) || /^(nao|n|nn)\W*$/.test(t);
+  const recusa = negou || (leitura ? leitura.tipo === "recusa" : /^(nao|n|nn)\W*$/.test(t));
   if (recusa) {
     if (port) return objecao(estado, texto, "recusou a portabilidade", true);
     return transferir(estado, "recusou a oferta", TEXTOS.recusou, "recusou");
@@ -909,7 +974,7 @@ function seguirComAceite(estado: EstadoMaisa, deps: Dependencias, texto: string,
     if (estado.produto === "inss" && estado.oferta.especie) dados.tipoBeneficio = String(estado.oferta.especie);
     const pergunta = proximaPergunta(dados, estado.produto)!;
     return ir(limpo, "coleta", [...antes, TEXTOS.inicioContrato, pergunta], "aceitou_contrato", [], {
-      contrato: { dados, pergunta },
+      contrato: { dados, pergunta, origem: origemExtrato(dados) },
       ofertaEm: undefined,
       followupEnviado: undefined,
     });
@@ -1017,8 +1082,14 @@ function iniciarColetaPort(estado: EstadoMaisa, numero: string, rotulo: string, 
   const pergunta = proximaPergunta(dados, produtoExtrato(estado))!;
   return ir(estado, "coleta", [...antes, pergunta], rotulo, [], {
     alternativa: { ...estado.alternativa!, numeroContrato: numero },
-    contrato: { dados, pergunta },
+    contrato: { dados, pergunta, origem: origemExtrato(dados) },
   });
+}
+
+// Campos lidos do extrato no início do cadastro: renda, matrícula, conta salário e espécie.
+const CAMPOS_DO_EXTRATO: CampoContrato[] = ["renda", "matricula", "bancoConta", "agencia", "conta", "tipoBeneficio"];
+function origemExtrato(dados: DadosContrato): Partial<Record<CampoContrato, "extrato">> {
+  return Object.fromEntries(CAMPOS_DO_EXTRATO.filter((c) => dados[c] !== undefined && dados[c] !== null && dados[c] !== "").map((c) => [c, "extrato"]));
 }
 
 // O número do contrato: o maior trecho com pelo menos 4 dígitos ("Hoje 20250464573").
@@ -1260,7 +1331,7 @@ async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null;
   if (!proxima) {
     // RG e conta inteiros: mascarados, o cliente achava que estavam incompletos.
     return ir(estado, "confirmacao", [TEXTOS.confirmaDados(resumoDados(junto, true))], "dados_completos", [], {
-      contrato: { dados: junto, pergunta: TEXTOS.perguntaConfirmacao },
+      contrato: { ...estado.contrato, dados: junto, pergunta: TEXTOS.perguntaConfirmacao },
     });
   }
   if (!Object.keys(novos).length) {
@@ -1273,35 +1344,67 @@ async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null;
     if (!entrada.documento && texto && (texto.includes("?") || travou)) {
       try {
         const r = deps.responderLivre ? await deps.responderLivre(texto, NOME_ETAPA.coleta, estado.produto, pergunta) : null;
-        if (r) return { estado: { ...estado, contrato: { dados, pergunta }, tentativas: estado.tentativas + 1 }, respostas: [r, pergunta], efeitos: [], rotulo: "resposta_livre" };
+        if (r) return { estado: { ...estado, contrato: { ...estado.contrato, dados, pergunta }, tentativas: estado.tentativas + 1 }, respostas: [r, pergunta], efeitos: [], rotulo: "resposta_livre" };
       } catch (err) {
         console.error("Resposta livre falhou no cadastro:", err instanceof Error ? err.message : err);
       }
       return transferir(estado, `dúvida no cadastro: ${texto.slice(0, 120)}`, TEXTOS.duvidaParaEquipe, "duvida_cadastro", [], "dados_contrato");
     }
     const aviso = entrada.documento ? TEXTOS.fotoSemDado : TEXTOS.naoEntendi;
-    return tentarDeNovo({ ...estado, contrato: { dados, pergunta } }, `${aviso} ${pergunta}`, "dado_nao_entendido", "dados_contrato");
+    return tentarDeNovo({ ...estado, contrato: { ...estado.contrato, dados, pergunta } }, `${aviso} ${pergunta}`, "dado_nao_entendido", "dados_contrato");
   }
-  return ir(estado, "coleta", [proxima], "dado_recebido", [], { contrato: { dados: junto, pergunta: proxima } });
+  return ir(estado, "coleta", [proxima], "dado_recebido", [], { contrato: { ...estado.contrato, dados: junto, pergunta: proxima } });
 }
 
 // Confirmação: "correto", "confere", "tá certo", "certinho" também são sim.
+// "isso é golpe?" e "isso não" começam com "isso", mas não confirmam.
 const CONFIRMA_DADOS =
-  /^(sim+|s|ss|isso|isso mesmo|correto|certo|ta certo|esta certo|tudo certo|ta tudo certo|esta tudo certo|confere|certinho|exato|perfeito|pode (mandar|seguir|fazer)|tudo ok|ok+|okay|beleza)\b/;
+  /^(sim+|s|ss|isso(?! (e|eh|ai e|nao)\b)|isso mesmo|correto|certo|ta certo|esta certo|tudo certo|ta tudo certo|esta tudo certo|confere|confirmo|confirmado|certinho|exato|perfeito|pode (mandar|seguir|fazer|confirmar)|tudo ok|ok+|okay|beleza|uhum|aham)\b/;
+// Na confirmação, quem espera, hesita ou desconfia ainda não confirmou.
+const ESPERA_CONFIRMACAO =
+  /\b(espera|perai|pera|calma|deixa eu|nao sei|vou (ver|pensar|conferir|olhar)|pensar|depois|amanha|mais tarde|com (meu|minha) (filh|marido|esposa|mulher|famil)|golpe|seguro|confiavel|desconfi|medo|fraude|verdade)/;
+// "não tem erro", "não precisa mudar nada": o "não" confirma.
+const NAO_QUE_CONFIRMA = /nao (tem|ha|precisa|preciso|falta) (erro|nada|mudar|corrigir|alterar)|nada (errado|a corrigir)/;
+// Só sem pergunta: "e se eu desistir depois?" é dúvida. "cancela meu contrato antigo" não é desistir deste.
+const DESISTE_CONFIRMACAO = /(desisti\b|desisto|nao quero( mais)?\b|quero nao|pode cancelar|cancela (tudo|isso|esse|essa|o pedido|a proposta)|deixa pra la|nao vou querer)/;
 
-async function etapaConfirmacao(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+async function etapaConfirmacao(estado: EstadoMaisa, texto: string, deps: Dependencias, mensagemId?: string): Promise<Passo> {
   const t = normalizar(texto);
-  const sim = CONFIRMA_DADOS.test(t) || socialPositivo(mensagemSocial(texto), texto) || (await deps.classificador.simNao(texto)) === "sim";
   // "sim, mas o CEP é…": tem correção junto. Nunca digita: corrige e mostra o resumo de novo.
   const temCorrecao = temCondicao(t) || CORRECAO.test(t) || /\d{3,}|@/.test(t) || /\b(menos|so o|so a|exceto|tirando)\b/.test(t);
-  if (!sim || temCorrecao) {
-    if (!temCorrecao && texto.includes("?") && buscarFaq(texto)) return foraDaEtapa(estado, texto);
+  // Qualquer dúvida trava a digitação: pergunta, "não" fora de "não tem erro", hesitação,
+  // receio, pedido de explicação ou "hum", "sei", "entendi".
+  const nega = (/\b(nao|n|nn)\b/.test(t) && !NAO_QUE_CONFIRMA.test(t)) || NAO_QUERO.test(t);
+  // "sim, e quando chega o link?" confirma e pergunta do próximo passo. "sim?" e "tudo certo?" não confirmam.
+  const simComPergunta = /^(sim+|s|ss|correto|certo|ta certo|esta certo|tudo certo|ta tudo certo|isso mesmo|confere|certinho|pode (mandar|seguir|fazer))\b(?!\s*\?)[^?]{3,}\?/.test(t);
+  const duvida = (texto.includes("?") && !simComPergunta) || temReceio(t) || HESITACAO.test(t) || PEDE_EXPLICACAO.test(t) || ESPERA_CONFIRMACAO.test(t);
+  const social = mensagemSocial(texto);
+  const ouvindo = social === "confirmacao_curta" && !socialPositivo(social, texto);
+  const sim =
+    !nega && !duvida && !ouvindo && (CONFIRMA_DADOS.test(t) || socialPositivo(social, texto) || (await deps.classificador.simNao(texto)) === "sim");
+  if (!sim) {
+    // Dado novo na mensagem (número, e-mail, "o certo é", "menos o…"): é correção.
+    const corrigeDado = CORRECAO.test(t) || /\d{3,}|@/.test(t) || /\b(menos|so o|so a|exceto|tirando)\b/.test(t);
+    if (DESISTE_CONFIRMACAO.test(t) && !corrigeDado && !texto.includes("?")) return transferir(estado, "desistiu na confirmação dos dados", TEXTOS.recusou, "desistiu", [], "dados_contrato");
+    if (temReceio(t)) return transferir(estado, "receio na confirmação dos dados", TEXTOS.objecao, "objecao", [], "dados_contrato");
+    if (!corrigeDado) {
+      if (texto.includes("?")) return ouvirCliente(estado, texto, deps, TEXTOS.confirmaDadosDeNovo);
+      if (HESITACAO.test(t) || ESPERA_CONFIRMACAO.test(t)) return { estado, respostas: [TEXTOS.semPressaConfirmacao], efeitos: [], rotulo: "confirmacao_espera" };
+      if (ouvindo || PEDE_EXPLICACAO.test(t)) return tentarDeNovo(estado, TEXTOS.confirmaDadosDeNovo, "confirmacao_ambigua", "dados_contrato");
+    }
     return corrigirDados(estado, { texto }, deps);
   }
+  if (temCorrecao) return corrigirDados(estado, { texto }, deps);
 
   // Port pura ou banco de origem sem código: a API da Facta não digita. Tudo coletado, a
   // equipe só cadastra no portal Agente Facta com os dados da nota.
   const dig = estado.alternativa?.digitacao;
+  // O cliente apontou um erro que não deu para aplicar ("espera, o CEP é ..." sem a Maisa
+  // conseguir ler o CEP). O "sim" agora pode ser resposta a outra coisa: a equipe confere.
+  const pendenteCorrecao = estado.contrato?.correcaoPendente;
+  if (pendenteCorrecao) {
+    return transferir(estado, `o cliente pediu uma correção que a Maisa não conseguiu aplicar ("${pendenteCorrecao}") e depois disse "${texto.trim().slice(0, 40)}": conferir os dados com ele antes de digitar`, TEXTOS.corrigirDados, "correcao_nao_aplicada", [], "dados_contrato");
+  }
   if (estado.alternativa && (!dig?.refin || !dig.bancoCodigo)) {
     const motivo = !dig?.refin
       ? "port pura aceita, a API da Facta não digita port sem refin: cadastrar no portal Agente Facta"
@@ -1309,16 +1412,89 @@ async function etapaConfirmacao(estado: EstadoMaisa, texto: string, deps: Depend
     return transferir(estado, motivo, TEXTOS.portProntaEquipe, "port_pronta", [], "alternativa");
   }
 
-  let resultado: ResultadoContratacao;
+  // "sim" antigo: chegou depois de uma mensagem relevante que o cliente mandou mais tarde
+  // (áudio "sim" baixado depois de um texto "espera"). Não vale como confirmação.
+  if (mensagemId && deps.mensagemDepoisDoSim && (await deps.mensagemDepoisDoSim(mensagemId, deps.agora().toISOString()))) {
+    return { estado, respostas: [], efeitos: [], rotulo: "sim_antigo_ignorado" };
+  }
+
+  // Não digita agora: agenda. Uma mensagem relevante do cliente dentro da janela cancela
+  // ("sim" e logo depois "espera, o CEP está errado"). A digitação roda no evento
+  // "executar_digitacao", que revalida tudo antes.
+  const agora = deps.agora();
+  const janela = deps.janelaConfirmacaoMs ?? 30_000;
+  return {
+    estado: {
+      ...estado,
+      tentativas: 0,
+      sociais: 0,
+      confirmacaoPendente: {
+        recebidoEm: agora.toISOString(),
+        executarEm: new Date(agora.getTime() + janela).toISOString(),
+        ...(mensagemId ? { mensagemId } : {}),
+        consentimento: texto.trim().slice(0, 80),
+      },
+    },
+    respostas: [TEXTOS.confirmacaoRecebida],
+    efeitos: [],
+    rotulo: "confirmacao_agendada",
+  };
+}
+
+// A janela passou: revalida e digita. Cada condição que falha deixa o contrato com a
+// equipe, nunca digita "no escuro".
+async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promise<Passo> {
+  const parado = (rotulo: string, e: EstadoMaisa = estado): Passo => ({ estado: e, respostas: [], efeitos: [], rotulo });
+  const p = estado.confirmacaoPendente;
+  if (estado.etapa !== "confirmacao" || !p) return parado("nada_a_executar");
+  if (deps.agora().getTime() < new Date(p.executarEm).getTime()) return parado("aguardando_janela");
+  const limpo: EstadoMaisa = { ...estado, confirmacaoPendente: undefined };
+  // Mensagem relevante mandada depois do "sim": o "sim" não vale mais. A mensagem é (ou
+  // já foi) lida e decide o que fazer; a digitação só volta com um "sim" novo.
+  if (deps.mensagemDepoisDoSim && (await deps.mensagemDepoisDoSim(p.mensagemId, p.recebidoEm))) {
+    return parado("digitacao_cancelada_mensagem_nova", limpo);
+  }
+  const trava = motivoTravaDigitacao(estado, { liberada: deps.digitacaoLiberada === true });
+  if (trava) {
+    return transferir(limpo, `digitação automática não executada (${trava}): a equipe digita no portal com os dados da nota`, TEXTOS.digitacaoComEquipe, "digitacao_bloqueada", [], "dados_contrato");
+  }
+
+  let resultado: ResultadoDigitacao;
   try {
     resultado = await deps.digitar(estado.contrato?.dados ?? {});
   } catch (err) {
-    resultado = { tipo: "erro", etapa: "sistema", mensagem: err instanceof Error ? err.message : "falha na digitação" };
+    // Exceção fora da Facta (banco de dados, código): sem saber se a Facta foi chamada,
+    // trata como resultado desconhecido. Nunca como "pode tentar de novo".
+    resultado = { tipo: "desconhecido", etapa: "sistema", mensagem: err instanceof Error ? err.message : "falha na digitação" };
+  }
+  if (resultado.tipo === "bloqueada") {
+    // A Facta não foi chamada. Nada antigo é apresentado como contrato novo.
+    return transferir(
+      limpo,
+      `digitação NÃO feita: ${resultado.motivo}. Confira no portal Facta; para tentar de novo, a operação precisa ser liberada por alguém da equipe`,
+      TEXTOS.digitacaoEmConferencia,
+      "digitacao_bloqueada_cliente",
+      [],
+      "erro_digitacao",
+    );
+  }
+  if (resultado.tipo === "abortada") {
+    // O cliente mandou mensagem antes do ponto sem volta: nada foi criado. A mensagem dele
+    // é lida em seguida.
+    return parado("digitacao_abortada", limpo);
+  }
+  if (resultado.tipo === "desconhecido") {
+    return transferir(limpo, `RESULTADO INCERTO na digitação (${resultado.etapa}: ${resultado.mensagem}). A proposta pode existir: conferir no portal Facta antes de digitar de novo`, TEXTOS.digitacaoEmConferencia, "digitacao_incerta", [], "erro_digitacao");
   }
   if (resultado.tipo === "erro") {
-    return transferir(estado, `erro na digitação (${resultado.etapa}): ${resultado.mensagem}`, TEXTOS.erroDigitacao, "erro_digitacao");
+    return transferir(
+      limpo,
+      `a digitação parou na etapa "${resultado.etapa}" (${resultado.mensagem}), antes do cadastro da proposta. Pela sequência da API a proposta não chega a ser criada nessa etapa, mas confira no portal Facta antes de digitar`,
+      TEXTOS.erroDigitacao,
+      "erro_digitacao",
+    );
   }
-  return transferir(estado, `proposta ${resultado.codigoAf} digitada na Facta`, TEXTOS.contratoEnviado(resultado.url), "contrato_enviado", [
+  return transferir(limpo, `proposta ${resultado.codigoAf} digitada na Facta`, TEXTOS.contratoEnviado(resultado.url), "contrato_enviado", [
     { tipo: "proposta", codigoAf: resultado.codigoAf },
   ]);
 }
@@ -1326,6 +1502,8 @@ async function etapaConfirmacao(estado: EstadoMaisa, texto: string, deps: Depend
 // Apontou erro no resumo: lê o dado certo da própria mensagem (ou da foto) e mostra o
 // resumo de novo. Só "não", ou "o RG está errado" sem o valor: pede o dado certo.
 // Sem conseguir depois de duas tentativas, a equipe corrige.
+// Dado que veio do extrato (renda, matrícula, conta salário) não é trocado em silêncio:
+// a divergência fica registrada e a equipe valida.
 async function corrigirDados(estado: EstadoMaisa, entrada: { texto: string | null; documento?: boolean }, deps: Dependencias): Promise<Passo> {
   const dados = estado.contrato?.dados ?? {};
   const t = (entrada.texto ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
@@ -1342,16 +1520,43 @@ async function corrigirDados(estado: EstadoMaisa, entrada: { texto: string | nul
     Object.entries(novos).filter(([k, v]) => v !== undefined && v !== null && v !== "" && dados[k as CampoContrato] !== v),
   ) as DadosContrato;
   if (Object.keys(mudou).length) {
-    const junto = { ...dados, ...mudou };
+    const origem = estado.contrato?.origem ?? {};
+    const em = deps.agora().toISOString();
+    const registro: Correcao[] = (Object.keys(mudou) as CampoContrato[]).map((campo) => ({
+      campo,
+      origem: origem[campo] === "extrato" ? "extrato" : "cliente",
+      anterior: dados[campo] ?? null,
+      novo: mudou[campo],
+      em,
+      aplicada: origem[campo] !== "extrato",
+    }));
+    const correcoes = [...(estado.contrato?.correcoes ?? []), ...registro];
+    const doExtrato = registro.filter((r) => !r.aplicada);
+    const aplicar = Object.fromEntries(registro.filter((r) => r.aplicada).map((r) => [r.campo, r.novo])) as DadosContrato;
+    const junto = { ...dados, ...aplicar };
+    if (doExtrato.length) {
+      const desc = doExtrato.map((r) => `${r.campo}: ${String(r.anterior)} para ${String(r.novo)}`).join("; ");
+      return transferir(
+        { ...estado, contrato: { ...estado.contrato!, dados: junto, correcoes } },
+        `cliente quer mudar dado lido do extrato (${desc}): validar antes de digitar`,
+        TEXTOS.dadoExtratoEquipe,
+        "dado_extrato_divergente",
+        [],
+        "dados_contrato",
+      );
+    }
     return ir(estado, "confirmacao", [`${TEXTOS.dadosCorrigidos} ${TEXTOS.confirmaDados(resumoDados(junto, true))}`], "dados_corrigidos", [], {
-      contrato: { dados: junto, pergunta: TEXTOS.perguntaConfirmacao },
+      contrato: { ...estado.contrato, dados: junto, pergunta: TEXTOS.perguntaConfirmacao, correcoes, correcaoPendente: undefined },
     });
   }
   const tentativas = estado.tentativas + 1;
   if (tentativas > MAX_TENTATIVAS) {
     return transferir(estado, "cliente quer corrigir os dados", TEXTOS.corrigirDados, "corrigir_dados", [], "dados_contrato");
   }
-  return { estado: { ...estado, tentativas }, respostas: [TEXTOS.qualCorrigir], efeitos: [], rotulo: "pede_correcao" };
+  // Guarda o que o cliente disse: um "sim" depois disto não confirma os dados antigos.
+  const pedido = (entrada.texto ?? (entrada.documento ? "(foto de documento)" : "")).trim().slice(0, 160);
+  const contrato = estado.contrato ? { ...estado.contrato, correcaoPendente: pedido || estado.contrato.correcaoPendente } : estado.contrato;
+  return { estado: { ...estado, tentativas, contrato }, respostas: [TEXTOS.qualCorrigir], efeitos: [], rotulo: "pede_correcao" };
 }
 
 const MAX_SOCIAIS = 4;
@@ -1387,16 +1592,23 @@ const CARRINHO_MS = 24 * 60 * 60_000;
 // Oferta sem resposta. 10 minutos: uma mensagem só, para retomar. 24 horas: sai da
 // Maisa e entra no Carrinho, para alguém da equipe ligar. O relógio conta a partir da
 // última mensagem do cliente, ou da oferta se ele não escreveu nada depois.
-function verificarOferta(estado: EstadoMaisa, agora: Date): Passo {
+// Oferta de portabilidade: o mesmo, com MAISA_FOLLOWUP_PORT ligado. Conversa de antes
+// desta versão, sem a hora da oferta, começa a contar agora (o contexto fica igual).
+function verificarOferta(estado: EstadoMaisa, agora: Date, followupPort = false): Passo {
   const parado: Passo = { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
-  if (estado.etapa !== "oferta" || !estado.ofertaEm) return parado;
+  const port = estado.etapa === "oferta_port";
+  if (port && !followupPort) return parado;
+  if (estado.etapa !== "oferta" && !port) return parado;
+  if (!estado.ofertaEm) {
+    return port ? { estado: { ...estado, ofertaEm: agora.toISOString(), followupEnviado: false }, respostas: [], efeitos: [], rotulo: "relogio_oferta_iniciado" } : parado;
+  }
   const desde = Math.max(new Date(estado.ofertaEm).getTime(), estado.ultimoContatoCliente ? new Date(estado.ultimoContatoCliente).getTime() : 0);
   const passou = agora.getTime() - desde;
   if (passou >= CARRINHO_MS) {
-    return transferir(estado, "não respondeu a oferta em 24 horas", null, "carrinho", [], "carrinho");
+    return transferir(estado, port ? "não respondeu a oferta de portabilidade em 24 horas" : "não respondeu a oferta em 24 horas", null, "carrinho", [], "carrinho");
   }
   if (passou >= FOLLOWUP_MS && !estado.followupEnviado) {
-    return { estado: { ...estado, followupEnviado: true }, respostas: [TEXTOS.followupOferta], efeitos: [], rotulo: "followup_oferta" };
+    return { estado: { ...estado, followupEnviado: true }, respostas: [port ? TEXTOS.followupOfertaPort : TEXTOS.followupOferta], efeitos: [], rotulo: "followup_oferta" };
   }
   return parado;
 }
@@ -1407,13 +1619,28 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 
   // Checagens automáticas do relógio.
   if ("evento" in entrada) {
-    if (entrada.evento === "verificar_oferta") return verificarOferta(estado, deps.agora());
+    if (entrada.evento === "verificar_oferta") return verificarOferta(estado, deps.agora(), deps.followupPort === true);
+    if (entrada.evento === "executar_digitacao") return executarDigitacao(estado, deps);
     if (estado.etapa !== "aguardando") return { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
     return consultarAgora(estado, deps, "verificacao_automatica", false);
   }
 
   // O cliente falou durante a oferta: o relógio do follow-up recomeça daqui.
-  if (estado.etapa === "oferta") estado = { ...estado, ultimoContatoCliente: deps.agora().toISOString() };
+  if (estado.etapa === "oferta" || estado.etapa === "oferta_port") estado = { ...estado, ultimoContatoCliente: deps.agora().toISOString() };
+
+  // "sim" agendado e chegou outra mensagem. "obrigado", "ok" e emoji positivo mantêm o
+  // agendamento. Qualquer outra coisa (correção, dúvida, arquivo, "espera") cancela e é
+  // tratada como resposta à confirmação: a digitação só volta com um novo "sim".
+  if (estado.confirmacaoPendente) {
+    const s = entrada.texto && !entrada.temMidia ? mensagemSocial(entrada.texto) : null;
+    // Neutra ("obrigado", 👍) ou outro "sim" puro: mantém o agendamento, sem repetir a resposta.
+    const neutra = Boolean(entrada.texto) && !entrada.temMidia && !invalidaConfirmacao({ conteudoTexto: entrada.texto, tipoMidia: null });
+    if (neutra) {
+      const antes = s ? RESPOSTA_SOCIAL[s] : undefined;
+      return { estado, respostas: antes ? [antes] : [], efeitos: [], rotulo: "confirmacao_mantida" };
+    }
+    estado = { ...estado, confirmacaoPendente: undefined };
+  }
 
   // Na etapa do extrato, PDF ou foto é o que ela pediu. Fora dela, arquivo vai para a equipe.
   if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps);
@@ -1507,7 +1734,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     case "coleta":
       return etapaColeta(estado, { texto }, deps);
     case "confirmacao":
-      return etapaConfirmacao(estado, texto, deps);
+      return etapaConfirmacao(estado, texto, deps, entrada.mensagemId);
     case "finalizada":
       return { estado, respostas: [], efeitos: [], rotulo: "ja_finalizada" };
   }

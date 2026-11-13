@@ -78,7 +78,7 @@ async function chamarDireto(
   }
   let r: Response;
   try {
-    r = await fetch(url, { method: init.method, headers, body, signal: AbortSignal.timeout(30_000) });
+    r = await fetch(url, { method: init.method, headers, body, signal: AbortSignal.timeout(env.FACTA_TIMEOUT_MS) });
   } catch (err) {
     throw new FactaErro(endpoint, `rede: ${err instanceof Error ? err.message : err}`);
   }
@@ -332,6 +332,9 @@ function celularEtapa2(numeroWhatsapp: string) {
 const dataBr = (iso: string) => iso.split("-").reverse().join("/");
 
 export interface Contratacao {
+  // Ponto sem volta: chamado logo antes da etapa 3, a única que cria proposta. Devolve
+  // false se a operação foi invalidada (o cliente mandou mensagem): a etapa 3 não é chamada.
+  pontoSemVolta?: () => Promise<boolean>;
   convenio: "inss" | "siape";
   cpf: string;
   dataNascimento: string; // AAAA-MM-DD
@@ -370,9 +373,22 @@ export interface Contratacao {
   };
 }
 
+// "erro": a Facta respondeu que não fez, ou a falha foi antes da etapa que cria a
+// proposta. "desconhecido": a etapa 3, que cria a proposta, caiu sem resposta (rede,
+// tempo esgotado, HTTP 5xx). A proposta pode existir: nunca repetir sem conferir.
+// - enviada: a etapa 3 devolveu o código da proposta, sem erro.
+// - erro: falhou na etapa 1, 2 ou no refin da port, antes da etapa 3. Essas etapas não
+//   criam proposta (o código da proposta só sai na etapa 3).
+// - desconhecido: a etapa 3 foi chamada e não houve resposta de sucesso inequívoca
+//   (tempo esgotado, rede, HTTP de erro, HTML, JSON incompleto ou com erro). A proposta
+//   pode existir. O manual da Facta não está no repositório: sem a lista documentada de
+//   erros anteriores à criação, nenhum erro da etapa 3 é tratado como "não criou".
+// - abortada: o ponto sem volta foi recusado; a etapa 3 não foi chamada.
 export type ResultadoContratacao =
   | { tipo: "enviada"; codigoAf: string; url: string; codigoRefin?: string }
-  | { tipo: "erro"; etapa: string; mensagem: string };
+  | { tipo: "erro"; etapa: string; mensagem: string }
+  | { tipo: "desconhecido"; etapa: string; mensagem: string }
+  | { tipo: "abortada"; etapa: string; mensagem: string };
 
 // Etapas 1, 2 e 3 e o envio do link de assinatura pelo WhatsApp. Para na primeira falha.
 export async function contratar(c: Contratacao): Promise<ResultadoContratacao> {
@@ -451,16 +467,33 @@ async function concluirProposta(c: Contratacao, idSimulador: string): Promise<Re
   const codigoCliente = String(e2.codigo_cliente ?? "");
   if (e2.erro || !codigoCliente) return { tipo: "erro", etapa: "dados pessoais", mensagem: String(e2.mensagem ?? "sem codigo_cliente") };
 
-  const e3 = await chamar("/proposta/etapa3-proposta-cadastro", cpf, {
-    method: "POST",
-    form: { codigo_cliente: codigoCliente, id_simulador: idSimulador, tipo_formalizacao: "DIG" },
-  });
-  const codigoAf = String(e3.codigo ?? "");
-  if (e3.erro || !codigoAf) return { tipo: "erro", etapa: "cadastro da proposta", mensagem: String(e3.mensagem ?? "sem código da proposta") };
+  if (c.pontoSemVolta && !(await c.pontoSemVolta())) {
+    return { tipo: "abortada", etapa: "antes do cadastro da proposta", mensagem: "operação invalidada antes do ponto sem volta" };
+  }
+  let e3: Record<string, any>;
+  try {
+    e3 = await chamar("/proposta/etapa3-proposta-cadastro", cpf, {
+      method: "POST",
+      form: { codigo_cliente: codigoCliente, id_simulador: idSimulador, tipo_formalizacao: "DIG" },
+    });
+  } catch (err) {
+    // A requisição saiu e a resposta não voltou: a Facta pode ter criado a proposta.
+    return { tipo: "desconhecido", etapa: "cadastro da proposta", mensagem: err instanceof Error ? err.message : String(err) };
+  }
+  const codigoAf = !e3.erro && e3.codigo != null ? String(e3.codigo).trim() : "";
+  if (!codigoAf) {
+    return { tipo: "desconhecido", etapa: "cadastro da proposta", mensagem: `resposta sem código de proposta: ${String(e3.mensagem ?? "sem mensagem").slice(0, 200)}` };
+  }
 
-  const e4 = await chamar("/proposta/envio-link", cpf, { method: "POST", form: { codigo_af: codigoAf, tipo_envio: "whatsapp" } });
-  // A proposta já existe. Se o envio falhar, o link ainda serve: a Maisa manda ela mesma.
-  if (e4.erro) console.error(`Facta não enviou o link da proposta ${codigoAf}: ${String(e4.mensagem ?? "")}`);
+  // A proposta já existe. Se o envio do link falhar, até por rede, ela continua valendo:
+  // a Maisa manda o link ela mesma. Antes, uma queda aqui virava "erro" e a equipe podia
+  // digitar de novo uma proposta que já existia.
+  try {
+    const e4 = await chamar("/proposta/envio-link", cpf, { method: "POST", form: { codigo_af: codigoAf, tipo_envio: "whatsapp" } });
+    if (e4.erro) console.error(`Facta não enviou o link da proposta ${codigoAf}: ${String(e4.mensagem ?? "")}`);
+  } catch (err) {
+    console.error(`Facta não enviou o link da proposta ${codigoAf}: ${err instanceof Error ? err.message : err}`);
+  }
   // Port + refin gera duas propostas; o link de assinatura é o da primeira.
   const refin = e3.codigo_refin_port ? String(e3.codigo_refin_port) : undefined;
   return { tipo: "enviada", codigoAf, url: String(e3.url_formalizacao ?? ""), ...(refin ? { codigoRefin: refin } : {}) };

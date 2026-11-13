@@ -678,6 +678,9 @@ async function rodar(caso: Caso, verbose: boolean) {
       return bancoSimulado.simularConsignado({ convenio: _produto, cpf: cpfGravado!, dataNascimento, parcelaMaxima: 300 });
     },
     digitacaoAtiva: true,
+    // A trava de produção fica desligada por padrão. Aqui ela é ligada para testar a digitação.
+    digitacaoLiberada: true,
+    janelaConfirmacaoMs: 30_000,
     // Stand-in do modelo: só responde à margem negativa, como o caso real.
     responderLivre: async (t) => (/negativ|margem/i.test(t) ? "Entendi, com a margem negativa ainda pode dar para fazer portabilidade." : null),
     extrairDados: async () => {
@@ -724,7 +727,14 @@ async function rodar(caso: Caso, verbose: boolean) {
     else if ("verificaOferta" in acao) entrada = { evento: "verificar_oferta" };
     else entrada = { evento: "verificar_autorizacao" };
 
-    const passo: Passo = await avancar(estado, entrada, deps);
+    let passo: Passo = await avancar(estado, entrada, deps);
+    // "sim" na confirmação só agenda: a janela passa sem mensagem nova e o job executa,
+    // como o servidor faz. As respostas dos dois passos contam como um turno.
+    if (passo.rotulo === "confirmacao_agendada") {
+      relogio = new Date(relogio.getTime() + 31_000);
+      const exec = await avancar(passo.estado, { evento: "executar_digitacao" }, deps);
+      passo = { ...exec, respostas: [...passo.respostas, ...exec.respostas], efeitos: [...passo.efeitos, ...exec.efeitos] };
+    }
     for (const e of passo.efeitos) {
       if (e.tipo === "cpf") cpfGravado = e.cpf;
       if (e.tipo === "transferir") {

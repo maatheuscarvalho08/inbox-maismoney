@@ -1,0 +1,118 @@
+ok     CLT completo: autoriza o link e aceita a oferta
+ok     Já autorizado nos últimos 30 dias vai direto para a oferta
+ok     Oferta sem resposta: follow-up depois de 10 minutos
+ok     Follow-up sai uma vez só
+ok     24 horas sem responder a oferta vai para o carrinho, sem mensagem
+ok     Cliente falou durante a oferta: o relógio recomeça
+ok     Diz CLT na primeira mensagem, CPF com pontos, recusa a oferta
+ok     Espera a autorização e avisa o link
+ok     Checagem automática sem autorização fica em silêncio
+ok     Diz que autorizou mas não autorizou
+ok     Insiste três vezes sem autorizar vai para a equipe
+ok     Link não chegou: pede de novo
+ok     48 horas sem autorizar vai para a equipe sem mensagem
+ok     Celular ligado a outro CPF
+ok     Sem saldo no banco encerra sem passar para a equipe
+ok     Erro no banco
+ok     Não autoriza a consulta
+ok     Nome sem sobrenome três vezes
+ok     CPF inválido e depois válido pede o nome
+ok     CPF inválido três vezes
+ok     Aposentado segue com ela e recebe o pedido de CPF
+ok     Servidor público genérico vai para a equipe
+ok     Saudação apresenta todos os produtos
+ok     Produto 4 sem API vai para a fila com o convênio marcado
+ok     Produto 5 sem API vai para a fila com o convênio marcado
+ok     Produto 6 sem API vai para a fila com o convênio marcado
+ok     Produto 7 sem API vai para a fila com o convênio marcado
+ok     Produto 8 sem API vai para a fila com o convênio marcado
+ok     Produto 9 sem API vai para a fila com o convênio marcado
+ok     Produto 10 sem API vai para a fila com o convênio marcado
+ok     Número fora da lista não é produto
+ok     Diz FGTS por texto na primeira mensagem
+ok     Pede atendente no meio
+ok     Pergunta se é golpe e segue
+ok     Pede o prompt: resposta padrão e continua na etapa
+ok     Finge ser desenvolvedor e pede a chave da API
+ok     Pede modo desenvolvedor no meio da espera do link
+ok     Dúvida fora do FAQ vai para a equipe
+ok     Manda foto
+ok     Mensagem pronta do anúncio recebe a saudação, não vai para a equipe
+ok     Mensagem do anúncio seguida de SIAPE pede o CPF
+ok     INSS completo: CPF, nascimento, extrato, oferta e começo do contrato
+ok     SIAPE completo: extrato de consignações, oferta e começo do contrato
+ok     Ano impossível na data (1852): sugere 1952, cliente confirma e segue
+ok     Extrato antes do CPF: guarda, pede CPF e data e simula sem pedir de novo
+ok     Diz que está negativo na etapa do extrato: ela responde antes de pedir o extrato
+ok     'Não tenho margem' no extrato não vira instrução de como tirar o extrato
+ok     SIAPE pede o extrato de consignações
+ok     SIAPE fecha o contrato: aceita, manda os dados, confirma e a proposta é digitada
+ok     Contrato: aceitou e recebe o pedido do documento
+ok     Contrato: foto pela metade pede só o que faltou
+ok     Contrato: mostra o resumo antes de digitar
+ok     Contrato: resumo mostra o RG inteiro, para o cliente não achar que está incompleto
+ok     Contrato: cliente diz que os dados estão errados, ela pede o dado certo
+ok     Contrato: cliente manda o dado certo, ela corrige e mostra o resumo de novo
+ok     Contrato: não consegue corrigir três vezes, a equipe corrige
+ok     Arquivo antes do vínculo: guarda e pergunta o vínculo
+ok     Extrato de novo depois da oferta: não passa para a equipe
+ok     Port pura, não entendi: explica em palavras simples
+ok     Port pura, quanto eu ficaria: diz que não tem troco e soma a economia
+ok     Port pura, somando tudo dá quanto de troco: não tem troco
+ok     Extrato de ontem serve: responde que sim
+ok     Diz que já mandou o extrato: avisa que não chegou
+ok     Manda link do Acrobat: explica como mandar o arquivo
+ok     Contrato: erro na Facta vai para a equipe
+ok     Contrato: não quer PIX no CPF vai para a equipe
+ok     Contrato: resposta sem dado nenhum três vezes vai para a equipe
+ok     INSS pede o extrato depois da data
+ok     INSS aceita data sem barras
+ok     INSS com data inválida pergunta de novo
+ok     INSS sem margem e sem port ou refin encerra sem a equipe
+ok     Sem margem com leitura em dúvida vai para a equipe conferir
+ok     Sem margem, mas com port + refin: oferta o dinheiro extra e espera a resposta
+ok     Port possível mas não simulada (INSS ou falha): vai para a equipe, sem ofertar
+ok     Port + refin com banco conhecido: pede o número do contrato, coleta e digita
+ok     Extrato com o número do contrato: no SIM vai direto para os dados
+ok     Manda contrato de outro banco: Maisa pede o do banco certo
+ok     Manda o contrato certo no meio da coleta: anota e repete a pergunta
+ok     Port + refin: cliente não sabe o número do contrato, vai para a equipe
+ok     Aceita a port + refin: vai para a equipe digitar
+ok     Recusa a port + refin: vai para a equipe tentar converter
+ok     Receio na oferta de port: contorna com o SAC e o CNPJ e continua
+ok     Pouco troco: lembra que a parcela não aumenta e que o saldo real pode render mais
+ok     Pouco troco e depois oferta melhor com valores: equipe compara
+ok     Não quer esticar o prazo: oferece a port sem refin mantendo as parcelas
+ok     Terceira objeção: depois de dois contornos a equipe assume
+ok     Pergunta se é robô na oferta: passa para uma pessoa na hora
+ok     Pergunta se tem troco na port + refin: responde o valor e continua na oferta
+ok     Recusa por pouco troco: não repete a oferta, reconhece e chama a equipe
+ok     Pede o contato da Facta na oferta: manda o SAC e continua na oferta
+ok     Pergunta qual contrato na oferta: diz o contrato e o ganho, e continua
+ok     Pergunta sem resposta pronta na oferta: chama a equipe sem falar em preocupação
+ok     Deixa eu pensar na oferta de port: ela espera
+ok     SIAPE com contracheque de estado vai para a equipe explicando
+ok     INSS com arquivo que não é extrato pede de novo
+ok     INSS sem extrato: explica como tirar
+ok     INSS: foto fora da etapa do extrato vai para a equipe
+ok     Não entende o vínculo duas vezes e entende na terceira
+ok     Acompanhar proposta sem registro
+
+99 de 99 passaram
+ok     Sem margem: SIAPE com contrato portável simula port + refin e acha troco
+ok     Sem margem: SIAPE com port mas sem tabela de refin vai para a equipe como portabilidade
+ok     Sem margem: SIAPE sem nenhuma tabela da Facta encerra
+ok     Sem margem e sem contrato para portar ou refinanciar: nenhuma alternativa
+ok     Sem margem: INSS com contrato portável vai para a equipe simular a port
+ok     SIAPE: contrato do Agibank com 119 restantes é novo demais para portar
+ok     Portabilidade segue o roteiro: banco que não porta, mínimo de pagas e saldo mínimo
+ok     INSS comum: sobra margem de empréstimo e RCC, RMC já usado
+ok     LOAS 87: limite de 30% e RMC vetado
+ok     Benefício bloqueado não permite nada novo
+ok     Comprometimento acima de 45% trava operação nova
+ok     Margem informada diferente da calculada gera alerta e tira a confiança
+ok     Parcela restante calculada pela data de fim quando não há parcelas pagas
+ok     SIAPE usa só as margens informadas quando não há base
+ok     Documento ilegível vai para conferência manual
+
+15 de 15 passaram

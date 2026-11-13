@@ -1,0 +1,274 @@
+<title>Maisa: correções adversariais</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: relatório de QA em coluna única, veredito no topo, tabelas com rolagem própria. Paleta da Mais Money (CLAUDE.md). */
+:root {
+  --bg: #1d1b22; --surface: #27252e; --surface-2: #2f2c37; --border: #38353f;
+  --ink: #ffffff; --muted: #aaa6b4; --accent: #f87500; --on-accent: #270b7c; --indigo: #b7a6f7;
+  --ok: #5fd39a; --warn: #f2c14e; --bad: #ff7a6b; --crit: #ff4d6d;
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #fbf8f4; --surface: #ffffff; --surface-2: #f4efe9; --border: #e4ddd4;
+  --ink: #1d1b22; --muted: #5d5867; --accent: #c45c00; --on-accent: #ffffff; --indigo: #4a2fb0;
+  --ok: #1b8a57; --warn: #9a6a00; --bad: #c2352a; --crit: #b0002a; color-scheme: light; } }
+:root[data-theme="light"] {
+  --bg: #fbf8f4; --surface: #ffffff; --surface-2: #f4efe9; --border: #e4ddd4;
+  --ink: #1d1b22; --muted: #5d5867; --accent: #c45c00; --on-accent: #ffffff; --indigo: #4a2fb0;
+  --ok: #1b8a57; --warn: #9a6a00; --bad: #c2352a; --crit: #b0002a; color-scheme: light; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.6; margin: 0; }
+.wrap { max-width: 1060px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 48px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: clamp(28px, 4.5vw, 40px); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: 22px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; max-width: 72ch; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.muted { color: var(--muted); }
+section { display: grid; gap: 16px; min-width: 0; }
+header { display: grid; gap: 14px; }
+.verdict { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--warn); border-radius: 10px; padding: 20px 22px; display: grid; gap: 10px; }
+.verdict strong { color: var(--warn); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; }
+.stat b { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--muted); }
+.bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
+.bar i { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
+.legend em { font-style: normal; display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.table { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; background: var(--surface-2); position: sticky; top: 0; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+code, .id { font-family: var(--mono); font-size: 12.5px; }
+.id { color: var(--indigo); white-space: nowrap; }
+.pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid currentColor; }
+.ok { color: var(--ok); } .warn { color: var(--warn); } .bad { color: var(--bad); } .crit { color: var(--crit); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.pair > div { padding: 14px 16px; display: grid; gap: 6px; min-width: 0; }
+.pair > div + div { border-left: 1px solid var(--border); }
+.pair .lbl { font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.pair .client { grid-column: 1 / -1; background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 13.5px; }
+.examples { display: grid; gap: 14px; }
+ol.rank { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+ol.rank li { padding-left: 4px; }
+ol.rank b { font-variant-numeric: tabular-nums; }
+.note { font-size: 13px; color: var(--muted); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.prio { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--on-accent); background: var(--accent); border-radius: 4px; padding: 1px 6px; }
+@media (max-width: 640px) { .pair { grid-template-columns: 1fr; } .pair > div + div { border-left: 0; border-top: 1px solid var(--border); } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+<style>.card ul ul{margin-top:4px}</style>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Fase 6.1 · correção das vulnerabilidades adversariais · branch preview · sem commit, push ou deploy · digitação automática desligada</div>
+  <h1>Maisa: correções da auditoria adversarial</h1>
+  <div class="verdict">
+    <p><strong>Os 18 achados da fase 6 foram corrigidos e reproduzidos de novo, e nenhum dos 129 ataques originais funciona mais.</strong> Somando os 161 cenários novos e 3 ataques reescritos, a bateria tem 293 cenários. Ela passou nas duas sementes de sorteio (293 de 293 em cada) com duas sementes de sorteio diferentes, contra Postgres real e processos mortos em momentos aleatórios.</p>
+    <p>Continua valendo o limite de antes: a Facta e o WhatsApp foram simulados por servidores HTTP falsos. Nada aqui prova como as APIs reais se comportam.</p>
+    <p>Três itens dependem de ação fora do código:</p>
+    <ul>
+      <li>pedir à Facta a lista documentada de erros da etapa 3;</li>
+      <li>confirmar o formato real do aviso de entrega da Evolution;</li>
+      <li>aplicar a trava externa no <code>.env</code> antes de qualquer deploy ou rollback.</li>
+    </ul>
+  </div>
+  <div class="stats">
+    <div class="stat"><b class="ok">0</b><span>vulnerabilidades críticas abertas</span></div>
+    <div class="stat"><b class="ok">0</b><span>altas abertas sem mitigação formal</span></div>
+    <div class="stat"><b>293</b><span>cenários adversariais: 129 da fase 6 e 161 novos, mais 3 reescritos</span></div>
+    <div class="stat"><b>75 → 0</b><span>ataques da fase 6 que quebravam o sistema</span></div>
+  </div>
+</header>
+
+<section>
+  <h2>Arquitetura anterior e nova</h2>
+  <div class="table"><table>
+    <thead><tr><th>Ponto</th><th>Fase 5 (anterior)</th><th>Fase 6.1 (nova)</th></tr></thead>
+    <tbody>
+      <tr><td>Correção durante a digitação</td><td>Uma checagem no banco antes da 1ª chamada à Facta. Entre ela e a etapa 3, nada.</td><td><b>Ponto sem volta explícito.</b> A operação nasce "preparada". Toda mensagem relevante do cliente, ao ser gravada, invalida na mesma transação a operação preparada da conversa. Logo antes da etapa 3, o executor troca "preparada" por "irreversível" numa atualização condicional. O Postgres ordena as duas e só uma vence. Depois do ponto sem volta, a correção vira alerta para a equipe e nunca aparece como aplicada.</td></tr>
+      <tr><td>Ordem das mensagens</td><td>Ordem de gravação no banco</td><td><b>Horário do WhatsApp</b>, com o recebimento como reserva. Mensagens no mesmo segundo contam como "depois", o lado seguro. Horário inválido, no futuro ou muito antigo, vira horário de recebimento. Um "sim" com mensagem relevante mandada depois dele não vale, mesmo que seja lido por último.</td></tr>
+      <tr><td>Chave da operação</td><td>Conversa + oferta, sem os dados</td><td><b>CPF + produto + oferta + resumo dos dados confirmados</b>. Uma trava por CPF no Postgres (<code>pg_advisory_xact_lock</code>) impede duas operações vivas para o mesmo cliente em qualquer número ou conversa. Proposta concluída bloqueia por 30 dias. Exceção, só com liberação registrada.</td></tr>
+      <tr><td>Saída das mensagens</td><td>Estado gravado, depois envio, depois transferência</td><td><b>Fila de saída transacional</b> (<code>saidas_maisa</code>). Estado, saída da Maisa, efeitos, evento, nota e respostas entram numa transação só. Um despachante entrega na ordem, com <code>FOR UPDATE SKIP LOCKED</code>. Envio que não terminou vira "incerto" e nunca é reenviado.</td></tr>
+      <tr><td>Conversa finalizada</td><td>Podia ficar com a Maisa depois de uma queda</td><td><b>CHECK no banco</b>: o Postgres recusa conversa finalizada com a Maisa</td></tr>
+      <tr><td>Concorrência entre processos</td><td>Só versão do estado</td><td><b>Lease por conversa no banco</b>, que vence em 90 s e é renovado durante o processamento, mais a versão do estado e a trava por CPF</td></tr>
+      <tr><td>Etapa 3 da Facta</td><td>Erro na resposta contava como "a Facta recusou"</td><td><b>Só o código da proposta conta como sucesso.</b> Todo o resto é "desconhecida": erro, HTML, 408, 502, JSON sem código.</td></tr>
+      <tr><td>Erro de envio</td><td>502, 503, 504 e 429 reenviados</td><td><b>Só reenvia com prova</b>: conexão que nem abriu, ou, na Meta, os códigos de limite da tabela de erros (4, 80007, 130429, 131056). Evolution com 5xx ou 429 é incerto.</td></tr>
+      <tr><td>Falha avisada depois</td><td>Só mudava o ícone</td><td>Meta "failed" e Evolution <code>messages.update</code> com erro tiram a conversa da Maisa, uma vez só, com nota e aviso. Entrega confirmada depois de um "incerto" também gera nota.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Vulnerabilidades corrigidas</h2>
+  <div class="table"><table>
+    <thead><tr><th>Achado</th><th>Causa real</th><th>Correção</th><th>Prova: o teste que achou</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill crit">C1</span> Correção ignorada durante a digitação</td><td>Checagem só antes da etapa 1, sem sincronização com a gravação das mensagens</td><td>Ponto sem volta condicional e invalidação na mesma transação da mensagem</td><td>R1: de 17/30 quebrando para 0/35. N1 (40) e N2 (20, em processos diferentes): toda proposta criada tinha a correção depois do ponto sem volta, e com alerta.</td></tr>
+      <tr><td><span class="pill crit">C2</span> Mensagens fora de ordem</td><td>A ordem era a de gravação; o horário do WhatsApp era ignorado</td><td><code>ordemMensagens.ts</code>: horário do WhatsApp, empate no mesmo segundo conta como depois, reserva para horário inválido. "sim" antigo é ignorado.</td><td>R2: de 3/3 quebrando para 0/3. N3: 24/24, com áudio atrasado, mesmo segundo, horário futuro e antigo, e mensagens neutras.</td></tr>
+      <tr><td><span class="pill crit">C3</span> "Contrato feito" com o link antigo</td><td>A chave ignorava os dados, e repetir a mesma oferta respondia "feito"</td><td>Chave com resumo dos dados. Operação existente nunca aparece como contrato novo: vai para a equipe ("estou conferindo").</td><td>R1 em outro processo: de 5/5 para 0/5. R5 devolução: de 1/1 para 0/1. N4: 12/12.</td></tr>
+      <tr><td><span class="pill bad">A1</span> Finalizada ainda com a Maisa</td><td>Saída da Maisa aplicada depois do envio, fora da transação</td><td>Saída na mesma atualização do estado, mais o CHECK no banco</td><td>R4: de 12/40 para 0/40. R7 determinístico: o banco recusa o estado.</td></tr>
+      <tr><td><span class="pill bad">A2</span> Resposta perdida em queda</td><td>Nenhum registro persistente do envio</td><td>Fila de saída. Envio interrompido vira "incerto" e vai para a equipe; nada some.</td><td>R4: 0/40. R6, queda na espera: 0/3. N7, despachante morto: 15/15. N8, Postgres caindo: 6/6, estado e respostas sempre juntos.</td></tr>
+      <tr><td><span class="pill bad">A3</span> Duplicidade por CPF</td><td>Chave por conversa</td><td>Trava por CPF em transação, em qualquer conversa ou número</td><td>R5: de 2/2 para 0/2. N4, dois números ao mesmo tempo em processos diferentes: no máximo 1 proposta (3/3).</td></tr>
+      <tr><td><span class="pill bad">A4</span> Etapa 3 com erro lida como recusa</td><td>Classificação otimista, sem base documental</td><td>Classificação conservadora. A nota nunca diz que "a Facta recusou" e sempre manda conferir no portal.</td><td>R5: de 2/2 para 0/2. N9: 10/10.</td></tr>
+      <tr><td><span class="pill bad">A5</span> Falha avisada depois ignorada</td><td>Webhooks só mudavam o ícone; a Evolution nem estava inscrita no evento</td><td>Tratamento na Meta e na Evolution, idempotente. Evento <code>MESSAGES_UPDATE</code> incluído.</td><td>R6: 0/2. N5: 12/12, incluindo aviso repetido e status desconhecido.</td></tr>
+      <tr><td><span class="pill warn">M1</span> Reenvio sem base</td><td>Status HTTP tratado como prova</td><td>Classificação por provedor</td><td>R6: de 4/4 para 0/4 duplicações</td></tr>
+      <tr><td><span class="pill warn">M2/M3</span> Efeitos duplicados entre processos</td><td>Versão do estado só protegia a gravação</td><td>Lease por conversa no banco</td><td>R3: 0/6. R7, link do CLT: de 3/3 para 0/3.</td></tr>
+      <tr><td><span class="pill warn">M4</span> Proposta sem registro na tela</td><td>Proposta criada fora da transação da operação</td><td>Conclusão e proposta na mesma transação</td><td>R7, Postgres caindo: 0/3</td></tr>
+      <tr><td><span class="pill warn">M5</span> Falha bloqueava para sempre</td><td>"falhou" tratado como operação viva</td><td>Falha antes da etapa 3 libera nova tentativa. Incerta ou concluída exige liberação registrada, com motivo obrigatório no banco e na tela.</td><td>R5 0/1, N4 sequências</td></tr>
+      <tr><td><span class="pill warn">M6</span> Trava sumia no rollback</td><td>A trava estava só no código novo</td><td>Script <code>conferirTravas</code>, que lê só o <code>.env</code> e vale para qualquer versão</td><td>R8: barra a configuração insegura e aceita as seguras</td></tr>
+      <tr><td><span class="pill ok">B1</span> Rastro apagado com a conversa</td><td>ON DELETE CASCADE</td><td>ON DELETE RESTRICT</td><td>R7: apagar a conversa é recusado</td></tr>
+      <tr><td><span class="pill ok">B2</span> Conversas antigas sem marca de última lida</td><td>A marca não existia antes</td><td>A migração preenche a marca até a última mensagem respondida. O que veio depois fica como não lido.</td><td>R7 e R8, banco antigo migrado</td></tr>
+      <tr><td><span class="pill ok">B3</span> Falso alarme em tempo esgotado</td><td>Conservador de propósito</td><td>Mantido conservador. Se o provedor confirmar a entrega depois, a equipe recebe uma nota ("chegou ao cliente").</td><td>N5 (2/2)</td></tr>
+      <tr><td><span class="pill ok">B4</span> 408 na etapa 3 contava como falha real</td><td>Classificação otimista</td><td>408 passa a ser desconhecida</td><td>R5 e N9</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Defeitos que a própria fase 6.1 introduziu e os testes pegaram</h2>
+  <ul>
+    <li><b>Migração não gravada:</b> o comando que a reescrevia falhou em silêncio. A verificação de schema contra migrações pegou.</li>
+    <li><b>Fuso horário no SQL:</b> a fila de saída comparava datas em UTC com <code>now()</code> no fuso da sessão. Funcionaria só com o Postgres em UTC. Agora todo SQL usa UTC explícito.</li>
+    <li><b>"sim" repetidos:</b> um "sim" invalidava o outro. Confirmação pura agora não invalida confirmação.</li>
+    <li><b>Correção não lida seguida de "sim":</b> sem o modelo, "espera, o CEP é…" não era lido, e o "sim" seguinte confirmava os dados antigos. Correção pedida e não aplicada agora trava o "sim" e vai para a equipe.</li>
+    <li><b>Marca de última lida:</b> na primeira versão, o preenchimento marcava como lida uma mensagem que chegou durante o deploy.</li>
+    <li><b>Horário do WhatsApp aceito até 5 minutos depois do recebimento:</b> isso é impossível na prática e fazia um "sim" válido parecer antigo. A folga agora é de 1 minuto, para diferença de relógio.</li>
+    <li><b>Revisão independente:</b>
+      <ul>
+        <li>com o CHECK novo, uma resposta a disparo numa conversa já finalizada perderia a mensagem do cliente. Agora ela entra com estado novo;</li>
+        <li>a rota de operações devolvia CPF e chave. Agora não devolve.</li>
+      </ul>
+    </li>
+  </ul>
+</section>
+
+<section>
+  <h2>Testes e resultados</h2>
+  <div class="table"><table>
+    <thead><tr><th>Bateria</th><th>Ambiente</th><th class="num">Casos</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td>Adversarial: 129 da fase 6 + 161 novos + 3 reescritos</td><td>Postgres real, processos reais, SIGKILL sorteado, Facta e Evolution simuladas</td><td class="num">293</td><td><span class="ok">293/293 com a semente 20261112 e 293/293 com a 777</span></td></tr>
+      <tr><td>Operação da fase 5</td><td>Postgres real, serviços simulados</td><td class="num">136</td><td class="ok">136/136</td></tr>
+      <tr><td>Conversa, fase 5</td><td>Modelo real × 2</td><td class="num">156</td><td class="ok">156/156</td></tr>
+      <tr><td>Conversa, fase 4</td><td>Modelo real × 2</td><td class="num">410</td><td>409 aprovadas e 1 falso positivo (abaixo)</td></tr>
+      <tr><td>Conversa, fase 3</td><td>Modelo real × 2</td><td class="num">248</td><td>246, igual à fase 5</td></tr>
+      <tr><td>Conversa, fase 2</td><td>Modelo real × 2</td><td class="num">748</td><td>731. Antes eram 734: 3 reprovações a mais, do modelo (abaixo).</td></tr>
+      <tr><td>Conversa, fase 1</td><td>Modelo real</td><td class="num">311</td><td>308 + 2 atenção + 1 falso positivo</td></tr>
+      <tr><td>Testes fixos</td><td>Só regras</td><td class="num">114</td><td class="ok">99/99 e 15/15</td></tr>
+    </tbody>
+  </table></div>
+  <p>Diferenças contra a fase 5, todas lidas à mão:</p>
+  <ul>
+    <li><b>ETAP-016 e F4D-010, "falha crítica" de promessa:</b> falso positivo da checagem automática. Os textos negam: "Não tenho um prazo garantido para te passar" e "não posso confirmar que o dinheiro vai cair amanhã, pois não há prazo garantido". A checagem só reconhece a forma "sem prazo garantido". Não alterei o critério nesta fase.</li>
+    <li><b>C3-032 ("não sei o CEP") e C3-034 ("o email é do meu filho"):</b> o modelo não devolveu resposta, e a conversa foi para a equipe. O desfecho é seguro, mas conta como reprovado. O C3-032 já oscilava na fase 4 (4 de 5), e o código do cadastro não mudou nesta fase. Fica como risco residual: o modelo é instável nessas perguntas.</li>
+    <li><b>F3J-002 e F4E-001, só nas rodadas sem modelo:</b> antes digitavam com o CEP errado, quando a correção não era lida. Agora vão para a equipe. Com o modelo real, as duas passam.</li>
+  </ul>
+  <p class="note">Simulado não é validado. A Facta e a Evolution dos testes são falsas. Com o Postgres real e o modelo real, o comportamento foi testado de verdade. Nenhuma integração externa com efeito real foi chamada. A regressão com o modelo rodou no container de produção, só lendo, como nas fases anteriores, e o roteiro foi apagado no fim.</p>
+</section>
+
+<section>
+  <h2>Arquivos</h2>
+  <div class="cols">
+    <div class="card"><h3>Novos</h3><ul>
+      <li><code>maisa/ordemMensagens.ts</code>: ordem e relevância</li>
+      <li><code>maisa/saidaMaisa.ts</code>: fila de saída, despachante, falhas</li>
+      <li><code>maisa/portasMaisa.ts</code>: relógio, espera e identificação do processo</li>
+      <li><code>scripts/conferirTravas.ts</code>: trava externa</li>
+      <li><code>frontend/…/OperacoesFacta.tsx</code>: situação e liberação</li>
+      <li><code>testes-operacao/adversarial.mts</code>: 293 cenários</li>
+    </ul></div>
+    <div class="card"><h3>Reescritos ou alterados</h3><ul>
+      <li><code>maisa/operacaoFacta.ts</code>: reserva por CPF, ponto sem volta, liberação</li>
+      <li><code>maisa/maisa.service.ts</code>: lease, transação única, recuperação</li>
+      <li><code>maisa/fluxo.ts</code>: "sim" antigo, bloqueada/abortada, correção pendente</li>
+      <li><code>maisa/facta.ts</code>: ponto sem volta e etapa 3 conservadora</li>
+      <li><code>mensagens/mensagens.service.ts</code>: invalidação na mesma transação</li>
+      <li><code>mensagens/falhaEnvio.ts</code>, <code>entrega.ts</code>: classificação por provedor</li>
+      <li><code>webhooks/meta.routes.ts</code>, <code>evolution.routes.ts</code>: falha e entrega avisadas depois</li>
+      <li><code>conversas.service.ts</code>, <code>funil.service.ts</code>, <code>maisa.routes.ts</code>, <code>evolutionApi.ts</code>, <code>travaDigitacao.ts</code></li>
+    </ul></div>
+    <div class="card"><h3>Migração</h3><ul>
+      <li><code>20261112200000_maisa_hardening</code>, reescrita porque nunca foi aplicada fora dos bancos de teste:<ul>
+        <li><code>operacoes_facta</code>, com CHECK de situação e de liberação, e ON DELETE RESTRICT;</li>
+        <li><code>saidas_maisa</code>;</li>
+        <li>colunas de versão e de lease;</li>
+        <li>preenchimento da marca de última lida;</li>
+        <li>CHECK que impede conversa finalizada com a Maisa.</li>
+      </ul></li>
+      <li>Validada do zero e sobre banco antigo com dados. A falha no meio não deixa nada parcial.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>Riscos residuais</h2>
+  <div class="table"><table>
+    <thead><tr><th>Risco</th><th>Mitigação</th></tr></thead>
+    <tbody>
+      <tr><td>A Facta real não foi testada. A lista de erros da etapa 3 que garantem "não criou" não é conhecida.</td><td>Tudo que não for sucesso inequívoco vira desconhecida e fica com a equipe. Pedir à Facta o manual de erros e um endpoint de consulta de proposta.</td></tr>
+      <tr><td>O formato do <code>messages.update</code> da Evolution não foi confirmado com evento real.</td><td>O leitor aceita os dois formatos conhecidos e registra o que não reconhecer. Instâncias antigas precisam rodar <code>sincronizarWebhooksEvolution</code> para receber o evento.</td></tr>
+      <tr><td>Correção que chega depois do ponto sem volta não pode ser aplicada.</td><td>Alerta imediato para a equipe, com nota e aviso na tela</td></tr>
+      <tr><td>Depois de uma queda, a recuperação espera o lease (90 s) e o prazo de envio (cerca de 47 s).</td><td>Nada se perde e nada duplica. O cliente pode esperar até uns 2 minutos depois de um reinício.</td></tr>
+      <tr><td>"Incerto" gera falso alarme quando a mensagem chegou.</td><td>Conservador de propósito, com nota se o provedor confirmar depois</td></tr>
+      <tr><td>Oscilação do modelo em perguntas de cadastro sem fato aprovado</td><td>O desfecho é a equipe; nunca resposta errada</td></tr>
+      <tr><td>A trava externa depende de ação no servidor.</td><td>Rodar <code>conferirTravas</code> antes de todo deploy e rollback</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Rollback</h2>
+  <div class="card"><ol>
+    <li>Antes de qualquer deploy: <code>MAISA_DIGITA_PROPOSTA=false</code> no <code>.env</code> (ou tirar <code>FACTA_LOGIN_CERTIFICADO</code>), rodar <code>npx tsx src/scripts/conferirTravas.ts</code> (precisa sair 0), <code>pg_dump</code> e <code>docker tag maismoney-inbox-backend:latest maismoney-inbox-backend:antes-fase61</code>.</li>
+    <li>Para voltar o código: rodar <code>conferirTravas</code> de novo, depois <code>ALTER TABLE conversas DROP CONSTRAINT conversas_finalizada_fora_da_maisa;</code>. É obrigatório: o código antigo grava "finalizada" antes de tirar a conversa da Maisa, e o banco recusaria. Validado num banco descartável. Depois, marcar <code>antes-fase61</code> como <code>latest</code> e subir o backend.</li>
+    <li>As tabelas e colunas novas podem ficar: o código antigo funciona com elas (validado). Remoção completa, também validada: <code>DROP TABLE saidas_maisa; DROP TABLE operacoes_facta; ALTER TABLE conversas DROP COLUMN maisa_versao, DROP COLUMN maisa_lease_ate, DROP COLUMN maisa_lease_dono; ALTER TABLE mensagens DROP COLUMN tentativas_entrega;</code> e apagar a linha da migração em <code>_prisma_migrations</code>.</li>
+    <li>Respostas na fila de saída com situação "pendente" não são enviadas pelo código antigo. Avisar a equipe para olhar as conversas da Maisa no momento da volta.</li>
+    <li>Se a migração falhar no deploy, o backend não sobe e nada fica pela metade (validado). Corrigir a causa, rodar <code>prisma migrate resolve --rolled-back 20261112200000_maisa_hardening</code> e subir de novo.</li>
+  </ol></div>
+</section>
+
+<section>
+  <h2>Comparação com a fase 6</h2>
+  <div class="table"><table>
+    <thead><tr><th>Grupo</th><th class="num">Fase 6: quebraram</th><th class="num">Fase 6.1: quebraram</th></tr></thead>
+    <tbody>
+      <tr><td>R1 Correção durante o job</td><td class="num">22/35</td><td class="num ok">0/35</td></tr>
+      <tr><td>R2 Fora de ordem</td><td class="num">3/3</td><td class="num ok">0/3</td></tr>
+      <tr><td>R3 Jobs concorrentes</td><td class="num">6/6</td><td class="num ok">0/6</td></tr>
+      <tr><td>R4 Quedas</td><td class="num">19/40</td><td class="num ok">0/40</td></tr>
+      <tr><td>R5 Idempotência</td><td class="num">6/12</td><td class="num ok">0/12</td></tr>
+      <tr><td>R6 WhatsApp</td><td class="num">11/12</td><td class="num ok">0/12</td></tr>
+      <tr><td>R7 Persistência</td><td class="num">7/14</td><td class="num ok">0/14</td></tr>
+      <tr><td>R8 Migração e rollback</td><td class="num">1/7</td><td class="num ok">0/10</td></tr>
+      <tr><td>N1 a N10 (novos)</td><td class="num">—</td><td class="num ok">0/161</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Na primeira rodada da 6.1, 42 cenários quebraram. Três eram defeitos reais, corrigidos: a correção não lida seguida de "sim", a marca da migração e o "sim" repetido. Os outros eram artefatos do roteiro, ajustados e explicados no código:</p>
+  <ul class="note">
+    <li>a recuperação rodava antes de o lease vencer;</li>
+    <li>CPFs repetidos entre grupos;</li>
+    <li>a checagem de duplicidade comparava por texto;</li>
+    <li>dois comandos SQL iam numa chamada só.</li>
+  </ul>
+  <p class="note">Na segunda semente apareceram 4 quebras, todas analisadas antes de aprovar:</p>
+  <ul class="note">
+    <li><b>Duas do critério do R1:</b> ele media a chegada da chamada HTTP na Facta falsa, não o ponto sem volta. Reproduzidas com detalhe, a correção vinha 14 ms depois do ponto sem volta, com alerta para a equipe. O R1 passou a usar o mesmo critério do N1.</li>
+    <li><b>Duas do horário de uma mensagem semeada pelo roteiro:</b> isso expôs a folga de 5 minutos, que foi apertada.</li>
+  </ul>
+  <p class="note">A rodada final passou inteira nas duas sementes.</p>
+  <p class="note">A fase 6 tinha 129 cenários; R8 ganhou 3 de rollback e migração. Evidências em <code>backend/auditoria/2026-11-12/fase61/</code>.</p>
+</section>
+</div>

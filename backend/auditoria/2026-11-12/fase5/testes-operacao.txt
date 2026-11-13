@@ -1,0 +1,479 @@
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"b5bfc988-86ad-407e-af22-0e93aa1a41ec","detalhe":"estado da conversa b5bfc988-86ad-407e-af22-0e93aa1a41ec mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"b5bfc988-86ad-407e-af22-0e93aa1a41ec","detalhe":"663cd777-058b-4f43-a138-224bc5838947"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"b5bfc988-86ad-407e-af22-0e93aa1a41ec","operacaoId":"5337da3b-b2b1-4aaf-b3ca-9d21471c74c5","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa b5bfc988-86ad-407e-af22-0e93aa1a41ec: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"b5bfc988-86ad-407e-af22-0e93aa1a41ec","operacaoId":"5337da3b-b2b1-4aaf-b3ca-9d21471c74c5","detalhe":"concluida"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"52fb8dfd-21df-460c-84d8-ac1e35743c41","detalhe":"estado da conversa 52fb8dfd-21df-460c-84d8-ac1e35743c41 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"52fb8dfd-21df-460c-84d8-ac1e35743c41","detalhe":"estado da conversa 52fb8dfd-21df-460c-84d8-ac1e35743c41 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"52fb8dfd-21df-460c-84d8-ac1e35743c41","detalhe":"23a570e7-98a1-4a05-990e-65d910acac78"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"52fb8dfd-21df-460c-84d8-ac1e35743c41","detalhe":"2f75b8de-64f2-451e-a6ee-e99b227b4103"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"52fb8dfd-21df-460c-84d8-ac1e35743c41","operacaoId":"782fa99b-8665-4eaf-9dd3-6e240f28245d","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 52fb8dfd-21df-460c-84d8-ac1e35743c41: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"52fb8dfd-21df-460c-84d8-ac1e35743c41","operacaoId":"782fa99b-8665-4eaf-9dd3-6e240f28245d","detalhe":"concluida"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"4ead1e0d-c6f4-4b36-92fb-33343baae5b5","detalhe":"estado da conversa 4ead1e0d-c6f4-4b36-92fb-33343baae5b5 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"4ead1e0d-c6f4-4b36-92fb-33343baae5b5","detalhe":"estado da conversa 4ead1e0d-c6f4-4b36-92fb-33343baae5b5 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"4ead1e0d-c6f4-4b36-92fb-33343baae5b5","detalhe":"estado da conversa 4ead1e0d-c6f4-4b36-92fb-33343baae5b5 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"4ead1e0d-c6f4-4b36-92fb-33343baae5b5","detalhe":"estado da conversa 4ead1e0d-c6f4-4b36-92fb-33343baae5b5 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"4ead1e0d-c6f4-4b36-92fb-33343baae5b5","detalhe":"48261735-a047-4bdb-89dc-82b64f7967b7"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"4ead1e0d-c6f4-4b36-92fb-33343baae5b5","detalhe":"5a64ac2a-dfb2-4c84-97fd-d28c2ce13677"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"4ead1e0d-c6f4-4b36-92fb-33343baae5b5","operacaoId":"2f49dddd-bccb-48a7-8095-a9433fbd9b22","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 4ead1e0d-c6f4-4b36-92fb-33343baae5b5: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"4ead1e0d-c6f4-4b36-92fb-33343baae5b5","operacaoId":"2f49dddd-bccb-48a7-8095-a9433fbd9b22","detalhe":"concluida"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"estado da conversa 5aa5c139-448b-4a9d-964e-76771a2dda1e mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"estado da conversa 5aa5c139-448b-4a9d-964e-76771a2dda1e mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"estado da conversa 5aa5c139-448b-4a9d-964e-76771a2dda1e mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"estado da conversa 5aa5c139-448b-4a9d-964e-76771a2dda1e mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"estado da conversa 5aa5c139-448b-4a9d-964e-76771a2dda1e mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"estado da conversa 5aa5c139-448b-4a9d-964e-76771a2dda1e mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"estado da conversa 5aa5c139-448b-4a9d-964e-76771a2dda1e mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"88926e9c-f980-477d-b778-635e4a21e84f"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"a1b1e352-6772-4d77-b2da-a6d15e1e8ce6"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"0c83ed7c-2900-487b-83b7-abd7b5480196"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"d983ae3e-4372-4910-8451-06c9df4f6cc6"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"6a1ad431-2ec9-4ca2-8570-6369d4231b49"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","detalhe":"5edcf8f8-54b5-42a7-999c-90305fe55b4d"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","operacaoId":"0cbdecdd-b49a-4506-8996-372b61d75ba3","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 5aa5c139-448b-4a9d-964e-76771a2dda1e: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"5aa5c139-448b-4a9d-964e-76771a2dda1e","operacaoId":"0cbdecdd-b49a-4506-8996-372b61d75ba3","detalhe":"concluida"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"estado da conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"estado da conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"estado da conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"estado da conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"estado da conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"estado da conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"estado da conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"estado da conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"estado da conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"0c0099f1-2b38-448e-b0a5-9f974f9e16e7"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"08b2f0e2-2c52-4fe2-a8c2-279c2bb2d0f6"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"43847108-5ace-4f53-966b-bf3a9c42e2b8"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"0acb1cbf-1bc0-4a5c-808d-1930aa2d07d1"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"27183933-0f1f-4c3f-a529-7975b26a0004"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"eb73776b-c04c-498f-8007-ef9a5a7daded"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"06fb22f0-4b3f-4705-8653-d848a5f4b28c"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","detalhe":"4341a92d-f8f4-48b1-ad10-ff99ff31ff0f"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","operacaoId":"3d2e8838-0e16-4a50-a16a-af8ffe66d672","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 00a3dca1-66bf-4281-aec8-e5dcd41e6604: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"00a3dca1-66bf-4281-aec8-e5dcd41e6604","operacaoId":"3d2e8838-0e16-4a50-a16a-af8ffe66d672","detalhe":"concluida"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"07c033aa-2644-46c9-a6ad-ac71ab2cde67","detalhe":"estado da conversa 07c033aa-2644-46c9-a6ad-ac71ab2cde67 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"07c033aa-2644-46c9-a6ad-ac71ab2cde67","detalhe":"73232243-21a0-44a3-b69d-dc3a6ba0f0ea"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"91bb24bb-2a07-426c-87f2-88088c3221b7","detalhe":"estado da conversa 91bb24bb-2a07-426c-87f2-88088c3221b7 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"91bb24bb-2a07-426c-87f2-88088c3221b7","detalhe":"estado da conversa 91bb24bb-2a07-426c-87f2-88088c3221b7 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"91bb24bb-2a07-426c-87f2-88088c3221b7","detalhe":"estado da conversa 91bb24bb-2a07-426c-87f2-88088c3221b7 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"91bb24bb-2a07-426c-87f2-88088c3221b7","detalhe":"estado da conversa 91bb24bb-2a07-426c-87f2-88088c3221b7 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"91bb24bb-2a07-426c-87f2-88088c3221b7","detalhe":"9fe8615d-02e3-4a4c-8b0d-8f88612c7a4f"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"91bb24bb-2a07-426c-87f2-88088c3221b7","detalhe":"9fe8615d-02e3-4a4c-8b0d-8f88612c7a4f"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"91bb24bb-2a07-426c-87f2-88088c3221b7","detalhe":"9fe8615d-02e3-4a4c-8b0d-8f88612c7a4f"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"91bb24bb-2a07-426c-87f2-88088c3221b7","detalhe":"9fe8615d-02e3-4a4c-8b0d-8f88612c7a4f"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"estado da conversa 39a7d253-91f6-48e6-81c9-eed33a704b4a mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"estado da conversa 39a7d253-91f6-48e6-81c9-eed33a704b4a mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"estado da conversa 39a7d253-91f6-48e6-81c9-eed33a704b4a mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"estado da conversa 39a7d253-91f6-48e6-81c9-eed33a704b4a mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"estado da conversa 39a7d253-91f6-48e6-81c9-eed33a704b4a mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"estado da conversa 39a7d253-91f6-48e6-81c9-eed33a704b4a mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"estado da conversa 39a7d253-91f6-48e6-81c9-eed33a704b4a mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"estado da conversa 39a7d253-91f6-48e6-81c9-eed33a704b4a mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"estado da conversa 39a7d253-91f6-48e6-81c9-eed33a704b4a mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"904dc501-d9ac-44ff-9e81-d5d830e7a0af"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"904dc501-d9ac-44ff-9e81-d5d830e7a0af"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"904dc501-d9ac-44ff-9e81-d5d830e7a0af"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"904dc501-d9ac-44ff-9e81-d5d830e7a0af"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"904dc501-d9ac-44ff-9e81-d5d830e7a0af"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"904dc501-d9ac-44ff-9e81-d5d830e7a0af"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"904dc501-d9ac-44ff-9e81-d5d830e7a0af"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"904dc501-d9ac-44ff-9e81-d5d830e7a0af"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"39a7d253-91f6-48e6-81c9-eed33a704b4a","detalhe":"904dc501-d9ac-44ff-9e81-d5d830e7a0af"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"d45d1e7d-4e48-4600-9d3b-e375943e3fbf","operacaoId":"5bc5c048-b40d-49ec-bd6e-712450b6d147","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa d45d1e7d-4e48-4600-9d3b-e375943e3fbf: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"d45d1e7d-4e48-4600-9d3b-e375943e3fbf","operacaoId":"5bc5c048-b40d-49ec-bd6e-712450b6d147","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"ed03352e-38e8-468a-a0e4-bd0575badae2","operacaoId":"92ac8798-63e8-4dba-a45a-39b0ab44e461","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa ed03352e-38e8-468a-a0e4-bd0575badae2: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"ed03352e-38e8-468a-a0e4-bd0575badae2","operacaoId":"92ac8798-63e8-4dba-a45a-39b0ab44e461","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"3fe756ec-584f-4152-a497-1591886d6d49","operacaoId":"aab82a40-bb23-4b89-8303-6d12e07c8c1a","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 3fe756ec-584f-4152-a497-1591886d6d49: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"3fe756ec-584f-4152-a497-1591886d6d49","operacaoId":"aab82a40-bb23-4b89-8303-6d12e07c8c1a","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"3ff02aae-eb6d-44b2-83d6-c4feb78f8878","operacaoId":"c15a334a-5e46-427c-95c1-b34284d247e5","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 3ff02aae-eb6d-44b2-83d6-c4feb78f8878: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"3ff02aae-eb6d-44b2-83d6-c4feb78f8878","operacaoId":"c15a334a-5e46-427c-95c1-b34284d247e5","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"4aee30e7-81c0-4396-97cc-4d21125bf2dc","operacaoId":"7277b997-3dda-4c45-8ad4-f80a81dec417","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 4aee30e7-81c0-4396-97cc-4d21125bf2dc: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"4aee30e7-81c0-4396-97cc-4d21125bf2dc","operacaoId":"7277b997-3dda-4c45-8ad4-f80a81dec417","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"ec35a022-de82-434b-b598-f788fddad21d","operacaoId":"c867d5cd-4c74-4436-bbc5-c716e0f211ab","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa ec35a022-de82-434b-b598-f788fddad21d: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"ec35a022-de82-434b-b598-f788fddad21d","operacaoId":"c867d5cd-4c74-4436-bbc5-c716e0f211ab","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"16041afa-a3d8-4141-921b-c0e6337cd514","operacaoId":"1509fec9-a909-4959-b109-e5ec293139b4","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 16041afa-a3d8-4141-921b-c0e6337cd514: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"16041afa-a3d8-4141-921b-c0e6337cd514","operacaoId":"1509fec9-a909-4959-b109-e5ec293139b4","detalhe":"concluida"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"c8a40c80-23c0-495b-b674-560a2e45c06e","detalhe":"estado da conversa c8a40c80-23c0-495b-b674-560a2e45c06e mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"c8a40c80-23c0-495b-b674-560a2e45c06e","detalhe":"a91052e0-e76b-4c1d-a0e2-6cbfb99347e7"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"9a23f6a3-65a7-4bfc-a596-ffaa15b30799","detalhe":"estado da conversa 9a23f6a3-65a7-4bfc-a596-ffaa15b30799 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"c48e2e43-aae3-4739-ada6-31099c9058d9","detalhe":"estado da conversa c48e2e43-aae3-4739-ada6-31099c9058d9 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"2e02fdf9-ae9e-4fca-9129-f460400bce09","detalhe":"estado da conversa 2e02fdf9-ae9e-4fca-9129-f460400bce09 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"6a43aefd-5e3f-4fdb-8063-c2d9c5b3f34f","detalhe":"estado da conversa 6a43aefd-5e3f-4fdb-8063-c2d9c5b3f34f mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"6a43aefd-5e3f-4fdb-8063-c2d9c5b3f34f","detalhe":"3ea0fb65-c337-4a31-994b-495f8ac52bf8"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"388de49a-0a1a-49ac-a427-04fc84cfcc78","operacaoId":"c5447974-7606-4eec-aa7b-9c14b20a639c","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 388de49a-0a1a-49ac-a427-04fc84cfcc78: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"388de49a-0a1a-49ac-a427-04fc84cfcc78","operacaoId":"c5447974-7606-4eec-aa7b-9c14b20a639c","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"6296b8c7-b77a-4dd6-b973-a7f573f3e761","operacaoId":"759a2ac7-3760-4e05-8f08-f71acec92986","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 6296b8c7-b77a-4dd6-b973-a7f573f3e761: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"6296b8c7-b77a-4dd6-b973-a7f573f3e761","operacaoId":"759a2ac7-3760-4e05-8f08-f71acec92986","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"91c6b572-b661-4a60-b192-944503bf0b47","operacaoId":"ad7d5d8e-dba1-4f33-9988-8c4edd682bc5","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 91c6b572-b661-4a60-b192-944503bf0b47: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"91c6b572-b661-4a60-b192-944503bf0b47","operacaoId":"ad7d5d8e-dba1-4f33-9988-8c4edd682bc5","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"b89361bd-f43b-429f-80a4-eb151604329d","operacaoId":"1aa11c8b-c952-4c10-99e4-7399d6b9e998","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa b89361bd-f43b-429f-80a4-eb151604329d: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"b89361bd-f43b-429f-80a4-eb151604329d","operacaoId":"1aa11c8b-c952-4c10-99e4-7399d6b9e998","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"df7f4d70-0bb7-4ec8-9e0c-0d3ffe3e35ef","operacaoId":"0ffaeb5f-a738-4654-bb4c-496ec2a6c0b1","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa df7f4d70-0bb7-4ec8-9e0c-0d3ffe3e35ef: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"df7f4d70-0bb7-4ec8-9e0c-0d3ffe3e35ef","operacaoId":"0ffaeb5f-a738-4654-bb4c-496ec2a6c0b1","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"c92e240c-c585-48dd-96d8-d8693f7b6adb","operacaoId":"a37bad63-56c8-40d1-b9bd-c9726269a8f7","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa c92e240c-c585-48dd-96d8-d8693f7b6adb: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"c92e240c-c585-48dd-96d8-d8693f7b6adb","operacaoId":"a37bad63-56c8-40d1-b9bd-c9726269a8f7","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"2fef7d19-925b-440d-aa83-90381b01aff5","operacaoId":"68d48b74-4d16-4161-99f9-f58c64c719ae","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 2fef7d19-925b-440d-aa83-90381b01aff5: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"2fef7d19-925b-440d-aa83-90381b01aff5","operacaoId":"68d48b74-4d16-4161-99f9-f58c64c719ae","detalhe":"concluida"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"2fef7d19-925b-440d-aa83-90381b01aff5","detalhe":"estado da conversa 2fef7d19-925b-440d-aa83-90381b01aff5 mudou durante o processamento"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"c5198489-7435-404b-801b-5283d34796b2","detalhe":"10784b9a-9304-405f-8d65-32437105dc2c"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"35408962-c12b-4041-ab0a-1f07b97f8afe","detalhe":"d58fedd6-83ef-4b3d-8826-175ac556df56"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_ja_lida","conversaId":"41943c6c-f2ba-4cfa-ac5c-e888ccc6c388","detalhe":"24d946d0-7b32-44d9-8b4a-9250a727ce44"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"a743fa39-c339-47d5-af53-4f18c41eb040","operacaoId":"4d293d7a-0a1d-43c4-a4a5-533c9f523ead","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa a743fa39-c339-47d5-af53-4f18c41eb040: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"a743fa39-c339-47d5-af53-4f18c41eb040","operacaoId":"4d293d7a-0a1d-43c4-a4a5-533c9f523ead","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"2006001e-8503-40e2-958c-74fa69df7f40","operacaoId":"e0b3df80-d664-49ef-a2e0-779f17113cb9","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 2006001e-8503-40e2-958c-74fa69df7f40: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"2006001e-8503-40e2-958c-74fa69df7f40","operacaoId":"e0b3df80-d664-49ef-a2e0-779f17113cb9","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"c42f361e-98ae-421f-9897-a3b3bb40fc23","operacaoId":"cdab0f02-6c18-4f1a-99ee-e82c3ad8bf54","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa c42f361e-98ae-421f-9897-a3b3bb40fc23: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"c42f361e-98ae-421f-9897-a3b3bb40fc23","operacaoId":"cdab0f02-6c18-4f1a-99ee-e82c3ad8bf54","detalhe":"concluida"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_recuperada","conversaId":"27aecfbe-ccef-4648-b866-d29a488898b5","detalhe":"addefee5-cd8e-42e2-8081-93637d7ec9a5"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_recuperada","conversaId":"28778f2d-5767-4020-b1b6-6804b4ac4649","detalhe":"f1e5655f-e200-478a-a55b-50dcbf48bfaf"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_recuperada","conversaId":"28778f2d-5767-4020-b1b6-6804b4ac4649","detalhe":"dc59ca1c-a484-4db3-897d-d24518a92e19"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_recuperada","conversaId":"b5c3aa48-eba9-4b43-b081-20b02c3fc831","detalhe":"7db42604-f900-4158-99ff-3849e04aed74"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_recuperada","conversaId":"b5c3aa48-eba9-4b43-b081-20b02c3fc831","detalhe":"abd9a3b4-f0b6-4089-94f5-de3125a7b63b"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_recuperada","conversaId":"b5c3aa48-eba9-4b43-b081-20b02c3fc831","detalhe":"74efd337-cd5e-42a6-afa1-7fb073918d2e"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_recuperada","conversaId":"b5c3aa48-eba9-4b43-b081-20b02c3fc831","detalhe":"177ddfac-d779-4b01-8129-1cf67e024837"}
+{"origem":"maisa","tipo":"processamento","evento":"mensagem_recuperada","conversaId":"b59520ee-d08b-40a7-8e6b-1418fe37d462","detalhe":"098eb3e2-1c63-4914-919e-65dae93372b5"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"presa_desconhecida","conversaId":"98c8f4be-9034-4b31-b552-9821b0adfc40","operacaoId":"d48b5f32-5e56-422e-a868-981e88e29faa","detalhe":"enviando"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"presa_desconhecida","conversaId":"a0b8e990-16a2-4ef2-9542-d801cadd3d21","operacaoId":"c7cbac04-3637-4226-b04b-38c397c6ee93","detalhe":"enviando"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"presa_desconhecida","conversaId":"f507d74e-136e-4f7a-8f9e-985d15d7620e","operacaoId":"00b75425-ddc3-49bb-92d1-ef26b5c112ce","detalhe":"enviando"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"63874054-a9d9-478a-8d64-071b60f3df57","operacaoId":"d14bd2e1-15a2-4fd8-af16-3c44b164e0bf","detalhe":"enviando"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"2dd280a5-1cb9-47f7-8f9c-90f148167243","operacaoId":"4cf3699f-22c0-436c-92e4-03497bff9284","detalhe":"enviando"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"2dd280a5-1cb9-47f7-8f9c-90f148167243","operacaoId":"4cf3699f-22c0-436c-92e4-03497bff9284","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"49c5530b-2c72-4dbe-b036-aadae464d262","operacaoId":"079a4c18-5409-485e-aca0-7fbbec2c9282","detalhe":"enviando"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"49c5530b-2c72-4dbe-b036-aadae464d262","operacaoId":"079a4c18-5409-485e-aca0-7fbbec2c9282","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"49c5530b-2c72-4dbe-b036-aadae464d262","operacaoId":"079a4c18-5409-485e-aca0-7fbbec2c9282","detalhe":"falhou"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"2690d3e5-0ed4-4bc6-bb58-6ae9f3601ef1","operacaoId":"73720ed5-a0c9-4591-8886-e2a83453e203","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=500 erro=undefined msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"2690d3e5-0ed4-4bc6-bb58-6ae9f3601ef1","operacaoId":"73720ed5-a0c9-4591-8886-e2a83453e203","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"2e932023-8fcc-4c8e-90b9-117f261ad748","operacaoId":"9ed072db-6ed5-4c9d-a212-a3b27f2b4c38","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=500 erro=undefined msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"2e932023-8fcc-4c8e-90b9-117f261ad748","operacaoId":"9ed072db-6ed5-4c9d-a212-a3b27f2b4c38","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"2e932023-8fcc-4c8e-90b9-117f261ad748","operacaoId":"9ed072db-6ed5-4c9d-a212-a3b27f2b4c38","detalhe":"falhou"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"8936714d-10c2-4ae5-87c9-3d2163c1e4e1","operacaoId":"713c7b5d-721c-4d1e-8456-a4770cc762c2","detalhe":"enviando"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"8936714d-10c2-4ae5-87c9-3d2163c1e4e1","operacaoId":"713c7b5d-721c-4d1e-8456-a4770cc762c2","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"ba85823a-1e86-4044-a87a-360adab048d8","operacaoId":"cfce8141-b8fd-43a7-ae3b-771c33d8d1a5","detalhe":"enviando"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"ba85823a-1e86-4044-a87a-360adab048d8","operacaoId":"cfce8141-b8fd-43a7-ae3b-771c33d8d1a5","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"ba85823a-1e86-4044-a87a-360adab048d8","operacaoId":"cfce8141-b8fd-43a7-ae3b-771c33d8d1a5","detalhe":"falhou"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"bd03496c-6e48-419d-b16f-e14e901fcb85","operacaoId":"4d73c671-ef80-436d-b477-026dcd421100","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa1-simulador (teste)
+Maisa digitou na Facta, conversa bd03496c-6e48-419d-b16f-e14e901fcb85: erro em simulador
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"bd03496c-6e48-419d-b16f-e14e901fcb85","operacaoId":"4d73c671-ef80-436d-b477-026dcd421100","detalhe":"simulador"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"764b74b9-15bc-4295-b540-b504df226eae","operacaoId":"43de2a85-61b7-4e44-8c22-9c9e31d22e14","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa1-simulador (teste)
+Maisa digitou na Facta, conversa 764b74b9-15bc-4295-b540-b504df226eae: erro em simulador
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"764b74b9-15bc-4295-b540-b504df226eae","operacaoId":"43de2a85-61b7-4e44-8c22-9c9e31d22e14","detalhe":"simulador"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"764b74b9-15bc-4295-b540-b504df226eae","operacaoId":"43de2a85-61b7-4e44-8c22-9c9e31d22e14","detalhe":"falhou"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"918dcb55-64e2-4faf-891a-7293fd0af04a","operacaoId":"62946d34-ee1d-434e-a270-18e0baaf3a36","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"918dcb55-64e2-4faf-891a-7293fd0af04a","operacaoId":"62946d34-ee1d-434e-a270-18e0baaf3a36","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"99b92996-5254-481e-bad4-bcce61036f39","operacaoId":"eca55bf7-89a6-44d8-a1ea-478ede9aca40","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"99b92996-5254-481e-bad4-bcce61036f39","operacaoId":"eca55bf7-89a6-44d8-a1ea-478ede9aca40","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"99b92996-5254-481e-bad4-bcce61036f39","operacaoId":"eca55bf7-89a6-44d8-a1ea-478ede9aca40","detalhe":"falhou"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"0535a9d7-1067-4428-8bec-43f6734aa658","operacaoId":"39eab156-cfca-48b2-b176-2b30e1f0accc","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=500 erro=undefined msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"0535a9d7-1067-4428-8bec-43f6734aa658","operacaoId":"39eab156-cfca-48b2-b176-2b30e1f0accc","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"43e24ae7-9988-4899-a598-896085f149d2","operacaoId":"704eb20d-772b-4587-906c-a51f010a997f","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=500 erro=undefined msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"43e24ae7-9988-4899-a598-896085f149d2","operacaoId":"704eb20d-772b-4587-906c-a51f010a997f","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"43e24ae7-9988-4899-a598-896085f149d2","operacaoId":"704eb20d-772b-4587-906c-a51f010a997f","detalhe":"falhou"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"c2fd3bf6-5448-45c5-b4f0-eb994ff7b6eb","operacaoId":"69e10dc6-5b15-4d5d-89db-dc6b4cef9b07","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"c2fd3bf6-5448-45c5-b4f0-eb994ff7b6eb","operacaoId":"69e10dc6-5b15-4d5d-89db-dc6b4cef9b07","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"6e9e036e-a739-4c0f-b41b-573edb4843d7","operacaoId":"0c197bf8-2da7-47c2-9011-7ab810d627cc","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"6e9e036e-a739-4c0f-b41b-573edb4843d7","operacaoId":"0c197bf8-2da7-47c2-9011-7ab810d627cc","detalhe":"antes do cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"6e9e036e-a739-4c0f-b41b-573edb4843d7","operacaoId":"0c197bf8-2da7-47c2-9011-7ab810d627cc","detalhe":"falhou"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"b00858c5-69e3-4bca-81b9-f368cd6266aa","operacaoId":"1731bd3b-eb8e-4e5f-ad0d-5b2997167a09","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa2-dados-pessoais (teste)
+Maisa digitou na Facta, conversa b00858c5-69e3-4bca-81b9-f368cd6266aa: erro em dados pessoais
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"b00858c5-69e3-4bca-81b9-f368cd6266aa","operacaoId":"1731bd3b-eb8e-4e5f-ad0d-5b2997167a09","detalhe":"dados pessoais"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"1c5f8fa9-6548-4834-b0d5-e288e2c0343f","operacaoId":"ebafe8b1-64b6-41d7-8889-6421bb0fa597","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa2-dados-pessoais (teste)
+Maisa digitou na Facta, conversa 1c5f8fa9-6548-4834-b0d5-e288e2c0343f: erro em dados pessoais
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"1c5f8fa9-6548-4834-b0d5-e288e2c0343f","operacaoId":"ebafe8b1-64b6-41d7-8889-6421bb0fa597","detalhe":"dados pessoais"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"1c5f8fa9-6548-4834-b0d5-e288e2c0343f","operacaoId":"ebafe8b1-64b6-41d7-8889-6421bb0fa597","detalhe":"falhou"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"aa6e0835-3d1f-42b4-a7db-5073a9c6f962","operacaoId":"4a67d4e4-4256-40ee-bc0a-8ef5c309cef3","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa aa6e0835-3d1f-42b4-a7db-5073a9c6f962: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"aa6e0835-3d1f-42b4-a7db-5073a9c6f962","operacaoId":"4a67d4e4-4256-40ee-bc0a-8ef5c309cef3","detalhe":"cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"c803d270-095d-4baa-9bd1-0fdd5f9f663e","operacaoId":"6b64f428-6b32-4f0c-a8b3-097bd24a9936","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa c803d270-095d-4baa-9bd1-0fdd5f9f663e: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"c803d270-095d-4baa-9bd1-0fdd5f9f663e","operacaoId":"6b64f428-6b32-4f0c-a8b3-097bd24a9936","detalhe":"cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"c803d270-095d-4baa-9bd1-0fdd5f9f663e","operacaoId":"6b64f428-6b32-4f0c-a8b3-097bd24a9936","detalhe":"desconhecida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"cb9cdd6a-58b5-4e12-93b5-2de63f4f6986","operacaoId":"44ad44ba-18d6-40c1-86f4-09acc9cd341c","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=500 erro=undefined msg=
+Maisa digitou na Facta, conversa cb9cdd6a-58b5-4e12-93b5-2de63f4f6986: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"cb9cdd6a-58b5-4e12-93b5-2de63f4f6986","operacaoId":"44ad44ba-18d6-40c1-86f4-09acc9cd341c","detalhe":"cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"4b9fa351-eb20-4027-8eb6-8a413af4d1c6","operacaoId":"4f7a551c-c62e-43b3-ad63-7afd6dc4e571","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=500 erro=undefined msg=
+Maisa digitou na Facta, conversa 4b9fa351-eb20-4027-8eb6-8a413af4d1c6: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"4b9fa351-eb20-4027-8eb6-8a413af4d1c6","operacaoId":"4f7a551c-c62e-43b3-ad63-7afd6dc4e571","detalhe":"cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"4b9fa351-eb20-4027-8eb6-8a413af4d1c6","operacaoId":"4f7a551c-c62e-43b3-ad63-7afd6dc4e571","detalhe":"desconhecida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"7814c386-3a43-4852-bbf4-ac1947d06bd6","operacaoId":"575f0421-0402-4b38-9a5a-959bba41fbc6","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 7814c386-3a43-4852-bbf4-ac1947d06bd6: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"7814c386-3a43-4852-bbf4-ac1947d06bd6","operacaoId":"575f0421-0402-4b38-9a5a-959bba41fbc6","detalhe":"cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"3e61c48d-4772-445c-bef0-971cdf8056f6","operacaoId":"b86dfd5f-8e03-4973-938c-2160b50e7c9e","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 3e61c48d-4772-445c-bef0-971cdf8056f6: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"3e61c48d-4772-445c-bef0-971cdf8056f6","operacaoId":"b86dfd5f-8e03-4973-938c-2160b50e7c9e","detalhe":"cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"3e61c48d-4772-445c-bef0-971cdf8056f6","operacaoId":"b86dfd5f-8e03-4973-938c-2160b50e7c9e","detalhe":"desconhecida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"d0702339-2352-40a9-aa91-ca0775bd1ba7","operacaoId":"0f2524e1-ffa1-4e7b-9fee-aaf651558aad","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa3-proposta-cadastro (teste)
+Maisa digitou na Facta, conversa d0702339-2352-40a9-aa91-ca0775bd1ba7: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"d0702339-2352-40a9-aa91-ca0775bd1ba7","operacaoId":"0f2524e1-ffa1-4e7b-9fee-aaf651558aad","detalhe":"cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"b0e43f42-1a59-45f6-aaeb-817d8f8950fb","operacaoId":"3d2671e5-bb6c-4b0f-8f07-8dddd7910944","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa3-proposta-cadastro (teste)
+Maisa digitou na Facta, conversa b0e43f42-1a59-45f6-aaeb-817d8f8950fb: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"b0e43f42-1a59-45f6-aaeb-817d8f8950fb","operacaoId":"3d2671e5-bb6c-4b0f-8f07-8dddd7910944","detalhe":"cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"b0e43f42-1a59-45f6-aaeb-817d8f8950fb","operacaoId":"3d2671e5-bb6c-4b0f-8f07-8dddd7910944","detalhe":"falhou"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"1e1c1c97-6157-4097-aaa3-7e90113cc2ac","operacaoId":"b613544f-ca4c-45e3-837d-89cf3b821fa3","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta não enviou o link da proposta AF777: [Facta /proposta/envio-link] rede: The operation was aborted due to timeout
+Maisa digitou na Facta, conversa 1e1c1c97-6157-4097-aaa3-7e90113cc2ac: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"1e1c1c97-6157-4097-aaa3-7e90113cc2ac","operacaoId":"b613544f-ca4c-45e3-837d-89cf3b821fa3","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"e0f21745-5030-4701-8fd0-15f2ecd9d389","operacaoId":"008c2ffd-f486-4cd1-8e53-eac7650bcf5e","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta não enviou o link da proposta AF777: [Facta /proposta/envio-link] rede: The operation was aborted due to timeout
+Maisa digitou na Facta, conversa e0f21745-5030-4701-8fd0-15f2ecd9d389: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"e0f21745-5030-4701-8fd0-15f2ecd9d389","operacaoId":"008c2ffd-f486-4cd1-8e53-eac7650bcf5e","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"e0f21745-5030-4701-8fd0-15f2ecd9d389","operacaoId":"008c2ffd-f486-4cd1-8e53-eac7650bcf5e","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"37a2b272-aebd-4218-87d6-4adbcab0fd95","operacaoId":"86a2655f-8204-4946-9cda-e18cfae25a7c","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=500 erro=undefined msg=
+Facta não enviou o link da proposta AF777: [Facta /proposta/envio-link] HTTP 500
+Maisa digitou na Facta, conversa 37a2b272-aebd-4218-87d6-4adbcab0fd95: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"37a2b272-aebd-4218-87d6-4adbcab0fd95","operacaoId":"86a2655f-8204-4946-9cda-e18cfae25a7c","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"722d8f26-8ee6-4d20-8952-f6cf2b1d43eb","operacaoId":"7c9e736d-d736-4f00-8022-0c1f457870da","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=500 erro=undefined msg=
+Facta não enviou o link da proposta AF777: [Facta /proposta/envio-link] HTTP 500
+Maisa digitou na Facta, conversa 722d8f26-8ee6-4d20-8952-f6cf2b1d43eb: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"722d8f26-8ee6-4d20-8952-f6cf2b1d43eb","operacaoId":"7c9e736d-d736-4f00-8022-0c1f457870da","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"722d8f26-8ee6-4d20-8952-f6cf2b1d43eb","operacaoId":"7c9e736d-d736-4f00-8022-0c1f457870da","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"7246aa60-0e49-45ab-addc-9cf24e910433","operacaoId":"a8bec797-479c-4ee3-b799-7f3dd1612241","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta não enviou o link da proposta AF777: [Facta /proposta/envio-link] rede: fetch failed
+Maisa digitou na Facta, conversa 7246aa60-0e49-45ab-addc-9cf24e910433: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"7246aa60-0e49-45ab-addc-9cf24e910433","operacaoId":"a8bec797-479c-4ee3-b799-7f3dd1612241","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"886db80e-9710-46dd-9f8e-7464405e3c3c","operacaoId":"b50e3392-d703-4f44-868f-d9b0cefe2137","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta não enviou o link da proposta AF777: [Facta /proposta/envio-link] rede: fetch failed
+Maisa digitou na Facta, conversa 886db80e-9710-46dd-9f8e-7464405e3c3c: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"886db80e-9710-46dd-9f8e-7464405e3c3c","operacaoId":"b50e3392-d703-4f44-868f-d9b0cefe2137","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"886db80e-9710-46dd-9f8e-7464405e3c3c","operacaoId":"b50e3392-d703-4f44-868f-d9b0cefe2137","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"801396c4-36e0-4a25-9427-de7dcfc752c6","operacaoId":"5581f3b8-a86b-4e43-b9be-9527dd7ddf94","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/envio-link (teste)
+Facta não enviou o link da proposta AF777: recusado em /proposta/envio-link (teste)
+Maisa digitou na Facta, conversa 801396c4-36e0-4a25-9427-de7dcfc752c6: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"801396c4-36e0-4a25-9427-de7dcfc752c6","operacaoId":"5581f3b8-a86b-4e43-b9be-9527dd7ddf94","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"0ad9725d-a114-4ca0-b19e-aead837ea7d6","operacaoId":"185a4b33-069c-4f60-bf1b-d1a692306cc2","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/envio-link (teste)
+Facta não enviou o link da proposta AF777: recusado em /proposta/envio-link (teste)
+Maisa digitou na Facta, conversa 0ad9725d-a114-4ca0-b19e-aead837ea7d6: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"0ad9725d-a114-4ca0-b19e-aead837ea7d6","operacaoId":"185a4b33-069c-4f60-bf1b-d1a692306cc2","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"0ad9725d-a114-4ca0-b19e-aead837ea7d6","operacaoId":"185a4b33-069c-4f60-bf1b-d1a692306cc2","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"5abe5887-b660-42b4-9c0b-56b1c6706027","operacaoId":"af06829b-cbac-40ba-b846-16e92d1e3941","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 5abe5887-b660-42b4-9c0b-56b1c6706027: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"5abe5887-b660-42b4-9c0b-56b1c6706027","operacaoId":"af06829b-cbac-40ba-b846-16e92d1e3941","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"inicio","conversaId":"0fd44200-649a-442e-be80-45961f06fa09","operacaoId":"013f7db0-cd52-4794-94d0-8f5486f0c551","detalhe":"enviando"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=enviado
+Maisa digitou na Facta, conversa 0fd44200-649a-442e-be80-45961f06fa09: proposta AF777
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida","conversaId":"0fd44200-649a-442e-be80-45961f06fa09","operacaoId":"013f7db0-cd52-4794-94d0-8f5486f0c551","detalhe":"concluida"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"repetida","conversaId":"0fd44200-649a-442e-be80-45961f06fa09","operacaoId":"013f7db0-cd52-4794-94d0-8f5486f0c551","detalhe":"concluida"}
+Falha ao entregar mensagem via WhatsApp: HTTP 503 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"53f8000b-47ba-4084-8842-84c1d3313f0d","mensagemId":"32fb1027-4491-404f-ab20-cdff1e1890e6","tentativa":1,"falha":"nao_enviada","erro":"HTTP 503 (teste)"}
+Falha ao entregar mensagem via WhatsApp: HTTP 502 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"fbf5da66-bbf6-4f53-b5f3-772172fa61a9","mensagemId":"0954a214-36c6-4155-bc52-340c357221ba","tentativa":1,"falha":"nao_enviada","erro":"HTTP 502 (teste)"}
+Falha ao entregar mensagem via WhatsApp: HTTP 504 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"fbf5da66-bbf6-4f53-b5f3-772172fa61a9","mensagemId":"0954a214-36c6-4155-bc52-340c357221ba","tentativa":2,"falha":"nao_enviada","erro":"HTTP 504 (teste)"}
+Falha ao entregar mensagem via WhatsApp: HTTP 429 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"bb02d3c2-143f-48e0-be73-56dabe048bed","mensagemId":"5de2322d-6076-4b7b-a97c-6bd94977099a","tentativa":1,"falha":"nao_enviada","erro":"HTTP 429 (teste)"}
+Falha ao entregar mensagem via WhatsApp: HTTP 503 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"b4892c4b-ef09-4475-9804-ee4cf474159a","mensagemId":"68ceb308-6039-48d2-a0b5-358d98cddf6e","tentativa":1,"falha":"nao_enviada","erro":"HTTP 503 (teste)"}
+Falha ao entregar mensagem via WhatsApp: HTTP 503 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"b4892c4b-ef09-4475-9804-ee4cf474159a","mensagemId":"68ceb308-6039-48d2-a0b5-358d98cddf6e","tentativa":2,"falha":"nao_enviada","erro":"HTTP 503 (teste)"}
+Falha ao entregar mensagem via WhatsApp: HTTP 503 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"b4892c4b-ef09-4475-9804-ee4cf474159a","mensagemId":"68ceb308-6039-48d2-a0b5-358d98cddf6e","tentativa":3,"falha":"nao_enviada","erro":"HTTP 503 (teste)"}
+Falha ao entregar mensagem via WhatsApp: HTTP 400 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"d6b21a92-1ce2-47f9-9b60-def8b75dddbd","mensagemId":"3037657f-bd8e-49ea-a3f6-193aa2588b26","tentativa":1,"falha":"recusada","erro":"HTTP 400 (teste)"}
+Falha ao entregar mensagem via WhatsApp: HTTP 500 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"cd124f06-08ea-4ed7-b664-33550562fd88","mensagemId":"029b8deb-45a0-4673-b53f-d7e75cda1662","tentativa":1,"falha":"incerta","erro":"HTTP 500 (teste)"}
+Falha ao entregar mensagem via WhatsApp: timeout of 400ms exceeded
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"e339b6fb-a1e0-4656-8ada-3004800884a6","mensagemId":"3089e517-1cd0-46ee-9fdb-79d7f14c85de","tentativa":1,"falha":"incerta","erro":"timeout of 400ms exceeded"}
+Falha ao entregar mensagem via WhatsApp: socket hang up
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"62510bcb-9464-466d-b633-06546dd95374","mensagemId":"9d5061d4-4edf-48f1-b8f8-80015412488f","tentativa":1,"falha":"incerta","erro":"socket hang up"}
+Falha ao entregar mensagem via WhatsApp: connect ECONNREFUSED 127.0.0.1:56829
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"0c33b300-63b1-46ed-abe0-72302812cb53","mensagemId":"e99655bf-9572-4904-aa01-8872a8cadffd","tentativa":1,"falha":"nao_enviada","erro":"connect ECONNREFUSED 127.0.0.1:56829"}
+Falha ao entregar mensagem via WhatsApp: connect ECONNREFUSED 127.0.0.1:56829
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"0c33b300-63b1-46ed-abe0-72302812cb53","mensagemId":"e99655bf-9572-4904-aa01-8872a8cadffd","tentativa":2,"falha":"nao_enviada","erro":"connect ECONNREFUSED 127.0.0.1:56829"}
+Falha ao entregar mensagem via WhatsApp: connect ECONNREFUSED 127.0.0.1:56829
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"0c33b300-63b1-46ed-abe0-72302812cb53","mensagemId":"e99655bf-9572-4904-aa01-8872a8cadffd","tentativa":3,"falha":"nao_enviada","erro":"connect ECONNREFUSED 127.0.0.1:56829"}
+Falha ao entregar mensagem via WhatsApp: HTTP 400 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"998404c4-d940-4dee-a573-c0de484e196e","mensagemId":"9b6b0c01-3d17-495c-b37c-388eb09960b5","tentativa":1,"falha":"recusada","erro":"HTTP 400 (teste)"}
+Falha ao entregar mensagem via WhatsApp: HTTP 400 (teste)
+{"origem":"maisa","tipo":"entrega_whatsapp","evento":"falha","conversaId":"14fffccf-8bf4-4636-9ef5-39542ebf0f7f","mensagemId":"aca5ef0d-09b1-4f57-940f-2faf7948592c","tentativa":1,"falha":"recusada","erro":"HTTP 400 (teste)"}
+
+Por grupo:
+  Banco: 1/1
+  Concorrência: 34/34
+  Webhook repetido: 4/4
+  Reinício: 13/13
+  Facta: 34/34
+  Trava: 5/5
+  WhatsApp: 20/20
+  Aceite tardio: 17/17
+  Port sem resposta: 5/5
+
+133 de 133 passaram

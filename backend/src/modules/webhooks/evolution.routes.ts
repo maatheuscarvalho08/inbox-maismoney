@@ -10,6 +10,47 @@ import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitInstanciaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { uploadsRoot } from "../../middleware/upload.js";
 import { processarComMaisa } from "../maisa/maisa.service.js";
+import { entregaConfirmadaPeloProvedor, falhaInformadaPeloProvedor } from "../maisa/saidaMaisa.js";
+import type { StatusEntrega } from "@prisma/client";
+
+// Status de entrega do Baileys como a Evolution repassa em messages.update. O formato do
+// payload varia entre versões da Evolution: o leitor aceita os dois jeitos conhecidos
+// (texto ou número) e registra no log o que não reconhecer. Confirmar com um evento real.
+const STATUS_EVOLUTION: Record<string, StatusEntrega> = {
+  ERROR: "falhou", "0": "falhou",
+  SERVER_ACK: "enviado", "2": "enviado",
+  DELIVERY_ACK: "entregue", "3": "entregue",
+  READ: "lido", "4": "lido", PLAYED: "lido", "5": "lido",
+};
+const RANK_EVOLUTION: Record<StatusEntrega, number> = { enviado: 1, entregue: 2, lido: 3, falhou: 1 };
+
+async function tratarStatusEvolution(data: unknown) {
+  const itens = Array.isArray(data) ? data : [data];
+  for (const item of itens as Record<string, any>[]) {
+    const id: string | undefined = item?.keyId ?? item?.key?.id ?? item?.messageId;
+    const bruto = item?.status ?? item?.update?.status;
+    const novo = bruto === undefined ? undefined : STATUS_EVOLUTION[String(bruto).toUpperCase()];
+    if (!id || !novo) {
+      if (bruto !== undefined) console.warn("Webhook Evolution: status de mensagem não reconhecido", JSON.stringify(item).slice(0, 300));
+      continue;
+    }
+    const mensagem = await prisma.mensagem.findUnique({ where: { externalId: id } });
+    if (!mensagem) continue;
+    // Repetido ou fora de ordem não volta o status; "falhou" sempre passa uma vez.
+    if (novo !== "falhou" && mensagem.statusEntrega && RANK_EVOLUTION[mensagem.statusEntrega] >= RANK_EVOLUTION[novo]) continue;
+    if (novo === "falhou" && mensagem.statusEntrega === "falhou") continue;
+    const atualizada = await prisma.mensagem.update({
+      where: { id: mensagem.id },
+      data: { statusEntrega: novo, ...(novo === "falhou" ? { erroEntrega: "a Evolution informou erro na entrega" } : {}) },
+      include: { operador: { select: { id: true, nome: true, fotoPath: true } } },
+    });
+    emitNovaMensagem(atualizada);
+    if (mensagem.remetenteTipo === "maisa") {
+      if (novo === "falhou") await falhaInformadaPeloProvedor(mensagem.id, "a Evolution informou erro na entrega");
+      if (novo === "entregue" || novo === "lido") await entregaConfirmadaPeloProvedor(mensagem.id);
+    }
+  }
+}
 
 const router = Router();
 
@@ -66,6 +107,8 @@ router.post(
           emitInstanciaAtualizada(atualizada);
         }
       }
+
+      if (event === "messages.update") await tratarStatusEvolution(data);
 
       if (event === "messages.upsert") {
         const msg = data;

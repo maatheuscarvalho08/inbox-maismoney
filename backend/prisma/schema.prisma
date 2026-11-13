@@ -98,43 +98,43 @@ enum StatusLigacao {
 }
 
 model Usuario {
-  id         String   @id @default(uuid())
-  nome       String
-  email      String   @unique
-  senhaHash  String   @map("senha_hash")
-  role       Role
-  ativo      Boolean  @default(true)
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senhaHash String   @map("senha_hash")
+  role      Role
+  ativo     Boolean  @default(true)
   // Caminho local do avatar (upload próprio) — aparece na bolha de mensagem e no
   // topo da conversa, pra ficar mais "vivo" em vez de só a inicial do nome.
-  fotoPath   String?  @map("foto_path")
-  createdAt  DateTime @default(now()) @map("created_at")
+  fotoPath  String?  @map("foto_path")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  conversas  Conversa[]  @relation("OperadorConversas")
-  mensagens  Mensagem[]  @relation("OperadorMensagens")
-  campanhas  CampanhaDiscadora[]
+  conversas     Conversa[]             @relation("OperadorConversas")
+  mensagens     Mensagem[]             @relation("OperadorMensagens")
+  campanhas     CampanhaDiscadora[]
   visualizacoes ConversaVisualizacao[]
-  propostas  Proposta[] @relation("PropostasOperador")
-  simulacoes Simulacao[] @relation("SimulacoesOperador")
+  propostas     Proposta[]             @relation("PropostasOperador")
+  simulacoes    Simulacao[]            @relation("SimulacoesOperador")
 
   @@map("usuarios")
 }
 
 model Instancia {
-  id                 String           @id @default(uuid())
-  nome               String
-  numero             String           @unique
-  tipoConexao        TipoConexao      @map("tipo_conexao")
+  id                  String          @id @default(uuid())
+  nome                String
+  numero              String          @unique
+  tipoConexao         TipoConexao     @map("tipo_conexao")
   evolutionInstanceId String?         @map("evolution_instance_id")
-  metaPhoneNumberId  String?          @map("meta_phone_number_id")
-  metaWabaId         String?          @map("meta_waba_id")
-  status             StatusInstancia  @default(desconectado)
+  metaPhoneNumberId   String?         @map("meta_phone_number_id")
+  metaWabaId          String?         @map("meta_waba_id")
+  status              StatusInstancia @default(desconectado)
   // Liga a Maisa (IA) neste número. Conversas novas de clientes começam com ela.
-  maisaAtiva         Boolean          @default(false) @map("maisa_ativa")
-  createdAt          DateTime         @default(now()) @map("created_at")
+  maisaAtiva          Boolean         @default(false) @map("maisa_ativa")
+  createdAt           DateTime        @default(now()) @map("created_at")
 
-  templates          Template[]
-  conversas          Conversa[]
-  campanhas          CampanhaDiscadora[]
+  templates Template[]
+  conversas Conversa[]
+  campanhas CampanhaDiscadora[]
 
   @@map("instancias")
 }
@@ -151,66 +151,75 @@ model Template {
   variaveisSchema Json?    @map("variaveis_schema")
   createdAt       DateTime @default(now()) @map("created_at")
 
-  instancia       Instancia @relation(fields: [instanciaId], references: [id])
-  campanhas       CampanhaDiscadora[]
+  instancia Instancia           @relation(fields: [instanciaId], references: [id])
+  campanhas CampanhaDiscadora[]
 
   @@map("templates")
 }
 
 model Contato {
-  id             String   @id @default(uuid())
-  nome           String?
-  cpf            String?
-  numeroWhatsapp String   @unique @map("numero_whatsapp")
+  id               String    @id @default(uuid())
+  nome             String?
+  cpf              String?
+  numeroWhatsapp   String    @unique @map("numero_whatsapp")
   // Foto de perfil do WhatsApp — só disponível via Evolution API (Baileys/WhatsApp
   // Web); a Meta Cloud API não expõe foto de contato por privacidade. Cacheada
   // porque a URL da Meta/WhatsApp expira; buscarFotoContato() atualiza sob demanda.
-  fotoUrl        String?  @map("foto_url")
+  fotoUrl          String?   @map("foto_url")
   fotoAtualizadaEm DateTime? @map("foto_atualizada_em")
-  createdAt      DateTime @default(now()) @map("created_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
 
-  conversas      Conversa[]
+  conversas Conversa[]
 
   @@map("contatos")
 }
 
 model Conversa {
-  id            String          @id @default(uuid())
-  instanciaId   String          @map("instancia_id")
-  contatoId     String          @map("contato_id")
-  status        StatusConversa  @default(aberta)
-  operadorId    String?         @map("operador_id")
-  lastMessageAt DateTime        @default(now()) @map("last_message_at")
-  createdAt     DateTime        @default(now()) @map("created_at")
+  id             String         @id @default(uuid())
+  instanciaId    String         @map("instancia_id")
+  contatoId      String         @map("contato_id")
+  status         StatusConversa @default(aberta)
+  operadorId     String?        @map("operador_id")
+  lastMessageAt  DateTime       @default(now()) @map("last_message_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
   // Marca permanente de que essa conversa nasceu de um disparo (nunca volta a false) —
   // usada pra exibir a etiqueta azul mesmo depois que o lead responde e vira atendimento.
-  origemDisparo Boolean         @default(false) @map("origem_disparo")
+  origemDisparo  Boolean        @default(false) @map("origem_disparo")
   // Vira true no primeiro reply do cliente — é o que tira a conversa da aba "Disparos"
   // e joga pra aba "Atendimento" sem precisar reclassificar origemDisparo.
-  respondida    Boolean         @default(true) @map("respondida")
+  respondida     Boolean        @default(true) @map("respondida")
   // true = a Maisa está conduzindo. false = fora dela: sem operadorId fica em
   // "Na fila", com operadorId fica em "Atribuídas".
-  comMaisa      Boolean         @default(false) @map("com_maisa")
-  convenio      Convenio?
+  comMaisa       Boolean        @default(false) @map("com_maisa")
+  convenio       Convenio?
   // "operador" = definido ou removido por uma pessoa: a IA não pode sobrescrever.
   convenioOrigem String?        @map("convenio_origem")
-  etapaFunil    EtapaFunil?     @map("etapa_funil")
+  etapaFunil     EtapaFunil?    @map("etapa_funil")
   // Etapa do fluxo da Maisa e o que ela já sabe. Nunca guarda CPF: ele fica no contato.
-  maisaEstado   Json?           @map("maisa_estado")
+  maisaEstado    Json?          @map("maisa_estado")
   // Ofertada pela Maisa e sem resposta do cliente por 24h: aparece no Carrinho para a
   // equipe tentar converter. Sai quando o cliente responde ou alguém tira de lá.
-  carrinhoEm    DateTime?       @map("carrinho_em")
+  carrinhoEm     DateTime?      @map("carrinho_em")
+  // Versão do maisaEstado. Toda gravação da Maisa confere a versão lida: duas
+  // execuções ao mesmo tempo na mesma conversa não sobrescrevem uma à outra.
+  maisaVersao    Int            @default(0) @map("maisa_versao")
+  // Lease do processamento da Maisa: um processo por vez em cada conversa, mesmo com
+  // mais de uma instância. Vence sozinho se o processo cair.
+  maisaLeaseAte  DateTime?      @map("maisa_lease_ate")
+  maisaLeaseDono String?        @map("maisa_lease_dono")
 
-  instancia     Instancia  @relation(fields: [instanciaId], references: [id])
-  contato       Contato    @relation(fields: [contatoId], references: [id])
-  operador      Usuario?   @relation("OperadorConversas", fields: [operadorId], references: [id])
-  mensagens     Mensagem[]
-  etiquetas     ConversaEtiqueta[]
-  visualizacoes ConversaVisualizacao[]
-  eventosFunil  FunilEvento[]
-  propostas     Proposta[]
-  simulacoes    Simulacao[]
-  eventosMaisa  MaisaEvento[]
+  instancia      Instancia              @relation(fields: [instanciaId], references: [id])
+  contato        Contato                @relation(fields: [contatoId], references: [id])
+  operador       Usuario?               @relation("OperadorConversas", fields: [operadorId], references: [id])
+  mensagens      Mensagem[]
+  etiquetas      ConversaEtiqueta[]
+  visualizacoes  ConversaVisualizacao[]
+  eventosFunil   FunilEvento[]
+  propostas      Proposta[]
+  simulacoes     Simulacao[]
+  eventosMaisa   MaisaEvento[]
+  operacoesFacta OperacaoFacta[]
+  saidasMaisa    SaidaMaisa[]
 
   @@index([carrinhoEm])
   @@map("conversas")
@@ -227,8 +236,8 @@ model Simulacao {
   motivo        String?
   createdAt     DateTime           @default(now()) @map("created_at")
 
-  conversa      Conversa           @relation(fields: [conversaId], references: [id], onDelete: Cascade)
-  operador      Usuario?           @relation("SimulacoesOperador", fields: [operadorId], references: [id])
+  conversa Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  operador Usuario? @relation("SimulacoesOperador", fields: [operadorId], references: [id])
 
   @@index([conversaId])
   @@index([createdAt])
@@ -250,12 +259,79 @@ model Proposta {
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 
-  conversa        Conversa       @relation(fields: [conversaId], references: [id], onDelete: Cascade)
-  operador        Usuario?       @relation("PropostasOperador", fields: [operadorId], references: [id])
+  conversa Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  operador Usuario? @relation("PropostasOperador", fields: [operadorId], references: [id])
 
   @@index([conversaId])
   @@index([status, createdAt])
   @@map("propostas")
+}
+
+// Uma digitação na Facta. status (texto com CHECK no banco):
+// - preparada: reservada, ainda antes do ponto sem volta. Mensagem relevante do
+//   cliente invalida. Etapas 1 e 2 da Facta não criam proposta.
+// - irreversivel: passou do ponto sem volta, a etapa 3 (que cria a proposta) foi chamada.
+// - concluida: a Facta devolveu o código da proposta.
+// - falhou: falhou antes da etapa 3. Nenhuma proposta. Pode tentar de novo.
+// - desconhecida: a etapa 3 não deu resposta confiável. A proposta pode existir.
+// - invalidada: cliente mandou mensagem antes do ponto sem volta. Nada foi criado.
+// - liberada: a equipe conferiu no portal e autorizou nova tentativa (fica registrado quem).
+model OperacaoFacta {
+  id              String    @id @default(uuid())
+  conversaId      String    @map("conversa_id")
+  // CPF só dígitos: uma operação em andamento ou incerta por cliente, em qualquer número.
+  cpf             String
+  // Conversa + cliente + oferta + resumo dos dados confirmados.
+  chave           String    @unique
+  tipo            String
+  versaoDados     String    @map("versao_dados")
+  status          String    @default("preparada")
+  tentativas      Int       @default(1)
+  // Última etapa da Facta que respondeu. Diz se a proposta pode ter sido criada.
+  etapa           String?
+  codigoAf        String?   @map("codigo_af")
+  url             String?
+  erro            String?
+  irreversivelEm  DateTime? @map("irreversivel_em")
+  liberadaPor     String?   @map("liberada_por")
+  liberadaEm      DateTime? @map("liberada_em")
+  motivoLiberacao String?   @map("motivo_liberacao")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Restrict: o rastro da digitação não some quando alguém apaga a conversa.
+  conversa Conversa @relation(fields: [conversaId], references: [id], onDelete: Restrict)
+
+  @@index([conversaId])
+  @@index([cpf, status])
+  @@index([status, updatedAt])
+  @@map("operacoes_facta")
+}
+
+// Fila de saída da Maisa (transactional outbox). Cada resposta é gravada aqui na mesma
+// transação que muda o estado da conversa; um despachante entrega depois. status:
+// pendente, processando, enviado, falhou, incerto (texto com CHECK no banco).
+model SaidaMaisa {
+  id         String    @id @default(uuid())
+  conversaId String    @map("conversa_id")
+  mensagemId String    @unique @map("mensagem_id")
+  // Ordem dentro da conversa: só sai depois que a anterior saiu.
+  ordem      BigInt
+  status     String    @default("pendente")
+  tentativas Int       @default(0)
+  proximaEm  DateTime  @default(now()) @map("proxima_em")
+  // Quem está enviando e até quando. Vencido sem resposta: incerto, nunca reenvia.
+  travadoAte DateTime? @map("travado_ate")
+  travadoPor String?   @map("travado_por")
+  erro       String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  conversa Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+
+  @@index([status, proximaEm])
+  @@index([conversaId, ordem])
+  @@map("saidas_maisa")
 }
 
 // Cada passo da Maisa: de qual etapa saiu, para qual foi e o que entendeu.
@@ -269,7 +345,7 @@ model MaisaEvento {
   motivo      String?
   createdAt   DateTime @default(now()) @map("created_at")
 
-  conversa    Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  conversa Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
 
   @@index([conversaId])
   @@index([createdAt])
@@ -283,7 +359,7 @@ model FunilEvento {
   etapa      EtapaFunil
   createdAt  DateTime   @default(now()) @map("created_at")
 
-  conversa   Conversa   @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  conversa Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
 
   @@unique([conversaId, etapa])
   @@index([etapa, createdAt])
@@ -300,8 +376,8 @@ model ConversaVisualizacao {
   usuarioId  String   @map("usuario_id")
   vistoEm    DateTime @default(now()) @map("visto_em")
 
-  conversa   Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
-  usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  conversa Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  usuario  Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@unique([conversaId, usuarioId])
   @@map("conversa_visualizacoes")
@@ -322,54 +398,57 @@ model ConversaEtiqueta {
   etiquetaId String   @map("etiqueta_id")
   createdAt  DateTime @default(now()) @map("created_at")
 
-  conversa   Conversa @relation(fields: [conversaId], references: [id])
-  etiqueta   Etiqueta @relation(fields: [etiquetaId], references: [id])
+  conversa Conversa @relation(fields: [conversaId], references: [id])
+  etiqueta Etiqueta @relation(fields: [etiquetaId], references: [id])
 
   @@id([conversaId, etiquetaId])
   @@map("conversa_etiquetas")
 }
 
 model Mensagem {
-  id            String        @id @default(uuid())
-  conversaId    String        @map("conversa_id")
-  remetenteTipo RemetenteTipo @map("remetente_tipo")
-  operadorId    String?       @map("operador_id")
-  conteudoTexto String?       @map("conteudo_texto")
-  tipoMidia     String?       @map("tipo_midia")
-  midiaPath     String?       @map("midia_path")
-  midiaDeleted  Boolean       @default(false) @map("midia_deleted")
+  id                String         @id @default(uuid())
+  conversaId        String         @map("conversa_id")
+  remetenteTipo     RemetenteTipo  @map("remetente_tipo")
+  operadorId        String?        @map("operador_id")
+  conteudoTexto     String?        @map("conteudo_texto")
+  tipoMidia         String?        @map("tipo_midia")
+  midiaPath         String?        @map("midia_path")
+  midiaDeleted      Boolean        @default(false) @map("midia_deleted")
   // ID da mensagem no provedor (wamid da Meta, key.id do Baileys/Evolution) — usado pra
   // não duplicar quando o webhook reentrega o mesmo evento (a Meta garante "pelo menos
   // uma vez", não "exatamente uma vez"). Nulo pra mensagens criadas pelo operador/sistema.
-  externalId    String?       @unique @map("external_id")
+  externalId        String?        @unique @map("external_id")
   // Agrupa disparos enviados juntos num CSV em massa (gerado no front, um UUID por
   // lote) — sem isso, um CSV de 50 números vira 50 linhas soltas no histórico.
-  loteId        String?       @map("lote_id")
+  loteId            String?        @map("lote_id")
   // Nome do template usado (só disparos) — guardado à parte porque conteudoTexto
   // agora é a mensagem de verdade enviada, não dá mais pra "adivinhar" o template
   // fazendo parsing do texto.
-  templateNome  String?       @map("template_nome")
+  templateNome      String?        @map("template_nome")
   // Só relevante pra mensagem enviada pelo operador — reflete o status reportado
   // pelo webhook "statuses" da Meta (sent/delivered/read/failed).
-  statusEntrega StatusEntrega? @map("status_entrega")
+  statusEntrega     StatusEntrega? @map("status_entrega")
   // Marca quando o operador editou o texto já enviado (só possível via Evolution
   // API) — usado pra mostrar a tag "editada" igual o WhatsApp real.
-  editadaEm     DateTime?     @map("editada_em")
+  editadaEm         DateTime?      @map("editada_em")
   // Motivo real da falha reportado pela Meta/Evolution — gravado no banco porque
   // os logs do container somem a cada deploy/restart (perdíamos o diagnóstico).
-  erroEntrega   String?       @map("erro_entrega")
+  erroEntrega       String?        @map("erro_entrega")
+  // Quantas vezes a Maisa tentou entregar esta mensagem. Reenvio usa a mesma linha:
+  // nunca vira uma segunda mensagem no histórico.
+  tentativasEntrega Int            @default(0) @map("tentativas_entrega")
   // Resposta citada (reply do WhatsApp) — aponta pra mensagem original dentro da
   // mesma conversa. Nulo = mensagem normal, sem citação.
-  respondeAId   String?       @map("responde_a_id")
+  respondeAId       String?        @map("responde_a_id")
   // Resumo da última análise de extrato, sem dado pessoal: aparece no balão do arquivo.
-  analiseResumo String?       @map("analise_resumo")
-  timestamp     DateTime      @default(now())
-  createdAt     DateTime      @default(now()) @map("created_at")
+  analiseResumo     String?        @map("analise_resumo")
+  timestamp         DateTime       @default(now())
+  createdAt         DateTime       @default(now()) @map("created_at")
 
-  conversa      Conversa @relation(fields: [conversaId], references: [id])
-  operador      Usuario? @relation("OperadorMensagens", fields: [operadorId], references: [id])
-  respondeA     Mensagem?  @relation("RespostaMensagem", fields: [respondeAId], references: [id], onDelete: SetNull)
-  respostas     Mensagem[] @relation("RespostaMensagem")
+  conversa       Conversa        @relation(fields: [conversaId], references: [id])
+  operador       Usuario?        @relation("OperadorMensagens", fields: [operadorId], references: [id])
+  respondeA      Mensagem?       @relation("RespostaMensagem", fields: [respondeAId], references: [id], onDelete: SetNull)
+  respostas      Mensagem[]      @relation("RespostaMensagem")
   analiseExtrato AnaliseExtrato?
 
   @@index([loteId])
@@ -377,20 +456,20 @@ model Mensagem {
 }
 
 model CampanhaDiscadora {
-  id                 String          @id @default(uuid())
-  nome               String
-  audioPath          String          @map("audio_path")
-  templateId         String          @map("template_id")
-  instanciaId        String          @map("instancia_id")
-  status             StatusCampanha  @default(rascunho)
-  totalNumeros       Int             @default(0) @map("total_numeros")
-  criadoPor          String          @map("criado_por")
-  createdAt          DateTime        @default(now()) @map("created_at")
+  id           String         @id @default(uuid())
+  nome         String
+  audioPath    String         @map("audio_path")
+  templateId   String         @map("template_id")
+  instanciaId  String         @map("instancia_id")
+  status       StatusCampanha @default(rascunho)
+  totalNumeros Int            @default(0) @map("total_numeros")
+  criadoPor    String         @map("criado_por")
+  createdAt    DateTime       @default(now()) @map("created_at")
 
-  template           Template        @relation(fields: [templateId], references: [id])
-  instancia           Instancia      @relation(fields: [instanciaId], references: [id])
-  criador             Usuario        @relation(fields: [criadoPor], references: [id])
-  numeros             CampanhaNumero[]
+  template  Template         @relation(fields: [templateId], references: [id])
+  instancia Instancia        @relation(fields: [instanciaId], references: [id])
+  criador   Usuario          @relation(fields: [criadoPor], references: [id])
+  numeros   CampanhaNumero[]
 
   @@map("campanhas_discadora")
 }
@@ -407,7 +486,7 @@ model CampanhaNumero {
   iniciadoEm     DateTime?     @map("iniciado_em")
   finalizadoEm   DateTime?     @map("finalizado_em")
 
-  campanha       CampanhaDiscadora @relation(fields: [campanhaId], references: [id])
+  campanha CampanhaDiscadora @relation(fields: [campanhaId], references: [id])
 
   @@index([campanhaId])
   @@index([twilioCallSid])

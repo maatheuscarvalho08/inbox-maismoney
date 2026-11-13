@@ -32,7 +32,7 @@ export interface LeituraOferta {
 // Receio de verdade. "Seguro" (o seguro do contrato) e "demora" ("desculpa a demora") ficaram
 // de fora; "sem medo" e "confio" não são receio.
 const RECEIO_OFERTA = /(medo|receio|golpe|fraude|reclame aqui|desconfi|nao confio|perigo|enganad|nao libera|demora (pra|para|a|muito pra) liberar)/;
-const SEM_RECEIO = /\b(sem|nao tenho|nenhum|zero) (medo|receio|risco|desconfianca)\b|\bconfio\b|confianca total/;
+const SEM_RECEIO = /\b(sem|nao tenho|nenhum|zero) (medo|receio|risco|desconfianca)\b|(?<!nao )\bconfio\b|confianca total/;
 export const temReceio = (t: string) => RECEIO_OFERTA.test(t) && !SEM_RECEIO.test(t);
 
 const PENSANDO_OFERTA = /(pensar|pensando|depois|mais tarde|amanh|vou ver|ver com|conversar com|falar com (a|o|minha|meu))/;
@@ -49,7 +49,7 @@ export function lerOfertaPorRegras(texto: string): LeituraOferta | null {
   if (temReceio(t)) return leitura("objecao", "desconfianca");
   // "Não tenho dúvida, quero": o fim da frase manda.
   if (/(^|[,.!;]\s*|\b(entao|ta)\s+)(quero|quero sim|sim+|aceito|pode fazer|pode seguir)\s*[.!]*$/.test(t) && !NAO_QUERO.test(t)) return leitura("aceita");
-  const recusa = NAO.test(t);
+  const recusa = NAO.test(t) || NAO_QUERO.test(t);
   if (/(me ofereceram|me ofereceu|outro banco|outra (proposta|oferta|empresa)|em outro lugar)/.test(t)) {
     return leitura(recusa ? "recusa" : "objecao", "oferta_melhor", /\d/.test(t) ? texto.trim().slice(0, 160) : null);
   }
@@ -61,7 +61,7 @@ export function lerOfertaPorRegras(texto: string): LeituraOferta | null {
   if (recusa) return leitura("recusa");
   // Aceite só com intenção clara. "pode ser que sim" e "quero saber mais" não são aceite.
   // "sim, e também quero saber de cartão" começa com sim: é aceite. "quero saber mais" não.
-  if (/^(sim+|s|ss|claro|aceito|isso|bora|fechado|fechou)\b/.test(t) || SIM_FORTE.test(t)) return leitura("aceita");
+  if (/^(sim+|s|ss|claro|aceito|isso(?! (e|eh|ai e|nao)\b)|bora|fechado|fechou)\b/.test(t) || SIM_FORTE.test(t)) return leitura("aceita");
   if (/(pode ser que|talvez|acho que|quero (saber|entender))/.test(t)) return texto.includes("?") ? leitura("pergunta") : leitura("pensar");
   if (/^quero\b/.test(t)) return leitura("aceita");
   if (texto.includes("?") || /^(qual|quais|quanto|como|quando|onde|tem|e se|depende)/.test(t)) return leitura("pergunta");
@@ -122,8 +122,14 @@ const NAO = /^(nao|n|nn|nem|negativo|agora nao)\b|\bnao (quero|autorizo|aceito|t
 // Sim forte, que vale mesmo começando com "não" ("não vejo problema, pode seguir").
 export const SIM_FORTE =
   /\b(pode (fazer|seguir|mandar|prosseguir|consultar|sim)|quero sim|quero esse|quero essa|quero fazer|vamos nessa|vamos sim|vamos fazer|bora|fechado|fechou|manda bala|topo|claro que sim|com certeza|demorou|aceito|eu quero|pode ser feito|nao vejo problema|sem problema,? pode|autorizo)\b/;
-export const NAO_QUERO = /\b(nao quero|nao tenho interesse|nao aceito|nao autorizo|nao permito|nao pode|nao topo|nao vou querer|deixa pra la|desisto|nao,? obrigad|agora nao)\b/;
-const SIM = /^(sim+|s|ss|claro|pode|quero|aceito|autorizo|ok|okay|beleza|blz|bora|isso|com certeza|pode ser|tenho interesse|vamos|ta bom|tudo bem|manda o link|pode consultar)\b/;
+// Inclui a negação depois do verbo, comum no Rio e no Nordeste: "quero não", "pode não",
+// "tenho interesse não". Sem isso, "quero não" começava com "quero" e virava sim.
+export const NAO_QUERO =
+  /\b(nao quero|nao tenho interesse|nao aceito|nao autorizo|nao permito|nao pode|nao topo|nao vou querer|deixa pra la|desisto|nao,? obrigad|agora nao|(quero|aceito|autorizo|topo|pode|vou querer|tenho interesse|claro que|quero isso) nao|nem pensar|de jeito nenhum|jamais)\b/;
+// A frase termina em "não": "isso não", "certo não", "sim não".
+const NAO_NO_FIM = /\bnao\s*[.!]*$/;
+// "isso" é sim; "isso é golpe?" e "isso não" não são.
+const SIM = /^(sim+|s|ss|claro|pode|quero|aceito|autorizo|ok|okay|beleza|blz|bora|isso(?! (e|eh|ai e|nao)\b)|com certeza|pode ser|tenho interesse|vamos|ta bom|tudo bem|manda o link|pode consultar)\b/;
 
 // Primeira versão, só com regras. O Luna entra depois com esta mesma interface,
 // uma pergunta de cada vez, e as regras continuam como reserva se a API cair.
@@ -161,8 +167,10 @@ export const classificadorRegras: Classificador = {
 
   async simNao(texto) {
     const t = normalizar(texto);
+    // Pergunta não é resposta: "sim?", "tudo bem?", "pode me explicar?" ficam sem sim nem não.
+    if (t.includes("?")) return NAO.test(t) || NAO_QUERO.test(t) ? "nao" : null;
     if (SIM_FORTE.test(t) && !NAO_QUERO.test(t)) return "sim";
-    if (NAO.test(t)) return "nao";
+    if (NAO.test(t) || NAO_QUERO.test(t) || NAO_NO_FIM.test(t)) return "nao";
     if (SIM.test(t)) return "sim";
     return null;
   },

@@ -34,9 +34,11 @@ export function mensagemSocial(texto: string): Social | null {
   return null;
 }
 
-// "👍" e "ok" depois de um pedido de confirmação contam como sim.
+// "👍" e "ok" depois de um pedido de confirmação contam como sim. "hum", "sei", "ata" e
+// "entendi" não: são de quem está ouvindo, não de quem concordou.
+const CONFIRMA_CURTA = /^(ok+|okay|ah ok|blz|beleza|certo|ta|ta bom|ta certo|show|joia|combinado|uhum|aham|ah sim)[\s.!]*$/;
 export const socialPositivo = (s: Social | null, texto: string) =>
-  s === "confirmacao_curta" || (s === "emoji" && EMOJI_POSITIVO.test(texto));
+  (s === "confirmacao_curta" && CONFIRMA_CURTA.test(normalizar(texto))) || (s === "emoji" && EMOJI_POSITIVO.test(texto));
 
 export const RESPOSTA_SOCIAL: Partial<Record<Social, string>> = {
   cumprimento: "Oi! Tudo bem? 😊",
@@ -57,7 +59,7 @@ export const temCondicao = (t: string) => CONDICAO.test(t) && !MAS_SIM.test(t);
 // Aceite no fim da frase: "não tenho dúvida, quero", "então sim", "tá, sim", "mas quero".
 export const ACEITE_NO_FIM = /(^|[,.!;?]\s*|\b(entao|enfim|bom|ta|tudo bem|beleza|mas)\s+)(quero|quero sim|sim+|aceito|pode fazer|pode seguir|vamos|bora|fechado)\s*[.!]*$/;
 // Hesitação não é aceite: "pode ser que sim", "talvez", "acho que sim".
-export const HESITACAO = /(pode ser que|talvez|acho que (sim|quero)|quem sabe|vou ver|nao sei ainda)/;
+export const HESITACAO = /(pode ser que|talvez|acho que (sim|quero)|quem sabe|vou ver|nao sei ainda|nao sei se|nao tenho certeza|sei la)/;
 // Na port + refin, quer só a portabilidade: oferece a port sem refin, nunca segue com o refin.
 export const SEM_REFIN = /(so a portabilidade|sem (o )?troco|sem refin|nao quero (o )?(troco|refin)|sem refinanciar|nao quero refinanciar)/;
 export const OUTRO_VALOR =

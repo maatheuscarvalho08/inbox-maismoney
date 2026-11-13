@@ -184,7 +184,8 @@ router.patch(
       data.operadorId = null;
       // Devolvida para a Maisa: ela recomeça o fluxo do início. O que já foi
       // gravado no contato e na conversa, como CPF e convênio, continua lá.
-      await prisma.conversa.update({ where: { id: req.params.id }, data: { maisaEstado: Prisma.DbNull } });
+      // A versão sobe: um processamento da Maisa em andamento não grava por cima.
+      await prisma.conversa.update({ where: { id: req.params.id }, data: { maisaEstado: Prisma.DbNull, maisaVersao: { increment: 1 } } });
     } else if (data.operadorId) {
       // Atribuir a um operador tira a conversa da Maisa na hora.
       data.comMaisa = false;

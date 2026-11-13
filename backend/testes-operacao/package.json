@@ -1,0 +1,12 @@
+{
+  "name": "maisa-testes-operacao",
+  "private": true,
+  "type": "module",
+  "description": "Testes de operação da Maisa com Postgres embutido. Fora do build de produção.",
+  "scripts": {
+    "testar": "tsx testarOperacao.ts"
+  },
+  "devDependencies": {
+    "embedded-postgres": "16.14.0-beta.17"
+  }
+}

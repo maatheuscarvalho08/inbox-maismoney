@@ -9,8 +9,9 @@ import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { entregarMensagem } from "../mensagens/entrega.js";
 import { getConversaById, marcarConversaRespondida } from "../conversas/conversas.service.js";
-import { PREFIXO_NUMERO_TESTE, bancoConfigurado, processarComMaisa, verificarAutorizacao } from "./maisa.service.js";
+import { PREFIXO_NUMERO_TESTE, bancoConfigurado, processarComMaisa, relerComMaisa, verificarAutorizacao } from "./maisa.service.js";
 import { bancoSimulado } from "./bancos.js";
+import { liberarOperacao, listarOperacoes } from "./operacaoFacta.js";
 import { FORMATOS_EXTRATO } from "./midia.js";
 import type { EstadoMaisa } from "./fluxo.js";
 import type { Prisma } from "@prisma/client";
@@ -163,13 +164,44 @@ router.post(
       // aceitou: o cliente já tinha dito SIM. Ela não oferta de novo, segue para o contrato.
       ...(req.body?.aceitou === true ? { aceitouOferta: true } : {}),
     };
+    // O que o cliente escreveu até agora a equipe já viu: a Maisa só lê o extrato e o que
+    // chegar depois. A versão sobe para nenhum processamento antigo gravar por cima.
+    const ultima = await prisma.mensagem.findFirst({ where: { conversaId: conversa.id, remetenteTipo: "cliente" }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
+    if (ultima) Object.assign(novo, { ultimaMensagemId: ultima.id, ultimaMensagemEm: ultima.createdAt.toISOString() });
     await prisma.conversa.update({
       where: { id: conversa.id },
-      data: { comMaisa: true, operadorId: null, maisaEstado: novo as unknown as Prisma.InputJsonValue },
+      data: { comMaisa: true, operadorId: null, maisaEstado: novo as unknown as Prisma.InputJsonValue, maisaVersao: { increment: 1 } },
     });
     const atualizada = await getConversaById(conversa.id);
     if (atualizada) emitConversaAtualizada(atualizada);
-    void processarComMaisa(conversa.id, extrato.id);
+    void relerComMaisa(conversa.id, extrato.id);
+    res.json({ ok: true });
+  }),
+);
+
+// Digitações na Facta desta conversa, para a equipe ver a situação de cada uma.
+router.get(
+  "/conversas/:id/operacoes",
+  asyncHandler(async (req, res) => {
+    // Sem CPF e sem a chave: a tela só precisa da situação.
+    const operacoes = (await listarOperacoes(req.params.id)).map(({ cpf: _cpf, chave: _chave, versaoDados: _v, ...resto }) => resto);
+    res.json({ operacoes });
+  }),
+);
+
+// A equipe conferiu no portal da Facta e autoriza uma nova tentativa. Só administrador,
+// sempre com motivo. Fica gravado quem liberou, quando e por quê.
+router.post(
+  "/operacoes/:id/liberar",
+  requireRole("admin"),
+  asyncHandler(async (req, res) => {
+    const parsed = z.object({ motivo: z.string().trim().min(5).max(500) }).safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Informe o motivo da liberação (o que foi conferido no portal)" });
+    try {
+      await liberarOperacao(req.params.id, req.user!.id, parsed.data.motivo);
+    } catch (err) {
+      return res.status(409).json({ error: err instanceof Error ? err.message : "não foi possível liberar" });
+    }
     res.json({ ok: true });
   }),
 );

@@ -1,0 +1,143 @@
+Cenários: 311. Modelo: gpt-6.1-sol.
+  25 cenários...
+  50 cenários...
+  75 cenários...
+  100 cenários...
+  125 cenários...
+  150 cenários...
+  175 cenários...
+  200 cenários...
+  225 cenários...
+  275 cenários...
+  250 cenários...
+  300 cenários...
+Resultado: { APROVADO: 287, REPROVADO: 21, 'ATENÇÃO': 3 }
+
+[REPROVADO] VÍNC-026 Produto sem simulação: "Representante legal" vai para a equipe (nota 8)
+   x instrucoes: desfecho em [transferiu], foi continua
+   cliente: Representante legal
+   maisa: Entendi. O contrato só é assinado pelo próprio cliente, pelo link da Facta, e somente se ele concordar. | Me conta: qual é o seu vínculo? Por exemplo CLT, INSS, SIAPE ou outro.
+
+[ATENÇÃO] CPF-009 Palavra 'cpf' sem número (nota 9.8)
+   x tom: resposta NÃO contém /Desculpa, não entendi\. Perfeito!/
+   cliente: Cpf
+   maisa: Desculpa, não entendi. Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.
+
+[ATENÇÃO] CPF-014 Três CPFs inválidos vão para a equipe (nota 9.5)
+   x tom: não repete o mesmo 'não entendi' em turnos seguidos
+   cliente: 333
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] DATA-009 Data "150358" (nota 8)
+   x interpretacao: etapa final em [extrato], foi nascimento
+   cliente: 150358
+   maisa: Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] DATA-010 Data "15 de março de 1958" (nota 8)
+   x interpretacao: etapa final em [extrato], foi nascimento
+   cliente: 15 de março de 1958
+   maisa: Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] DATA-016 Pergunta 'até que idade?' na data (nota 8)
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: até que idade vocês fazem?
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] ETAP-002 O extrato do mês passado serve? (nota 8)
+   x precisao: resposta contém /Serve sim/
+   cliente: o extrato do mês passado serve?
+   maisa: Não consigo confirmar se o do mês passado serve. Preciso do extrato de consignações do SouGov.br para conferir seus contratos e sua margem. | Quando puder, me manda o extrato aqui, em PDF ou foto.
+
+[REPROVADO] ETAP-007 Minha senha aspirou (nota 9)
+   x interpretacao: resposta NÃO contém /Desculpa, não entendi/
+   cliente: Minha senha aspirou
+   maisa: Desculpa, não entendi. Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.
+
+[REPROVADO] ETAP-011 Estou negativada, posso? (nota 6)
+   x interpretacao: etapa final em [extrato], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: to com nome sujo, consigo?
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] OFER-030 Desculpe, estava sem internet (nota 6)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   x interpretacao: resposta NÃO contém /Boa pergunta! Vou chamar/
+   cliente: Desculpe . Estava sem Internet
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] OFER-035 Não entendi três vezes: depois chama a equipe (nota 8)
+   x instrucoes: desfecho em [transferiu], foi continua
+   cliente: não entendi
+   maisa: Te explico de um jeito simples. Hoje você paga os seus empréstimos com uma taxa de juros. A Facta compra esses contratos com uma taxa menor, então a parcela diminui: 104 - CEF de R$ 390,47 para R$ 387,50; DIGIO de R$ 119,50 para R$ 118,22. No total, são R$ 4,25 a menos por mês. Não sai dinheiro na m
+
+[REPROVADO] NÚME-005 Pergunta onde acha (nota 8)
+   x instrucoes: desfecho em [transferiu], foi continua
+   cliente: onde eu acho esse número?
+   maisa: Não consegui entender o número do contrato. Pode mandar de novo, só o número? Se não souber onde achar, me diga.
+
+[ATENÇÃO] CADA-011 Três respostas sem dado vão para a equipe (nota 9.5)
+   x tom: não repete o mesmo 'não entendi' em turnos seguidos
+   cliente: hum
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] CONT-014 Áudio transcrito com erro de grafia (nota 6)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x precisao: resposta contém /explico/
+   cliente: eu num intendi nada dessa porta bilidade
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] INSS-006 Aceite informal "manda bala" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: manda bala
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] INSS-007 Aceite informal "fechou" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: fechou
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] INSS-008 Aceite informal "simmm" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: simmm
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] INSS-011 Aceite informal "👍" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: 👍
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] INSS-012 Aceite informal "tá, sim" (nota 6)
+   x interpretacao: etapa final em [coleta], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: tá, sim
+   maisa: Boa pergunta! Vou chamar um especialista da nossa equipe para te explicar direitinho. Já já alguém continua aqui com você.
+
+[REPROVADO] INSS-021 Quanto fica a parcela (nota 8)
+   x precisao: resposta contém /300,00|84/
+   cliente: quanto fica a parcela?
+   maisa: Pela simulação, você recebe até R$ 12.500,00 na sua conta. | Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.
+
+[REPROVADO] VARI-010 Data "1958-03-15" (nota 8)
+   x interpretacao: etapa final em [extrato], foi nascimento
+   cliente: 1958-03-15
+   maisa: Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] VARI-011 Data "15 marco 58" (nota 8)
+   x interpretacao: etapa final em [extrato], foi nascimento
+   cliente: 15 marco 58
+   maisa: Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] VARI-012 Data "dia 15 de março de 58" (nota 8)
+   x interpretacao: etapa final em [extrato], foi nascimento
+   cliente: dia 15 de março de 58
+   maisa: Não entendi a data. Pode mandar assim: 15/03/1958?
+
+[REPROVADO] RECU-009 Desiste no meio do cadastro (nota 8)
+   x interpretacao: resposta NÃO contém /Me manda uma foto do seu RG/
+   cliente: desisti, não quero mais
+   maisa: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.

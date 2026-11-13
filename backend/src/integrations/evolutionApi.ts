@@ -4,7 +4,7 @@ import { env } from "../config/env.js";
 const client = axios.create({
   baseURL: env.EVOLUTION_API_URL,
   headers: { apikey: env.EVOLUTION_API_KEY },
-  timeout: 15_000,
+  timeout: env.EVOLUTION_TIMEOUT_MS,
 });
 
 interface RespostaEnvioEvolution {
@@ -43,7 +43,7 @@ export async function enviarTextoEvolution(
       quoted: montarQuoted(numero, citado),
       ...(digitandoMs > 0 ? { delay: digitandoMs } : {}),
     },
-    { timeout: 15_000 + digitandoMs },
+    { timeout: env.EVOLUTION_TIMEOUT_MS + digitandoMs },
   );
   return data.key?.id;
 }
@@ -138,7 +138,9 @@ function configWebhookEvolution() {
     ...(token ? { headers: { "x-webhook-token": token } } : {}),
     byEvents: false,
     base64: true,
-    events: ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
+    // MESSAGES_UPDATE: status de entrega das mensagens enviadas (a Maisa sai da conversa
+    // quando a própria mensagem falha). Instâncias antigas: rodar sincronizarWebhooksEvolution.
+    events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
   };
 }
 

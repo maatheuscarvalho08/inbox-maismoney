@@ -233,6 +233,21 @@ export const TEXTOS = {
   dadosCorrigidos: "Corrigi aqui!",
   // Oferta: "ok", "👍", "valeu" não são sim nem não. Ela pergunta de novo.
   confirmaAceite: "Só para confirmar: quer que eu siga com a sua proposta? É só me responder SIM.",
+  // "sim" na confirmação: a digitação espera a janela, e o cliente ainda pode corrigir.
+  confirmacaoRecebida: "Perfeito! Vou fazer o seu contrato agora. Se lembrar de algum dado para corrigir, me avisa aqui.",
+  // Digitação automática travada: os dados estão completos e a equipe digita.
+  digitacaoComEquipe:
+    "Recebi tudo! Um especialista da nossa equipe vai fazer o seu contrato agora e te manda aqui o link para assinar. Já já alguém continua com você.",
+  // Resultado incerto na Facta: a equipe confere antes de qualquer coisa.
+  digitacaoEmConferencia:
+    "Estou conferindo o seu contrato no sistema do banco. Um especialista da nossa equipe confirma e continua com você aqui, já já.",
+  // Correção de dado lido do extrato (renda, matrícula, conta): a equipe valida.
+  dadoExtratoEquipe:
+    "Anotei. Esse dado veio do seu extrato, então um especialista da nossa equipe vai conferir com você antes de fazer o contrato. Já já alguém continua aqui.",
+  followupOfertaPort:
+    "Oi! Conseguiu ver a condição da portabilidade que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",
+  confirmaDadosDeNovo: "Se os dados estiverem certos, é só me responder SIM. Se algum estiver errado, me diz qual.",
+  semPressaConfirmacao: "Claro, sem pressa! Eu só faço o contrato quando você me responder SIM. Se algum dado estiver errado, me diz qual.",
   relembraOferta: "A sua condição continua de pé. Quer que eu siga? É só me responder SIM.",
   // Aceite com condição ("sim, mas tem seguro?"): responde e confirma antes de seguir.
   confirmaCondicao: "Com isso esclarecido, posso seguir com a sua proposta? É só me responder SIM.",

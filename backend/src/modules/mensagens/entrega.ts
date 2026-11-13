@@ -5,6 +5,7 @@ import { env } from "../../config/env.js";
 import { assinarMidia } from "../../lib/signedUrl.js";
 import { enviarMidiaEvolution, enviarTextoEvolution, mensagemErroEvolution } from "../../integrations/evolutionApi.js";
 import { enviarMidiaMeta, enviarTextoMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
+import { classificarFalhaEnvio, type FalhaEnvio } from "./falhaEnvio.js";
 
 type TipoMidiaWhatsapp = "image" | "audio" | "video" | "document";
 
@@ -30,6 +31,7 @@ export async function entregarMensagem(
   const texto = mensagem.conteudoTexto ?? undefined;
   let entregue = false;
   let erroEntrega: string | undefined;
+  let falha: FalhaEnvio | undefined;
   let idEnvio: string | undefined;
 
   // Só dá pra citar se a original tiver o id que o provedor reconhece — mensagem
@@ -73,7 +75,14 @@ export async function entregarMensagem(
     }
   } catch (err) {
     erroEntrega = instancia.tipoConexao === "evolution" ? mensagemErroEvolution(err) : mensagemErroMeta(err);
+    falha = classificarFalhaEnvio(err, instancia.tipoConexao === "meta_cloud" ? "meta_cloud" : "evolution");
     console.error("Falha ao entregar mensagem via WhatsApp:", erroEntrega);
+  }
+
+  // Instância sem conexão configurada: nada foi enviado.
+  if (!entregue && !erroEntrega) {
+    erroEntrega = "número sem conexão de envio configurada";
+    falha = "recusada";
   }
 
   // Guarda o wamid/key.id de retorno como externalId da própria mensagem — é isso que
@@ -93,5 +102,5 @@ export async function entregarMensagem(
     mensagem.erroEntrega = idEnvio ? null : erroEntrega ?? null;
   }
 
-  return { entregue, erroEntrega };
+  return { entregue, erroEntrega, falha };
 }

@@ -1,0 +1,1763 @@
+{
+  "semente": "777",
+  "resultados": [
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 300 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 167 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 148 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 762 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 77 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 567 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 862 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 153 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 635 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 941 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 235 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 695 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 30 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 819 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 136 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 551 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 846 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 168 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 1064 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 360 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 218 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 1010 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 313 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 520 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 593 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 165 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 355 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 442 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 106 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 309 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 312 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 965 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 289 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 884 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 200 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 21 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 551 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção cancelou a tempo"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 795 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 137 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 660 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 28 ms antes da chegada da etapa 3; ponto sem volta -2 ms antes do início da gravação da correção; alerta=true"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção 808 ms depois de o job começar (mesmo processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção chegou 108 ms depois da etapa 3 (inevitável)"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção em OUTRO processo durante a Facta, e depois novo \"sim\" (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=0 links=0 etapa=confirmacao"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção em OUTRO processo durante a Facta, e depois novo \"sim\" (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=0 links=0 etapa=confirmacao"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção em OUTRO processo durante a Facta, e depois novo \"sim\" (rodada 3)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=0 links=0 etapa=confirmacao"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção em OUTRO processo durante a Facta, e depois novo \"sim\" (rodada 4)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=0 links=0 etapa=confirmacao"
+    },
+    {
+      "grupo": "R1 Correção durante o job",
+      "nome": "correção em OUTRO processo durante a Facta, e depois novo \"sim\" (rodada 5)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=0 links=0 etapa=confirmacao"
+    },
+    {
+      "grupo": "R2 Fora de ordem",
+      "nome": "áudio \"sim\" mais lento que a correção em texto mandada depois",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R2 Fora de ordem",
+      "nome": "áudio \"sim\" mais lento que a \"não\" mandada depois",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R2 Fora de ordem",
+      "nome": "áudio \"sim\" mais lento que a dado novo mandada depois",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R3 Jobs concorrentes",
+      "nome": "2 processos executando a mesma confirmação",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 feito=1 conferindo=0 "
+    },
+    {
+      "grupo": "R3 Jobs concorrentes",
+      "nome": "3 processos executando a mesma confirmação",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 feito=1 conferindo=0 "
+    },
+    {
+      "grupo": "R3 Jobs concorrentes",
+      "nome": "5 processos executando a mesma confirmação",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 feito=1 conferindo=0 "
+    },
+    {
+      "grupo": "R3 Jobs concorrentes",
+      "nome": "8 processos executando a mesma confirmação",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 feito=1 conferindo=0 "
+    },
+    {
+      "grupo": "R3 Jobs concorrentes",
+      "nome": "10 processos executando a mesma confirmação",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 feito=1 conferindo=0 "
+    },
+    {
+      "grupo": "R3 Jobs concorrentes",
+      "nome": "10 processos executando a mesma confirmação",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 feito=1 conferindo=0 "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 593 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 268 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=0 op=falhou comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 92 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=0 op=falhou comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 921 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 177 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=0 op=falhou comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 1238 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=concluida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 1031 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 162 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=0 op=falhou comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 774 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 313 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=0 op=falhou comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 682 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 283 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=0 op=falhou comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 725 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 810 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 1052 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 1016 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 964 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 626 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 455 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=0 op=falhou comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda no job da digitação",
+      "nome": "processo morto 513 ms depois da 1ª chamada à Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; criadas=0 op=falhou comMaisa=false "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 110 ms depois do 1º envio, mensagem \"ok\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 213 ms depois do 1º envio, mensagem \"quero falar com um atendente\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 171 ms depois do 1º envio, mensagem \"obrigada\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 119 ms depois do 1º envio, mensagem \"sim\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 95 ms depois do 1º envio, mensagem \"ok\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 278 ms depois do 1º envio, mensagem \"quero falar com um atendente\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 241 ms depois do 1º envio, mensagem \"obrigada\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 376 ms depois do 1º envio, mensagem \"sim\"",
+      "resultado": "RESISTIU",
+      "detalhe": "terminou antes; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 289 ms depois do 1º envio, mensagem \"ok\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 405 ms depois do 1º envio, mensagem \"quero falar com um atendente\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 286 ms depois do 1º envio, mensagem \"obrigada\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 136 ms depois do 1º envio, mensagem \"sim\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 244 ms depois do 1º envio, mensagem \"ok\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 482 ms depois do 1º envio, mensagem \"quero falar com um atendente\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 212 ms depois do 1º envio, mensagem \"obrigada\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 277 ms depois do 1º envio, mensagem \"sim\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 22 ms depois do 1º envio, mensagem \"ok\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 454 ms depois do 1º envio, mensagem \"quero falar com um atendente\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 403 ms depois do 1º envio, mensagem \"obrigada\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R4 Queda ao responder",
+      "nome": "processo morto 217 ms depois do 1º envio, mensagem \"sim\"",
+      "resultado": "RESISTIU",
+      "detalhe": "morto; "
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "mesmo cliente em dois números da Maisa confirma a mesma oferta nos dois",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "conversa encerrada e cliente volta numa conversa nova com a mesma oferta",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "equipe devolve para a Maisa, cliente corrige o CEP e confirma a mesma oferta",
+      "resultado": "RESISTIU",
+      "detalhe": "chamadas novas=0 avisos=1"
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "Facta recusou (RG errado), equipe corrige e devolve: a nova tentativa legítima é bloqueada",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "duas ofertas diferentes na mesma conversa (tabela 1 e tabela 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 (oferta diferente gera chave nova: duas propostas são permitidas, decisão de negócio)"
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "etapa 3 cria_e_lento: Facta CRIOU a proposta",
+      "resultado": "RESISTIU",
+      "detalhe": "operação desconhecida"
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "etapa 3 cria_e_500: Facta CRIOU a proposta",
+      "resultado": "RESISTIU",
+      "detalhe": "operação desconhecida"
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "etapa 3 queda: Facta não criou a proposta",
+      "resultado": "RESISTIU",
+      "detalhe": "operação desconhecida"
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "etapa 3 cria_e_erro: Facta CRIOU a proposta",
+      "resultado": "RESISTIU",
+      "detalhe": "operação desconhecida"
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "etapa 3 cria_e_html: Facta CRIOU a proposta",
+      "resultado": "RESISTIU",
+      "detalhe": "operação desconhecida"
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "etapa 3 408: Facta não criou a proposta",
+      "resultado": "RESISTIU",
+      "detalhe": "operação desconhecida"
+    },
+    {
+      "grupo": "R5 Idempotência",
+      "nome": "10 processos ao mesmo tempo com a etapa 3 lenta",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1"
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "provedor ENVIA e devolve 502: o reenvio duplica?",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "provedor ENVIA e devolve 503: o reenvio duplica?",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "provedor ENVIA e devolve 504: o reenvio duplica?",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "provedor ENVIA e devolve 429: o reenvio duplica?",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "provedor envia e a resposta se perde (tempo esgotado)",
+      "resultado": "RESISTIU",
+      "detalhe": "cópias=1; conversa foi para a equipe=true (falso alarme: a mensagem chegou)"
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "Evolution fora do ar, processo cai na espera do reenvio (100 ms) e o envio sai uma vez quando volta",
+      "resultado": "RESISTIU",
+      "detalhe": "entregas=1 "
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "Evolution fora do ar, processo cai na espera do reenvio (400 ms) e o envio sai uma vez quando volta",
+      "resultado": "RESISTIU",
+      "detalhe": "entregas=1 "
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "Evolution fora do ar, processo cai na espera do reenvio (900 ms) e o envio sai uma vez quando volta",
+      "resultado": "RESISTIU",
+      "detalhe": "entregas=1 "
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "Meta aceita e depois avisa pelo webhook que a entrega falhou",
+      "resultado": "RESISTIU",
+      "detalhe": "status=falhou comMaisa=false"
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "Evolution avisa entrega com erro (messages.update)",
+      "resultado": "RESISTIU",
+      "detalhe": "status=falhou comMaisa=false"
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "classificação de 504 sem proxy na frente da Evolution",
+      "resultado": "RESISTIU",
+      "detalhe": "504 vira \"incerta\"; em produção a Evolution é chamada direto (http://evolution-api), então 504 só vem da própria Evolution ou da Meta, que não documentam que nada foi enviado"
+    },
+    {
+      "grupo": "R6 WhatsApp",
+      "nome": "classificação de 502 sem proxy na frente da Evolution",
+      "resultado": "RESISTIU",
+      "detalhe": "502 vira \"incerta\"; em produção a Evolution é chamada direto (http://evolution-api), então 502 só vem da própria Evolution ou da Meta, que não documentam que nada foi enviado"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "Postgres cai antes da Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "Postgres cai durante a etapa 2",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "Postgres cai depois da etapa 3, antes de gravar a operação",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=concluida comMaisa=false "
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "\"sim\" e \"espera\" em dois processos ao mesmo tempo (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=0"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "\"sim\" e \"espera\" em dois processos ao mesmo tempo (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=0"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "\"sim\" e \"espera\" em dois processos ao mesmo tempo (rodada 3)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=0"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "\"sim\" e \"espera\" em dois processos ao mesmo tempo (rodada 4)",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=0"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "mesma mensagem de consentimento CLT em dois processos: efeito externo duplicado? (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "pedidos=1"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "mesma mensagem de consentimento CLT em dois processos: efeito externo duplicado? (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "pedidos=1"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "mesma mensagem de consentimento CLT em dois processos: efeito externo duplicado? (rodada 3)",
+      "resultado": "RESISTIU",
+      "detalhe": "pedidos=1"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "conversa finalizada mas ainda com a Maisa (queda entre gravar e passar para a equipe)",
+      "resultado": "RESISTIU",
+      "detalhe": "o CHECK do banco recusou o estado"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "operador devolve a conversa enquanto a Maisa processa",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 propostas registradas=1 "
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "conversa apagada leva junto o registro da operação na Facta",
+      "resultado": "RESISTIU",
+      "detalhe": "apagar a conversa foi recusado (apagou=false), o rastro ficou"
+    },
+    {
+      "grupo": "R7 Persistência",
+      "nome": "recuperação: conversa que já estava com a Maisa antes do deploy (sem marca de última lida)",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "banco antigo com dados recebe a migração sem perder nada",
+      "resultado": "RESISTIU",
+      "detalhe": "{\"c\":1,\"m\":1,\"v\":0,\"t\":0}"
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "código antigo (rollback) funcionando no banco já migrado",
+      "resultado": "RESISTIU",
+      "detalhe": "leitura, gravação e criação ok com as colunas novas presentes"
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "código novo com banco SEM a migração",
+      "resultado": "RESISTIU",
+      "detalhe": "falha imediata e explícita (→ 687 try { await novo.conversa.findFirst( The column `conversas.maisa_versao` does not exist in the current database.); o Dockerfile roda migrate deploy antes de subir, então o backend não sobe sem a migração"
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "falha no meio da migração (objeto já existe) e recuperação",
+      "resultado": "RESISTIU",
+      "detalhe": "falhou=true; estado parcial: coluna=false tabela=false migração pendente=1; depois da recuperação tabela=true"
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "rollback completo (DROP) numa cópia, código antigo e nova subida",
+      "resultado": "RESISTIU",
+      "detalhe": "drop, código antigo e reaplicação ok"
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "schema.prisma bate com as migrações",
+      "resultado": "RESISTIU",
+      "detalhe": "No difference detected."
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "rollback do código: a trava externa ao código (conferirTravas) barra o .env inseguro",
+      "resultado": "RESISTIU",
+      "detalhe": "inseguro=1 seguro(sem digitação)=0 seguro(sem certificado)=0"
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "código antigo grava 'finalizada' antes de tirar da Maisa: o CHECK precisa sair no rollback",
+      "resultado": "RESISTIU",
+      "detalhe": "sem tirar o CHECK o banco recusou a gravação do código antigo; depois de tirar, aceitou. Passo obrigatório no rollback."
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "migração preenche a marca de última lida das conversas existentes (B2) e tira finalizadas da Maisa",
+      "resultado": "RESISTIU",
+      "detalhe": "marca na mensagem respondida=true; sem resposta fica na criação=true; finalizada saiu da Maisa=true"
+    },
+    {
+      "grupo": "R8 Migração",
+      "nome": "o banco recusa situação de operação inválida e liberação sem motivo",
+      "resultado": "RESISTIU",
+      "detalhe": "status inválido recusado=true; liberação sem motivo recusada=true"
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 57 ms após o job (etapas 1/2: 267/181 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 755 ms após o job (etapas 1/2: 81/76 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 556 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 442 ms após o job (etapas 1/2: 200/145 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 83 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 608 ms após o job (etapas 1/2: 377/24 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 185 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 516 ms após o job (etapas 1/2: 225/145 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 106 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 605 ms após o job (etapas 1/2: 171/172 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 221 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 722 ms após o job (etapas 1/2: 46/339 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 288 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 719 ms após o job (etapas 1/2: 374/155 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 148 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 92 ms após o job (etapas 1/2: 199/85 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 271 ms após o job (etapas 1/2: 24/241 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 66 ms após o job (etapas 1/2: 275/149 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 619 ms após o job (etapas 1/2: 250/174 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 156 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 357 ms após o job (etapas 1/2: 189/180 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 403 ms após o job (etapas 1/2: 350/141 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 725 ms após o job (etapas 1/2: 344/353 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 377 ms após o job (etapas 1/2: 193/41 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 122 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 612 ms após o job (etapas 1/2: 34/158 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 367 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 327 ms após o job (etapas 1/2: 365/153 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 270 ms após o job (etapas 1/2: 393/29 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 826 ms após o job (etapas 1/2: 192/229 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 371 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 371 ms após o job (etapas 1/2: 346/254 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 754 ms após o job (etapas 1/2: 7/376 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 336 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 680 ms após o job (etapas 1/2: 69/44 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 556 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 145 ms após o job (etapas 1/2: 308/188 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 505 ms após o job (etapas 1/2: 308/285 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 32 ms após o job (etapas 1/2: 176/161 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 899 ms após o job (etapas 1/2: 389/384 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 80 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 795 ms após o job (etapas 1/2: 309/326 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 114 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 433 ms após o job (etapas 1/2: 312/192 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 779 ms após o job (etapas 1/2: 15/298 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 414 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 348 ms após o job (etapas 1/2: 102/222 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 686 ms após o job (etapas 1/2: 335/63 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 227 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 414 ms após o job (etapas 1/2: 345/224 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 474 ms após o job (etapas 1/2: 284/282 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 531 ms após o job (etapas 1/2: 175/74 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 244 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 173 ms após o job (etapas 1/2: 10/226 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "não 664 ms após o job (etapas 1/2: 53/213 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 360 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "áudio 302 ms após o job (etapas 1/2: 2/362 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "o número da casa é 200 556 ms após o job (etapas 1/2: 8/134 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 380 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N1 Ponto sem volta, mesmo processo",
+      "nome": "espera, o CEP está errado 187 ms após o job (etapas 1/2: 364/366 ms)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "não 40 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "áudio 684 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 72 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "o número da casa é 200 614 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 36 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "espera, o CEP está errado 632 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 30 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "não 592 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "áudio 73 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "o número da casa é 200 79 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "espera, o CEP está errado 597 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "não 529 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "áudio 236 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "o número da casa é 200 139 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "espera, o CEP está errado 168 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "não 203 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "áudio 89 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "o número da casa é 200 439 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "espera, o CEP está errado 304 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "não 55 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "áudio 451 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "o número da casa é 200 227 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "nada criado (operação invalidada) "
+    },
+    {
+      "grupo": "N2 Ponto sem volta, processos diferentes",
+      "nome": "espera, o CEP está errado 637 ms após a etapa 1 (outro processo)",
+      "resultado": "RESISTIU",
+      "detalhe": "correção 33 ms depois do ponto sem volta, com alerta "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "texto de correção (WhatsApp depois) lido antes do sim (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "áudio de correção (WhatsApp depois) lido antes do sim (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"não\" no mesmo segundo do sim, lido antes (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "correção no mesmo segundo do sim, lida depois (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "correção com horário inválido (futuro), recebida depois do sim (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "correção com horário muito antigo, recebida depois do sim (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "áudio mandado antes do sim mas recebido depois (cancela por segurança) (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"obrigado\" depois do sim mantém (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"👍\" depois do sim mantém (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"sim\" repetido no mesmo segundo (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"sim\" e depois \"sim, pode fazer\" (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"espera\", depois \"sim\" (ordem normal) (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "texto de correção (WhatsApp depois) lido antes do sim (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "áudio de correção (WhatsApp depois) lido antes do sim (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"não\" no mesmo segundo do sim, lido antes (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "correção no mesmo segundo do sim, lida depois (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "correção com horário inválido (futuro), recebida depois do sim (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "correção com horário muito antigo, recebida depois do sim (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "áudio mandado antes do sim mas recebido depois (cancela por segurança) (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=0 (esperado 0) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"obrigado\" depois do sim mantém (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"👍\" depois do sim mantém (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"sim\" repetido no mesmo segundo (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"sim\" e depois \"sim, pode fazer\" (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N3 Ordem das mensagens",
+      "nome": "\"espera\", depois \"sim\" (ordem normal) (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 (esperado 1) "
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "duas conversas do mesmo CPF confirmam ao mesmo tempo em processos diferentes (rodada 1)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas para o CPF=1"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "duas conversas do mesmo CPF confirmam ao mesmo tempo em processos diferentes (rodada 2)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas para o CPF=1"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "duas conversas do mesmo CPF confirmam ao mesmo tempo em processos diferentes (rodada 3)",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas para o CPF=1"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "primeira concluída: segunda conversa bloqueada",
+      "resultado": "RESISTIU",
+      "detalhe": "novas propostas=0 (esperado 0); \"contrato feito\" na segunda=0"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "primeira incerta: segunda bloqueada",
+      "resultado": "RESISTIU",
+      "detalhe": "novas propostas=0 (esperado 0); \"contrato feito\" na segunda=0"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "primeira falhou antes da etapa 3: segunda permitida",
+      "resultado": "RESISTIU",
+      "detalhe": "novas propostas=1 (esperado 1); \"contrato feito\" na segunda=1"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "primeira invalidada pelo cliente: segunda permitida",
+      "resultado": "RESISTIU",
+      "detalhe": "novas propostas=1 (esperado 1); \"contrato feito\" na segunda=0"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "primeira concluída há 31 dias: segunda permitida",
+      "resultado": "RESISTIU",
+      "detalhe": "novas propostas=1 (esperado 1); \"contrato feito\" na segunda=1"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "primeira incerta e liberada pela equipe com motivo: segunda permitida",
+      "resultado": "RESISTIU",
+      "detalhe": "novas propostas=1 (esperado 1); \"contrato feito\" na segunda=1"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "liberação sem motivo é recusada",
+      "resultado": "RESISTIU",
+      "detalhe": "recusada=true"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "operação em andamento não pode ser liberada",
+      "resultado": "RESISTIU",
+      "detalhe": "recusada=true"
+    },
+    {
+      "grupo": "N4 Mesmo CPF",
+      "nome": "mesmos dados e mesma oferta confirmados de novo na mesma conversa: não diz contrato feito de novo",
+      "resultado": "RESISTIU",
+      "detalhe": "propostas=1 avisos=1"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "mensagem do cliente entregue 2 vezes ao mesmo tempo",
+      "resultado": "RESISTIU",
+      "detalhe": "mensagens do cliente=1, respostas=1"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "mensagem do cliente entregue 3 vezes ao mesmo tempo",
+      "resultado": "RESISTIU",
+      "detalhe": "mensagens do cliente=1, respostas=1"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "mensagem do cliente entregue 5 vezes ao mesmo tempo",
+      "resultado": "RESISTIU",
+      "detalhe": "mensagens do cliente=1, respostas=1"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "mensagem do cliente entregue 2 vezes em sequência",
+      "resultado": "RESISTIU",
+      "detalhe": "mensagens do cliente=1, respostas=1"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "Meta avisa a mesma falha 2 vezes: uma nota, conversa com a equipe",
+      "resultado": "RESISTIU",
+      "detalhe": "notas=1 comMaisa=false"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "Meta avisa a mesma falha 3 vezes: uma nota, conversa com a equipe",
+      "resultado": "RESISTIU",
+      "detalhe": "notas=1 comMaisa=false"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "Evolution avisa o mesmo erro de entrega 2 vezes: uma nota",
+      "resultado": "RESISTIU",
+      "detalhe": "notas=1"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "Evolution avisa o mesmo erro de entrega 3 vezes: uma nota",
+      "resultado": "RESISTIU",
+      "detalhe": "notas=1"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "Evolution confirma a entrega de uma mensagem incerta: a equipe é avisada que chegou",
+      "resultado": "RESISTIU",
+      "detalhe": "nota de confirmação=true"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "Meta confirma a entrega de uma mensagem incerta: a equipe é avisada que chegou",
+      "resultado": "RESISTIU",
+      "detalhe": "nota de confirmação=true"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "status de entrega desconhecido (DESCONHECIDO) é ignorado sem efeito",
+      "resultado": "RESISTIU",
+      "detalhe": "http=200 status=enviado"
+    },
+    {
+      "grupo": "N5 Webhooks",
+      "nome": "status de entrega desconhecido (99) é ignorado sem efeito",
+      "resultado": "RESISTIU",
+      "detalhe": "http=200 status=enviado"
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "1 conversa(s) × 5 resposta(s), 2 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "1 conversa(s) × 5 resposta(s), 5 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "3 conversa(s) × 3 resposta(s), 2 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "3 conversa(s) × 3 resposta(s), 4 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "5 conversa(s) × 2 resposta(s), 3 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "5 conversa(s) × 4 resposta(s), 6 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "2 conversa(s) × 8 resposta(s), 3 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "8 conversa(s) × 1 resposta(s), 4 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "4 conversa(s) × 4 resposta(s), 8 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "6 conversa(s) × 3 resposta(s), 2 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "2 conversa(s) × 2 resposta(s), 10 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N6 Fila de saída concorrente",
+      "nome": "10 conversa(s) × 2 resposta(s), 5 despachantes em processos diferentes",
+      "resultado": "RESISTIU",
+      "detalhe": ""
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 65 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=1 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 579 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=2 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 183 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=1 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 794 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=3 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 418 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=2 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 225 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=1 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 132 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=1 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 718 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=3 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 67 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=1 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 120 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=1 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 829 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=3 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 828 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=3 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 467 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=2 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 896 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=3 comMaisa=false "
+    },
+    {
+      "grupo": "N7 Queda no despachante",
+      "nome": "despachante morto 370 ms depois do 1º envio",
+      "resultado": "RESISTIU",
+      "detalhe": "entregues=2 comMaisa=false "
+    },
+    {
+      "grupo": "N8 Postgres cai no processamento",
+      "nome": "banco cai 43 ms depois de o processo começar a ler",
+      "resultado": "RESISTIU",
+      "detalhe": "leu=true respostas=1 "
+    },
+    {
+      "grupo": "N8 Postgres cai no processamento",
+      "nome": "banco cai 28 ms depois de o processo começar a ler",
+      "resultado": "RESISTIU",
+      "detalhe": "leu=true respostas=1 "
+    },
+    {
+      "grupo": "N8 Postgres cai no processamento",
+      "nome": "banco cai 292 ms depois de o processo começar a ler",
+      "resultado": "RESISTIU",
+      "detalhe": "leu=true respostas=1 "
+    },
+    {
+      "grupo": "N8 Postgres cai no processamento",
+      "nome": "banco cai 292 ms depois de o processo começar a ler",
+      "resultado": "RESISTIU",
+      "detalhe": "leu=true respostas=1 "
+    },
+    {
+      "grupo": "N8 Postgres cai no processamento",
+      "nome": "banco cai 108 ms depois de o processo começar a ler",
+      "resultado": "RESISTIU",
+      "detalhe": "leu=true respostas=1 "
+    },
+    {
+      "grupo": "N8 Postgres cai no processamento",
+      "nome": "banco cai 26 ms depois de o processo começar a ler",
+      "resultado": "RESISTIU",
+      "detalhe": "leu=true respostas=1 "
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com lento: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: [Facta /proposta/etapa3-proposta-cadastro] rede: The operation was)"
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com 500: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: [Facta /proposta/etapa3-proposta-cadastro] HTTP 500). A proposta p)"
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com queda: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: [Facta /proposta/etapa3-proposta-cadastro] rede: fetch failed). A )"
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com erro: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: resposta sem código de proposta: recusado em /proposta/etapa3-prop)"
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com cria_e_html: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: resposta sem código de proposta: resposta em HTML, IP não liberado)"
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com 408: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: resposta sem código de proposta: timeout). A proposta pode existir)"
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com sem_codigo: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: resposta sem código de proposta: ok). A proposta pode existir: con)"
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com codigo_vazio: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: resposta sem código de proposta: sem mensagem). A proposta pode ex)"
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com 502: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: [Facta /proposta/etapa3-proposta-cadastro] HTTP 502). A proposta p)"
+    },
+    {
+      "grupo": "N9 Etapa 3 incerta",
+      "nome": "etapa 3 com cria_e_erro: desconhecida, sem dizer que a Facta recusou",
+      "resultado": "RESISTIU",
+      "detalhe": "operação=desconhecida nota adequada=true eventos=confirmacao_agendada > digitacao_incerta(RESULTADO INCERTO na digitação (cadastro da proposta: resposta sem código de proposta: recusado em /proposta/etapa3-prop)"
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 95 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=concluida comMaisa=false "
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 196 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=concluida comMaisa=false "
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 414 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 32 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=concluida comMaisa=false "
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 801 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=concluida comMaisa=false "
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 199 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=concluida comMaisa=false "
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 603 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=desconhecida comMaisa=false "
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 741 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=concluida comMaisa=false "
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 857 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=concluida comMaisa=false "
+    },
+    {
+      "grupo": "N10 Queda perto do ponto sem volta",
+      "nome": "processo morto 637 ms depois da etapa 1",
+      "resultado": "RESISTIU",
+      "detalhe": "criadas=1 op=desconhecida comMaisa=false "
+    }
+  ]
+}

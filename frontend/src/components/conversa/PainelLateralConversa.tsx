@@ -4,6 +4,7 @@ import { api, ApiError } from "../../lib/api";
 import { OPCOES_CONVENIO, OPCOES_ETAPA } from "../../lib/funil";
 import { Select } from "../Select";
 import { PropostasDaConversa } from "./PropostasDaConversa";
+import { OperacoesFacta } from "./OperacoesFacta";
 import { SimulacoesDaConversa } from "./SimulacoesDaConversa";
 import type { Conversa, Contato, Etiqueta } from "../../types/api";
 
@@ -126,6 +127,7 @@ export function PainelLateralConversa({ conversa, onFechar, onConversaAtualizada
         <SimulacoesDaConversa conversa={conversa} onConversaAtualizada={onConversaAtualizada} />
 
         <PropostasDaConversa conversa={conversa} />
+        <OperacoesFacta conversaId={conversa.id} />
 
         <div>
           <div className="mb-2 flex items-center justify-between">

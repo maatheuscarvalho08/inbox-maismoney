@@ -1,0 +1,25 @@
+Resultado: { APROVADO: 410 }
+Resultado: { APROVADO: 246, REPROVADO: 2 }
+Resultado: { APROVADO: 733, REPROVADO: 15 }
+Resultado: { APROVADO: 308, 'ATENÇÃO': 3 }
+limpo
+Fase 1 antes: 311 execuções | aprovado 309 (99.4%) | atenção 2 | reprovado 0 | crítica 0 | funcional 100.0%
+Fase 1 agora: 311 execuções | aprovado 308 (99.0%) | atenção 3 | reprovado 0 | crítica 0 | funcional 100.0%
+  regressões: 1 | melhoras: 0
+   REG Contexto e conversas longas|CONT-007 [A] Dados em várias mensagens curtas
+       x não repete o mesmo 'não entendi' em turnos seguidos
+       -> coleta: Desculpa, não entendi. Me manda uma foto do seu RG ou da CNH, com frente e verso. Pode ser em duas fotos.
+Fase 2 antes: 748 execuções | aprovado 734 (98.1%) | atenção 0 | reprovado 14 | crítica 0 | funcional 98.1%
+Fase 2 agora: 748 execuções | aprovado 733 (98.0%) | atenção 0 | reprovado 15 | crítica 0 | funcional 98.0%
+  regressões: 1 | melhoras: 0
+   REG C3 Modelo ausente|C3-032 [AR] Cadastro: "não sei o CEP"
+       x etapa final em [coleta], foi finalizada; desfecho em [continua], foi transferiu
+       -> finalizada: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+Fase 3 antes: 248 execuções | aprovado 246 (99.2%) | atenção 0 | reprovado 2 | crítica 0 | funcional 99.2%
+Fase 3 agora: 248 execuções | aprovado 246 (99.2%) | atenção 0 | reprovado 2 | crítica 0 | funcional 99.2%
+  regressões: 0 | melhoras: 0
+
+Fase 4 agora: 410 execuções | aprovado 410 (100.0%) | atenção 0 | reprovado 0 | crítica 0 | funcional 100.0%
+  instáveis entre as 2 rodadas: 0 
+
+[exited with code 0]

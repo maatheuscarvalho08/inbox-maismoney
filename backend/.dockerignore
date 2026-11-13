@@ -5,3 +5,5 @@ uploads
 .env.local
 npm-debug.log
 *.md
+testes-operacao
+auditoria

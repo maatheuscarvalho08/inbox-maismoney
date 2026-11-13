@@ -223,7 +223,13 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
           {mensagem.editadaEm && <p className="text-[10px] italic text-muted">editada</p>}
           <p className="text-[10px] text-muted">{formatarHorario(mensagem.timestamp)}</p>
           {saida && !sugestao && (
-            <span title={mensagem.statusEntrega === "falhou" ? `Não enviada: ${mensagem.erroEntrega ?? "motivo não registrado"}` : undefined}>
+            <span
+              title={
+                mensagem.statusEntrega === "falhou"
+                  ? `Não enviada${(mensagem.tentativasEntrega ?? 0) > 1 ? ` depois de ${mensagem.tentativasEntrega} tentativas` : ""}: ${mensagem.erroEntrega ?? "motivo não registrado"}`
+                  : undefined
+              }
+            >
               <StatusEntregaIcone status={mensagem.statusEntrega} />
             </span>
           )}
@@ -247,6 +253,7 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
 
         {saida && mensagem.statusEntrega === "falhou" && (
           <div className="mt-1 flex items-center justify-end gap-2 text-[11px]">
+            <span className="text-accent">Não entregue</span>
             {erroReenvio && <span className="text-accent">{erroReenvio}</span>}
             <button onClick={reenviar} disabled={reenviando} className="font-medium text-accent hover:underline disabled:opacity-50">
               {reenviando ? "Reenviando..." : "Reenviar"}

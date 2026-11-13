@@ -15,6 +15,8 @@ const envSchema = z.object({
   // Segredo que a Evolution manda de volta em todo webhook — sem ele qualquer um na
   // internet conseguia injetar mensagens falsas em /api/webhooks/evolution.
   EVOLUTION_WEBHOOK_TOKEN: z.string().default(""),
+  // Tempo máximo de cada envio pela Evolution.
+  EVOLUTION_TIMEOUT_MS: z.coerce.number().min(100).default(15_000),
 
   // Meta Cloud API (oficial)
   META_ACCESS_TOKEN: z.string().default(""),
@@ -56,6 +58,27 @@ const envSchema = z.object({
     .string()
     .default("false")
     .transform((v) => v === "true"),
+  // Trava própria da digitação automática, independente do código master. Desligada,
+  // a Maisa coleta e confirma os dados, mas a equipe digita no portal. Só ligar com
+  // autorização expressa do dono.
+  MAISA_DIGITACAO_LIBERADA: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
+  // Segundos de espera depois do "sim" da confirmação antes de digitar. Qualquer
+  // mensagem do cliente nesse intervalo cancela e é lida antes.
+  MAISA_JANELA_CONFIRMACAO_S: z.coerce.number().min(5).max(600).default(30),
+  // Lembrete em 10 minutos e Carrinho em 24 horas também na oferta de portabilidade.
+  // Desligado até a equipe validar.
+  MAISA_FOLLOWUP_PORT: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
+  // Quantas vezes a Maisa tenta entregar uma mensagem quando a falha garante que ela
+  // não saiu (conexão recusada, 502/503/504, 429). Tempo esgotado não é repetido.
+  MAISA_ENTREGA_TENTATIVAS: z.coerce.number().min(1).max(5).default(3),
+  // Tempo máximo de cada chamada à Facta.
+  FACTA_TIMEOUT_MS: z.coerce.number().min(100).default(30_000),
   // OpenAI. A leitura de extrato usa um modelo com visão; as etapas simples, um barato.
   OPENAI_API_KEY: z.string().default(""),
   OPENAI_MODELO_EXTRATO: z.string().default("gpt-6.1-sol"),

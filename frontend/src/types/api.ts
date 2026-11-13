@@ -62,6 +62,8 @@ export interface Mensagem {
   externalId: string | null;
   statusEntrega: StatusEntrega | null;
   erroEntrega?: string | null;
+  // Quantas vezes a Maisa tentou entregar. Reenvio usa a mesma mensagem.
+  tentativasEntrega?: number;
   // Resumo da análise do extrato guardada (da Maisa ou da equipe).
   analiseResumo?: string | null;
   editadaEm: string | null;

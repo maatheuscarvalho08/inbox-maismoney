@@ -1,0 +1,103 @@
+Cenários: 748. Modelo: gpt-6.1-sol.
+  25 cenários...
+  50 cenários...
+  75 cenários...
+  100 cenários...
+  125 cenários...
+  150 cenários...
+  175 cenários...
+  200 cenários...
+  225 cenários...
+  250 cenários...
+  275 cenários...
+  300 cenários...
+  325 cenários...
+  350 cenários...
+  375 cenários...
+  400 cenários...
+  425 cenários...
+  450 cenários...
+  475 cenários...
+  500 cenários...
+  525 cenários...
+  550 cenários...
+  600 cenários...
+  575 cenários...
+  625 cenários...
+  650 cenários...
+  675 cenários...
+  700 cenários...
+  725 cenários...
+Resultado: { APROVADO: 734, REPROVADO: 14 }
+
+[REPROVADO] C2-018#1 Extrato: "o seguro desemprego conta como renda?" (nota 9)
+   x interpretacao: etapa final em [extrato], foi finalizada
+   cliente: o seguro desemprego conta como renda?
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-018#2 Extrato: "o seguro desemprego conta como renda?" (nota 9)
+   x interpretacao: etapa final em [extrato], foi finalizada
+   cliente: o seguro desemprego conta como renda?
+   maisa: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+[REPROVADO] C2-024#1 Oferta: "tem seguro?" (nota 7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: tem seguro?
+   maisa: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+
+[REPROVADO] C2-024#2 Oferta: "tem seguro?" (nota 7)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   x instrucoes: desfecho em [continua], foi transferiu
+   cliente: tem seguro?
+   maisa: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+
+[REPROVADO] C2-033#1 Oferta: "quanto fica no total que vou pagar?" (nota 9)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   cliente: quanto fica no total que vou pagar?
+   maisa: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+
+[REPROVADO] C2-033#2 Oferta: "quanto fica no total que vou pagar?" (nota 9)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   cliente: quanto fica no total que vou pagar?
+   maisa: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+
+[REPROVADO] C2-034#1 Oferta: "o dinheiro sai do meu salário?" (nota 9)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   cliente: o dinheiro sai do meu salário?
+   maisa: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+
+[REPROVADO] C2-034#2 Oferta: "o dinheiro sai do meu salário?" (nota 9)
+   x interpretacao: etapa final em [oferta_port], foi finalizada
+   cliente: o dinheiro sai do meu salário?
+   maisa: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+
+[REPROVADO] IX-004#1 Port: "tem seguro?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-004#2 Port: "tem seguro?" e depois "sim" (nota 8)
+   x interpretacao: etapa final em [numero_contrato, coleta], foi finalizada
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-029#1 Novo: some 25h, vai para o Carrinho e depois diz "sim" (nota 9.7)
+   x tom: respondeu algo ao cliente no último turno
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-029#2 Novo: some 25h, vai para o Carrinho e depois diz "sim" (nota 9.7)
+   x tom: respondeu algo ao cliente no último turno
+   cliente: sim
+   maisa: 
+
+[REPROVADO] IX-035#1 Port: "não" e depois "pensando bem, quero" (nota 9.7)
+   x tom: respondeu algo ao cliente no último turno
+   cliente: pensando bem, quero
+   maisa: 
+
+[REPROVADO] IX-035#2 Port: "não" e depois "pensando bem, quero" (nota 9.7)
+   x tom: respondeu algo ao cliente no último turno
+   cliente: pensando bem, quero
+   maisa: 

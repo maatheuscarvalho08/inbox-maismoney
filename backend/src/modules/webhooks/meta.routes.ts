@@ -13,6 +13,7 @@ import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { fallbackEvolutionQueue } from "../../queues/fallbackEvolutionQueue.js";
 import { processarComMaisa } from "../maisa/maisa.service.js";
+import { entregaConfirmadaPeloProvedor, falhaInformadaPeloProvedor } from "../maisa/saidaMaisa.js";
 import type { StatusEntrega } from "@prisma/client";
 
 // Texto exato que a Meta manda quando bloqueia por reputação da conta, não por
@@ -116,6 +117,13 @@ router.post(
               include: { operador: { select: { id: true, nome: true, fotoPath: true } } },
             });
             emitNovaMensagem(atualizada);
+
+            // Mensagem da Maisa aceita e depois rejeitada: ela não pode seguir esperando
+            // resposta. Só na primeira vez que vira "falhou" (a Meta reentrega o webhook).
+            if (mensagem.remetenteTipo === "maisa") {
+              if (novoStatus === "falhou" && mensagem.statusEntrega !== "falhou") await falhaInformadaPeloProvedor(mensagem.id, erroTexto ?? "falha de entrega");
+              if (novoStatus === "entregue" || novoStatus === "lido") await entregaConfirmadaPeloProvedor(mensagem.id);
+            }
 
             // Pedido do dono do negócio: disparo barrado por reputação da conta (não
             // número inválido) é reenviado como WhatsApp normal via Evolution, pra não

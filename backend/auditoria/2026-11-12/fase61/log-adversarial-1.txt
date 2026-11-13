@@ -1,0 +1,1538 @@
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"de9f41b4-d389-4385-9847-a488cb4244be","operacaoId":"7aedfdf8-6a18-4cc1-928f-ef94ccd94ba6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"7aedfdf8-6a18-4cc1-928f-ef94ccd94ba6","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa de9f41b4-d389-4385-9847-a488cb4244be: proposta AF-30000000116-1794540830214
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"de9f41b4-d389-4385-9847-a488cb4244be","operacaoId":"7aedfdf8-6a18-4cc1-928f-ef94ccd94ba6","detalhe":"AF-30000000116-1794540830214"}
+resistiu [R1 Correção durante o job] correção 807 ms depois de o job começar (mesmo processo)
+          correção chegou 60 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"31ed04a7-9b15-4643-91ca-57682c65a777","operacaoId":"3bd077d7-c3cd-406e-ae5c-f46f60d8ae03","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"3bd077d7-c3cd-406e-ae5c-f46f60d8ae03","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 31ed04a7-9b15-4643-91ca-57682c65a777: proposta AF-30000000205-1794540831357
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"31ed04a7-9b15-4643-91ca-57682c65a777","operacaoId":"3bd077d7-c3cd-406e-ae5c-f46f60d8ae03","detalhe":"AF-30000000205-1794540831357"}
+resistiu [R1 Correção durante o job] correção 898 ms depois de o job começar (mesmo processo)
+          correção chegou 219 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"147824d1-a804-4170-a7df-177c67b2f285","operacaoId":"11768a3f-3941-4ee6-a86b-c2c633bfa447","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"11768a3f-3941-4ee6-a86b-c2c633bfa447","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 147824d1-a804-4170-a7df-177c67b2f285: proposta AF-30000000388-1794540832476
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"147824d1-a804-4170-a7df-177c67b2f285","operacaoId":"11768a3f-3941-4ee6-a86b-c2c633bfa447","detalhe":"AF-30000000388-1794540832476"}
+resistiu [R1 Correção durante o job] correção 926 ms depois de o job começar (mesmo processo)
+          correção chegou 209 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"b0b349ba-807e-416f-97a5-7f4abf135228","operacaoId":"ef752b21-7647-4d9a-9e07-dc1e3e255dd0","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"ef752b21-7647-4d9a-9e07-dc1e3e255dd0","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa b0b349ba-807e-416f-97a5-7f4abf135228: proposta AF-30000000469-1794540833492
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"b0b349ba-807e-416f-97a5-7f4abf135228","operacaoId":"ef752b21-7647-4d9a-9e07-dc1e3e255dd0","detalhe":"AF-30000000469-1794540833492"}
+resistiu [R1 Correção durante o job] correção 1060 ms depois de o job começar (mesmo processo)
+          correção chegou 353 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"a73662f3-10d5-4f16-93ea-7456fe8fef2c","operacaoId":"18537611-eda8-4bcf-b556-250b4ca53323","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"18537611-eda8-4bcf-b556-250b4ca53323","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa a73662f3-10d5-4f16-93ea-7456fe8fef2c: proposta AF-30000000540-1794540834644
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"a73662f3-10d5-4f16-93ea-7456fe8fef2c","operacaoId":"18537611-eda8-4bcf-b556-250b4ca53323","detalhe":"AF-30000000540-1794540834644"}
+resistiu [R1 Correção durante o job] correção 898 ms depois de o job começar (mesmo processo)
+          correção chegou 222 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"2dfdc49d-bab9-411d-b0ba-6816c4a5cdcc","operacaoId":"49fb43cb-4717-4380-bdac-a3e88c790f8f","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"49fb43cb-4717-4380-bdac-a3e88c790f8f","detalhe":null}
+Maisa digitou na Facta, conversa 2dfdc49d-bab9-411d-b0ba-6816c4a5cdcc: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"2dfdc49d-bab9-411d-b0ba-6816c4a5cdcc","operacaoId":"49fb43cb-4717-4380-bdac-a3e88c790f8f","detalhe":null}
+resistiu [R1 Correção durante o job] correção 527 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"6027662d-3622-426b-b950-a474ff8a8f33","operacaoId":"f7b5f57b-9e3f-4bce-baa5-ba9b34ebb73e","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"f7b5f57b-9e3f-4bce-baa5-ba9b34ebb73e","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 6027662d-3622-426b-b950-a474ff8a8f33: proposta AF-30000000701-1794540836543
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"6027662d-3622-426b-b950-a474ff8a8f33","operacaoId":"f7b5f57b-9e3f-4bce-baa5-ba9b34ebb73e","detalhe":"AF-30000000701-1794540836543"}
+resistiu [R1 Correção durante o job] correção 768 ms depois de o job começar (mesmo processo)
+          correção chegou 76 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"4a4bca88-c28b-4ba0-b09c-89d00f1caa64","operacaoId":"d58c3b93-096b-4842-80ae-7e2cc2ce2759","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"d58c3b93-096b-4842-80ae-7e2cc2ce2759","detalhe":null}
+Maisa digitou na Facta, conversa 4a4bca88-c28b-4ba0-b09c-89d00f1caa64: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"4a4bca88-c28b-4ba0-b09c-89d00f1caa64","operacaoId":"d58c3b93-096b-4842-80ae-7e2cc2ce2759","detalhe":null}
+resistiu [R1 Correção durante o job] correção 44 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"f64ad106-9aed-4055-8f5c-a9784a14c661","operacaoId":"884f1ff1-7ab5-4ab8-aead-f1f38544948e","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"884f1ff1-7ab5-4ab8-aead-f1f38544948e","detalhe":null}
+Maisa digitou na Facta, conversa f64ad106-9aed-4055-8f5c-a9784a14c661: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"f64ad106-9aed-4055-8f5c-a9784a14c661","operacaoId":"884f1ff1-7ab5-4ab8-aead-f1f38544948e","detalhe":null}
+resistiu [R1 Correção durante o job] correção 459 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"b9f168db-a83c-46b5-8f30-f6095eff6ee4","operacaoId":"5db8b0fc-7501-4cad-ab61-d735b4de23ac","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"5db8b0fc-7501-4cad-ab61-d735b4de23ac","detalhe":null}
+Maisa digitou na Facta, conversa b9f168db-a83c-46b5-8f30-f6095eff6ee4: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"b9f168db-a83c-46b5-8f30-f6095eff6ee4","operacaoId":"5db8b0fc-7501-4cad-ab61-d735b4de23ac","detalhe":null}
+resistiu [R1 Correção durante o job] correção 138 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"c256d51e-94a6-40d0-ba80-e7963e2b74c1","operacaoId":"e354f50f-ee83-438e-9747-eb49eaa1a811","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"e354f50f-ee83-438e-9747-eb49eaa1a811","detalhe":null}
+Maisa digitou na Facta, conversa c256d51e-94a6-40d0-ba80-e7963e2b74c1: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"c256d51e-94a6-40d0-ba80-e7963e2b74c1","operacaoId":"e354f50f-ee83-438e-9747-eb49eaa1a811","detalhe":null}
+resistiu [R1 Correção durante o job] correção 164 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"06bc5be7-9cd5-480b-a45a-9f7c72f1352c","operacaoId":"52f43ecb-edb1-4cdc-aec3-2f4bec58ece3","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"52f43ecb-edb1-4cdc-aec3-2f4bec58ece3","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 06bc5be7-9cd5-480b-a45a-9f7c72f1352c: proposta AF-30000001279-1794540840920
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"06bc5be7-9cd5-480b-a45a-9f7c72f1352c","operacaoId":"52f43ecb-edb1-4cdc-aec3-2f4bec58ece3","detalhe":"AF-30000001279-1794540840920"}
+resistiu [R1 Correção durante o job] correção 712 ms depois de o job começar (mesmo processo)
+          correção chegou 30 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"b1972023-7d62-458f-b5b2-4dca9d094712","operacaoId":"8cb7c4d9-cbcb-416c-88c0-4a7c55895523","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"8cb7c4d9-cbcb-416c-88c0-4a7c55895523","detalhe":null}
+Maisa digitou na Facta, conversa b1972023-7d62-458f-b5b2-4dca9d094712: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"b1972023-7d62-458f-b5b2-4dca9d094712","operacaoId":"8cb7c4d9-cbcb-416c-88c0-4a7c55895523","detalhe":null}
+resistiu [R1 Correção durante o job] correção 256 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"74075436-9877-476c-a880-d6b53b99087d","operacaoId":"c9dd2cc4-2dae-4053-a21c-f59d987357ea","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"c9dd2cc4-2dae-4053-a21c-f59d987357ea","detalhe":null}
+Maisa digitou na Facta, conversa 74075436-9877-476c-a880-d6b53b99087d: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"74075436-9877-476c-a880-d6b53b99087d","operacaoId":"c9dd2cc4-2dae-4053-a21c-f59d987357ea","detalhe":null}
+resistiu [R1 Correção durante o job] correção 450 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"6dd2edf8-c493-4b35-8e86-7c03ef091243","operacaoId":"8f70969d-c478-43a7-9fca-2c5133e93cea","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"8f70969d-c478-43a7-9fca-2c5133e93cea","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 6dd2edf8-c493-4b35-8e86-7c03ef091243: proposta AF-30000001511-1794540843557
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"6dd2edf8-c493-4b35-8e86-7c03ef091243","operacaoId":"8f70969d-c478-43a7-9fca-2c5133e93cea","detalhe":"AF-30000001511-1794540843557"}
+resistiu [R1 Correção durante o job] correção 998 ms depois de o job começar (mesmo processo)
+          correção chegou 342 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"6e540a10-b6fa-4789-bfeb-2fecbc53a455","operacaoId":"d997e431-a445-472c-b0bb-b58979209dc1","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"d997e431-a445-472c-b0bb-b58979209dc1","detalhe":null}
+Maisa digitou na Facta, conversa 6e540a10-b6fa-4789-bfeb-2fecbc53a455: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"6e540a10-b6fa-4789-bfeb-2fecbc53a455","operacaoId":"d997e431-a445-472c-b0bb-b58979209dc1","detalhe":null}
+resistiu [R1 Correção durante o job] correção 286 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"915dd3f3-edfd-405a-adc5-7ee251fd668d","operacaoId":"845189da-1acd-418d-9b8f-fd86453cb2cc","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"845189da-1acd-418d-9b8f-fd86453cb2cc","detalhe":null}
+Maisa digitou na Facta, conversa 915dd3f3-edfd-405a-adc5-7ee251fd668d: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"915dd3f3-edfd-405a-adc5-7ee251fd668d","operacaoId":"845189da-1acd-418d-9b8f-fd86453cb2cc","detalhe":null}
+resistiu [R1 Correção durante o job] correção 331 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"a41fc0b0-f801-41db-a019-d63c22b5fc54","operacaoId":"183a130c-59cd-4968-9f10-40cc6a0a7ea5","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"183a130c-59cd-4968-9f10-40cc6a0a7ea5","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa a41fc0b0-f801-41db-a019-d63c22b5fc54: proposta AF-30000001864-1794540846463
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"a41fc0b0-f801-41db-a019-d63c22b5fc54","operacaoId":"183a130c-59cd-4968-9f10-40cc6a0a7ea5","detalhe":"AF-30000001864-1794540846463"}
+resistiu [R1 Correção durante o job] correção 1098 ms depois de o job começar (mesmo processo)
+          correção chegou 416 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"c0229a02-ad2e-45e1-bf46-57f205812d64","operacaoId":"cd482a94-f5f5-4060-b7f7-8cae6dc96cd6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"cd482a94-f5f5-4060-b7f7-8cae6dc96cd6","detalhe":null}
+Maisa digitou na Facta, conversa c0229a02-ad2e-45e1-bf46-57f205812d64: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"c0229a02-ad2e-45e1-bf46-57f205812d64","operacaoId":"cd482a94-f5f5-4060-b7f7-8cae6dc96cd6","detalhe":null}
+resistiu [R1 Correção durante o job] correção 630 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"6307762c-4d07-4e12-936d-73bb698d0d10","operacaoId":"d250985d-0cfa-44dd-b4e6-83e6bbd12b71","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"d250985d-0cfa-44dd-b4e6-83e6bbd12b71","detalhe":null}
+Maisa digitou na Facta, conversa 6307762c-4d07-4e12-936d-73bb698d0d10: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"6307762c-4d07-4e12-936d-73bb698d0d10","operacaoId":"d250985d-0cfa-44dd-b4e6-83e6bbd12b71","detalhe":null}
+resistiu [R1 Correção durante o job] correção 92 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"5e8f0952-bc51-4bfa-ba52-bda36336883b","operacaoId":"7775ebc4-48f5-4998-81cc-20c43f5de359","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"7775ebc4-48f5-4998-81cc-20c43f5de359","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 5e8f0952-bc51-4bfa-ba52-bda36336883b: proposta AF-30000002160-1794540849358
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"5e8f0952-bc51-4bfa-ba52-bda36336883b","operacaoId":"7775ebc4-48f5-4998-81cc-20c43f5de359","detalhe":"AF-30000002160-1794540849358"}
+resistiu [R1 Correção durante o job] correção 806 ms depois de o job começar (mesmo processo)
+          correção chegou 124 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"9cd1ec05-1ca2-44bd-bac7-09878aa9e8ae","operacaoId":"302215ca-f84d-4f3e-90af-3707d28925da","detalhe":"preparada"}
+resistiu [R1 Correção durante o job] correção 54 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"003ab558-c5fd-4945-abf4-efd22650493c","operacaoId":"6110f0ab-8718-46f7-93f3-ee12374acad8","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"6110f0ab-8718-46f7-93f3-ee12374acad8","detalhe":null}
+Maisa digitou na Facta, conversa 003ab558-c5fd-4945-abf4-efd22650493c: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"003ab558-c5fd-4945-abf4-efd22650493c","operacaoId":"6110f0ab-8718-46f7-93f3-ee12374acad8","detalhe":null}
+resistiu [R1 Correção durante o job] correção 291 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"e1c521a7-5a68-46a5-955e-beab973e9c72","operacaoId":"92cea164-3423-410e-b2b3-5b04e7d047d2","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"92cea164-3423-410e-b2b3-5b04e7d047d2","detalhe":null}
+Maisa digitou na Facta, conversa e1c521a7-5a68-46a5-955e-beab973e9c72: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"e1c521a7-5a68-46a5-955e-beab973e9c72","operacaoId":"92cea164-3423-410e-b2b3-5b04e7d047d2","detalhe":null}
+resistiu [R1 Correção durante o job] correção 163 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"2959276a-0b5f-4500-a6a8-7dbf58c55940","operacaoId":"a7ace38a-1ac2-46a5-ba02-00941b02a577","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"a7ace38a-1ac2-46a5-ba02-00941b02a577","detalhe":null}
+Maisa digitou na Facta, conversa 2959276a-0b5f-4500-a6a8-7dbf58c55940: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"2959276a-0b5f-4500-a6a8-7dbf58c55940","operacaoId":"a7ace38a-1ac2-46a5-ba02-00941b02a577","detalhe":null}
+resistiu [R1 Correção durante o job] correção 573 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"7a76584a-0ed9-4b7a-a097-22e85cc94118","operacaoId":"63aee909-8948-418e-bdae-3700391d59a6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"63aee909-8948-418e-bdae-3700391d59a6","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 7a76584a-0ed9-4b7a-a097-22e85cc94118: proposta AF-30000002674-1794540853095
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"7a76584a-0ed9-4b7a-a097-22e85cc94118","operacaoId":"63aee909-8948-418e-bdae-3700391d59a6","detalhe":"AF-30000002674-1794540853095"}
+resistiu [R1 Correção durante o job] correção 1045 ms depois de o job começar (mesmo processo)
+          correção chegou 367 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"1df08c37-4400-4949-baba-399ab86f5199","operacaoId":"901d85f4-8b54-4eaf-b3d7-feb115c3ab31","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"901d85f4-8b54-4eaf-b3d7-feb115c3ab31","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 1df08c37-4400-4949-baba-399ab86f5199: proposta AF-30000002755-1794540854253
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"1df08c37-4400-4949-baba-399ab86f5199","operacaoId":"901d85f4-8b54-4eaf-b3d7-feb115c3ab31","detalhe":"AF-30000002755-1794540854253"}
+resistiu [R1 Correção durante o job] correção 1066 ms depois de o job começar (mesmo processo)
+          correção chegou 383 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"02f9373e-3bdb-4547-9120-6c5697a82271","operacaoId":"d2470b29-bba3-4dd2-bb7a-83dced305105","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"d2470b29-bba3-4dd2-bb7a-83dced305105","detalhe":null}
+Maisa digitou na Facta, conversa 02f9373e-3bdb-4547-9120-6c5697a82271: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"02f9373e-3bdb-4547-9120-6c5697a82271","operacaoId":"d2470b29-bba3-4dd2-bb7a-83dced305105","detalhe":null}
+resistiu [R1 Correção durante o job] correção 636 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"bae44afd-13d7-4245-85f6-82a0fd9a18f8","operacaoId":"7486b950-48fd-401f-b38f-48f8a2c661af","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"7486b950-48fd-401f-b38f-48f8a2c661af","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa bae44afd-13d7-4245-85f6-82a0fd9a18f8: proposta AF-30000002917-1794540856331
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"bae44afd-13d7-4245-85f6-82a0fd9a18f8","operacaoId":"7486b950-48fd-401f-b38f-48f8a2c661af","detalhe":"AF-30000002917-1794540856331"}
+resistiu [R1 Correção durante o job] correção 804 ms depois de o job começar (mesmo processo)
+          correção chegou 110 ms depois da etapa 3 (inevitável)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"640b85ee-2338-4f58-88c4-e7fe693a8d65","operacaoId":"e101f7e6-7c45-4f97-a6e8-b33bc74e29dd","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"e101f7e6-7c45-4f97-a6e8-b33bc74e29dd","detalhe":null}
+Maisa digitou na Facta, conversa 640b85ee-2338-4f58-88c4-e7fe693a8d65: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"640b85ee-2338-4f58-88c4-e7fe693a8d65","operacaoId":"e101f7e6-7c45-4f97-a6e8-b33bc74e29dd","detalhe":null}
+resistiu [R1 Correção durante o job] correção 575 ms depois de o job começar (mesmo processo)
+          correção cancelou a tempo
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"3b4eed10-b89b-48d2-aa29-9f3edacc57cb","operacaoId":"e4b58ce8-7644-4d27-b7a8-57bb696b5001","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"e4b58ce8-7644-4d27-b7a8-57bb696b5001","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 3b4eed10-b89b-48d2-aa29-9f3edacc57cb: proposta AF-30000003131-1794540874575
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"3b4eed10-b89b-48d2-aa29-9f3edacc57cb","operacaoId":"e4b58ce8-7644-4d27-b7a8-57bb696b5001","detalhe":"AF-30000003131-1794540874575"}
+QUEBROU  [R1 Correção durante o job] correção em OUTRO processo durante a Facta, e depois novo "sim" (rodada 1)
+          proposta criada com o CEP antigo; depois da correção, o novo "sim" respondeu "contrato foi feito" com o link antigo (chave não muda com os dados). Etapa depois da correção: confirmacao
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"33899802-49eb-44f6-b4eb-7499915d09e8","operacaoId":"77bbdeee-7d00-46a9-a539-26e70073aa1e","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"77bbdeee-7d00-46a9-a539-26e70073aa1e","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 33899802-49eb-44f6-b4eb-7499915d09e8: proposta AF-30000003212-1794540891972
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"33899802-49eb-44f6-b4eb-7499915d09e8","operacaoId":"77bbdeee-7d00-46a9-a539-26e70073aa1e","detalhe":"AF-30000003212-1794540891972"}
+QUEBROU  [R1 Correção durante o job] correção em OUTRO processo durante a Facta, e depois novo "sim" (rodada 2)
+          proposta criada com o CEP antigo; depois da correção, o novo "sim" respondeu "contrato foi feito" com o link antigo (chave não muda com os dados). Etapa depois da correção: confirmacao
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"1ae8b3fc-48c5-4adb-b7fc-147df6917951","operacaoId":"d50843db-8f91-4ff1-a5f4-84a98389aa1b","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"d50843db-8f91-4ff1-a5f4-84a98389aa1b","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 1ae8b3fc-48c5-4adb-b7fc-147df6917951: proposta AF-30000003301-1794540909537
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"1ae8b3fc-48c5-4adb-b7fc-147df6917951","operacaoId":"d50843db-8f91-4ff1-a5f4-84a98389aa1b","detalhe":"AF-30000003301-1794540909537"}
+QUEBROU  [R1 Correção durante o job] correção em OUTRO processo durante a Facta, e depois novo "sim" (rodada 3)
+          proposta criada com o CEP antigo; depois da correção, o novo "sim" respondeu "contrato foi feito" com o link antigo (chave não muda com os dados). Etapa depois da correção: confirmacao
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"3fba0252-58ea-4fb1-9a4f-56536678ab01","operacaoId":"2c60640f-d02e-4477-b2c3-99d71591a34f","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"2c60640f-d02e-4477-b2c3-99d71591a34f","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 3fba0252-58ea-4fb1-9a4f-56536678ab01: proposta AF-30000003484-1794540927426
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"3fba0252-58ea-4fb1-9a4f-56536678ab01","operacaoId":"2c60640f-d02e-4477-b2c3-99d71591a34f","detalhe":"AF-30000003484-1794540927426"}
+QUEBROU  [R1 Correção durante o job] correção em OUTRO processo durante a Facta, e depois novo "sim" (rodada 4)
+          proposta criada com o CEP antigo; depois da correção, o novo "sim" respondeu "contrato foi feito" com o link antigo (chave não muda com os dados). Etapa depois da correção: confirmacao
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"f239cc28-9b03-4d50-9566-d9ab6de5aaee","operacaoId":"35448160-fcfe-4bc4-bc40-40d61dcad920","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"35448160-fcfe-4bc4-bc40-40d61dcad920","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa f239cc28-9b03-4d50-9566-d9ab6de5aaee: proposta AF-30000003565-1794540944954
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"f239cc28-9b03-4d50-9566-d9ab6de5aaee","operacaoId":"35448160-fcfe-4bc4-bc40-40d61dcad920","detalhe":"AF-30000003565-1794540944954"}
+QUEBROU  [R1 Correção durante o job] correção em OUTRO processo durante a Facta, e depois novo "sim" (rodada 5)
+          proposta criada com o CEP antigo; depois da correção, o novo "sim" respondeu "contrato foi feito" com o link antigo (chave não muda com os dados). Etapa depois da correção: confirmacao
+resistiu [R2 Fora de ordem] áudio "sim" mais lento que a correção em texto mandada depois
+resistiu [R2 Fora de ordem] áudio "sim" mais lento que a "não" mandada depois
+resistiu [R2 Fora de ordem] áudio "sim" mais lento que a dado novo mandada depois
+resistiu [R3 Jobs concorrentes] 2 processos executando a mesma confirmação
+          criadas=1 feito=1 conferindo=0 
+resistiu [R3 Jobs concorrentes] 3 processos executando a mesma confirmação
+          criadas=1 feito=1 conferindo=0 
+resistiu [R3 Jobs concorrentes] 5 processos executando a mesma confirmação
+          criadas=1 feito=1 conferindo=0 
+resistiu [R3 Jobs concorrentes] 8 processos executando a mesma confirmação
+          criadas=1 feito=1 conferindo=0 
+resistiu [R3 Jobs concorrentes] 10 processos executando a mesma confirmação
+          criadas=1 feito=1 conferindo=0 
+resistiu [R3 Jobs concorrentes] 10 processos executando a mesma confirmação
+          criadas=1 feito=1 conferindo=0 
+QUEBROU  [R4 Queda no job da digitação] processo morto 1135 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=concluida comMaisa=true cliente e equipe sem saber do resultado
+QUEBROU  [R4 Queda no job da digitação] processo morto 321 ms depois da 1ª chamada à Facta
+          morto; criadas=0 op=falhou comMaisa=true cliente e equipe sem saber do resultado
+QUEBROU  [R4 Queda no job da digitação] processo morto 1223 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=concluida comMaisa=false 2 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [R4 Queda no job da digitação] processo morto 570 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=desconhecida comMaisa=false 
+resistiu [R4 Queda no job da digitação] processo morto 973 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=desconhecida comMaisa=false 
+resistiu [R4 Queda no job da digitação] processo morto 1146 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=concluida comMaisa=false 
+resistiu [R4 Queda no job da digitação] processo morto 783 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=desconhecida comMaisa=false 
+QUEBROU  [R4 Queda no job da digitação] processo morto 1260 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=concluida comMaisa=false 2 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda no job da digitação] processo morto 396 ms depois da 1ª chamada à Facta
+          morto; criadas=0 op=falhou comMaisa=true cliente e equipe sem saber do resultado
+QUEBROU  [R4 Queda no job da digitação] processo morto 1319 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=concluida comMaisa=false 2 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [R4 Queda no job da digitação] processo morto 959 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=desconhecida comMaisa=false 
+QUEBROU  [R4 Queda no job da digitação] processo morto 1191 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=concluida comMaisa=false 2 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [R4 Queda no job da digitação] processo morto 904 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=desconhecida comMaisa=false 
+QUEBROU  [R4 Queda no job da digitação] processo morto 185 ms depois da 1ª chamada à Facta
+          morto; criadas=0 op=falhou comMaisa=true cliente e equipe sem saber do resultado
+resistiu [R4 Queda no job da digitação] processo morto 562 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=desconhecida comMaisa=false 
+QUEBROU  [R4 Queda no job da digitação] processo morto 194 ms depois da 1ª chamada à Facta
+          morto; criadas=0 op=falhou comMaisa=true cliente e equipe sem saber do resultado
+QUEBROU  [R4 Queda no job da digitação] processo morto 209 ms depois da 1ª chamada à Facta
+          morto; criadas=0 op=falhou comMaisa=true cliente e equipe sem saber do resultado
+QUEBROU  [R4 Queda no job da digitação] processo morto 251 ms depois da 1ª chamada à Facta
+          morto; criadas=0 op=falhou comMaisa=true cliente e equipe sem saber do resultado
+QUEBROU  [R4 Queda no job da digitação] processo morto 1278 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=concluida comMaisa=false 2 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [R4 Queda no job da digitação] processo morto 961 ms depois da 1ª chamada à Facta
+          morto; criadas=1 op=desconhecida comMaisa=false 
+QUEBROU  [R4 Queda ao responder] processo morto 243 ms depois do 1º envio, mensagem "ok"
+          morto; 1 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 385 ms depois do 1º envio, mensagem "quero falar com um atendente"
+          morto; 1 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 44 ms depois do 1º envio, mensagem "obrigada"
+          morto; 2 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [R4 Queda ao responder] processo morto 497 ms depois do 1º envio, mensagem "sim"
+          terminou antes; 
+QUEBROU  [R4 Queda ao responder] processo morto 161 ms depois do 1º envio, mensagem "ok"
+          morto; 1 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 61 ms depois do 1º envio, mensagem "quero falar com um atendente"
+          morto; 2 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 485 ms depois do 1º envio, mensagem "obrigada"
+          morto; 1 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 162 ms depois do 1º envio, mensagem "sim"
+          morto; 3 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [R4 Queda ao responder] processo morto 374 ms depois do 1º envio, mensagem "ok"
+          terminou antes; 
+QUEBROU  [R4 Queda ao responder] processo morto 393 ms depois do 1º envio, mensagem "quero falar com um atendente"
+          morto; 1 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 473 ms depois do 1º envio, mensagem "obrigada"
+          morto; 1 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 158 ms depois do 1º envio, mensagem "sim"
+          morto; 3 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [R4 Queda ao responder] processo morto 331 ms depois do 1º envio, mensagem "ok"
+          morto; 
+QUEBROU  [R4 Queda ao responder] processo morto 91 ms depois do 1º envio, mensagem "quero falar com um atendente"
+          morto; 2 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 5 ms depois do 1º envio, mensagem "obrigada"
+          morto; 2 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 120 ms depois do 1º envio, mensagem "sim"
+          morto; 3 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [R4 Queda ao responder] processo morto 393 ms depois do 1º envio, mensagem "ok"
+          terminou antes; 
+QUEBROU  [R4 Queda ao responder] processo morto 28 ms depois do 1º envio, mensagem "quero falar com um atendente"
+          morto; 2 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 9 ms depois do 1º envio, mensagem "obrigada"
+          morto; 2 resposta(s) presa(s) na fila de saída depois da recuperação
+QUEBROU  [R4 Queda ao responder] processo morto 43 ms depois do 1º envio, mensagem "sim"
+          morto; 3 resposta(s) presa(s) na fila de saída depois da recuperação
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"64fb94f9-544f-4df6-8e1f-197c587711f6","operacaoId":"71cee26a-71b1-4f55-aa32-3882a68afc59","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"71cee26a-71b1-4f55-aa32-3882a68afc59","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 64fb94f9-544f-4df6-8e1f-197c587711f6: proposta AF-30000059005-1794541082874
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"64fb94f9-544f-4df6-8e1f-197c587711f6","operacaoId":"71cee26a-71b1-4f55-aa32-3882a68afc59","detalhe":"AF-30000059005-1794541082874"}
+resistiu [R5 Idempotência] mesmo cliente em dois números da Maisa confirma a mesma oferta nos dois
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"b263b002-3d4b-4812-bf69-76da8987a846","operacaoId":"791625ab-1c20-49e2-996a-3df2df2e5189","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"791625ab-1c20-49e2-996a-3df2df2e5189","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa b263b002-3d4b-4812-bf69-76da8987a846: proposta AF-30000059196-1794541083293
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"b263b002-3d4b-4812-bf69-76da8987a846","operacaoId":"791625ab-1c20-49e2-996a-3df2df2e5189","detalhe":"AF-30000059196-1794541083293"}
+resistiu [R5 Idempotência] conversa encerrada e cliente volta numa conversa nova com a mesma oferta
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"4a2b27aa-62b4-4fab-a95e-197d153fa1f2","operacaoId":"795e8124-2663-4a92-a63a-1d103bdb53e6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"795e8124-2663-4a92-a63a-1d103bdb53e6","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 4a2b27aa-62b4-4fab-a95e-197d153fa1f2: proposta AF-30000008958-1794541083924
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"4a2b27aa-62b4-4fab-a95e-197d153fa1f2","operacaoId":"795e8124-2663-4a92-a63a-1d103bdb53e6","detalhe":"AF-30000008958-1794541083924"}
+resistiu [R5 Idempotência] equipe devolve para a Maisa, cliente corrige o CEP e confirma a mesma oferta
+          chamadas novas=0 avisos=1
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"a224345d-ba31-4869-a427-7f6279569083","operacaoId":"e152bc2c-7c89-40c6-97a6-4053575eecbe","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa2-dados-pessoais
+Maisa digitou na Facta, conversa a224345d-ba31-4869-a427-7f6279569083: erro em dados pessoais
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"a224345d-ba31-4869-a427-7f6279569083","operacaoId":"e152bc2c-7c89-40c6-97a6-4053575eecbe","detalhe":"dados pessoais"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"a224345d-ba31-4869-a427-7f6279569083","operacaoId":"98929c4a-e370-4ebd-a33a-5b49617335ba","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"98929c4a-e370-4ebd-a33a-5b49617335ba","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa a224345d-ba31-4869-a427-7f6279569083: proposta AF-30000009091-1794541084861
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"a224345d-ba31-4869-a427-7f6279569083","operacaoId":"98929c4a-e370-4ebd-a33a-5b49617335ba","detalhe":"AF-30000009091-1794541084861"}
+resistiu [R5 Idempotência] Facta recusou (RG errado), equipe corrige e devolve: a nova tentativa legítima é bloqueada
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"e89b51a3-15cc-4bdd-8068-84d7e2cb8a5c","operacaoId":"cfc1277e-769f-4e8c-8ea9-744d82b04ccc","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"cfc1277e-769f-4e8c-8ea9-744d82b04ccc","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa e89b51a3-15cc-4bdd-8068-84d7e2cb8a5c: proposta AF-30000009172-1794541085278
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"e89b51a3-15cc-4bdd-8068-84d7e2cb8a5c","operacaoId":"cfc1277e-769f-4e8c-8ea9-744d82b04ccc","detalhe":"AF-30000009172-1794541085278"}
+resistiu [R5 Idempotência] duas ofertas diferentes na mesma conversa (tabela 1 e tabela 2)
+          criadas=1 (oferta diferente gera chave nova: duas propostas são permitidas, decisão de negócio)
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"8e6adcdc-4c47-410c-9b8e-ac97b26cce1b","operacaoId":"b3f6ca34-a776-426b-acfd-715964190335","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"b3f6ca34-a776-426b-acfd-715964190335","detalhe":null}
+Maisa digitou na Facta, conversa 8e6adcdc-4c47-410c-9b8e-ac97b26cce1b: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"8e6adcdc-4c47-410c-9b8e-ac97b26cce1b","operacaoId":"b3f6ca34-a776-426b-acfd-715964190335","detalhe":"cadastro da proposta"}
+resistiu [R5 Idempotência] etapa 3 cria_e_lento: Facta CRIOU a proposta
+          operação desconhecida
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"6b9a8997-8c18-47ba-8998-8f53f11b0378","operacaoId":"aa7dc3f6-bfd1-4544-a079-bea43bbdf2e2","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"aa7dc3f6-bfd1-4544-a079-bea43bbdf2e2","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=500 erro=true msg=
+Maisa digitou na Facta, conversa 6b9a8997-8c18-47ba-8998-8f53f11b0378: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"6b9a8997-8c18-47ba-8998-8f53f11b0378","operacaoId":"aa7dc3f6-bfd1-4544-a079-bea43bbdf2e2","detalhe":"cadastro da proposta"}
+resistiu [R5 Idempotência] etapa 3 cria_e_500: Facta CRIOU a proposta
+          operação desconhecida
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"e4af1d05-aac7-45d9-81c5-4ad81b6cd996","operacaoId":"8ed98675-7316-44fe-837e-35c4f378ffa1","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"8ed98675-7316-44fe-837e-35c4f378ffa1","detalhe":null}
+Maisa digitou na Facta, conversa e4af1d05-aac7-45d9-81c5-4ad81b6cd996: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"e4af1d05-aac7-45d9-81c5-4ad81b6cd996","operacaoId":"8ed98675-7316-44fe-837e-35c4f378ffa1","detalhe":"cadastro da proposta"}
+resistiu [R5 Idempotência] etapa 3 queda: Facta não criou a proposta
+          operação desconhecida
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"1b8da022-400f-45a8-9c20-cebd7ea5576e","operacaoId":"a60dadcb-ed8d-4e8d-90dc-0974496d5b72","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"a60dadcb-ed8d-4e8d-90dc-0974496d5b72","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa3-proposta-cadastro
+Maisa digitou na Facta, conversa 1b8da022-400f-45a8-9c20-cebd7ea5576e: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"1b8da022-400f-45a8-9c20-cebd7ea5576e","operacaoId":"a60dadcb-ed8d-4e8d-90dc-0974496d5b72","detalhe":"cadastro da proposta"}
+resistiu [R5 Idempotência] etapa 3 cria_e_erro: Facta CRIOU a proposta
+          operação desconhecida
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"211dbafd-6467-41e5-a923-aca1868c5cc8","operacaoId":"902504c7-e236-4316-89e8-5e531d8f18a6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"902504c7-e236-4316-89e8-5e531d8f18a6","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=true msg=resposta em HTML, IP não liberado ou produção não ativada
+Maisa digitou na Facta, conversa 211dbafd-6467-41e5-a923-aca1868c5cc8: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"211dbafd-6467-41e5-a923-aca1868c5cc8","operacaoId":"902504c7-e236-4316-89e8-5e531d8f18a6","detalhe":"cadastro da proposta"}
+resistiu [R5 Idempotência] etapa 3 cria_e_html: Facta CRIOU a proposta
+          operação desconhecida
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"6a919472-fddb-461e-b83b-773b09627082","operacaoId":"24fcac74-787f-487d-88c2-43875891a5f5","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"24fcac74-787f-487d-88c2-43875891a5f5","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=408 erro=true msg=timeout
+Maisa digitou na Facta, conversa 6a919472-fddb-461e-b83b-773b09627082: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"6a919472-fddb-461e-b83b-773b09627082","operacaoId":"24fcac74-787f-487d-88c2-43875891a5f5","detalhe":"cadastro da proposta"}
+resistiu [R5 Idempotência] etapa 3 408: Facta não criou a proposta
+          operação desconhecida
+resistiu [R5 Idempotência] 10 processos ao mesmo tempo com a etapa 3 lenta
+          criadas=1
+Falha ao entregar mensagem via WhatsApp: HTTP 502
+{"origem":"maisa","tipo":"saida_whatsapp","evento":"falha_envio","conversaId":"c0b7fc39-27ec-4f23-85ba-8312e1cfe878","mensagemId":"bf64ef4f-5ff9-4087-b80d-f3c50fcbb76d","tentativa":1,"falha":"incerta","erro":"HTTP 502"}
+resistiu [R6 WhatsApp] provedor ENVIA e devolve 502: o reenvio duplica?
+Falha ao entregar mensagem via WhatsApp: HTTP 503
+{"origem":"maisa","tipo":"saida_whatsapp","evento":"falha_envio","conversaId":"730d42a4-e61e-4e77-a558-0dbef9cf123d","mensagemId":"0bdf990b-bcb1-44f2-b502-735c23999bc5","tentativa":1,"falha":"incerta","erro":"HTTP 503"}
+resistiu [R6 WhatsApp] provedor ENVIA e devolve 503: o reenvio duplica?
+Falha ao entregar mensagem via WhatsApp: HTTP 504
+{"origem":"maisa","tipo":"saida_whatsapp","evento":"falha_envio","conversaId":"ba2d7402-407b-46fc-8b4b-54732034de36","mensagemId":"9209c437-5f6b-4d4d-83b4-653e8c8c401d","tentativa":1,"falha":"incerta","erro":"HTTP 504"}
+resistiu [R6 WhatsApp] provedor ENVIA e devolve 504: o reenvio duplica?
+Falha ao entregar mensagem via WhatsApp: HTTP 429
+{"origem":"maisa","tipo":"saida_whatsapp","evento":"falha_envio","conversaId":"b6df7f47-51ea-411f-be94-d1c7e8f6c55c","mensagemId":"0f7ac7b8-5f24-474c-8474-15b2497fe1cc","tentativa":1,"falha":"incerta","erro":"HTTP 429"}
+resistiu [R6 WhatsApp] provedor ENVIA e devolve 429: o reenvio duplica?
+Falha ao entregar mensagem via WhatsApp: timeout of 1500ms exceeded
+{"origem":"maisa","tipo":"saida_whatsapp","evento":"falha_envio","conversaId":"3e4a6c55-1318-4897-8eca-ef5bdf2c9105","mensagemId":"79560a80-1364-43c1-801c-600e4ad8af56","tentativa":1,"falha":"incerta","erro":"timeout of 1500ms exceeded"}
+resistiu [R6 WhatsApp] provedor envia e a resposta se perde (tempo esgotado)
+          cópias=1; conversa foi para a equipe=true (falso alarme: a mensagem chegou)
+QUEBROU  [R6 WhatsApp] Evolution fora do ar, processo cai na espera do reenvio (100 ms) e o envio sai uma vez quando volta
+          entregas=0 entregue 0 vez(es) e a conversa ainda com a Maisa
+resistiu [R6 WhatsApp] Evolution fora do ar, processo cai na espera do reenvio (400 ms) e o envio sai uma vez quando volta
+          entregas=1 
+resistiu [R6 WhatsApp] Evolution fora do ar, processo cai na espera do reenvio (900 ms) e o envio sai uma vez quando volta
+          entregas=1 
+Falha de entrega reportada pela Meta (mensagem 2ba870d3-7b34-484a-bf13-12742159efb3): Message undeliverable
+Falha de entrega reportada pela Meta (mensagem 2ba870d3-7b34-484a-bf13-12742159efb3): Message undeliverable
+resistiu [R6 WhatsApp] Meta aceita e depois avisa pelo webhook que a entrega falhou
+          status=falhou comMaisa=false
+resistiu [R6 WhatsApp] Evolution avisa entrega com erro (messages.update)
+          status=falhou comMaisa=false
+resistiu [R6 WhatsApp] classificação de 504 sem proxy na frente da Evolution
+          504 vira "incerta"; em produção a Evolution é chamada direto (http://evolution-api), então 504 só vem da própria Evolution ou da Meta, que não documentam que nada foi enviado
+resistiu [R6 WhatsApp] classificação de 502 sem proxy na frente da Evolution
+          502 vira "incerta"; em produção a Evolution é chamada direto (http://evolution-api), então 502 só vem da própria Evolution ou da Meta, que não documentam que nada foi enviado
+resistiu [R7 Persistência] Postgres cai antes da Facta
+          criadas=1 op=desconhecida comMaisa=false 
+resistiu [R7 Persistência] Postgres cai durante a etapa 2
+          criadas=1 op=desconhecida comMaisa=false 
+QUEBROU  [R7 Persistência] Postgres cai depois da etapa 3, antes de gravar a operação
+          criadas=1 op=concluida comMaisa=false 1 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [R7 Persistência] "sim" e "espera" em dois processos ao mesmo tempo (rodada 1)
+          criadas=0
+resistiu [R7 Persistência] "sim" e "espera" em dois processos ao mesmo tempo (rodada 2)
+          criadas=0
+resistiu [R7 Persistência] "sim" e "espera" em dois processos ao mesmo tempo (rodada 3)
+          criadas=0
+resistiu [R7 Persistência] "sim" e "espera" em dois processos ao mesmo tempo (rodada 4)
+          criadas=0
+resistiu [R7 Persistência] mesma mensagem de consentimento CLT em dois processos: efeito externo duplicado? (rodada 1)
+          pedidos=1
+resistiu [R7 Persistência] mesma mensagem de consentimento CLT em dois processos: efeito externo duplicado? (rodada 2)
+          pedidos=1
+resistiu [R7 Persistência] mesma mensagem de consentimento CLT em dois processos: efeito externo duplicado? (rodada 3)
+          pedidos=1
+resistiu [R7 Persistência] conversa finalizada mas ainda com a Maisa (queda entre gravar e passar para a equipe)
+          o CHECK do banco recusou o estado
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"59eb35ca-fc5c-469a-9b90-0015d8eca7d4","operacaoId":"8415132e-5fd6-4b76-b5bf-064ad494f7ed","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"8415132e-5fd6-4b76-b5bf-064ad494f7ed","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 59eb35ca-fc5c-469a-9b90-0015d8eca7d4: proposta AF-30000012041-1794541143267
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"59eb35ca-fc5c-469a-9b90-0015d8eca7d4","operacaoId":"8415132e-5fd6-4b76-b5bf-064ad494f7ed","detalhe":"AF-30000012041-1794541143267"}
+{"origem":"maisa","tipo":"processamento","evento":"conflito_estado","conversaId":"59eb35ca-fc5c-469a-9b90-0015d8eca7d4","detalhe":null}
+resistiu [R7 Persistência] operador devolve a conversa enquanto a Maisa processa
+          criadas=1 propostas registradas=1 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"f120c751-cc15-4713-82a8-aa911818784f","operacaoId":"d3dc6f6b-ba44-4d50-a868-7e3b9437e9b6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"d3dc6f6b-ba44-4d50-a868-7e3b9437e9b6","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa f120c751-cc15-4713-82a8-aa911818784f: proposta AF-30000012122-1794541144162
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"f120c751-cc15-4713-82a8-aa911818784f","operacaoId":"d3dc6f6b-ba44-4d50-a868-7e3b9437e9b6","detalhe":"AF-30000012122-1794541144162"}
+resistiu [R7 Persistência] conversa apagada leva junto o registro da operação na Facta
+          apagar a conversa foi recusado (apagou=false), o rastro ficou
+QUEBROU  [R7 Persistência] recuperação: conversa que já estava com a Maisa antes do deploy (sem marca de última lida)
+          mensagem que chegou durante o próprio deploy fica sem resposta: a recuperação exige a marca de última lida, que as conversas antigas não têm
+resistiu [R8 Migração] banco antigo com dados recebe a migração sem perder nada
+          {"c":1,"m":1,"v":0,"t":0}
+resistiu [R8 Migração] código antigo (rollback) funcionando no banco já migrado
+          leitura, gravação e criação ok com as colunas novas presentes
+resistiu [R8 Migração] código novo com banco SEM a migração
+          falha imediata e explícita (→ 667 try { await novo.conversa.findFirst( The column `conversas.maisa_versao` does not exist in the current database.); o Dockerfile roda migrate deploy antes de subir, então o backend não sobe sem a migração
+resistiu [R8 Migração] falha no meio da migração (objeto já existe) e recuperação
+          falhou=true; estado parcial: coluna=false tabela=false migração pendente=1; depois da recuperação tabela=true
+resistiu [R8 Migração] rollback completo (DROP) numa cópia, código antigo e nova subida
+          drop, código antigo e reaplicação ok
+resistiu [R8 Migração] schema.prisma bate com as migrações
+          No difference detected.
+resistiu [R8 Migração] rollback do código: a trava externa ao código (conferirTravas) barra o .env inseguro
+          inseguro=1 seguro(sem digitação)=0 seguro(sem certificado)=0
+resistiu [R8 Migração] código antigo grava 'finalizada' antes de tirar da Maisa: o CHECK precisa sair no rollback
+          sem tirar o CHECK o banco recusou a gravação do código antigo; depois de tirar, aceitou. Passo obrigatório no rollback.
+resistiu [R8 Migração] migração preenche a marca de última lida das conversas existentes (B2) e tira finalizadas da Maisa
+          {"marca":"b98f9483-8ce6-4f84-9f20-6ddeed28d00a","fin":false}
+resistiu [R8 Migração] o banco recusa situação de operação inválida e liberação sem motivo
+          status inválido recusado=true; liberação sem motivo recusada=true
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"e25530b1-5b0b-41f6-8da1-8a06da5321db","operacaoId":"617b6809-3c60-44ea-b6c7-1ef40634e140","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"617b6809-3c60-44ea-b6c7-1ef40634e140","detalhe":null}
+Maisa digitou na Facta, conversa e25530b1-5b0b-41f6-8da1-8a06da5321db: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"e25530b1-5b0b-41f6-8da1-8a06da5321db","operacaoId":"617b6809-3c60-44ea-b6c7-1ef40634e140","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] não 303 ms após o job (etapas 1/2: 280/84 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"b3d95df3-e6a6-48d0-8e59-102a88108f9e","operacaoId":"f0623b8f-2a57-4117-80c6-ee0fe45d6822","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"f0623b8f-2a57-4117-80c6-ee0fe45d6822","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa b3d95df3-e6a6-48d0-8e59-102a88108f9e: proposta AF-30000012556-1794541197850
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"b3d95df3-e6a6-48d0-8e59-102a88108f9e","operacaoId":"f0623b8f-2a57-4117-80c6-ee0fe45d6822","detalhe":"AF-30000012556-1794541197850"}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 331 ms após o job (etapas 1/2: 105/26 ms)
+          correção 164 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"6ae874f6-488b-4180-b0d4-15b16eeb90fa","operacaoId":"3932ea44-47e8-499c-a185-5004796b10d4","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"3932ea44-47e8-499c-a185-5004796b10d4","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 6ae874f6-488b-4180-b0d4-15b16eeb90fa: proposta AF-30000012637-1794541198470
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"6ae874f6-488b-4180-b0d4-15b16eeb90fa","operacaoId":"3932ea44-47e8-499c-a185-5004796b10d4","detalhe":"AF-30000012637-1794541198470"}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 552 ms após o job (etapas 1/2: 54/136 ms)
+          correção 342 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"9626872a-2f9c-499a-9833-17f9df5d7f7b","operacaoId":"532589ba-3488-4e68-a071-c66792f2c593","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"532589ba-3488-4e68-a071-c66792f2c593","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 9626872a-2f9c-499a-9833-17f9df5d7f7b: proposta AF-30000012718-1794541199642
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"9626872a-2f9c-499a-9833-17f9df5d7f7b","operacaoId":"532589ba-3488-4e68-a071-c66792f2c593","detalhe":"AF-30000012718-1794541199642"}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 751 ms após o job (etapas 1/2: 334/290 ms)
+          correção 78 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"9dea4095-4a13-4fd0-8b23-22627e4686bf","operacaoId":"997d5f87-b1a0-46dc-a4a9-63d7730a3975","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"997d5f87-b1a0-46dc-a4a9-63d7730a3975","detalhe":null}
+Maisa digitou na Facta, conversa 9dea4095-4a13-4fd0-8b23-22627e4686bf: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"9dea4095-4a13-4fd0-8b23-22627e4686bf","operacaoId":"997d5f87-b1a0-46dc-a4a9-63d7730a3975","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] não 312 ms após o job (etapas 1/2: 340/148 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"6d24731f-512a-4147-83d7-15112612341e","operacaoId":"02fe720f-36fd-4144-81b6-c440f1218191","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"02fe720f-36fd-4144-81b6-c440f1218191","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 6d24731f-512a-4147-83d7-15112612341e: proposta AF-30000012980-1794541201067
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"6d24731f-512a-4147-83d7-15112612341e","operacaoId":"02fe720f-36fd-4144-81b6-c440f1218191","detalhe":"AF-30000012980-1794541201067"}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 556 ms após o job (etapas 1/2: 202/57 ms)
+          correção 253 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"dc208b33-695f-4e40-a97b-44bee8453650","operacaoId":"87f97954-3609-428c-93a5-96052e6f388d","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"87f97954-3609-428c-93a5-96052e6f388d","detalhe":null}
+Maisa digitou na Facta, conversa dc208b33-695f-4e40-a97b-44bee8453650: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"dc208b33-695f-4e40-a97b-44bee8453650","operacaoId":"87f97954-3609-428c-93a5-96052e6f388d","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 83 ms após o job (etapas 1/2: 120/236 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"8e2c74c3-bf78-4bbf-8325-7e061b9e4f67","operacaoId":"04c35a8e-8c55-40b5-827f-988627fb4b58","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"04c35a8e-8c55-40b5-827f-988627fb4b58","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 8e2c74c3-bf78-4bbf-8325-7e061b9e4f67: proposta AF-30000013102-1794541202542
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"8e2c74c3-bf78-4bbf-8325-7e061b9e4f67","operacaoId":"04c35a8e-8c55-40b5-827f-988627fb4b58","detalhe":"AF-30000013102-1794541202542"}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 384 ms após o job (etapas 1/2: 183/150 ms)
+          correção 24 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"1bfb5f93-1cfd-4640-854b-82e018d791ec","operacaoId":"aa43671d-8c38-46de-b50b-8389b158cb45","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"aa43671d-8c38-46de-b50b-8389b158cb45","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 1bfb5f93-1cfd-4640-854b-82e018d791ec: proposta AF-30000013285-1794541203147
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"1bfb5f93-1cfd-4640-854b-82e018d791ec","operacaoId":"aa43671d-8c38-46de-b50b-8389b158cb45","detalhe":"AF-30000013285-1794541203147"}
+resistiu [N1 Ponto sem volta, mesmo processo] não 293 ms após o job (etapas 1/2: 186/3 ms)
+          correção 65 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"80a2983b-3395-4ea1-a76d-690e76db6c54","operacaoId":"ced5d8d1-8f31-454e-86b9-a85655c6c964","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"ced5d8d1-8f31-454e-86b9-a85655c6c964","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 80a2983b-3395-4ea1-a76d-690e76db6c54: proposta AF-30000013366-1794541203744
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"80a2983b-3395-4ea1-a76d-690e76db6c54","operacaoId":"ced5d8d1-8f31-454e-86b9-a85655c6c964","detalhe":"AF-30000013366-1794541203744"}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 729 ms após o job (etapas 1/2: 69/76 ms)
+          correção 538 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"c336badb-2531-43c1-9860-cba98054b513","operacaoId":"1c1d6602-bb05-44a5-aed4-46daa3e0e138","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"1c1d6602-bb05-44a5-aed4-46daa3e0e138","detalhe":null}
+Maisa digitou na Facta, conversa c336badb-2531-43c1-9860-cba98054b513: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"c336badb-2531-43c1-9860-cba98054b513","operacaoId":"1c1d6602-bb05-44a5-aed4-46daa3e0e138","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 26 ms após o job (etapas 1/2: 371/236 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"e4de6156-bf57-4224-b0ca-c80791023eda","operacaoId":"f24d19b5-7389-461b-a36e-9dd9bc22d259","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"f24d19b5-7389-461b-a36e-9dd9bc22d259","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa e4de6156-bf57-4224-b0ca-c80791023eda: proposta AF-30000013528-1794541205878
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"e4de6156-bf57-4224-b0ca-c80791023eda","operacaoId":"f24d19b5-7389-461b-a36e-9dd9bc22d259","detalhe":"AF-30000013528-1794541205878"}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 574 ms após o job (etapas 1/2: 294/122 ms)
+          correção 108 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"5e068c84-5d09-429b-b6d2-a3ce1775e2be","operacaoId":"336c9759-a108-43f5-b275-2e47ac7c8f01","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"336c9759-a108-43f5-b275-2e47ac7c8f01","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 5e068c84-5d09-429b-b6d2-a3ce1775e2be: proposta AF-30000013609-1794541206849
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"5e068c84-5d09-429b-b6d2-a3ce1775e2be","operacaoId":"336c9759-a108-43f5-b275-2e47ac7c8f01","detalhe":"AF-30000013609-1794541206849"}
+resistiu [N1 Ponto sem volta, mesmo processo] não 794 ms após o job (etapas 1/2: 166/310 ms)
+          correção 261 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"c638b733-5ae4-42ea-b978-b2d2ed1f6a7e","operacaoId":"c65fcd98-50f5-4b5b-93f5-141230a81dfd","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"c65fcd98-50f5-4b5b-93f5-141230a81dfd","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa c638b733-5ae4-42ea-b978-b2d2ed1f6a7e: proposta AF-30000013790-1794541207893
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"c638b733-5ae4-42ea-b978-b2d2ed1f6a7e","operacaoId":"c65fcd98-50f5-4b5b-93f5-141230a81dfd","detalhe":"AF-30000013790-1794541207893"}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 641 ms após o job (etapas 1/2: 346/241 ms)
+          correção 33 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"7ebc6cde-450f-4676-84c8-adf605d64716","operacaoId":"1525195a-4859-4f8f-a519-d87ea4148d32","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"1525195a-4859-4f8f-a519-d87ea4148d32","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 7ebc6cde-450f-4676-84c8-adf605d64716: proposta AF-30000013870-1794541208701
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"7ebc6cde-450f-4676-84c8-adf605d64716","operacaoId":"1525195a-4859-4f8f-a519-d87ea4148d32","detalhe":"AF-30000013870-1794541208701"}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 844 ms após o job (etapas 1/2: 278/59 ms)
+          correção 443 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"59a9ac29-4f61-4d09-8a33-01f8f60e6dd0","operacaoId":"09ada751-6dfb-4d17-b989-22c215c4810e","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"09ada751-6dfb-4d17-b989-22c215c4810e","detalhe":null}
+Maisa digitou na Facta, conversa 59a9ac29-4f61-4d09-8a33-01f8f60e6dd0: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"59a9ac29-4f61-4d09-8a33-01f8f60e6dd0","operacaoId":"09ada751-6dfb-4d17-b989-22c215c4810e","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 574 ms após o job (etapas 1/2: 240/367 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"2f5ed4af-3147-488e-96d2-1b65db4781b6","operacaoId":"b561c3a8-c8d2-4086-9475-e4b23b4299e2","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"b561c3a8-c8d2-4086-9475-e4b23b4299e2","detalhe":null}
+Maisa digitou na Facta, conversa 2f5ed4af-3147-488e-96d2-1b65db4781b6: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"2f5ed4af-3147-488e-96d2-1b65db4781b6","operacaoId":"b561c3a8-c8d2-4086-9475-e4b23b4299e2","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] não 393 ms após o job (etapas 1/2: 244/249 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"ab160bb9-ea16-4e15-a03d-e542636cba07","operacaoId":"1a7ba001-c20c-4cfa-a212-ca662ae1a7e3","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"1a7ba001-c20c-4cfa-a212-ca662ae1a7e3","detalhe":null}
+Maisa digitou na Facta, conversa ab160bb9-ea16-4e15-a03d-e542636cba07: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"ab160bb9-ea16-4e15-a03d-e542636cba07","operacaoId":"1a7ba001-c20c-4cfa-a212-ca662ae1a7e3","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 130 ms após o job (etapas 1/2: 74/305 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"a8504477-800a-4adb-b5c3-83e599c4ea49","operacaoId":"ce4417a7-c983-4a8a-8ef0-0d22d5c5c4d6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"ce4417a7-c983-4a8a-8ef0-0d22d5c5c4d6","detalhe":null}
+Maisa digitou na Facta, conversa a8504477-800a-4adb-b5c3-83e599c4ea49: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"a8504477-800a-4adb-b5c3-83e599c4ea49","operacaoId":"ce4417a7-c983-4a8a-8ef0-0d22d5c5c4d6","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 78 ms após o job (etapas 1/2: 390/312 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"ceabe99e-97f8-4cf8-903a-7596fb48220c","operacaoId":"7fea885f-d06d-4604-b32c-0c3bf6d25fef","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"7fea885f-d06d-4604-b32c-0c3bf6d25fef","detalhe":null}
+Maisa digitou na Facta, conversa ceabe99e-97f8-4cf8-903a-7596fb48220c: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"ceabe99e-97f8-4cf8-903a-7596fb48220c","operacaoId":"7fea885f-d06d-4604-b32c-0c3bf6d25fef","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 168 ms após o job (etapas 1/2: 135/369 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"a8242c0c-585b-4b24-9ea5-84c32c7492ad","operacaoId":"6d216eb5-29d2-4600-8deb-1dd7bd3be48d","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"6d216eb5-29d2-4600-8deb-1dd7bd3be48d","detalhe":null}
+Maisa digitou na Facta, conversa a8242c0c-585b-4b24-9ea5-84c32c7492ad: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"a8242c0c-585b-4b24-9ea5-84c32c7492ad","operacaoId":"6d216eb5-29d2-4600-8deb-1dd7bd3be48d","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] não 300 ms após o job (etapas 1/2: 384/181 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"e312d3ce-a4b3-487e-9edb-ff3a099a2b25","operacaoId":"6cf04414-e81b-41d5-9e48-b7cadc9e1397","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"6cf04414-e81b-41d5-9e48-b7cadc9e1397","detalhe":null}
+Maisa digitou na Facta, conversa e312d3ce-a4b3-487e-9edb-ff3a099a2b25: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"e312d3ce-a4b3-487e-9edb-ff3a099a2b25","operacaoId":"6cf04414-e81b-41d5-9e48-b7cadc9e1397","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 346 ms após o job (etapas 1/2: 304/222 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"19cd2994-0a7e-4443-a063-dc62f845fdc6","operacaoId":"2cf187d4-2c1f-40a2-afb7-c3f27f1820d7","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"2cf187d4-2c1f-40a2-afb7-c3f27f1820d7","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 19cd2994-0a7e-4443-a063-dc62f845fdc6: proposta AF-30000014680-1794541215369
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"19cd2994-0a7e-4443-a063-dc62f845fdc6","operacaoId":"2cf187d4-2c1f-40a2-afb7-c3f27f1820d7","detalhe":"AF-30000014680-1794541215369"}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 750 ms após o job (etapas 1/2: 325/55 ms)
+          correção 326 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"cca3de66-f817-479b-b236-34182f617d0d","operacaoId":"7e237d60-c746-40d4-bae7-0ee1c78db844","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"7e237d60-c746-40d4-bae7-0ee1c78db844","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa cca3de66-f817-479b-b236-34182f617d0d: proposta AF-30000014761-1794541216170
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"cca3de66-f817-479b-b236-34182f617d0d","operacaoId":"7e237d60-c746-40d4-bae7-0ee1c78db844","detalhe":"AF-30000014761-1794541216170"}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 856 ms após o job (etapas 1/2: 174/112 ms)
+          correção 544 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"5e9aa16a-c94c-47b6-a44b-a75a5396fa1f","operacaoId":"63f84086-554d-48e7-af7e-79eb16713a58","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"63f84086-554d-48e7-af7e-79eb16713a58","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 5e9aa16a-c94c-47b6-a44b-a75a5396fa1f: proposta AF-30000014842-1794541217297
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"5e9aa16a-c94c-47b6-a44b-a75a5396fa1f","operacaoId":"63f84086-554d-48e7-af7e-79eb16713a58","detalhe":"AF-30000014842-1794541217297"}
+resistiu [N1 Ponto sem volta, mesmo processo] não 735 ms após o job (etapas 1/2: 110/233 ms)
+          correção 322 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"47abd5d4-f2c0-4225-bcd8-16b23bbe3dfe","operacaoId":"934a8fa3-7eee-457e-9afd-105e2398b36e","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"934a8fa3-7eee-457e-9afd-105e2398b36e","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 47abd5d4-f2c0-4225-bcd8-16b23bbe3dfe: proposta AF-30000014923-1794541218097
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"47abd5d4-f2c0-4225-bcd8-16b23bbe3dfe","operacaoId":"934a8fa3-7eee-457e-9afd-105e2398b36e","detalhe":"AF-30000014923-1794541218097"}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 764 ms após o job (etapas 1/2: 269/31 ms)
+          correção 428 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"c0ca9d76-83f7-40a9-bbb8-6ace9911e0ff","operacaoId":"4454f1fa-e962-4eda-ad0d-db8a5cb08250","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"4454f1fa-e962-4eda-ad0d-db8a5cb08250","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa c0ca9d76-83f7-40a9-bbb8-6ace9911e0ff: proposta AF-30000015067-1794541219063
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"c0ca9d76-83f7-40a9-bbb8-6ace9911e0ff","operacaoId":"4454f1fa-e962-4eda-ad0d-db8a5cb08250","detalhe":"AF-30000015067-1794541219063"}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 596 ms após o job (etapas 1/2: 155/179 ms)
+          correção 232 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"fee29cc4-8249-4178-8086-3988e7f2a1fc","operacaoId":"21ff86d8-93d6-4809-a4b3-cf72ecb1850f","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"21ff86d8-93d6-4809-a4b3-cf72ecb1850f","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa fee29cc4-8249-4178-8086-3988e7f2a1fc: proposta AF-30000015148-1794541219872
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"fee29cc4-8249-4178-8086-3988e7f2a1fc","operacaoId":"21ff86d8-93d6-4809-a4b3-cf72ecb1850f","detalhe":"AF-30000015148-1794541219872"}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 538 ms após o job (etapas 1/2: 183/151 ms)
+          correção 180 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"b471b7da-bfe9-4a80-a96e-46f6c682674d","operacaoId":"d3551cb0-f412-4f12-8613-26bfc667f169","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"d3551cb0-f412-4f12-8613-26bfc667f169","detalhe":null}
+Maisa digitou na Facta, conversa b471b7da-bfe9-4a80-a96e-46f6c682674d: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"b471b7da-bfe9-4a80-a96e-46f6c682674d","operacaoId":"d3551cb0-f412-4f12-8613-26bfc667f169","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] não 203 ms após o job (etapas 1/2: 245/301 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"d6dee5e3-daaf-4c09-a595-9896fdda0bdb","operacaoId":"10869614-8459-40cd-bd0a-7231f2036c64","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"10869614-8459-40cd-bd0a-7231f2036c64","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa d6dee5e3-daaf-4c09-a595-9896fdda0bdb: proposta AF-30000015300-1794541221267
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"d6dee5e3-daaf-4c09-a595-9896fdda0bdb","operacaoId":"10869614-8459-40cd-bd0a-7231f2036c64","detalhe":"AF-30000015300-1794541221267"}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 783 ms após o job (etapas 1/2: 117/50 ms)
+          correção 578 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"d0f48665-c773-4ef4-9756-61c6ddfa5ee5","operacaoId":"41f46b22-7768-46a9-85cf-fda2019000ca","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"41f46b22-7768-46a9-85cf-fda2019000ca","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa d0f48665-c773-4ef4-9756-61c6ddfa5ee5: proposta AF-30000015490-1794541222498
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"d0f48665-c773-4ef4-9756-61c6ddfa5ee5","operacaoId":"41f46b22-7768-46a9-85cf-fda2019000ca","detalhe":"AF-30000015490-1794541222498"}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 797 ms após o job (etapas 1/2: 120/375 ms)
+          correção 260 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"5a9f18a8-1ff6-4e60-b126-d480c6d729f1","operacaoId":"58af99ce-287f-440b-915d-1953b7d6ea08","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"58af99ce-287f-440b-915d-1953b7d6ea08","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 5a9f18a8-1ff6-4e60-b126-d480c6d729f1: proposta AF-30000015571-1794541223285
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"5a9f18a8-1ff6-4e60-b126-d480c6d729f1","operacaoId":"58af99ce-287f-440b-915d-1953b7d6ea08","detalhe":"AF-30000015571-1794541223285"}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 602 ms após o job (etapas 1/2: 59/287 ms)
+          correção 217 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"d2642c33-ba9f-44f1-9671-20abdbded86b","operacaoId":"c3f2b542-d5ff-43e4-b7fa-65ce86b6cd4f","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"c3f2b542-d5ff-43e4-b7fa-65ce86b6cd4f","detalhe":null}
+Maisa digitou na Facta, conversa d2642c33-ba9f-44f1-9671-20abdbded86b: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"d2642c33-ba9f-44f1-9671-20abdbded86b","operacaoId":"c3f2b542-d5ff-43e4-b7fa-65ce86b6cd4f","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] não 498 ms após o job (etapas 1/2: 200/269 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"5cbe8657-32a1-46ff-bf4c-dca72949b9c3","operacaoId":"e90a28d3-637a-4675-8bcf-c50d78d92ce9","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"e90a28d3-637a-4675-8bcf-c50d78d92ce9","detalhe":null}
+Maisa digitou na Facta, conversa 5cbe8657-32a1-46ff-bf4c-dca72949b9c3: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"5cbe8657-32a1-46ff-bf4c-dca72949b9c3","operacaoId":"e90a28d3-637a-4675-8bcf-c50d78d92ce9","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 165 ms após o job (etapas 1/2: 22/124 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"6ed9f6f3-b07e-4332-bb21-395ed8219770","operacaoId":"31e00555-a6f1-4af5-8b7c-1f713c2acb4d","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"31e00555-a6f1-4af5-8b7c-1f713c2acb4d","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 6ed9f6f3-b07e-4332-bb21-395ed8219770: proposta AF-30000015814-1794541225084
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"6ed9f6f3-b07e-4332-bb21-395ed8219770","operacaoId":"31e00555-a6f1-4af5-8b7c-1f713c2acb4d","detalhe":"AF-30000015814-1794541225084"}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 753 ms após o job (etapas 1/2: 53/224 ms)
+          correção 437 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"3d620975-df71-4764-a088-8d2bca34581a","operacaoId":"18613e0b-d615-4bc0-aa6c-d624ef47dfe5","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta_recusado","conversaId":null,"operacaoId":"18613e0b-d615-4bc0-aa6c-d624ef47dfe5","detalhe":null}
+Maisa digitou na Facta, conversa 3d620975-df71-4764-a088-8d2bca34581a: erro em antes do cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"abortada","conversaId":"3d620975-df71-4764-a088-8d2bca34581a","operacaoId":"18613e0b-d615-4bc0-aa6c-d624ef47dfe5","detalhe":null}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 170 ms após o job (etapas 1/2: 251/187 ms)
+          nada criado (operação invalidada) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"8c6db5da-dfd0-485b-a36e-00d577e1f9c5","operacaoId":"83aba690-7cc9-4498-b396-716f4ab04305","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"83aba690-7cc9-4498-b396-716f4ab04305","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 8c6db5da-dfd0-485b-a36e-00d577e1f9c5: proposta AF-30000016039-1794541226796
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"8c6db5da-dfd0-485b-a36e-00d577e1f9c5","operacaoId":"83aba690-7cc9-4498-b396-716f4ab04305","detalhe":"AF-30000016039-1794541226796"}
+resistiu [N1 Ponto sem volta, mesmo processo] não 696 ms após o job (etapas 1/2: 150/256 ms)
+          correção 245 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"66c9f31b-05da-4d3e-b080-4734c028d5d1","operacaoId":"0d809350-9748-4427-b8be-1e8d46bd71ba","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"0d809350-9748-4427-b8be-1e8d46bd71ba","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 66c9f31b-05da-4d3e-b080-4734c028d5d1: proposta AF-30000016110-1794541227260
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"66c9f31b-05da-4d3e-b080-4734c028d5d1","operacaoId":"0d809350-9748-4427-b8be-1e8d46bd71ba","detalhe":"AF-30000016110-1794541227260"}
+resistiu [N1 Ponto sem volta, mesmo processo] áudio 870 ms após o job (etapas 1/2: 59/20 ms)
+          correção 773 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"e1f666e1-8474-4caf-95c5-d58b4992e65a","operacaoId":"0e228b77-ca75-44b0-a3a0-3ad36581a684","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"0e228b77-ca75-44b0-a3a0-3ad36581a684","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa e1f666e1-8474-4caf-95c5-d58b4992e65a: proposta AF-30000016209-1794541228662
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"e1f666e1-8474-4caf-95c5-d58b4992e65a","operacaoId":"0e228b77-ca75-44b0-a3a0-3ad36581a684","detalhe":"AF-30000016209-1794541228662"}
+resistiu [N1 Ponto sem volta, mesmo processo] o número da casa é 200 441 ms após o job (etapas 1/2: 7/369 ms)
+          correção 30 ms depois do ponto sem volta, com alerta 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"cae25a1e-4d63-4301-815d-2d8f6d1565c7","operacaoId":"b5470c06-3ca0-4ae2-a970-a384744d80ea","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"b5470c06-3ca0-4ae2-a970-a384744d80ea","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa cae25a1e-4d63-4301-815d-2d8f6d1565c7: proposta AF-30000016381-1794541229546
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"cae25a1e-4d63-4301-815d-2d8f6d1565c7","operacaoId":"b5470c06-3ca0-4ae2-a970-a384744d80ea","detalhe":"AF-30000016381-1794541229546"}
+resistiu [N1 Ponto sem volta, mesmo processo] espera, o CEP está errado 795 ms após o job (etapas 1/2: 157/251 ms)
+          correção 323 ms depois do ponto sem volta, com alerta 
+resistiu [N2 Ponto sem volta, processos diferentes] não 346 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] áudio 311 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] o número da casa é 200 189 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] espera, o CEP está errado 383 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] não 291 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] áudio 25 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] o número da casa é 200 347 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] espera, o CEP está errado 146 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] não 245 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] áudio 166 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] o número da casa é 200 355 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] espera, o CEP está errado 526 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] não 380 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] áudio 341 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] o número da casa é 200 357 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] espera, o CEP está errado 120 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] não 475 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] áudio 143 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N2 Ponto sem volta, processos diferentes] o número da casa é 200 624 ms após a etapa 1 (outro processo)
+          correção 37 ms depois do ponto sem volta, com alerta 
+resistiu [N2 Ponto sem volta, processos diferentes] espera, o CEP está errado 551 ms após a etapa 1 (outro processo)
+          nada criado (operação invalidada) 
+resistiu [N3 Ordem das mensagens] texto de correção (WhatsApp depois) lido antes do sim (rodada 1)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] áudio de correção (WhatsApp depois) lido antes do sim (rodada 1)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] "não" no mesmo segundo do sim, lido antes (rodada 1)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] correção no mesmo segundo do sim, lida depois (rodada 1)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] correção com horário inválido (futuro), recebida depois do sim (rodada 1)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] correção com horário muito antigo, recebida depois do sim (rodada 1)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] áudio mandado antes do sim mas recebido depois (cancela por segurança) (rodada 1)
+          propostas=0 (esperado 0) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"508f2b87-877c-44b8-b3c5-2ab66e789212","operacaoId":"704588ac-ad56-4e22-9c9a-75de5555628a","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"704588ac-ad56-4e22-9c9a-75de5555628a","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 508f2b87-877c-44b8-b3c5-2ab66e789212: proposta AF-30000019135-1794541280674
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"508f2b87-877c-44b8-b3c5-2ab66e789212","operacaoId":"704588ac-ad56-4e22-9c9a-75de5555628a","detalhe":"AF-30000019135-1794541280674"}
+resistiu [N3 Ordem das mensagens] "obrigado" depois do sim mantém (rodada 1)
+          propostas=1 (esperado 1) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"65599973-1850-43aa-aa38-be84afc41961","operacaoId":"ae1bb757-f7f5-4105-a04a-e60daec6a3e2","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"ae1bb757-f7f5-4105-a04a-e60daec6a3e2","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 65599973-1850-43aa-aa38-be84afc41961: proposta AF-30000019216-1794541281071
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"65599973-1850-43aa-aa38-be84afc41961","operacaoId":"ae1bb757-f7f5-4105-a04a-e60daec6a3e2","detalhe":"AF-30000019216-1794541281071"}
+resistiu [N3 Ordem das mensagens] "👍" depois do sim mantém (rodada 1)
+          propostas=1 (esperado 1) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"32878444-0ac2-4721-bab2-8b194195bbed","operacaoId":"9d08f410-3f5c-474a-9f11-e0a3d2490e11","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"9d08f410-3f5c-474a-9f11-e0a3d2490e11","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 32878444-0ac2-4721-bab2-8b194195bbed: proposta AF-30000019305-1794541281456
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"32878444-0ac2-4721-bab2-8b194195bbed","operacaoId":"9d08f410-3f5c-474a-9f11-e0a3d2490e11","detalhe":"AF-30000019305-1794541281456"}
+QUEBROU  [N3 Ordem das mensagens] "sim" repetido no mesmo segundo (rodada 1)
+          propostas=1 (esperado 1) 2 resposta(s) entregue(s) mais de uma vez
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"c6fee437-1d7f-481f-bbde-0f0144f0b6a0","operacaoId":"215f362a-75c0-4ff1-b2bb-b2a08b0b92b6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"215f362a-75c0-4ff1-b2bb-b2a08b0b92b6","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa c6fee437-1d7f-481f-bbde-0f0144f0b6a0: proposta AF-30000019488-1794541281783
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"c6fee437-1d7f-481f-bbde-0f0144f0b6a0","operacaoId":"215f362a-75c0-4ff1-b2bb-b2a08b0b92b6","detalhe":"AF-30000019488-1794541281783"}
+resistiu [N3 Ordem das mensagens] "sim" e depois "sim, pode fazer" (rodada 1)
+          propostas=1 (esperado 1) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"376fd7c6-d7b1-4f23-8882-00873f72e2e4","operacaoId":"75bcc8ea-ff82-4a48-8ade-5bc44b0879dd","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"75bcc8ea-ff82-4a48-8ade-5bc44b0879dd","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 376fd7c6-d7b1-4f23-8882-00873f72e2e4: proposta AF-30000019569-1794541282150
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"376fd7c6-d7b1-4f23-8882-00873f72e2e4","operacaoId":"75bcc8ea-ff82-4a48-8ade-5bc44b0879dd","detalhe":"AF-30000019569-1794541282150"}
+resistiu [N3 Ordem das mensagens] "espera", depois "sim" (ordem normal) (rodada 1)
+          propostas=1 (esperado 1) 
+resistiu [N3 Ordem das mensagens] texto de correção (WhatsApp depois) lido antes do sim (rodada 2)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] áudio de correção (WhatsApp depois) lido antes do sim (rodada 2)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] "não" no mesmo segundo do sim, lido antes (rodada 2)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] correção no mesmo segundo do sim, lida depois (rodada 2)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] correção com horário inválido (futuro), recebida depois do sim (rodada 2)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] correção com horário muito antigo, recebida depois do sim (rodada 2)
+          propostas=0 (esperado 0) 
+resistiu [N3 Ordem das mensagens] áudio mandado antes do sim mas recebido depois (cancela por segurança) (rodada 2)
+          propostas=0 (esperado 0) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"48dfbfc0-c2f4-427e-a928-c7e212fc3390","operacaoId":"580d51ef-6828-481e-b023-5795dd09d2b6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"580d51ef-6828-481e-b023-5795dd09d2b6","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 48dfbfc0-c2f4-427e-a928-c7e212fc3390: proposta AF-30000020303-1794541283605
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"48dfbfc0-c2f4-427e-a928-c7e212fc3390","operacaoId":"580d51ef-6828-481e-b023-5795dd09d2b6","detalhe":"AF-30000020303-1794541283605"}
+resistiu [N3 Ordem das mensagens] "obrigado" depois do sim mantém (rodada 2)
+          propostas=1 (esperado 1) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"3023cd94-5833-425e-a348-2e04c84cdec5","operacaoId":"4c8cac12-1a76-4f54-9569-f0659847882a","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"4c8cac12-1a76-4f54-9569-f0659847882a","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 3023cd94-5833-425e-a348-2e04c84cdec5: proposta AF-30000020494-1794541284016
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"3023cd94-5833-425e-a348-2e04c84cdec5","operacaoId":"4c8cac12-1a76-4f54-9569-f0659847882a","detalhe":"AF-30000020494-1794541284016"}
+resistiu [N3 Ordem das mensagens] "👍" depois do sim mantém (rodada 2)
+          propostas=1 (esperado 1) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"f8f26e4a-b7e5-444b-a359-b70194bdb08e","operacaoId":"944ae6e4-3c60-4dff-b837-7442777d82f2","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"944ae6e4-3c60-4dff-b837-7442777d82f2","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa f8f26e4a-b7e5-444b-a359-b70194bdb08e: proposta AF-30000020575-1794541284428
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"f8f26e4a-b7e5-444b-a359-b70194bdb08e","operacaoId":"944ae6e4-3c60-4dff-b837-7442777d82f2","detalhe":"AF-30000020575-1794541284428"}
+QUEBROU  [N3 Ordem das mensagens] "sim" repetido no mesmo segundo (rodada 2)
+          propostas=1 (esperado 1) 2 resposta(s) entregue(s) mais de uma vez
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"50510395-2d9d-433a-9ec6-8cb7d40500f9","operacaoId":"0362bbb3-7df8-4899-83ab-5dd4ee58c1d7","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"0362bbb3-7df8-4899-83ab-5dd4ee58c1d7","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 50510395-2d9d-433a-9ec6-8cb7d40500f9: proposta AF-30000020656-1794541284813
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"50510395-2d9d-433a-9ec6-8cb7d40500f9","operacaoId":"0362bbb3-7df8-4899-83ab-5dd4ee58c1d7","detalhe":"AF-30000020656-1794541284813"}
+resistiu [N3 Ordem das mensagens] "sim" e depois "sim, pode fazer" (rodada 2)
+          propostas=1 (esperado 1) 
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"82c482f8-3647-462c-a4f9-0b70d0f10b4d","operacaoId":"7c377f60-770c-4b93-a525-faf2ac20bb22","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"7c377f60-770c-4b93-a525-faf2ac20bb22","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 82c482f8-3647-462c-a4f9-0b70d0f10b4d: proposta AF-30000020737-1794541285179
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"82c482f8-3647-462c-a4f9-0b70d0f10b4d","operacaoId":"7c377f60-770c-4b93-a525-faf2ac20bb22","detalhe":"AF-30000020737-1794541285179"}
+resistiu [N3 Ordem das mensagens] "espera", depois "sim" (ordem normal) (rodada 2)
+          propostas=1 (esperado 1) 
+resistiu [N4 Mesmo CPF] duas conversas do mesmo CPF confirmam ao mesmo tempo em processos diferentes (rodada 1)
+          propostas para o CPF=1
+resistiu [N4 Mesmo CPF] duas conversas do mesmo CPF confirmam ao mesmo tempo em processos diferentes (rodada 2)
+          propostas para o CPF=1
+resistiu [N4 Mesmo CPF] duas conversas do mesmo CPF confirmam ao mesmo tempo em processos diferentes (rodada 3)
+          propostas para o CPF=1
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"a8161408-8727-416e-8883-9e720aaec108","operacaoId":"c026c151-a25e-4a3b-993d-8691ac2fc54f","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"c026c151-a25e-4a3b-993d-8691ac2fc54f","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa a8161408-8727-416e-8883-9e720aaec108: proposta AF-30000058386-1794541289317
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"a8161408-8727-416e-8883-9e720aaec108","operacaoId":"c026c151-a25e-4a3b-993d-8691ac2fc54f","detalhe":"AF-30000058386-1794541289317"}
+resistiu [N4 Mesmo CPF] primeira concluída: segunda conversa bloqueada
+          novas propostas=0 (esperado 0); "contrato feito" na segunda=0
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"f0ad405e-ad70-4269-9ce6-b91a1a32b3bd","operacaoId":"e8020ae0-726e-4bdc-8d9c-eeb8078a6c93","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"e8020ae0-726e-4bdc-8d9c-eeb8078a6c93","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=500 erro=true msg=
+Maisa digitou na Facta, conversa f0ad405e-ad70-4269-9ce6-b91a1a32b3bd: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"f0ad405e-ad70-4269-9ce6-b91a1a32b3bd","operacaoId":"e8020ae0-726e-4bdc-8d9c-eeb8078a6c93","detalhe":"cadastro da proposta"}
+resistiu [N4 Mesmo CPF] primeira incerta: segunda bloqueada
+          novas propostas=0 (esperado 0); "contrato feito" na segunda=0
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"f701aa13-94a8-4b1d-8bbc-a55ea93880a1","operacaoId":"8562e58c-412f-4ed3-bce3-63702c0fdc0d","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa2-dados-pessoais
+Maisa digitou na Facta, conversa f701aa13-94a8-4b1d-8bbc-a55ea93880a1: erro em dados pessoais
+{"origem":"maisa","tipo":"operacao_facta","evento":"falhou","conversaId":"f701aa13-94a8-4b1d-8bbc-a55ea93880a1","operacaoId":"8562e58c-412f-4ed3-bce3-63702c0fdc0d","detalhe":"dados pessoais"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"b1479965-b250-47b6-a4c7-f64fc473add0","operacaoId":"d2cd9e67-31d5-42d7-94e0-0e238eed95b4","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"d2cd9e67-31d5-42d7-94e0-0e238eed95b4","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa b1479965-b250-47b6-a4c7-f64fc473add0: proposta AF-30000058700-1794541290317
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"b1479965-b250-47b6-a4c7-f64fc473add0","operacaoId":"d2cd9e67-31d5-42d7-94e0-0e238eed95b4","detalhe":"AF-30000058700-1794541290317"}
+resistiu [N4 Mesmo CPF] primeira falhou antes da etapa 3: segunda permitida
+          novas propostas=1 (esperado 1); "contrato feito" na segunda=1
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"8ee972f5-5641-4a8c-8753-fd681af5f649","operacaoId":"54a70685-caef-4336-9b3a-adc900238584","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"54a70685-caef-4336-9b3a-adc900238584","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 8ee972f5-5641-4a8c-8753-fd681af5f649: proposta AF-30000058971-1794541290563
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"8ee972f5-5641-4a8c-8753-fd681af5f649","operacaoId":"54a70685-caef-4336-9b3a-adc900238584","detalhe":"AF-30000058971-1794541290563"}
+resistiu [N4 Mesmo CPF] primeira invalidada pelo cliente: segunda permitida
+          novas propostas=1 (esperado 1); "contrato feito" na segunda=0
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"d1b53189-881a-4489-b234-0602c7c4a611","operacaoId":"e8cf6a66-7241-48a6-a33a-3914f2db3fb6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"e8cf6a66-7241-48a6-a33a-3914f2db3fb6","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa d1b53189-881a-4489-b234-0602c7c4a611: proposta AF-30000057142-1794541290779
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"d1b53189-881a-4489-b234-0602c7c4a611","operacaoId":"e8cf6a66-7241-48a6-a33a-3914f2db3fb6","detalhe":"AF-30000057142-1794541290779"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"7d1c30a1-e991-4d36-b773-146fcee1c8e6","operacaoId":"75b7ba5e-1dfa-4df9-b9b9-48310b0a0540","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"75b7ba5e-1dfa-4df9-b9b9-48310b0a0540","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 7d1c30a1-e991-4d36-b773-146fcee1c8e6: proposta AF-30000057142-1794541290996
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"7d1c30a1-e991-4d36-b773-146fcee1c8e6","operacaoId":"75b7ba5e-1dfa-4df9-b9b9-48310b0a0540","detalhe":"AF-30000057142-1794541290996"}
+resistiu [N4 Mesmo CPF] primeira concluída há 31 dias: segunda permitida
+          novas propostas=1 (esperado 1); "contrato feito" na segunda=1
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"c1e70410-1db2-42a2-9043-7ae9a20ac342","operacaoId":"de57d3d1-4618-47c9-90f3-9d7f5a78b8e6","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"de57d3d1-4618-47c9-90f3-9d7f5a78b8e6","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=500 erro=true msg=
+Maisa digitou na Facta, conversa c1e70410-1db2-42a2-9043-7ae9a20ac342: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"c1e70410-1db2-42a2-9043-7ae9a20ac342","operacaoId":"de57d3d1-4618-47c9-90f3-9d7f5a78b8e6","detalhe":"cadastro da proposta"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"liberada","conversaId":null,"operacaoId":"de57d3d1-4618-47c9-90f3-9d7f5a78b8e6","detalhe":"admin-teste"}
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"d77fabc6-cdbc-484a-805a-4341236d9586","operacaoId":"c14ca93c-0253-4c48-9646-59e366661104","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"c14ca93c-0253-4c48-9646-59e366661104","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa d77fabc6-cdbc-484a-805a-4341236d9586: proposta AF-30000057304-1794541291518
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"d77fabc6-cdbc-484a-805a-4341236d9586","operacaoId":"c14ca93c-0253-4c48-9646-59e366661104","detalhe":"AF-30000057304-1794541291518"}
+resistiu [N4 Mesmo CPF] primeira incerta e liberada pela equipe com motivo: segunda permitida
+          novas propostas=1 (esperado 1); "contrato feito" na segunda=1
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"1e3980ed-259b-4818-a9b3-3706d133989f","operacaoId":"74ce1564-44b6-4175-8968-111f08efbdb1","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"74ce1564-44b6-4175-8968-111f08efbdb1","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=500 erro=true msg=
+Maisa digitou na Facta, conversa 1e3980ed-259b-4818-a9b3-3706d133989f: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"1e3980ed-259b-4818-a9b3-3706d133989f","operacaoId":"74ce1564-44b6-4175-8968-111f08efbdb1","detalhe":"cadastro da proposta"}
+resistiu [N4 Mesmo CPF] liberação sem motivo é recusada
+          recusada=true
+resistiu [N4 Mesmo CPF] operação em andamento não pode ser liberada
+          recusada=true
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"0a79cc0a-f716-4e56-b6d7-fa800308c62c","operacaoId":"d0053fab-b64f-452c-80b0-ff49205eaf16","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"d0053fab-b64f-452c-80b0-ff49205eaf16","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/envio-link cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 0a79cc0a-f716-4e56-b6d7-fa800308c62c: proposta AF-30000022861-1794541291978
+{"origem":"maisa","tipo":"operacao_facta","evento":"concluida_facta","conversaId":"0a79cc0a-f716-4e56-b6d7-fa800308c62c","operacaoId":"d0053fab-b64f-452c-80b0-ff49205eaf16","detalhe":"AF-30000022861-1794541291978"}
+resistiu [N4 Mesmo CPF] mesmos dados e mesma oferta confirmados de novo na mesma conversa: não diz contrato feito de novo
+          propostas=1 avisos=1
+Erro processando webhook Evolution API: PrismaClientKnownRequestError: 
+Invalid `prisma.contato.upsert()` invocation in
+C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\contatos\contatos.service.ts:8:25
+
+  5 
+  6 export async function findOrCreateContato(numeroWhatsapp: string, nome?: string) {
+  7   const numero = normalizarNumeroBrasileiro(numeroWhatsapp);
+→ 8   return prisma.contato.upsert(
+Unique constraint failed on the fields: (`numero_whatsapp`)
+    at ei.handleRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async <anonymous> (C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\webhooks\evolution.routes.ts:132:29) {
+  code: 'P2002',
+  meta: { modelName: 'Contato', target: [ 'numero_whatsapp' ] },
+  clientVersion: '6.19.3'
+}
+resistiu [N5 Webhooks] mensagem do cliente entregue 2 vezes ao mesmo tempo
+          mensagens do cliente=1, respostas=1
+Erro processando webhook Evolution API: PrismaClientKnownRequestError: 
+Invalid `prisma.contato.upsert()` invocation in
+C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\contatos\contatos.service.ts:8:25
+
+  5 
+  6 export async function findOrCreateContato(numeroWhatsapp: string, nome?: string) {
+  7   const numero = normalizarNumeroBrasileiro(numeroWhatsapp);
+→ 8   return prisma.contato.upsert(
+Unique constraint failed on the fields: (`numero_whatsapp`)
+    at ei.handleRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async <anonymous> (C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\webhooks\evolution.routes.ts:132:29) {
+  code: 'P2002',
+  meta: { modelName: 'Contato', target: [ 'numero_whatsapp' ] },
+  clientVersion: '6.19.3'
+}
+Erro processando webhook Evolution API: PrismaClientKnownRequestError: 
+Invalid `prisma.contato.upsert()` invocation in
+C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\contatos\contatos.service.ts:8:25
+
+  5 
+  6 export async function findOrCreateContato(numeroWhatsapp: string, nome?: string) {
+  7   const numero = normalizarNumeroBrasileiro(numeroWhatsapp);
+→ 8   return prisma.contato.upsert(
+Unique constraint failed on the fields: (`numero_whatsapp`)
+    at ei.handleRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async <anonymous> (C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\webhooks\evolution.routes.ts:132:29) {
+  code: 'P2002',
+  meta: { modelName: 'Contato', target: [ 'numero_whatsapp' ] },
+  clientVersion: '6.19.3'
+}
+resistiu [N5 Webhooks] mensagem do cliente entregue 3 vezes ao mesmo tempo
+          mensagens do cliente=1, respostas=1
+Erro processando webhook Evolution API: PrismaClientKnownRequestError: 
+Invalid `prisma.contato.upsert()` invocation in
+C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\contatos\contatos.service.ts:8:25
+
+  5 
+  6 export async function findOrCreateContato(numeroWhatsapp: string, nome?: string) {
+  7   const numero = normalizarNumeroBrasileiro(numeroWhatsapp);
+→ 8   return prisma.contato.upsert(
+Unique constraint failed on the fields: (`numero_whatsapp`)
+    at ei.handleRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async <anonymous> (C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\webhooks\evolution.routes.ts:132:29) {
+  code: 'P2002',
+  meta: { modelName: 'Contato', target: [ 'numero_whatsapp' ] },
+  clientVersion: '6.19.3'
+}
+Erro processando webhook Evolution API: PrismaClientKnownRequestError: 
+Invalid `prisma.contato.upsert()` invocation in
+C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\contatos\contatos.service.ts:8:25
+
+  5 
+  6 export async function findOrCreateContato(numeroWhatsapp: string, nome?: string) {
+  7   const numero = normalizarNumeroBrasileiro(numeroWhatsapp);
+→ 8   return prisma.contato.upsert(
+Unique constraint failed on the fields: (`numero_whatsapp`)
+    at ei.handleRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:228:13)
+    at ei.handleAndLogRequestError (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\mathe\Desktop\Inbox Mais Money\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async <anonymous> (C:\Users\mathe\Desktop\Inbox Mais Money\backend\src\modules\webhooks\evolution.routes.ts:132:29) {
+  code: 'P2002',
+  meta: { modelName: 'Contato', target: [ 'numero_whatsapp' ] },
+  clientVersion: '6.19.3'
+}
+resistiu [N5 Webhooks] mensagem do cliente entregue 5 vezes ao mesmo tempo
+          mensagens do cliente=1, respostas=1
+resistiu [N5 Webhooks] mensagem do cliente entregue 2 vezes em sequência
+          mensagens do cliente=1, respostas=1
+Falha de entrega reportada pela Meta (mensagem f72e4d08-bdcb-45eb-a835-7d9f850d8718): Message undeliverable
+Falha de entrega reportada pela Meta (mensagem f72e4d08-bdcb-45eb-a835-7d9f850d8718): Message undeliverable
+resistiu [N5 Webhooks] Meta avisa a mesma falha 2 vezes: uma nota, conversa com a equipe
+          notas=1 comMaisa=false
+Falha de entrega reportada pela Meta (mensagem 76dbe9d5-1da0-430f-8ef7-a38771605ed0): Message undeliverable
+Falha de entrega reportada pela Meta (mensagem 76dbe9d5-1da0-430f-8ef7-a38771605ed0): Message undeliverable
+Falha de entrega reportada pela Meta (mensagem 76dbe9d5-1da0-430f-8ef7-a38771605ed0): Message undeliverable
+resistiu [N5 Webhooks] Meta avisa a mesma falha 3 vezes: uma nota, conversa com a equipe
+          notas=1 comMaisa=false
+resistiu [N5 Webhooks] Evolution avisa o mesmo erro de entrega 2 vezes: uma nota
+          notas=1
+resistiu [N5 Webhooks] Evolution avisa o mesmo erro de entrega 3 vezes: uma nota
+          notas=1
+resistiu [N5 Webhooks] Evolution confirma a entrega de uma mensagem incerta: a equipe é avisada que chegou
+          nota de confirmação=true
+resistiu [N5 Webhooks] Meta confirma a entrega de uma mensagem incerta: a equipe é avisada que chegou
+          nota de confirmação=true
+Webhook Evolution: status de mensagem não reconhecido {"keyId":"X-5353275f-61ca-4180-8af2-e87b5dbd146a","status":"DESCONHECIDO"}
+resistiu [N5 Webhooks] status de entrega desconhecido (DESCONHECIDO) é ignorado sem efeito
+          http=200 status=enviado
+Webhook Evolution: status de mensagem não reconhecido {"keyId":"X-403b251d-791e-49fd-ab4d-77d8c82a1539","status":99}
+resistiu [N5 Webhooks] status de entrega desconhecido (99) é ignorado sem efeito
+          http=200 status=enviado
+resistiu [N6 Fila de saída concorrente] 1 conversa(s) × 5 resposta(s), 2 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 1 conversa(s) × 5 resposta(s), 5 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 3 conversa(s) × 3 resposta(s), 2 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 3 conversa(s) × 3 resposta(s), 4 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 5 conversa(s) × 2 resposta(s), 3 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 5 conversa(s) × 4 resposta(s), 6 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 2 conversa(s) × 8 resposta(s), 3 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 8 conversa(s) × 1 resposta(s), 4 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 4 conversa(s) × 4 resposta(s), 8 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 6 conversa(s) × 3 resposta(s), 2 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 2 conversa(s) × 2 resposta(s), 10 despachantes em processos diferentes
+resistiu [N6 Fila de saída concorrente] 10 conversa(s) × 2 resposta(s), 5 despachantes em processos diferentes
+resistiu [N7 Queda no despachante] despachante morto 352 ms depois do 1º envio
+          entregues=2 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 181 ms depois do 1º envio
+          entregues=1 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 172 ms depois do 1º envio
+          entregues=1 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 862 ms depois do 1º envio
+          entregues=3 comMaisa=true 
+resistiu [N7 Queda no despachante] despachante morto 399 ms depois do 1º envio
+          entregues=2 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 818 ms depois do 1º envio
+          entregues=3 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 630 ms depois do 1º envio
+          entregues=3 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 136 ms depois do 1º envio
+          entregues=1 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 251 ms depois do 1º envio
+          entregues=1 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 221 ms depois do 1º envio
+          entregues=1 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 670 ms depois do 1º envio
+          entregues=3 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 222 ms depois do 1º envio
+          entregues=1 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 67 ms depois do 1º envio
+          entregues=1 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 389 ms depois do 1º envio
+          entregues=2 comMaisa=false 
+resistiu [N7 Queda no despachante] despachante morto 97 ms depois do 1º envio
+          entregues=1 comMaisa=false 
+resistiu [N8 Postgres cai no processamento] banco cai 31 ms depois de o processo começar a ler
+          leu=true respostas=1 
+resistiu [N8 Postgres cai no processamento] banco cai 124 ms depois de o processo começar a ler
+          leu=true respostas=1 
+resistiu [N8 Postgres cai no processamento] banco cai 131 ms depois de o processo começar a ler
+          leu=true respostas=1 
+resistiu [N8 Postgres cai no processamento] banco cai 219 ms depois de o processo começar a ler
+          leu=true respostas=1 
+resistiu [N8 Postgres cai no processamento] banco cai 124 ms depois de o processo começar a ler
+          leu=true respostas=1 
+resistiu [N8 Postgres cai no processamento] banco cai 60 ms depois de o processo começar a ler
+          leu=true respostas=1 
+QUEBROU  [N9 Etapa 3 incerta] etapa 3 com lento: desconhecida, sem dizer que a Facta recusou
+          operação=undefined nota adequada=false
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"ea4d3d0b-217d-4e5f-bba3-f08240cd76f0","operacaoId":"72be1332-834f-408a-81c3-133e537c1140","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"72be1332-834f-408a-81c3-133e537c1140","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=500 erro=true msg=
+Maisa digitou na Facta, conversa ea4d3d0b-217d-4e5f-bba3-f08240cd76f0: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"ea4d3d0b-217d-4e5f-bba3-f08240cd76f0","operacaoId":"72be1332-834f-408a-81c3-133e537c1140","detalhe":"cadastro da proposta"}
+resistiu [N9 Etapa 3 incerta] etapa 3 com 500: desconhecida, sem dizer que a Facta recusou
+          operação=desconhecida nota adequada=true
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"10295aa6-5bcb-47d2-8f5d-78b99f92a6fb","operacaoId":"47a5ee58-1b57-4ee8-9c4c-05f80fd20fc3","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"47a5ee58-1b57-4ee8-9c4c-05f80fd20fc3","detalhe":null}
+Maisa digitou na Facta, conversa 10295aa6-5bcb-47d2-8f5d-78b99f92a6fb: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"10295aa6-5bcb-47d2-8f5d-78b99f92a6fb","operacaoId":"47a5ee58-1b57-4ee8-9c4c-05f80fd20fc3","detalhe":"cadastro da proposta"}
+resistiu [N9 Etapa 3 incerta] etapa 3 com queda: desconhecida, sem dizer que a Facta recusou
+          operação=desconhecida nota adequada=true
+QUEBROU  [N9 Etapa 3 incerta] etapa 3 com erro: desconhecida, sem dizer que a Facta recusou
+          operação=undefined nota adequada=false
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"810a8fc9-d3f2-4b09-a465-70397ceffb83","operacaoId":"f90cae98-4c17-4101-8142-af2a68f05d99","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"f90cae98-4c17-4101-8142-af2a68f05d99","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=true msg=resposta em HTML, IP não liberado ou produção não ativada
+Maisa digitou na Facta, conversa 810a8fc9-d3f2-4b09-a465-70397ceffb83: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"810a8fc9-d3f2-4b09-a465-70397ceffb83","operacaoId":"f90cae98-4c17-4101-8142-af2a68f05d99","detalhe":"cadastro da proposta"}
+resistiu [N9 Etapa 3 incerta] etapa 3 com cria_e_html: desconhecida, sem dizer que a Facta recusou
+          operação=desconhecida nota adequada=true
+QUEBROU  [N9 Etapa 3 incerta] etapa 3 com 408: desconhecida, sem dizer que a Facta recusou
+          operação=undefined nota adequada=false
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"123000b4-879e-465c-92bc-4e26c02d1689","operacaoId":"f819922b-87cd-46bf-aea1-ebb5212b4c48","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"f819922b-87cd-46bf-aea1-ebb5212b4c48","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=ok
+Maisa digitou na Facta, conversa 123000b4-879e-465c-92bc-4e26c02d1689: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"123000b4-879e-465c-92bc-4e26c02d1689","operacaoId":"f819922b-87cd-46bf-aea1-ebb5212b4c48","detalhe":"cadastro da proposta"}
+resistiu [N9 Etapa 3 incerta] etapa 3 com sem_codigo: desconhecida, sem dizer que a Facta recusou
+          operação=desconhecida nota adequada=true
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"0167c222-7282-423e-ac26-3850cb6b1cc8","operacaoId":"95eb1a6d-db89-4bc2-a495-b991e6d9a692","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"95eb1a6d-db89-4bc2-a495-b991e6d9a692","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=false msg=
+Maisa digitou na Facta, conversa 0167c222-7282-423e-ac26-3850cb6b1cc8: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"0167c222-7282-423e-ac26-3850cb6b1cc8","operacaoId":"95eb1a6d-db89-4bc2-a495-b991e6d9a692","detalhe":"cadastro da proposta"}
+resistiu [N9 Etapa 3 incerta] etapa 3 com codigo_vazio: desconhecida, sem dizer que a Facta recusou
+          operação=desconhecida nota adequada=true
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"008d1bf3-df2e-4332-8ba3-73c9d6e120d4","operacaoId":"90ab0062-9f98-43aa-97d2-45e84bb66435","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"90ab0062-9f98-43aa-97d2-45e84bb66435","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=502 erro=true msg=
+Maisa digitou na Facta, conversa 008d1bf3-df2e-4332-8ba3-73c9d6e120d4: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"008d1bf3-df2e-4332-8ba3-73c9d6e120d4","operacaoId":"90ab0062-9f98-43aa-97d2-45e84bb66435","detalhe":"cadastro da proposta"}
+resistiu [N9 Etapa 3 incerta] etapa 3 com 502: desconhecida, sem dizer que a Facta recusou
+          operação=desconhecida nota adequada=true
+{"origem":"maisa","tipo":"operacao_facta","evento":"reservada","conversaId":"9ddbfe67-db38-4255-9939-9fc3f7f32fa9","operacaoId":"a46380db-7425-4c4c-a1f3-3d8091659cd7","detalhe":"preparada"}
+Facta /proposta/etapa1-simulador cpf=***.000.***-** http=200 erro=false msg=
+Facta /proposta/etapa2-dados-pessoais cpf=***.000.***-** http=200 erro=false msg=
+{"origem":"maisa","tipo":"operacao_facta","evento":"ponto_sem_volta","conversaId":null,"operacaoId":"a46380db-7425-4c4c-a1f3-3d8091659cd7","detalhe":null}
+Facta /proposta/etapa3-proposta-cadastro cpf=***.000.***-** http=200 erro=true msg=recusado em /proposta/etapa3-proposta-cadastro
+Maisa digitou na Facta, conversa 9ddbfe67-db38-4255-9939-9fc3f7f32fa9: erro em cadastro da proposta
+{"origem":"maisa","tipo":"operacao_facta","evento":"desconhecida","conversaId":"9ddbfe67-db38-4255-9939-9fc3f7f32fa9","operacaoId":"a46380db-7425-4c4c-a1f3-3d8091659cd7","detalhe":"cadastro da proposta"}
+resistiu [N9 Etapa 3 incerta] etapa 3 com cria_e_erro: desconhecida, sem dizer que a Facta recusou
+          operação=desconhecida nota adequada=true
+resistiu [N10 Queda perto do ponto sem volta] processo morto 134 ms depois da etapa 1
+          criadas=1 op=concluida comMaisa=false 
+resistiu [N10 Queda perto do ponto sem volta] processo morto 886 ms depois da etapa 1
+          criadas=0 op=undefined comMaisa=true 
+resistiu [N10 Queda perto do ponto sem volta] processo morto 574 ms depois da etapa 1
+          criadas=1 op=desconhecida comMaisa=false 
+resistiu [N10 Queda perto do ponto sem volta] processo morto 809 ms depois da etapa 1
+          criadas=1 op=concluida comMaisa=false 
+resistiu [N10 Queda perto do ponto sem volta] processo morto 99 ms depois da etapa 1
+          criadas=1 op=concluida comMaisa=false 
+resistiu [N10 Queda perto do ponto sem volta] processo morto 178 ms depois da etapa 1
+          criadas=1 op=concluida comMaisa=false 
+resistiu [N10 Queda perto do ponto sem volta] processo morto 571 ms depois da etapa 1
+          criadas=1 op=desconhecida comMaisa=false 
+resistiu [N10 Queda perto do ponto sem volta] processo morto 680 ms depois da etapa 1
+          criadas=1 op=concluida comMaisa=false 
+QUEBROU  [N10 Queda perto do ponto sem volta] processo morto 796 ms depois da etapa 1
+          criadas=1 op=concluida comMaisa=false 2 resposta(s) presa(s) na fila de saída depois da recuperação
+resistiu [N10 Queda perto do ponto sem volta] processo morto 171 ms depois da etapa 1
+          criadas=1 op=concluida comMaisa=false 
+
+293 cenários: 42 quebraram, 251 resistiram
+  R1 Correção durante o job: 5 quebraram, 30 resistiram
+  R2 Fora de ordem: 0 quebraram, 3 resistiram
+  R3 Jobs concorrentes: 0 quebraram, 6 resistiram
+  R4 Queda no job da digitação: 12 quebraram, 8 resistiram
+  R4 Queda ao responder: 16 quebraram, 4 resistiram
+  R5 Idempotência: 0 quebraram, 12 resistiram
+  R6 WhatsApp: 1 quebraram, 11 resistiram
+  R7 Persistência: 2 quebraram, 12 resistiram
+  R8 Migração: 0 quebraram, 10 resistiram
+  N1 Ponto sem volta, mesmo processo: 0 quebraram, 40 resistiram
+  N2 Ponto sem volta, processos diferentes: 0 quebraram, 20 resistiram
+  N3 Ordem das mensagens: 2 quebraram, 22 resistiram
+  N4 Mesmo CPF: 0 quebraram, 12 resistiram
+  N5 Webhooks: 0 quebraram, 12 resistiram
+  N6 Fila de saída concorrente: 0 quebraram, 12 resistiram
+  N7 Queda no despachante: 0 quebraram, 15 resistiram
+  N8 Postgres cai no processamento: 0 quebraram, 6 resistiram
+  N9 Etapa 3 incerta: 3 quebraram, 7 resistiram
+  N10 Queda perto do ponto sem volta: 1 quebraram, 9 resistiram

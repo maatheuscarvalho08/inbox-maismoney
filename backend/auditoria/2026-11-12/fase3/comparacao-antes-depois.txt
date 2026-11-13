@@ -1,0 +1,34 @@
+Fase 1 (311): antes 237/38/36 (aprov 76.2%) -> depois 309/2/0 (aprov 99.4%; funcional 100.0%) | críticas depois 0
+Fase 2 (748 exec.): antes 219/122/407 (aprov 29.3%) -> depois 734/0/14 (aprov 98.1%; funcional 98.1%) | críticas depois 0
+Fase 3 (nova): antes 0/0/0 (aprov NaN%) -> depois 246/0/2 (aprov 99.2%; funcional 99.2%) | críticas depois 0
+
+Regressões fase 1: 0
+Regressões fase 2: 0
+
+Instáveis (diferem entre as 2 rodadas): 0 
+
+Fase 1: 2 cenários não aprovados
+  CPF|CPF-014 [A] Três CPFs inválidos vão para a equipe | não repete o mesmo 'não entendi' em turnos seguido
+     -> finalizada: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+  Cadastro do contrato|CADA-011 [A] Três respostas sem dado vão para a equipe | não repete o mesmo 'não entendi' em turnos seguido
+     -> finalizada: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+
+Fase 2: 7 cenários não aprovados
+  C2-018 [RR] Extrato: "o seguro desemprego conta como renda?" | etapa final em [extrato], foi finalizada
+     -> finalizada: Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.
+  C2-024 [RR] Oferta: "tem seguro?" | etapa final em [oferta_port], foi finalizada; desfecho em [continua], foi transferiu
+     -> finalizada: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+  C2-033 [RR] Oferta: "quanto fica no total que vou pagar?" | etapa final em [oferta_port], foi finalizada
+     -> finalizada: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+  C2-034 [RR] Oferta: "o dinheiro sai do meu salário?" | etapa final em [oferta_port], foi finalizada
+     -> finalizada: Essa dúvida um especialista da nossa equipe responde melhor. Vou chamar alguém, já já continua aqui com você.
+  IX-004 [RR] Port: "tem seguro?" e depois "sim" | etapa final em [numero_contrato, coleta], foi fina
+     -> finalizada: 
+  IX-029 [RR] Novo: some 25h, vai para o Carrinho e depois diz "sim" | respondeu algo ao cliente no último turno
+     -> finalizada: 
+  IX-035 [RR] Port: "não" e depois "pensando bem, quero" | respondeu algo ao cliente no último turno
+     -> finalizada: 
+
+Fase 3: 1 cenários não aprovados
+  F3J-006 [RR] Novo: some 25h, vai para o Carrinho e depois aceita | respondeu algo ao cliente no último turno
+     -> finalizada: 

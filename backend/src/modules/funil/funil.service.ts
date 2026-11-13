@@ -1,4 +1,4 @@
-import type { Convenio, EtapaFunil } from "@prisma/client";
+import type { Convenio, EtapaFunil, Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 
 const ORDEM: EtapaFunil[] = [
@@ -12,8 +12,15 @@ const ORDEM: EtapaFunil[] = [
 
 // Grava a etapa e todas as anteriores, para o funil não ter buraco se alguém pular uma.
 // Voltar uma etapa, corrigindo um engano, apaga os registros das etapas seguintes.
-export async function definirEtapa(conversaId: string, etapa: EtapaFunil) {
+// db: transação de quem chama (a Maisa grava o funil junto com o estado da conversa).
+export async function definirEtapa(conversaId: string, etapa: EtapaFunil, db?: Prisma.TransactionClient) {
   const indice = ORDEM.indexOf(etapa);
+  if (db) {
+    await db.funilEvento.createMany({ data: ORDEM.slice(0, indice + 1).map((e) => ({ conversaId, etapa: e })), skipDuplicates: true });
+    await db.funilEvento.deleteMany({ where: { conversaId, etapa: { in: ORDEM.slice(indice + 1) } } });
+    await db.conversa.update({ where: { id: conversaId }, data: { etapaFunil: etapa } });
+    return;
+  }
   await prisma.$transaction([
     prisma.funilEvento.createMany({
       data: ORDEM.slice(0, indice + 1).map((e) => ({ conversaId, etapa: e })),
@@ -25,9 +32,9 @@ export async function definirEtapa(conversaId: string, etapa: EtapaFunil) {
 }
 
 // Avanço automático (cliente escreveu, CPF cadastrado): nunca faz a conversa voltar.
-export async function avancarEtapa(conversaId: string, etapa: EtapaFunil, atual: EtapaFunil | null) {
+export async function avancarEtapa(conversaId: string, etapa: EtapaFunil, atual: EtapaFunil | null, db?: Prisma.TransactionClient) {
   if (atual && ORDEM.indexOf(atual) >= ORDEM.indexOf(etapa)) return;
-  await definirEtapa(conversaId, etapa);
+  await definirEtapa(conversaId, etapa, db);
 }
 
 async function contarPorEtapa(inicio: Date, fim: Date, convenio?: Convenio) {

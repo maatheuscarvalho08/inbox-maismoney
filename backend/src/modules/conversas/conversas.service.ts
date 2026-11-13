@@ -1,4 +1,4 @@
-import type { Convenio, StatusConversa } from "@prisma/client";
+import { Prisma, type Convenio, type StatusConversa } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 import { avancarEtapa } from "../funil/funil.service.js";
 
@@ -148,7 +148,13 @@ export async function marcarConversaRespondida(conversaId: string) {
   await prisma.conversa.update({
     where: { id: conversaId },
     // Cliente voltou a falar: sai do Carrinho.
-    data: { respondida: true, carrinhoEm: null, ...(entraComMaisa ? { comMaisa: true } : {}) },
+    // Entra na Maisa como conversa nova: um estado "finalizada" antigo seria recusado pelo
+    // banco (conversa finalizada não pode estar com a Maisa) e a mensagem se perderia.
+    data: {
+      respondida: true,
+      carrinhoEm: null,
+      ...(entraComMaisa ? { comMaisa: true, ...((conversa?.maisaEstado as { etapa?: string } | null)?.etapa === "finalizada" ? { maisaEstado: Prisma.DbNull, maisaVersao: { increment: 1 } } : {}) } : {}),
+    },
   });
   // Cliente escreveu: a conversa passa a contar como lead no funil.
   if (conversa) await avancarEtapa(conversaId, "lead", conversa.etapaFunil);

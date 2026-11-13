@@ -14,6 +14,7 @@ import {
   Settings,
   ShoppingCart,
   Bell,
+  CircleAlert,
   Inbox,
   Megaphone,
   TrendingUp,
@@ -22,6 +23,7 @@ import {
 } from "../components/icones";
 import { useAuth } from "../lib/auth";
 import { useCarrinho } from "../lib/carrinho";
+import { TEXTO_AVISO, useAvisosMaisa } from "../lib/avisosMaisa";
 import { LogoMaisMoney } from "../components/LogoMaisMoney";
 
 interface Item {
@@ -129,6 +131,8 @@ export function AppLayout() {
   }, [pathname, usuario?.role, painelFechado]);
 
   const carrinho = useCarrinho();
+  const avisosMaisa = useAvisosMaisa();
+  const avisoMaisa = avisosMaisa.avisos[0];
   // O aviso volta a aparecer sempre que um cliente novo cai no carrinho.
   const [avisoFechado, setAvisoFechado] = useState(false);
   useEffect(() => {
@@ -255,6 +259,25 @@ export function AppLayout() {
       )}
 
       <main className="flex flex-1 flex-col overflow-hidden bg-bg">
+        {avisoMaisa && (
+          <div role="alert" className="flex items-center gap-3 border-b border-primary/40 bg-primary/25 px-6 py-2 text-sm">
+            <CircleAlert size={16} className="shrink-0 text-accent" aria-hidden="true" />
+            <p className="min-w-0 flex-1 truncate text-ink" title={avisoMaisa.detalhe}>
+              <span className="font-semibold">{avisoMaisa.nome ?? "Um cliente"}</span> {TEXTO_AVISO[avisoMaisa.tipo]}
+              {avisosMaisa.avisos.length > 1 && <span className="text-muted"> (+{avisosMaisa.avisos.length - 1} avisos)</span>}
+            </p>
+            <Link
+              to={`/conversas/${avisoMaisa.conversaId}`}
+              onClick={() => avisosMaisa.dispensar(avisoMaisa)}
+              className="shrink-0 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-marca-indigo hover:opacity-90"
+            >
+              Abrir conversa
+            </Link>
+            <button onClick={() => avisosMaisa.dispensar(avisoMaisa)} aria-label="Fechar aviso" className="shrink-0 text-muted hover:text-ink">
+              <X size={14} />
+            </button>
+          </div>
+        )}
         {carrinho.total > 0 && !avisoFechado && pathname !== "/carrinho" && (
           <div role="status" className="flex items-center gap-3 border-b border-primary/30 bg-primary/15 px-6 py-2 text-sm">
             <Bell size={16} className="shrink-0 text-accent" aria-hidden="true" />
