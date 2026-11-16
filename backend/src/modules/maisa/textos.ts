@@ -299,6 +299,7 @@ export const TEXTOS = {
   retomaNumero: (banco: string) => `Quando puder, me manda o número do contrato do ${banco}.`,
   // Foto chegou, mas o dado pedido não aparece nela (foto torta, apagada, de lado).
   fotoSemDado: "Recebi a foto, mas não consegui ler esse dado nela.",
+  fotoSemSexo: "Recebi a foto. O documento não mostra o sexo, então preciso que você me responda por escrito.",
   // Arquivo antes de saber o vínculo: guarda (pode ser o extrato) e pergunta o vínculo.
   arquivoNoInicio: "Recebi o seu arquivo e já guardei aqui. Antes de olhar, me conta qual é o seu vínculo.",
   // Mandou o extrato de novo depois da oferta: a simulação já foi feita com ele.

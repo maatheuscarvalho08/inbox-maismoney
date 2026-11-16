@@ -4,7 +4,7 @@ import type { DigitacaoPort, ReducaoParcela, TabelaDigitacao, ResultadoAutorizac
 import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
-import { ROTULO_CAMPO, camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato, type ProdutoContrato } from "./contrato.js";
+import { PERGUNTA_SEXO, ROTULO_CAMPO, camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato, type ProdutoContrato } from "./contrato.js";
 import type { ResultadoContratacao } from "./facta.js";
 import { NAO_QUERO, SIM_FORTE, normalizar, temReceio } from "./classificador.js";
 import { cltDigitavel, motivoTravaDigitacao } from "./travaDigitacao.js";
@@ -1507,7 +1507,7 @@ async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null;
       }
       return transferir(estado, `dúvida no cadastro: ${texto.slice(0, 120)}`, TEXTOS.duvidaParaEquipe, "duvida_cadastro", [], "dados_contrato");
     }
-    const aviso = entrada.documento ? TEXTOS.fotoSemDado : TEXTOS.naoEntendi;
+    const aviso = entrada.documento ? (pergunta === PERGUNTA_SEXO ? TEXTOS.fotoSemSexo : TEXTOS.fotoSemDado) : TEXTOS.naoEntendi;
     return tentarDeNovo({ ...estado, contrato: { ...estado.contrato, dados, pergunta } }, `${aviso} ${pergunta}`, "dado_nao_entendido", "dados_contrato");
   }
   return ir(estado, "coleta", [proxima], "dado_recebido", [], { contrato: { ...estado.contrato, dados: junto, pergunta: proxima } });

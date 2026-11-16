@@ -396,7 +396,17 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
   // A mensagem lida passa a ser a última: a recuperação e a digitação contam a partir dela.
   // Releitura de arquivo antigo não faz a marca voltar no tempo.
   const avanca = lida && depoisDe(lida, passo.estado.ultimaMensagemEm, passo.estado.ultimaMensagemId);
-  const estadoNovo: EstadoMaisa = lida && avanca ? { ...passo.estado, ultimaMensagemId: lida.id, ultimaMensagemEm: lida.createdAt.toISOString() } : passo.estado;
+  let estadoNovo: EstadoMaisa = lida && avanca ? { ...passo.estado, ultimaMensagemId: lida.id, ultimaMensagemEm: lida.createdAt.toISOString() } : passo.estado;
+  // Foto no cadastro com outra foto logo atrás (frente e verso em duas mensagens): guarda o
+  // que leu e deixa a próxima responder, sem pedir o que a outra foto pode trazer.
+  const outraFotoLogo =
+    lida && "documento" in entrada && entrada.documento && estadoAntes?.etapa === "coleta" && estadoNovo.etapa === "coleta" && (passo.rotulo === "dado_recebido" || passo.rotulo === "dado_nao_entendido")
+      ? await prisma.mensagem.findFirst({
+          where: { conversaId: conversa.id, remetenteTipo: "cliente", tipoMidia: { not: null }, id: { not: lida.id }, createdAt: { gte: lida.createdAt, lte: new Date(lida.createdAt.getTime() + 60_000) } },
+          select: { id: true },
+        })
+      : null;
+  if (outraFotoLogo) estadoNovo = { ...estadoNovo, tentativas: estadoAntes?.tentativas ?? 0 };
 
   // Checagem sem novidade: só guarda quando checar de novo, sem registro nem aviso.
   const mudouEtapa = passo.estado.etapa !== estadoAntes?.etapa;
@@ -413,7 +423,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
   const encerramento = passo.efeitos.find((e) => e.tipo === "encerrar");
   // Finalizada pela Maisa nunca continua com ela (o banco também recusa esse estado).
   const sai = estadoNovo.etapa === "finalizada";
-  const respostas = [...passo.respostas];
+  const respostas = outraFotoLogo ? [] : [...passo.respostas];
   if (transferencia && !dentroDoHorario()) respostas.push(TEXTO_FORA_DO_HORARIO(proximaAbertura()));
   const enviar = env.MAISA_MODO === "automatico" && !ehTeste(conversa);
 

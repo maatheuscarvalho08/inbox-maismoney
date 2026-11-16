@@ -66,6 +66,9 @@ interface Grupo {
   so?: ProdutoContrato | ProdutoContrato[];
 }
 
+// O RG antigo não mostra o sexo: a pergunta é direta, sem mandar olhar o documento.
+export const PERGUNTA_SEXO = "Qual o seu sexo: masculino ou feminino? Pode responder por escrito.";
+
 export const GRUPOS: Grupo[] = [
   {
     id: "documento",
@@ -77,7 +80,7 @@ export const GRUPOS: Grupo[] = [
     campos: ["cidadeNatural", "estadoNatural"],
     pergunta: () => "Em qual cidade e estado você nasceu?",
   },
-  { id: "sexo", campos: ["sexo"], pergunta: () => "Como está no seu documento: sexo masculino ou feminino?" },
+  { id: "sexo", campos: ["sexo"], pergunta: () => PERGUNTA_SEXO },
   {
     id: "estadoCivil",
     campos: ["estadoCivil"],
