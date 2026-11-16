@@ -21,8 +21,7 @@ export type AbaConversas = "maisa" | "sem_atendente" | "atribuidas" | "disparos"
 // respondida:true). As outras três são tudo o resto, separadas por quem está atendendo.
 const JA_EM_ATENDIMENTO = { OR: [{ origemDisparo: false }, { respondida: true }] };
 
-// Quem está vendo a lista. "atribuidas" mostra a todos (admin e operadores) as conversas
-// atribuídas a qualquer atendente.
+// Quem está vendo a lista. "atribuidas" mostra ao operador só as dele; ao admin, as de todos.
 export interface Leitor {
   id: string;
   role: string;
@@ -40,7 +39,7 @@ function filtroDaAba(aba: AbaConversas, leitor: Leitor) {
       return {
         ...JA_EM_ATENDIMENTO,
         comMaisa: false,
-        operadorId: { not: null },
+        operadorId: leitor.role === "admin" ? { not: null } : leitor.id,
       };
     // Ofertados que não responderam em 24h. Também aparecem na Fila ou em Atribuídas.
     case "carrinho":
