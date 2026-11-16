@@ -160,10 +160,9 @@ export const TEXTOS = {
         a.reducoes
           .map((x) => {
             const economia = x.atual - x.nova;
-            const total = x.restantes ? ` (${r(economia * x.restantes)} até o fim do contrato)` : "";
             return (
               `• ${x.banco}: hoje ${r(x.atual)} por mês${x.restantes ? `, faltando ${x.restantes} parcelas` : ""}. ` +
-              `Na Facta, ${r(x.nova)}${taxa(x.taxa)}. Economia de ${r(economia)} por mês${total}.`
+              `Na Facta, ${r(x.nova)}${taxa(x.taxa)}. Economia de ${r(economia)} por mês.`
             );
           })
           .join("\n") +

@@ -115,7 +115,12 @@ export async function responderLivre(texto: string, etapa: string, produto: stri
   if (!saida) return null;
   const resposta = (JSON.parse(saida) as { resposta: string | null }).resposta?.trim();
   // Resposta longa demais é sinal de que fugiu do combinado: não manda.
-  return resposta && resposta.length <= 400 ? resposta : null;
+  if (!resposta || resposta.length > 400) return null;
+  // Valor, taxa, prazo ou qualquer número fora dos fatos aprovados: o modelo inventou. Não manda.
+  if (/R\$|%/.test(resposta)) return null;
+  const permitidos = new Set(`${FATOS} ${pergunta}`.match(/\d+/g) ?? []);
+  if ((resposta.match(/\d+/g) ?? []).some((n) => !permitidos.has(n))) return null;
+  return resposta;
 }
 
 // O classificador da Maisa com o modelo lendo as respostas à oferta. As outras perguntas
