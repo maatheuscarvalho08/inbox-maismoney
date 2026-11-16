@@ -608,8 +608,9 @@ function enfileirar(conversaId: string, gatilho: Gatilho, tentativa = 1): Promis
   return atual;
 }
 
-// Devolvida pela equipe: ela não espera o cliente escrever. Manda a saudação com a
-// lista de produtos e fica na etapa do convênio.
+// Devolvida pela equipe. Não manda saudação. Conversa no meio do fluxo (cadastro, oferta...):
+// continua de onde parou, com tudo o que já tinha. Encerrada ou sem estado: volta ao início
+// em silêncio e responde quando o cliente escrever.
 async function retomar(conversaId: string) {
   if (env.MAISA_MODO === "desligado") return;
   const conversa = await prisma.conversa.findUnique({
@@ -619,15 +620,14 @@ async function retomar(conversaId: string) {
   if (!conversa || !conversa.comMaisa || !conversa.instancia.maisaAtiva || conversa.status === "encerrada") return;
   // As mensagens de antes da devolução já foram vistas pela equipe: a Maisa começa daqui.
   const ultima = await prisma.mensagem.findFirst({ where: { conversaId, remetenteTipo: "cliente" }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
-  const salvo = env.MAISA_CONVERSA_MODO === "ativo" ? (conversa.maisaEstado as EstadoMaisa | null)?.contratoSalvo : undefined;
-  const estado: EstadoMaisa = { etapa: "convenio", tentativas: 0, ...(salvo ? { contratoSalvo: salvo } : {}), ...(ultima ? { ultimaMensagemId: ultima.id, ultimaMensagemEm: ultima.createdAt.toISOString() } : {}) };
-  const enviar = env.MAISA_MODO === "automatico" && !ehTeste(conversa);
-  const mensagens = await prisma.$transaction(async (tx) => {
-    await tx.conversa.update({ where: { id: conversaId }, data: { maisaEstado: estado as unknown as Prisma.InputJsonValue, maisaVersao: { increment: 1 } } });
-    return registrarSaidas(tx, conversaId, [TEXTOS.saudacao], enviar);
-  });
-  for (const m of mensagens) emitirSemFalhar(() => emitNovaMensagem(m));
-  if (enviar) void despachar(conversaId).catch(() => {});
+  const anterior = conversa.maisaEstado as EstadoMaisa | null;
+  const marca = ultima ? { ultimaMensagemId: ultima.id, ultimaMensagemEm: ultima.createdAt.toISOString() } : {};
+  const emAndamento = anterior && anterior.etapa !== "finalizada" && anterior.etapa !== "inicio";
+  const salvo = env.MAISA_CONVERSA_MODO === "ativo" ? anterior?.contratoSalvo : undefined;
+  const estado: EstadoMaisa = emAndamento
+    ? { ...anterior, tentativas: 0, confirmacaoPendente: undefined, saida: undefined, motivoTransferencia: undefined, ...marca }
+    : { etapa: "inicio", tentativas: 0, ...(salvo ? { contratoSalvo: salvo } : {}), ...marca };
+  await prisma.conversa.update({ where: { id: conversaId }, data: { maisaEstado: estado as unknown as Prisma.InputJsonValue, maisaVersao: { increment: 1 } } });
 }
 
 export function retomarComMaisa(conversaId: string): Promise<void> {
