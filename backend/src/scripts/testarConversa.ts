@@ -758,6 +758,25 @@ await caso("Port pura do INSS continua com a equipe, mesmo com a trava ligada", 
   assert.equal(p.rotulo, "port_pronta");
 });
 
+// ---------- Órgão emissor ----------
+const { orgaoNaFacta } = await import("../modules/maisa/coleta.js");
+const ORGAOS = { SSP: "x", IFP: "x", DETRAN: "x", PCMG: "x", SDS: "x", SESP: "x", DIC: "x" };
+await caso("Órgão emissor: institutos estaduais fora da lista da Facta viram SSP", async () => {
+  assert.deepEqual(orgaoNaFacta("ITEP RN", ORGAOS), { orgao: "SSP", uf: "RN" });
+  assert.deepEqual(orgaoNaFacta("ITEP", ORGAOS), { orgao: "SSP", uf: null });
+  assert.deepEqual(orgaoNaFacta("IIRGD/SP", ORGAOS), { orgao: "SSP", uf: "SP" });
+  assert.deepEqual(orgaoNaFacta("PC-PE", ORGAOS), { orgao: "SSP", uf: "PE" });
+  assert.deepEqual(orgaoNaFacta("SEGUP/PA", ORGAOS), { orgao: "SSP", uf: "PA" });
+  assert.deepEqual(orgaoNaFacta("Instituto de Identificação", ORGAOS), { orgao: "SSP", uf: null });
+});
+await caso("Órgão emissor: o que está na lista da Facta fica como está", async () => {
+  assert.deepEqual(orgaoNaFacta("IFP RJ", ORGAOS), { orgao: "IFP", uf: "RJ" });
+  assert.deepEqual(orgaoNaFacta("PCMG", ORGAOS), { orgao: "PCMG", uf: null });
+  assert.deepEqual(orgaoNaFacta("SSP-BA", ORGAOS), { orgao: "SSP", uf: "BA" });
+  assert.deepEqual(orgaoNaFacta("SESP PR", ORGAOS), { orgao: "SESP", uf: "PR" });
+  assert.equal(orgaoNaFacta("XYZW", ORGAOS).orgao, null);
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });
