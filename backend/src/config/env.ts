@@ -74,6 +74,12 @@ const envSchema = z.object({
     .string()
     .default("false")
     .transform((v) => v === "true"),
+  // Digitação automática do CLT (Crédito do Trabalhador) na Facta. Trava própria, desligada
+  // por padrão: além dela valem MAISA_DIGITA_PROPOSTA e MAISA_DIGITACAO_LIBERADA.
+  MAISA_DIGITA_CLT: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
   // Quantas vezes a Maisa tenta entregar uma mensagem quando a falha garante que ela
   // não saiu (conexão recusada, 502/503/504, 429). Tempo esgotado não é repetido.
   MAISA_ENTREGA_TENTATIVAS: z.coerce.number().min(1).max(5).default(3),

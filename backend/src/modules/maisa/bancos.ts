@@ -19,12 +19,23 @@ export type ResultadoBanco =
       especie?: number | null;
       matricula?: string | null;
       contaSalario?: { bancoConta: string; agencia: string; conta: string } | null;
+      // CLT: o vínculo da Dataprev que foi simulado, para digitar a proposta depois.
+      clt?: VinculoClt;
     }
   // revisar: a leitura do extrato ficou com dúvida, então a equipe confere antes de desistir.
   | { tipo: "sem_saldo"; banco: string; motivo: string; revisar?: boolean }
   | { tipo: "erro"; banco: string; motivo: string };
 
 export type ResultadoAutorizacao = facta.ResultadoAutorizacao;
+
+export interface VinculoClt {
+  matricula: string;
+  dataNascimento: string | null; // AAAA-MM-DD
+  dataAdmissao: string | null; // AAAA-MM-DD
+  cnpjEmpregador: string | null;
+  renda: number | null;
+  sexo: "M" | "F" | null;
+}
 
 // INSS e SIAPE: o extrato pode não servir (outro documento, ilegível) antes de chegar ao banco.
 // "servidor_outro": o cliente disse SIAPE, mas o contracheque é de estado ou prefeitura.
@@ -171,7 +182,9 @@ export const bancoFacta: BancoClt = {
       valorParcela: v.margemDisponivel! * REGRAS.folgaMargem,
     });
 
-    return melhorTabela(this.nome, tabelas, mensagem);
+    const r = melhorTabela(this.nome, tabelas, mensagem);
+    if (r.tipo !== "com_saldo") return r;
+    return { ...r, clt: { matricula: v.matricula, dataNascimento: v.dataNascimento, dataAdmissao: v.dataAdmissao, cnpjEmpregador: v.cnpjEmpregador, renda: v.renda, sexo: v.sexo } };
   },
 
   async simularConsignado(p) {

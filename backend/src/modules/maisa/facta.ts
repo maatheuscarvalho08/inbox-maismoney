@@ -143,6 +143,11 @@ export async function solicitarAutorizacao(p: { cpf: string; nome: string; celul
 // 2. Dados da Dataprev. Só funciona depois que o cliente autorizou.
 export interface Vinculo {
   matricula: string;
+  // CNPJ do empregador (numeroInscricaoEmpregador), só dígitos. A etapa 2 do CLT exige.
+  cnpjEmpregador: string | null;
+  nome: string | null;
+  sexo: "M" | "F" | null;
+  nomeMae: string | null;
   dataNascimento: string | null;
   dataAdmissao: string | null;
   dataDesligamento: string | null;
@@ -175,6 +180,10 @@ export async function consultarTrabalhador(cpf: string): Promise<ResultadoConsul
     tipo: "autorizado",
     vinculos: dados.map((d) => ({
       matricula: String(d.matricula ?? ""),
+      cnpjEmpregador: String(d.numeroInscricaoEmpregador ?? "").replace(/\D/g, "") || null,
+      nome: String(d.nome ?? "").trim() || null,
+      sexo: /^m/i.test(String(d.sexo_descricao ?? "")) ? "M" : /^f/i.test(String(d.sexo_descricao ?? "")) ? "F" : null,
+      nomeMae: String(d.nomeMae ?? "").trim() || null,
       dataNascimento: dataIso(d.dataNascimento),
       dataAdmissao: dataIso(d.dataAdmissao),
       dataDesligamento: dataIso(d.dataDesligamento),
@@ -335,7 +344,9 @@ export interface Contratacao {
   // Ponto sem volta: chamado logo antes da etapa 3, a única que cria proposta. Devolve
   // false se a operação foi invalidada (o cliente mandou mensagem): a etapa 3 não é chamada.
   pontoSemVolta?: () => Promise<boolean>;
-  convenio: "inss" | "siape";
+  convenio: "inss" | "siape" | "clt";
+  // CLT: dados do vínculo da Dataprev que a etapa 2 exige.
+  clt?: { cnpjEmpregador: string; dataAdmissao: string };
   cpf: string;
   dataNascimento: string; // AAAA-MM-DD
   celular: string;
@@ -392,7 +403,9 @@ export type ResultadoContratacao =
 
 // Etapas 1, 2 e 3 e o envio do link de assinatura pelo WhatsApp. Para na primeira falha.
 export async function contratar(c: Contratacao): Promise<ResultadoContratacao> {
-  const averbador = AVERBADOR_EXTRATO[c.convenio];
+  // CLT: averbador 10010 (manual Crédito do Trabalhador v9.0). INSS e SIAPE: os do extrato.
+  const averbador = c.convenio === "clt" ? AVERBADOR : AVERBADOR_EXTRATO[c.convenio];
+  if (c.convenio === "clt" && !c.clt) return { tipo: "erro", etapa: "simulador", mensagem: "CLT sem CNPJ do empregador e data de admissão" };
   const cpf = cpf11(c.cpf);
   const p = c.pessoa;
 
@@ -462,6 +475,8 @@ async function concluirProposta(c: Contratacao, idSimulador: string): Promise<Re
       ...(c.convenio === "inss"
         ? { tipo_credito_nb: p.tipoCreditoNb ?? "1", tipo_beneficio: p.tipoBeneficio ?? "", estado_beneficio: p.estado }
         : {}),
+      // CLT: obrigatórios quando houve consulta à Dataprev (manual v9.0, etapa 2).
+      ...(c.convenio === "clt" && c.clt ? { cnpj_empregador: c.clt.cnpjEmpregador, data_admissao: dataBr(c.clt.dataAdmissao) } : {}),
     },
   });
   const codigoCliente = String(e2.codigo_cliente ?? "");

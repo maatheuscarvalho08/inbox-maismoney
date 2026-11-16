@@ -28,20 +28,31 @@ const verbose = args.includes("--verbose");
 
 // ---------- Facta falsa ----------
 type Modo = "ok" | "erro" | "lento" | "500" | "queda";
-const facta = { modo: {} as Record<string, Modo>, chamadas: [] as string[], atrasoOk: 0 };
+const facta = { modo: {} as Record<string, Modo>, chamadas: [] as string[], atrasoOk: 0, corpos: [] as { rota: string; corpo: string }[] };
 const RESPOSTA_FACTA: Record<string, Record<string, unknown>> = {
   "/gera-token": { erro: false, token: "token-teste" },
   "/proposta/etapa1-simulador": { erro: false, id_simulador: "SIM1" },
   "/proposta/etapa2-dados-pessoais": { erro: false, codigo_cliente: "CLI1" },
   "/proposta/etapa3-proposta-cadastro": { erro: false, codigo: "AF777", url_formalizacao: "https://facta.teste/af777" },
   "/proposta/envio-link": { erro: false, mensagem: "enviado" },
+  // Formato do manual "Consulta Dados CLT v2.0", com valores fictícios.
+  "/consignado-trabalhador/autoriza-consulta": {
+    erro: false, mensagem: "CPF autorizado com sucesso",
+    dados_trabalhador: { total: 1, dados: [{
+      cpf: "00000000000", matricula: "00000024", numeroInscricaoEmpregador: "12.345.678/0001-99", nome: "MARIA FICTICIA", sexo_codigo: "2", sexo_descricao: "Feminino",
+      dataNascimento: "16/01/1987", elegivel: "SIM", valorTotalVencimentos: "3500.00", valorMargemDisponivel: "1000.00", dataAdmissao: "01/01/2010",
+      dataDesligamento: "", nomeMae: "ANA FICTICIA", erro_mensagem: "",
+    }] },
+  },
 };
 const servidorFacta = http.createServer((req, res) => {
   const rota = (req.url ?? "").split("?")[0];
   facta.chamadas.push(rota);
   const modo = facta.modo[rota] ?? "ok";
-  req.resume();
+  let recebido = "";
+  req.on("data", (c) => (recebido += c));
   req.on("end", () => {
+    facta.corpos.push({ rota, corpo: decodeURIComponent(recebido.replace(/\+/g, " ")) });
     if (modo === "queda") return req.socket.destroy();
     if (modo === "lento") return setTimeout(() => res.writableEnded || res.end("{}"), 2_000);
     if (modo === "500") return res.writeHead(500).end("{}");
@@ -193,6 +204,7 @@ async function main() {
     evolution.fila = [];
     env.MAISA_DIGITACAO_LIBERADA = true;
     env.MAISA_FOLLOWUP_PORT = false;
+    env.MAISA_DIGITA_CLT = false;
   }
 
   // ---------- casos ----------
@@ -1047,6 +1059,79 @@ async function main() {
     assert.equal((await conversaDe(c.id)).convenio, null);
     await leadResponde(c.id, "SIM");
     assert.equal((await estadoDe(c.id)).etapa, "convenio");
+  });
+
+  // ---------- Digitação CLT ----------
+  const VINCULO_CLT = { matricula: "00000024", dataNascimento: "1987-01-16", dataAdmissao: "2010-01-01", cnpjEmpregador: "12345678000199", renda: 3500, sexo: "F" as const };
+  const estadoConfirmacaoClt = (): EstadoMaisa => ({
+    etapa: "confirmacao", tentativas: 0, produto: "clt", cpfFim: "0003",
+    oferta: { banco: "Facta", valorCentavos: 133724, parcelaCentavos: 15000, prazoMeses: 12, tabela: { codigoTabela: 112727, prazo: 12, contrato: 1337.24, parcela: 150, coeficiente: 0.112171 }, clt: VINCULO_CLT },
+    contrato: { dados: { ...DADOS, renda: 3500, matricula: "00000024" } as any, pergunta: TEXTOS.perguntaConfirmacao },
+  });
+  const corpoDe = (rota: string, desde: number) => facta.corpos.slice(desde).filter((c) => c.rota === rota).map((c) => c.corpo).join("\n");
+
+  caso("Digitação CLT", "Consulta da Dataprev lê CNPJ do empregador, admissão, sexo e nome da mãe (formato do manual)", async () => {
+    const { consultarTrabalhador } = await import("../src/modules/maisa/facta.js");
+    const r = await consultarTrabalhador("00000000000");
+    assert.equal(r.tipo, "autorizado");
+    const v = (r as any).vinculos[0];
+    assert.equal(v.cnpjEmpregador, "12345678000199");
+    assert.equal(v.dataAdmissao, "2010-01-01");
+    assert.equal(v.dataNascimento, "1987-01-16");
+    assert.equal(v.sexo, "F");
+    assert.equal(v.nomeMae, "ANA FICTICIA");
+    assert.equal(v.matricula, "00000024");
+  });
+
+  caso("Digitação CLT", "Trava do CLT ligada: digita com averbador 10010, CNPJ do empregador e data de admissão", async () => {
+    env.MAISA_DIGITA_CLT = true;
+    const c = await novaConversa(estadoConfirmacaoClt());
+    const desde = facta.corpos.length;
+    await simEJanela(c.id);
+    const e1 = corpoDe("/proposta/etapa1-simulador", desde);
+    const e2 = corpoDe("/proposta/etapa2-dados-pessoais", desde);
+    assert.ok(e1.includes("10010"), "averbador do CLT na etapa 1");
+    assert.ok(e1.includes("16/01/1987"), "nascimento da Dataprev na etapa 1");
+    assert.ok(e2.includes("12345678000199"), "CNPJ do empregador na etapa 2");
+    assert.ok(e2.includes("01/01/2010"), "data de admissão na etapa 2");
+    assert.ok(e2.includes("chave_pix"), "PIX na chave CPF");
+    assert.equal(corpoDe("/proposta/etapa3-proposta-cadastro", desde).length > 0, true);
+    assert.equal(await prisma.proposta.count({ where: { conversaId: c.id } }), 1);
+  });
+
+  caso("Digitação CLT", "Trava do CLT desligada: nenhuma chamada à Facta, passa para a equipe", async () => {
+    env.MAISA_DIGITA_CLT = false;
+    const c = await novaConversa(estadoConfirmacaoClt());
+    const antes = facta.chamadas.filter((r) => r.startsWith("/proposta/")).length;
+    await simEJanela(c.id);
+    assert.equal(facta.chamadas.filter((r) => r.startsWith("/proposta/")).length - antes, 0);
+    const e = await estadoDe(c.id);
+    assert.equal(e.etapa, "finalizada");
+    assert.equal(await prisma.proposta.count({ where: { conversaId: c.id } }), 0);
+  });
+
+  caso("Digitação CLT", "Dois 'sim' ao mesmo tempo em processos diferentes digitam o CLT uma vez só", async () => {
+    env.MAISA_DIGITA_CLT = true;
+    const c = await novaConversa(estadoConfirmacaoClt());
+    const antes = etapa3();
+    const ms = await Promise.all([mensagemCliente(c.id, "sim"), mensagemCliente(c.id, "sim")]);
+    await Promise.all(ms.map((m) => { svc.esquecerFilas(); return svc.processarComMaisa(c.id, m.id); }));
+    await svc.aguardarFilas();
+    avancarRelogio(31_000);
+    await Promise.all([0, 1, 2].map(() => { svc.esquecerFilas(); return svc.executarDigitacoesPendentes(); }));
+    await svc.aguardarFilas();
+    assert.equal(etapa3() - antes, 1);
+    assert.equal(await prisma.proposta.count({ where: { conversaId: c.id } }), 1);
+  });
+
+  caso("Digitação CLT", "CLT com vínculo sem CNPJ não chama a Facta", async () => {
+    env.MAISA_DIGITA_CLT = true;
+    const est = estadoConfirmacaoClt();
+    (est.oferta as any).clt = { ...VINCULO_CLT, cnpjEmpregador: null };
+    const c = await novaConversa(est);
+    const antes = facta.chamadas.filter((r) => r.startsWith("/proposta/")).length;
+    await simEJanela(c.id);
+    assert.equal(facta.chamadas.filter((r) => r.startsWith("/proposta/")).length - antes, 0);
   });
 
   // ---------- execução ----------

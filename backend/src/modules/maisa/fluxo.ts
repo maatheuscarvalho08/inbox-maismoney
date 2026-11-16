@@ -4,13 +4,14 @@ import type { DigitacaoPort, ReducaoParcela, TabelaDigitacao, ResultadoAutorizac
 import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
-import { ROTULO_CAMPO, camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato } from "./contrato.js";
+import { ROTULO_CAMPO, camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato, type ProdutoContrato } from "./contrato.js";
 import type { ResultadoContratacao } from "./facta.js";
 import { NAO_QUERO, SIM_FORTE, normalizar, temReceio } from "./classificador.js";
-import { motivoTravaDigitacao } from "./travaDigitacao.js";
+import { cltDigitavel, motivoTravaDigitacao } from "./travaDigitacao.js";
 import type { Pendencia } from "./conversa/contexto.js";
 import type { SaidaMotor } from "./conversa/motor.js";
 import type { MemoriaConversa, RegistroInterpretacao } from "./conversa/tipos.js";
+import type { VinculoClt } from "./bancos.js";
 import { invalidaConfirmacao } from "./ordemMensagens.js";
 import {
   ACEITE_NO_FIM,
@@ -88,6 +89,8 @@ export interface EstadoMaisa {
     especie?: number | null;
     matricula?: string | null;
     contaSalario?: { bancoConta: string; agencia: string; conta: string } | null;
+    // CLT: o vínculo da Dataprev simulado (matrícula, nascimento, admissão, CNPJ do empregador).
+    clt?: VinculoClt;
   };
   // Quantas objeções ela já tentou contornar nesta oferta.
   contornos?: number;
@@ -216,6 +219,8 @@ export interface Dependencias {
   mensagemDepoisDoSim?(simMensagemId: string | undefined, recebidoEm: string): Promise<boolean>;
   // Lembrete e Carrinho também na oferta de portabilidade.
   followupPort?: boolean;
+  // MAISA_DIGITA_CLT: digitação automática do CLT. Desligada, o aceite do CLT vai para a equipe.
+  digitaClt?: boolean;
   conversa?: ConversaDeps;
   // Responde ao que o cliente disse fora do esperado (ex.: "estou negativo"), só com fatos
   // aprovados. null: não tem o que dizer. Ausente nos testes: valem as regras.
@@ -531,10 +536,10 @@ function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora:
   if (resultado.tipo === "erro") {
     return transferir(estado, `erro no banco: ${resultado.motivo}`, TEXTOS.erroBanco, "erro_banco", [efeito]);
   }
-  const { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula, contaSalario } = resultado;
+  const { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula, contaSalario, clt } = resultado;
   const mensagem = TEXTOS.oferta(formatarReais(valorCentavos), prazoMeses, formatarReais(parcelaCentavos), DESCONTO[estado.produto ?? "clt"]);
   return ir(estado, "oferta", [mensagem], "com_saldo", [efeito], {
-    oferta: { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula, contaSalario },
+    oferta: { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula, contaSalario, ...(clt ? { clt } : {}) },
     autorizacaoPedidaEm: undefined,
     proximaVerificacao: undefined,
     ofertaEm: agora.toISOString(),
@@ -638,6 +643,9 @@ export function lerDataNascimento(texto: string, agora: Date): string | null {
 }
 
 const produtoExtrato = (estado: EstadoMaisa): ProdutoExtrato => (porExtrato(estado.produto) ? estado.produto : "inss");
+// Perfil do cadastro: CLT tem o seu (PIX, sem espécie nem conta salário). Os outros, o do extrato.
+const produtoCadastro = (estado: EstadoMaisa): ProdutoContrato => (estado.produto === "clt" ? "clt" : produtoExtrato(estado));
+
 
 // Ano impossível com cara de erro de digitação (1852 no lugar de 1952): a data que
 // provavelmente era. null se não der para adivinhar com segurança.
@@ -1029,6 +1037,16 @@ function seguirComAceite(estado: EstadoMaisa, deps: Dependencias, texto: string,
     }
     return transferir(limpo, `aceitou: ${estado.alternativa?.motivo ?? "portabilidade"}`, TEXTOS.aceitouPort, "aceitou_port", [], "alternativa");
   }
+  // CLT com a digitação do CLT ligada e o vínculo completo: ela mesma faz o contrato. Renda,
+  // matrícula e sexo vêm da Dataprev. Sem a trava ou sem o vínculo, vai para a equipe.
+  if (estado.produto === "clt" && deps.digitacaoAtiva && deps.digitaClt && estado.oferta?.tabela && cltDigitavel(estado.oferta.clt)) {
+    const v = estado.oferta.clt!;
+    const dados: DadosContrato = {};
+    if (v.renda) dados.renda = v.renda;
+    if (v.matricula) dados.matricula = v.matricula;
+    if (v.sexo) dados.sexo = v.sexo;
+    return iniciarCadastro(limpo, dados, "aceitou_contrato", [...antes, TEXTOS.inicioContrato], deps.agora(), { ofertaEm: undefined, followupEnviado: undefined });
+  }
   // INSS e SIAPE com a digitação ligada: ela mesma faz o contrato.
   if (porExtrato(estado.produto) && deps.digitacaoAtiva && estado.oferta?.tabela) {
     const dados: DadosContrato = {};
@@ -1189,7 +1207,7 @@ function cadastroAnterior(estado: EstadoMaisa, agora: Date): ContratoSalvo | nul
 // anterior). Dado de atendimento anterior entra marcado como "anterior", sem PIX nem qualquer
 // autorização: o cliente confirma o cadastro inteiro de novo.
 function iniciarCadastro(estado: EstadoMaisa, dadosBase: DadosContrato, rotulo: string, antes: string[], agora: Date, extra: Partial<EstadoMaisa> = {}): Passo {
-  const produto = produtoExtrato(estado);
+  const produto = produtoCadastro(estado);
   const anterior = cadastroAnterior(estado, agora);
   const reaproveitados = anterior ? Object.fromEntries(Object.entries(anterior.dados).filter(([k, v]) => k !== "pixCpf" && v !== undefined && v !== null && v !== "" && !(k in dadosBase))) as DadosContrato : {};
   const dados: DadosContrato = { ...reaproveitados, ...dadosBase };
@@ -1413,7 +1431,7 @@ async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencia
 // Cada resposta do cliente (texto, foto do documento ou áudio já transcrito) preenche
 // o que der do cadastro. Falta algo: pergunta o próximo. Completo: mostra o resumo.
 async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null; documento?: boolean }, deps: Dependencias): Promise<Passo> {
-  const produto = produtoExtrato(estado);
+  const produto = produtoCadastro(estado);
   const dados = estado.contrato?.dados ?? {};
   const pergunta = estado.contrato?.pergunta ?? proximaPergunta(dados, produto) ?? TEXTOS.continuarCadastro;
   const texto = entrada.texto?.trim() ?? "";
@@ -1591,7 +1609,7 @@ async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promi
   if (deps.mensagemDepoisDoSim && (await deps.mensagemDepoisDoSim(p.mensagemId, p.recebidoEm))) {
     return parado("digitacao_cancelada_mensagem_nova", limpo);
   }
-  const trava = motivoTravaDigitacao(estado, { liberada: deps.digitacaoLiberada === true });
+  const trava = motivoTravaDigitacao(estado, { liberada: deps.digitacaoLiberada === true, clt: deps.digitaClt === true });
   if (trava) {
     return transferir(limpo, `digitação automática não executada (${trava}): a equipe digita no portal com os dados da nota`, TEXTOS.digitacaoComEquipe, "digitacao_bloqueada", [], "dados_contrato");
   }
@@ -1648,7 +1666,7 @@ async function corrigirDados(estado: EstadoMaisa, entrada: { texto: string | nul
   let novos: DadosContrato = {};
   if (!soNegou) {
     try {
-      novos = await deps.extrairDados(TEXTOS.qualCorrigir, entrada, todosCampos(produtoExtrato(estado)));
+      novos = await deps.extrairDados(TEXTOS.qualCorrigir, entrada, todosCampos(produtoCadastro(estado)));
     } catch {
       novos = {};
     }
@@ -1956,7 +1974,7 @@ export function descreverPendencia(estado: EstadoMaisa): Pendencia {
       return { ...base, chave: "nascimento", tipo: "dado", topico: "data_nascimento", pergunta: PERGUNTA_DA_ETAPA.nascimento, dadoPedido: "a sua data de nascimento" };
     case "coleta": {
       const dados = estado.contrato?.dados ?? {};
-      const produto = produtoExtrato(estado);
+      const produto = produtoCadastro(estado);
       const falta = camposFaltando(dados, produto);
       const faltando = falta.map(rotuloDoCampo).filter((x): x is string => Boolean(x));
       const coletados = (Object.keys(dados) as CampoContrato[]).map(rotuloDoCampo).filter((x): x is string => Boolean(x));

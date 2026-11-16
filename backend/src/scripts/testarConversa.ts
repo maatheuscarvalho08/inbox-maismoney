@@ -636,6 +636,82 @@ await caso("Template: CLT reconhecido pelo nome ou texto, outros não", async ()
   assert.equal(produtoDoTemplate({ nome: "cltx_teste", corpo: null }), null);
 });
 
+// ---------- Digitação CLT ----------
+const { camposFaltando: faltandoCadastro } = await import("../modules/maisa/contrato.js");
+const VINCULO = { matricula: "00000024", dataNascimento: "1987-01-16", dataAdmissao: "2010-01-01", cnpjEmpregador: "12345678000199", renda: 3500, sexo: "F" as const };
+const tabelaClt = { codigoTabela: 112727, prazo: 12, contrato: 1337.24, parcela: 150, coeficiente: 0.112171 };
+const ofertaClt = (clt: typeof VINCULO | undefined = VINCULO) => ({ banco: "Facta", valorCentavos: 133724, parcelaCentavos: 15000, prazoMeses: 12, tabela: tabelaClt, ...(clt ? { clt } : {}) });
+const estadoOfertaClt = (clt?: typeof VINCULO): EstadoMaisa => ({ etapa: "oferta", tentativas: 0, produto: "clt", nome: "Maria da Silva", oferta: ofertaClt(clt), ofertaEm: AGORA.toISOString() });
+const depsClt = (digitaClt: boolean, extra: Partial<Dependencias> = {}) => ({ ...depsBase(roteiro([])), conversa: undefined, digitaClt, ...extra });
+
+await caso("CLT: aceite com a trava do CLT ligada começa o cadastro, com renda, matrícula e sexo da Dataprev", async () => {
+  const p = await diga(estadoOfertaClt(VINCULO), "quero sim", depsClt(true));
+  assert.equal(p.estado.etapa, "coleta");
+  const d = p.estado.contrato!.dados as Record<string, unknown>;
+  assert.equal(d.renda, 3500);
+  assert.equal(d.matricula, "00000024");
+  assert.equal(d.sexo, "F");
+  assert.ok(p.respostas.some((r) => /RG ou da CNH/.test(r)), "pede o documento primeiro");
+});
+
+await caso("CLT: trava do CLT desligada, o aceite vai para a equipe como antes", async () => {
+  const p = await diga(estadoOfertaClt(VINCULO), "quero sim", depsClt(false));
+  assert.equal(p.estado.etapa, "finalizada");
+  assert.equal(p.estado.saida, "aceitou");
+});
+
+await caso("CLT: vínculo sem CNPJ do empregador vai para a equipe, não coleta", async () => {
+  const p = await diga(estadoOfertaClt({ ...VINCULO, cnpjEmpregador: null as unknown as string }), "quero sim", depsClt(true));
+  assert.equal(p.estado.etapa, "finalizada");
+});
+
+await caso("CLT: o cadastro pede PIX e não pede espécie, forma de crédito do INSS nem conta salário", async () => {
+  const f = faltandoCadastro({}, "clt");
+  assert.ok(f.includes("pixCpf"));
+  for (const c of ["tipoBeneficio", "tipoCreditoNb", "bancoConta", "agencia", "conta"] as const) assert.ok(!f.includes(c), c);
+});
+
+const confirmacaoClt = (clt: typeof VINCULO | undefined = VINCULO): EstadoMaisa => ({
+  etapa: "confirmacao", tentativas: 0, produto: "clt", oferta: ofertaClt(clt),
+  contrato: { dados: { ...(dadosCompletos as object), renda: 3500, matricula: "00000024" } as never, pergunta: TEXTOS.perguntaConfirmacao },
+});
+
+await caso("CLT: 'sim' agenda, e só depois da janela digita, com os dados do cadastro", async () => {
+  let digitados = 0;
+  let relogio = AGORA;
+  const deps = depsClt(true, { agora: () => relogio, digitar: async (dados) => { digitados++; assert.ok(dados.nome && dados.email); return { tipo: "enviada", codigoAf: "AF1", url: "facta.ly/x" }; } });
+  let p = await diga(confirmacaoClt(), "sim", deps);
+  assert.ok(p.estado.confirmacaoPendente);
+  assert.equal(digitados, 0, "digitou antes da janela");
+  relogio = new Date(AGORA.getTime() + 31_000);
+  p = await avancar(p.estado, { evento: "executar_digitacao" }, deps);
+  assert.equal(digitados, 1);
+  assert.ok(p.efeitos.some((e) => e.tipo === "proposta"));
+});
+
+await caso("CLT: trava do CLT desligada na hora de digitar bloqueia e passa para a equipe", async () => {
+  let digitados = 0;
+  let relogio = AGORA;
+  const ligado = depsClt(true, { agora: () => relogio, digitar: async () => { digitados++; return { tipo: "enviada", codigoAf: "AF1", url: "x" }; } });
+  let p = await diga(confirmacaoClt(), "sim", ligado);
+  relogio = new Date(AGORA.getTime() + 31_000);
+  p = await avancar(p.estado, { evento: "executar_digitacao" }, { ...ligado, digitaClt: false });
+  assert.equal(digitados, 0);
+  assert.equal(p.rotulo, "digitacao_bloqueada");
+  assert.match(p.estado.motivoTransferencia ?? "", /MAISA_DIGITA_CLT/);
+});
+
+await caso("CLT: vínculo incompleto na hora de digitar bloqueia", async () => {
+  let digitados = 0;
+  let relogio = AGORA;
+  const deps = depsClt(true, { agora: () => relogio, digitar: async () => { digitados++; return { tipo: "enviada", codigoAf: "AF1", url: "x" }; } });
+  let p = await diga(confirmacaoClt({ ...VINCULO, dataAdmissao: null as unknown as string }), "sim", deps);
+  relogio = new Date(AGORA.getTime() + 31_000);
+  p = await avancar(p.estado, { evento: "executar_digitacao" }, deps);
+  assert.equal(digitados, 0);
+  assert.equal(p.rotulo, "digitacao_bloqueada");
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

@@ -19,6 +19,7 @@ console.log(`MAISA_DIGITA_PROPOSTA=${process.env.MAISA_DIGITA_PROPOSTA ?? "(vazi
 console.log(`FACTA_LOGIN_CERTIFICADO=${preenchido(process.env.FACTA_LOGIN_CERTIFICADO) ? "(preenchido)" : "(vazio)"}`);
 console.log(`FACTA_CODIGO_MASTER=${preenchido(process.env.FACTA_CODIGO_MASTER) ? "(preenchido)" : "(vazio)"}`);
 console.log(`MAISA_DIGITACAO_LIBERADA=${process.env.MAISA_DIGITACAO_LIBERADA ?? "(vazio)"}`);
+console.log(`MAISA_DIGITA_CLT=${process.env.MAISA_DIGITA_CLT ?? "(vazio)"}`);
 
 if (digitaCodigoAntigo && !liberadaNoCodigoNovo) {
   console.error(
@@ -29,5 +30,8 @@ if (digitaCodigoAntigo && !liberadaNoCodigoNovo) {
 }
 if (liberadaNoCodigoNovo) {
   console.warn("ATENÇÃO: MAISA_DIGITACAO_LIBERADA=true. A digitação automática está autorizada nesta configuração.");
+}
+if (ligado(process.env.MAISA_DIGITA_CLT)) {
+  console.warn(liberadaNoCodigoNovo ? "ATENÇÃO: MAISA_DIGITA_CLT=true. A digitação automática do CLT também está autorizada." : "MAISA_DIGITA_CLT=true, mas sem MAISA_DIGITACAO_LIBERADA o CLT não é digitado.");
 }
 console.log("OK: nenhuma versão do código digita na Facta com esta configuração, a não ser com a trava explicitamente liberada.");

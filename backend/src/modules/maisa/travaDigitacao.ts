@@ -8,11 +8,18 @@
 // - nenhuma outra digitação desta oferta (chave única em operacoes_facta, operacaoFacta.ts).
 import { camposFaltando } from "./contrato.js";
 import type { EstadoMaisa } from "./fluxo.js";
+import type { VinculoClt } from "./bancos.js";
 
 export interface ContextoTrava {
   // MAISA_DIGITACAO_LIBERADA. Desligada por padrão.
   liberada: boolean;
+  // MAISA_DIGITA_CLT. Desligada por padrão.
+  clt?: boolean;
 }
+
+// Vínculo CLT com tudo o que a etapa 2 da Facta exige.
+export const cltDigitavel = (v: VinculoClt | undefined): boolean =>
+  Boolean(v && v.dataNascimento && v.dataAdmissao && v.cnpjEmpregador && /^\d{14}$/.test(v.cnpjEmpregador) && v.matricula);
 
 export function motivoTravaDigitacao(estado: EstadoMaisa, ctx: ContextoTrava): string | null {
   if (!ctx.liberada) return "trava MAISA_DIGITACAO_LIBERADA desligada";
@@ -20,7 +27,12 @@ export function motivoTravaDigitacao(estado: EstadoMaisa, ctx: ContextoTrava): s
   const pendente = estado.confirmacaoPendente;
   if (!pendente?.consentimento?.trim()) return "sem SIM explícito do cliente registrado";
   const produto = estado.produto;
-  if (produto !== "inss" && produto !== "siape") return "produto sem digitação automática";
+  if (produto !== "inss" && produto !== "siape" && produto !== "clt") return "produto sem digitação automática";
+  if (produto === "clt") {
+    if (!ctx.clt) return "trava MAISA_DIGITA_CLT desligada";
+    if (estado.alternativa) return "CLT sem portabilidade automática";
+    if (!cltDigitavel(estado.oferta?.clt)) return "CLT sem vínculo completo da Dataprev (CNPJ, admissão, nascimento ou matrícula)";
+  }
   const dados = estado.contrato?.dados;
   if (!dados) return "sem dados do cadastro";
   const faltando = camposFaltando(dados, produto);

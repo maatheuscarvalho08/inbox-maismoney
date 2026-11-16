@@ -38,7 +38,7 @@ export interface DadosContrato {
 }
 
 export type CampoContrato = keyof DadosContrato;
-type ProdutoContrato = "inss" | "siape";
+export type ProdutoContrato = "inss" | "siape" | "clt";
 
 export const ROTULO_CAMPO: Partial<Record<CampoContrato, string>> = {
   nome: "nome completo",
@@ -63,7 +63,7 @@ interface Grupo {
   id: string;
   campos: CampoContrato[];
   pergunta: (produto: ProdutoContrato) => string;
-  so?: ProdutoContrato;
+  so?: ProdutoContrato | ProdutoContrato[];
 }
 
 export const GRUPOS: Grupo[] = [
@@ -96,7 +96,9 @@ export const GRUPOS: Grupo[] = [
     pergunta: (p) =>
       p === "inss"
         ? "Qual o número do seu benefício? Ele aparece no extrato do Meu INSS e tem 10 dígitos."
-        : "Qual a sua matrícula SIAPE? Ela aparece no SouGov.br e no seu extrato de consignações.",
+        : p === "clt"
+          ? "Qual a sua matrícula no trabalho? Ela aparece no seu contracheque."
+          : "Qual a sua matrícula SIAPE? Ela aparece no SouGov.br e no seu extrato de consignações.",
   },
   {
     id: "credito",
@@ -118,7 +120,7 @@ export const GRUPOS: Grupo[] = [
   {
     id: "pix",
     campos: ["pixCpf"],
-    so: "inss",
+    so: ["inss", "clt"],
     pergunta: () => "O dinheiro cai por PIX, na chave do seu CPF. Pode ser assim? Responda SIM ou NÃO.",
   },
   {
@@ -131,7 +133,7 @@ export const GRUPOS: Grupo[] = [
   },
 ];
 
-const gruposDo = (produto: ProdutoContrato) => GRUPOS.filter((g) => !g.so || g.so === produto);
+const gruposDo = (produto: ProdutoContrato) => GRUPOS.filter((g) => !g.so || (Array.isArray(g.so) ? g.so.includes(produto) : g.so === produto));
 
 const falta = (dados: DadosContrato, campo: CampoContrato) => dados[campo] === undefined || dados[campo] === "";
 

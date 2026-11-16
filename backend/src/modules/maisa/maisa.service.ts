@@ -122,10 +122,12 @@ async function digitarProposta(
   pontoSemVolta: () => Promise<boolean>,
 ): Promise<ResultadoContratacao> {
   const produto = estado?.produto;
-  if (produto !== "inss" && produto !== "siape") throw new Error("digitação só para INSS e SIAPE");
+  if (produto !== "inss" && produto !== "siape" && produto !== "clt") throw new Error("digitação só para INSS, SIAPE e CLT");
+  // CLT: nascimento, admissão e CNPJ do empregador vêm do vínculo da Dataprev simulado.
+  const vinculo = produto === "clt" ? estado?.oferta?.clt : undefined;
   const base = {
     cpf: await cpfDoContato(conversa.contatoId),
-    dataNascimento: exigir(estado?.dataNascimento, "data de nascimento"),
+    dataNascimento: exigir(produto === "clt" ? vinculo?.dataNascimento : estado?.dataNascimento, "data de nascimento"),
     celular: conversa.contato.numeroWhatsapp,
     pessoa: pessoaDoContrato(d),
     pontoSemVolta,
@@ -147,7 +149,14 @@ async function digitarProposta(
             saldoDevedor: port.digitacao.saldoDevedor,
           },
         })
-      : await contratar({ ...base, convenio: produto, tabela: exigir(estado?.oferta?.tabela, "tabela da oferta") });
+      : await contratar({
+          ...base,
+          convenio: produto,
+          tabela: exigir(estado?.oferta?.tabela, "tabela da oferta"),
+          ...(produto === "clt"
+            ? { clt: { cnpjEmpregador: exigir(vinculo?.cnpjEmpregador, "CNPJ do empregador"), dataAdmissao: exigir(vinculo?.dataAdmissao, "data de admissão") } }
+            : {}),
+        });
   console.log(`Maisa digitou na Facta, conversa ${conversa.id}: ${resultado.tipo === "enviada" ? `proposta ${resultado.codigoAf}` : `erro em ${resultado.etapa}`}`);
   return resultado;
 }
@@ -367,6 +376,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     digitacaoLiberada: env.MAISA_DIGITACAO_LIBERADA,
     janelaConfirmacaoMs: env.MAISA_JANELA_CONFIRMACAO_S * 1000,
     followupPort: env.MAISA_FOLLOWUP_PORT,
+    digitaClt: env.MAISA_DIGITA_CLT,
     mensagemDepoisDoSim: (simId, recebidoEm) => mensagemDepoisDoSim(conversa.id, simId, recebidoEm),
     extrairDados: async (pergunta, recebida, faltando) => {
       const doc = recebida.documento && arquivo ? { conteudo: await lerArquivo(arquivo.midiaPath), tipo: arquivo.tipo } : null;
