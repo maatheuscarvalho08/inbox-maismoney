@@ -80,6 +80,12 @@ const envSchema = z.object({
     .string()
     .default("false")
     .transform((v) => v === "true"),
+  // Port pura do SIAPE (sem refin): digita pelo caminho da port + refin (003500), pulando a
+  // etapa do refin. Trava própria, desligada por padrão.
+  MAISA_DIGITA_PORT_PURA: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
   // Quantas vezes a Maisa tenta entregar uma mensagem quando a falha garante que ela
   // não saiu (conexão recusada, 502/503/504, 429). Tempo esgotado não é repetido.
   MAISA_ENTREGA_TENTATIVAS: z.coerce.number().min(1).max(5).default(3),

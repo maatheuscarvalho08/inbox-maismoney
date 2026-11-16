@@ -205,6 +205,7 @@ async function main() {
     env.MAISA_DIGITACAO_LIBERADA = true;
     env.MAISA_FOLLOWUP_PORT = false;
     env.MAISA_DIGITA_CLT = false;
+    env.MAISA_DIGITA_PORT_PURA = false;
   }
 
   // ---------- casos ----------
@@ -1132,6 +1133,43 @@ async function main() {
     const antes = facta.chamadas.filter((r) => r.startsWith("/proposta/")).length;
     await simEJanela(c.id);
     assert.equal(facta.chamadas.filter((r) => r.startsWith("/proposta/")).length - antes, 0);
+  });
+
+  // ---------- Port pura SIAPE ----------
+  const estadoPortPura = (): EstadoMaisa => estadoConfirmacao({
+    oferta: undefined,
+    alternativa: {
+      operacao: "portabilidade", trocoCentavos: null, motivo: "port", numeroContrato: "1234567890",
+      digitacao: { banco: "104 - CEF", bancoCodigo: "104", parcela: 390.47, prazoRestante: 80, prazoOriginal: 120, saldoDevedor: 19000, port: { codigoTabela: 115304, prazo: 80, contrato: 19000, parcela: 385, coeficiente: 0.0202 } },
+    } as any,
+  });
+
+  caso("Port pura SIAPE", "Trava ligada: 003500 no simulador, sem a etapa do refin, e cria a proposta", async () => {
+    env.MAISA_DIGITA_PORT_PURA = true;
+    try {
+      const c = await novaConversa(estadoPortPura());
+      const desde = facta.corpos.length;
+      const antes = facta.chamadas.length;
+      await simEJanela(c.id);
+      const rotas = facta.chamadas.slice(antes);
+      assert.ok(corpoDe("/proposta/etapa1-simulador", desde).includes("003500"), "operação 003500");
+      assert.ok(corpoDe("/proposta/etapa1-simulador", desde).includes("115304"), "tabela da port");
+      assert.equal(rotas.filter((r) => r.includes("refin-portabilidade")).length, 0, "não chama o refin");
+      assert.ok(rotas.some((r) => r.includes("etapa3")), "cria a proposta");
+      assert.equal(await prisma.proposta.count({ where: { conversaId: c.id } }), 1);
+    } finally {
+      env.MAISA_DIGITA_PORT_PURA = false;
+    }
+  });
+
+  caso("Port pura SIAPE", "Trava desligada: nenhuma chamada à Facta, passa para a equipe", async () => {
+    env.MAISA_DIGITA_PORT_PURA = false;
+    const c = await novaConversa(estadoPortPura());
+    const antes = facta.chamadas.filter((r) => r.startsWith("/proposta/")).length;
+    await simEJanela(c.id);
+    assert.equal(facta.chamadas.filter((r) => r.startsWith("/proposta/")).length - antes, 0);
+    assert.equal((await estadoDe(c.id)).etapa, "finalizada");
+    assert.equal(await prisma.proposta.count({ where: { conversaId: c.id } }), 0);
   });
 
   // ---------- execução ----------

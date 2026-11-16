@@ -139,7 +139,12 @@ async function digitarProposta(
       ? await contratarPortRefin({
           ...base,
           port: port.digitacao.port,
-          refin: exigir(port.digitacao.refin, "tabela do refin da port"),
+          // Port pura (só SIAPE, com a trava própria): sem a etapa do refin.
+          ...(port.digitacao.refin
+            ? { refin: port.digitacao.refin }
+            : produto === "siape" && env.MAISA_DIGITA_PORT_PURA
+              ? {}
+              : { refin: exigir(port.digitacao.refin, "tabela do refin da port") }),
           compra: {
             bancoCodigo: exigir(port.digitacao.bancoCodigo, "código do banco de origem"),
             numeroContrato: port.numeroContrato,
@@ -377,6 +382,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     janelaConfirmacaoMs: env.MAISA_JANELA_CONFIRMACAO_S * 1000,
     followupPort: env.MAISA_FOLLOWUP_PORT,
     digitaClt: env.MAISA_DIGITA_CLT,
+    digitaPortPura: env.MAISA_DIGITA_PORT_PURA,
     mensagemDepoisDoSim: (simId, recebidoEm) => mensagemDepoisDoSim(conversa.id, simId, recebidoEm),
     extrairDados: async (pergunta, recebida, faltando) => {
       const doc = recebida.documento && arquivo ? { conteudo: await lerArquivo(arquivo.midiaPath), tipo: arquivo.tipo } : null;

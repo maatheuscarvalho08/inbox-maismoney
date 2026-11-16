@@ -712,6 +712,52 @@ await caso("CLT: vínculo incompleto na hora de digitar bloqueia", async () => {
   assert.equal(p.rotulo, "digitacao_bloqueada");
 });
 
+// ---------- Port pura do SIAPE ----------
+const confirmacaoPortPura = (produto: "siape" | "inss" = "siape"): EstadoMaisa => {
+  const e = estadoConfirmacao();
+  const a = e.alternativa!;
+  e.contrato = { ...e.contrato!, dados: { ...(e.contrato!.dados as object), renda: 4670.31 } as never };
+  return { ...e, produto, alternativa: { ...a, operacao: "portabilidade", trocoCentavos: null, numeroContrato: "1234567890", digitacao: { ...a.digitacao!, refin: undefined } } };
+};
+const depsPura = (pura: boolean, extra: Partial<Dependencias> = {}) =>
+  ({ ...depsBase(roteiro([])), conversa: undefined, digitacaoAtiva: true, digitacaoLiberada: true, digitaPortPura: pura, ...extra });
+
+await caso("Port pura SIAPE: trava desligada, o 'sim' vai para a equipe cadastrar no portal", async () => {
+  const p = await diga(confirmacaoPortPura(), "sim", depsPura(false));
+  assert.equal(p.estado.etapa, "finalizada");
+  assert.equal(p.rotulo, "port_pronta");
+});
+
+await caso("Port pura SIAPE: trava ligada, agenda e digita depois da janela", async () => {
+  let digitados = 0;
+  let relogio = AGORA;
+  const deps = depsPura(true, { agora: () => relogio, digitar: async () => { digitados++; return { tipo: "enviada", codigoAf: "AF1", url: "facta.ly/x" }; } });
+  let p = await diga(confirmacaoPortPura(), "sim", deps);
+  assert.ok(p.estado.confirmacaoPendente, "agendou");
+  assert.equal(digitados, 0);
+  relogio = new Date(AGORA.getTime() + 31_000);
+  p = await avancar(p.estado, { evento: "executar_digitacao" }, deps);
+  assert.equal(digitados, 1);
+});
+
+await caso("Port pura SIAPE: trava desligada na hora de digitar bloqueia", async () => {
+  let digitados = 0;
+  let relogio = AGORA;
+  const ligado = depsPura(true, { agora: () => relogio, digitar: async () => { digitados++; return { tipo: "enviada", codigoAf: "AF1", url: "x" }; } });
+  let p = await diga(confirmacaoPortPura(), "sim", ligado);
+  relogio = new Date(AGORA.getTime() + 31_000);
+  p = await avancar(p.estado, { evento: "executar_digitacao" }, { ...ligado, digitaPortPura: false });
+  assert.equal(digitados, 0);
+  assert.equal(p.rotulo, "digitacao_bloqueada");
+  assert.match(p.estado.motivoTransferencia ?? "", /MAISA_DIGITA_PORT_PURA/);
+});
+
+await caso("Port pura do INSS continua com a equipe, mesmo com a trava ligada", async () => {
+  const p = await diga(confirmacaoPortPura("inss"), "sim", depsPura(true));
+  assert.equal(p.estado.etapa, "finalizada");
+  assert.equal(p.rotulo, "port_pronta");
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

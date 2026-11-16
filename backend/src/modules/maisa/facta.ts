@@ -518,7 +518,8 @@ async function concluirProposta(c: Contratacao, idSimulador: string): Promise<Re
 // refin da port com o contrato comprado, depois o mesmo cadastro do empréstimo novo.
 export interface ContratacaoPort extends Omit<Contratacao, "tabela" | "convenio"> {
   port: { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number };
-  refin: { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number };
+  // Ausente: port pura. Mesmo caminho, sem a etapa do refin.
+  refin?: { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number };
   compra: { bancoCodigo: string; numeroContrato: string; parcela: number; prazoRestante: number; prazoOriginal: number; saldoDevedor: number };
 }
 
@@ -546,6 +547,7 @@ export async function contratarPortRefin(c: ContratacaoPort): Promise<ResultadoC
   });
   const idSimulador = String(e1.id_simulador ?? "");
   if (e1.erro || !idSimulador) return { tipo: "erro", etapa: "simulador da port", mensagem: String(e1.mensagem ?? "sem id_simulador") };
+  if (!c.refin) return concluirProposta({ ...c, convenio: "siape", tabela: c.port }, idSimulador);
 
   const r = await chamar("/proposta/etapa1-refin-portabilidade", cpf, {
     method: "POST",

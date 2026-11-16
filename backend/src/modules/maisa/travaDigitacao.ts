@@ -15,6 +15,8 @@ export interface ContextoTrava {
   liberada: boolean;
   // MAISA_DIGITA_CLT. Desligada por padrão.
   clt?: boolean;
+  // MAISA_DIGITA_PORT_PURA. Desligada por padrão.
+  portPura?: boolean;
 }
 
 // Vínculo CLT com tudo o que a etapa 2 da Facta exige.
@@ -41,7 +43,12 @@ export function motivoTravaDigitacao(estado: EstadoMaisa, ctx: ContextoTrava): s
   if (estado.contrato?.correcaoPendente) return "correção pedida pelo cliente e não aplicada";
   const port = estado.alternativa;
   if (port) {
-    if (!port.digitacao?.refin || !port.digitacao.bancoCodigo) return "portabilidade sem refin ou sem código do banco de origem";
+    if (!port.digitacao?.port) return "portabilidade sem tabela da Facta";
+    if (!port.digitacao.bancoCodigo) return "portabilidade sem código do banco de origem";
+    if (!port.digitacao.refin) {
+      if (produto !== "siape") return "port sem refin só no SIAPE";
+      if (!ctx.portPura) return "trava MAISA_DIGITA_PORT_PURA desligada";
+    }
     if (!port.numeroContrato) return "portabilidade sem número do contrato";
   } else if (!estado.oferta?.tabela) {
     return "oferta sem tabela da Facta";

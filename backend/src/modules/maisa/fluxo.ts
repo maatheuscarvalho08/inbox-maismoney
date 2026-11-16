@@ -221,6 +221,8 @@ export interface Dependencias {
   followupPort?: boolean;
   // MAISA_DIGITA_CLT: digitação automática do CLT. Desligada, o aceite do CLT vai para a equipe.
   digitaClt?: boolean;
+  // MAISA_DIGITA_PORT_PURA: port sem refin do SIAPE. Desligada, vai para a equipe.
+  digitaPortPura?: boolean;
   conversa?: ConversaDeps;
   // Responde ao que o cliente disse fora do esperado (ex.: "estou negativo"), só com fatos
   // aprovados. null: não tem o que dizer. Ausente nos testes: valem as regras.
@@ -1560,7 +1562,8 @@ async function etapaConfirmacao(estado: EstadoMaisa, texto: string, deps: Depend
   if (pendenteCorrecao) {
     return transferir(estado, `o cliente pediu uma correção que a Maisa não conseguiu aplicar ("${pendenteCorrecao}") e depois disse "${texto.trim().slice(0, 40)}": conferir os dados com ele antes de digitar`, TEXTOS.corrigirDados, "correcao_nao_aplicada", [], "dados_contrato");
   }
-  if (estado.alternativa && (!dig?.refin || !dig.bancoCodigo)) {
+  const portPuraDigitavel = estado.produto === "siape" && deps.digitaPortPura === true && Boolean(dig?.port);
+  if (estado.alternativa && ((!dig?.refin && !portPuraDigitavel) || !dig?.bancoCodigo)) {
     const motivo = !dig?.refin
       ? "port pura aceita, a API da Facta não digita port sem refin: cadastrar no portal Agente Facta"
       : "banco de origem sem código conhecido: cadastrar no portal Agente Facta";
@@ -1609,7 +1612,7 @@ async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promi
   if (deps.mensagemDepoisDoSim && (await deps.mensagemDepoisDoSim(p.mensagemId, p.recebidoEm))) {
     return parado("digitacao_cancelada_mensagem_nova", limpo);
   }
-  const trava = motivoTravaDigitacao(estado, { liberada: deps.digitacaoLiberada === true, clt: deps.digitaClt === true });
+  const trava = motivoTravaDigitacao(estado, { liberada: deps.digitacaoLiberada === true, clt: deps.digitaClt === true, portPura: deps.digitaPortPura === true });
   if (trava) {
     return transferir(limpo, `digitação automática não executada (${trava}): a equipe digita no portal com os dados da nota`, TEXTOS.digitacaoComEquipe, "digitacao_bloqueada", [], "dados_contrato");
   }
