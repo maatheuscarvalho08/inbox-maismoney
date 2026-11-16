@@ -91,6 +91,7 @@ interface Saida {
 export const SAIDAS_MAISA: Record<string, Saida> = {
   aceitou: { titulo: "Aceitou a oferta", proximoPasso: "Finalizar a proposta com o cliente.", quente: true },
   recusou: { titulo: "Recusou a oferta", proximoPasso: "Perguntar o motivo e ver outra condição." },
+  sem_saldo_outros_bancos: { titulo: "CLT sem saldo na Facta", proximoPasso: "Simular o CLT em outros bancos.", quente: true },
   sem_saldo: { titulo: "Sem margem, encerrada", proximoPasso: "Nada a fazer: sem margem e sem port ou refin. A Maisa encerrou sem passar para a equipe." },
   objecao: { titulo: "Objeção na oferta", proximoPasso: "Tirar as dúvidas do cliente e tentar fechar: a oferta já foi aprovada.", quente: true },
   alternativa: { titulo: "Port ou refin possível", proximoPasso: "Conferir o saldo na CIP e digitar a portabilidade ou o refin.", quente: true },

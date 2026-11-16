@@ -126,6 +126,9 @@ export interface EstadoMaisa {
   contratoSalvo?: ContratoSalvo;
   // Memória conversacional (fase 7): perguntas já feitas, orientações dadas, sinais do cliente.
   memoria?: MemoriaConversa;
+  // A conversa nasceu de um disparo de um produto (ex.: template CLT). A resposta do lead
+  // segue direto para esse produto, sem perguntar o vínculo de novo.
+  disparo?: { produto: Produto; em: string };
   // "sim" da confirmação esperando a janela. Mensagem relevante do cliente cancela;
   // a digitação só acontece no evento "executar_digitacao", depois da revalidação.
   confirmacaoPendente?: { recebidoEm: string; executarEm: string; mensagemId?: string; consentimento: string };
@@ -518,6 +521,10 @@ function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora:
     if (resultado.revisar) {
       return transferir(estado, `sem margem, leitura com dúvida: ${resultado.motivo}`, TEXTOS.semMargemExtrato, "sem_saldo", [efeito], "revisar_extrato");
     }
+    // CLT sem saldo na Facta: um atendente procura outras opções de bancos.
+    if (estado.produto === "clt") {
+      return transferir(estado, `CLT sem saldo na Facta (${resultado.motivo}): ver outras opções de bancos`, TEXTOS.semSaldoCltEquipe, "sem_saldo", [efeito], "sem_saldo_outros_bancos");
+    }
     // Sem margem e sem port ou refin: não há o que fazer. Encerra sem atendente.
     return encerrar(estado, `sem saldo: ${resultado.motivo}`, doExtrato ? TEXTOS.semMargemFim : TEXTOS.semSaldoFim, "sem_saldo", [efeito]);
   }
@@ -537,6 +544,14 @@ function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora:
 }
 
 async function etapaInicio(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  // Resposta a um disparo de produto: "não" encerra com educação, o resto segue para o produto.
+  if (estado.disparo && !estado.produto) {
+    const t = normalizar(texto);
+    if (NAO_QUERO.test(t) || /^(nao|n|pare|parar|sair|stop|remover|descadastrar)\b/.test(t)) {
+      return encerrar(estado, "não quis seguir depois do disparo", TEXTOS.disparoSemInteresse, "disparo_sem_interesse");
+    }
+    return decidirEContinuar(estado, estado.disparo.produto, texto, deps, [TEXTOS.disparoContinua[estado.disparo.produto]]);
+  }
   const intencao = await deps.classificador.intencao(texto);
 
   if (intencao === "acompanhar_proposta") {

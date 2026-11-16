@@ -122,6 +122,14 @@ export const TEXTOS = {
   servidorNaoFederal:
     "Pelo seu documento, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",
+  semSaldoCltEquipe:
+    "Consultei aqui e, pela Facta, o banco não liberou valor para o seu CPF agora. Vou te passar para um especialista da nossa equipe, que vai olhar outras opções de bancos para você. Já já alguém continua aqui.",
+  disparoContinua: {
+    clt: "Que bom! Eu sou a Maisa, assistente da Mais Money. Vou consultar o crédito para quem trabalha de carteira assinada.",
+    inss: "Que bom! Eu sou a Maisa, assistente da Mais Money. Vou consultar o crédito do seu benefício do INSS.",
+    siape: "Que bom! Eu sou a Maisa, assistente da Mais Money. Vou consultar o crédito para servidor federal.",
+  } as Record<"clt" | "inss" | "siape", string>,
+  disparoSemInteresse: "Tudo bem, obrigada pela resposta! Se mudar de ideia, é só me chamar por aqui.",
   semSaldoFim:
     "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
   semMargemFim:

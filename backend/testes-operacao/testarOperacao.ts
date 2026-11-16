@@ -967,6 +967,78 @@ async function main() {
     });
   });
 
+  // ---------- Disparo CLT ----------
+  const conversasSvc = await import("../src/modules/conversas/conversas.service.js");
+  async function contatoNovo() {
+    seq++;
+    return prisma.contato.create({ data: { nome: `Lead ${seq}`, cpf: CPFS[seq], numeroWhatsapp: `55219${String(seq).padStart(8, "0")}` } });
+  }
+  // O que o webhook faz quando o lead responde: marca respondida e manda processar.
+  async function leadResponde(conversaId: string, texto: string) {
+    await conversasSvc.marcarConversaRespondida(conversaId);
+    return cliente(conversaId, texto);
+  }
+
+  caso("Disparo CLT", "Lead responde SIM ao disparo CLT: a Maisa segue direto pedindo o CPF", async () => {
+    const contato = await contatoNovo();
+    const c = await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, "clt");
+    assert.equal((await estadoDe(c.id)).disparo?.produto, "clt");
+    await leadResponde(c.id, "SIM");
+    const e = await estadoDe(c.id);
+    assert.equal(e.etapa, "cpf");
+    assert.equal(e.produto, "clt");
+    const r = (await respostasMaisa(c.id)).map((m) => m.conteudoTexto);
+    assert.deepEqual(r, [TEXTOS.disparoContinua.clt, TEXTOS.pedeCpf]);
+    assert.equal((await conversaDe(c.id)).comMaisa, true);
+  });
+
+  caso("Disparo CLT", "Conversa antiga já finalizada: o novo disparo CLT vale na resposta", async () => {
+    const contato = await contatoNovo();
+    const antiga = await prisma.conversa.create({ data: { instanciaId: instancia.id, contatoId: contato.id, status: "aberta", comMaisa: false, respondida: true, maisaEstado: { etapa: "finalizada", tentativas: 0, saida: "recusou" } as any } });
+    const c = await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, "clt");
+    assert.equal(c.id, antiga.id);
+    // Respondida antes: marcarConversaRespondida não devolve à Maisa sozinha (regra de antes).
+    await prisma.conversa.update({ where: { id: c.id }, data: { respondida: false } });
+    await leadResponde(c.id, "sim");
+    const e = await estadoDe(c.id);
+    assert.equal(e.etapa, "cpf");
+    assert.equal(e.produto, "clt");
+  });
+
+  caso("Disparo CLT", "Conversa com atendente não é tocada pelo disparo", async () => {
+    const contato = await contatoNovo();
+    const op = await prisma.usuario.findFirst();
+    const atual = await prisma.conversa.create({ data: { instanciaId: instancia.id, contatoId: contato.id, status: "aberta", comMaisa: false, operadorId: op?.id ?? null, maisaEstado: { etapa: "finalizada", tentativas: 0 } as any } });
+    await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, "clt");
+    const e = (await conversaDe(atual.id)).maisaEstado as any;
+    if (op) assert.equal(e.disparo, undefined);
+  });
+
+  caso("Disparo CLT", "Conversa em andamento com a Maisa não é tocada pelo disparo", async () => {
+    const c = await novaConversa({ etapa: "nascimento", tentativas: 0, produto: "inss" } as EstadoMaisa);
+    await conversasSvc.findOrCreateConversaDisparo(instancia.id, c.contatoId, "clt");
+    const e = await estadoDe(c.id);
+    assert.equal(e.etapa, "nascimento");
+    assert.equal(e.disparo, undefined);
+  });
+
+  caso("Disparo CLT", "Lead responde 'não tenho interesse': encerra com educação, sem consulta", async () => {
+    const contato = await contatoNovo();
+    const c = await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, "clt");
+    const antes = facta.chamadas.length;
+    await leadResponde(c.id, "não tenho interesse");
+    const conv = await conversaDe(c.id);
+    assert.equal(conv.status, "encerrada");
+    assert.equal(facta.chamadas.length - antes, 0);
+    assert.deepEqual((await respostasMaisa(c.id)).map((m) => m.conteudoTexto), [TEXTOS.disparoSemInteresse]);
+  });
+
+  caso("Disparo CLT", "Disparo sem produto (template de outro convênio) não marca nada", async () => {
+    const contato = await contatoNovo();
+    const c = await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, null);
+    assert.equal((await conversaDe(c.id)).maisaEstado, null);
+  });
+
   // ---------- execução ----------
   const lista = filtro ? casos.filter((c) => `${c.grupo} ${c.nome}`.toLowerCase().includes(filtro)) : casos;
   let ok = 0;

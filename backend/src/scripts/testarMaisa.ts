@@ -175,12 +175,12 @@ const CASOS: Caso[] = [
     saida: "telefone_outro_cpf",
   },
   {
-    nome: "Sem saldo no banco encerra sem passar para a equipe",
+    nome: "CLT sem saldo na Facta vai para a equipe ver outros bancos",
     acoes: [...ATE_AUTORIZAR(CPF_SEM_SALDO), { autoriza: true }],
     etapaFinal: "finalizada",
-    saida: "sem_saldo",
-    encerra: true,
-    respostaContem: "Obrigada pelo contato",
+    saida: "sem_saldo_outros_bancos",
+    respostaContem: "outras opções de bancos",
+    notaContem: "ver outras opções de bancos",
   },
   {
     nome: "Erro no banco",

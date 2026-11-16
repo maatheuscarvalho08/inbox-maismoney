@@ -585,6 +585,48 @@ await caso("Redator: texto que fala do funcionamento interno é trocado pelo de 
   }
 });
 
+// ---------- Disparo CLT ----------
+const inicioDisparo = (): EstadoMaisa => ({ etapa: "inicio", tentativas: 0, disparo: { produto: "clt", em: AGORA.toISOString() } });
+const fluxoPuro = () => ({ ...depsBase(roteiro([])), conversa: undefined });
+
+await caso("Disparo CLT: 'SIM' segue direto para o CPF do CLT", async () => {
+  for (const t of ["SIM", "sim", "Sim, quero", "tenho interesse", "quanto eu consigo?", "👍"]) {
+    const p = await diga(inicioDisparo(), t, fluxoPuro());
+    assert.equal(p.estado.etapa, "cpf", t);
+    assert.equal(p.estado.produto, "clt", t);
+    assert.ok(p.respostas.includes(TEXTOS.disparoContinua.clt), t);
+    assert.ok(p.respostas.includes(TEXTOS.pedeCpf), t);
+  }
+});
+
+await caso("Disparo CLT: 'sim' com o CPF junto já segue para o nome", async () => {
+  const p = await diga(inicioDisparo(), `sim, meu cpf é ${CPF_FORMATADO}`, fluxoPuro());
+  assert.equal(p.estado.etapa, "nome");
+});
+
+await caso("Disparo CLT: 'não' e pedido de parar encerram sem atendente e sem consulta", async () => {
+  for (const t of ["não", "Não tenho interesse", "pare", "não quero"]) {
+    const p = await diga(inicioDisparo(), t, fluxoPuro());
+    assert.equal(p.estado.etapa, "finalizada", t);
+    assert.equal(p.rotulo, "disparo_sem_interesse", t);
+    assert.ok(p.efeitos.some((e) => e.tipo === "encerrar"), t);
+  }
+  assert.equal(chamadas.autorizacao + chamadas.consulta, 0);
+});
+
+await caso("Sem disparo: 'SIM' na primeira mensagem continua pedindo o vínculo (como antes)", async () => {
+  const p = await diga({ etapa: "inicio", tentativas: 0 }, "SIM", fluxoPuro());
+  assert.equal(p.estado.etapa, "convenio");
+});
+
+await caso("Template: CLT reconhecido pelo nome ou texto, outros não", async () => {
+  const { produtoDoTemplate } = await import("../modules/conversas/conversas.service.js");
+  assert.equal(produtoDoTemplate({ nome: "modelo_para_clt", corpo: null }), "clt");
+  assert.equal(produtoDoTemplate({ nome: "oferta", corpo: "Você sabia que por ser CLT, você tem acesso a crédito" }), "clt");
+  assert.equal(produtoDoTemplate({ nome: "prefeitura_sg", corpo: "Como servidor da Prefeitura de São Gonçalo" }), null);
+  assert.equal(produtoDoTemplate({ nome: "cltx_teste", corpo: null }), null);
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

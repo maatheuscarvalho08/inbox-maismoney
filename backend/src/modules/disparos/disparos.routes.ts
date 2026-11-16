@@ -4,7 +4,7 @@ import { prisma } from "../../db/prisma.js";
 import { authenticate } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { findOrCreateContato } from "../contatos/contatos.service.js";
-import { findOrCreateConversaDisparo } from "../conversas/conversas.service.js";
+import { findOrCreateConversaDisparo, produtoDoTemplate } from "../conversas/conversas.service.js";
 import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { enviarTemplateMeta, mensagemErroMeta } from "../../integrations/metaCloudApi.js";
 import { emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
@@ -109,7 +109,7 @@ router.post(
     }
 
     const contato = await findOrCreateContato(numeroDestino);
-    const conversa = await findOrCreateConversaDisparo(instanciaId, contato.id);
+    const conversa = await findOrCreateConversaDisparo(instanciaId, contato.id, produtoDoTemplate(template));
 
     let entregue = false;
     let erroEntrega: string | undefined;
