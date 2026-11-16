@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { ArrowLeft, Plus, Send, Upload, X } from "./icones";
 import { api, ApiError } from "../lib/api";
 import { Select } from "./Select";
+import { OPCOES_CONVENIO } from "../lib/funil";
 import type { Instancia, Template } from "../types/api";
 
 type ModoDestinatario = "unico" | "csv";
@@ -28,6 +29,10 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
 
   const [instanciaId, setInstanciaId] = useState("");
   const [templateId, setTemplateId] = useState("");
+  // Convênio do disparo: vira a etiqueta da conversa e a Maisa segue direto para ele.
+  // "nenhum" não marca. Template com "CLT" no nome já sugere CLT.
+  const [convenio, setConvenio] = useState<string>("nenhum");
+  const [convenioEscolhido, setConvenioEscolhido] = useState(false);
   const [variaveis, setVariaveis] = useState<string[]>([]);
 
   const [modo, setModo] = useState<ModoDestinatario>("unico");
@@ -129,6 +134,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
           templateId,
           numeroDestino: normalizarNumero(numeroDestino),
           variaveis: variaveisLimpo,
+          convenio: convenio === "nenhum" ? null : convenio,
         });
         setResultado(
           res.entregue
@@ -151,6 +157,7 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
           destinatarios,
           variaveis: variaveisLimpo,
           intervaloMs,
+          convenio: convenio === "nenhum" ? null : convenio,
         });
         setResultado({
           ok: true,
@@ -204,10 +211,29 @@ export function NovoDisparoForm({ onFechar, onEnviado }: { onFechar: () => void;
           <Select
             disabled={!instanciaId}
             value={templateId}
-            onChange={setTemplateId}
+            onChange={(id) => {
+              setTemplateId(id);
+              const t = templates.find((x) => x.id === id);
+              if (!convenioEscolhido) setConvenio(t && /(^|[^a-z])clt([^a-z]|$)/i.test(`${t.nome} ${t.corpo ?? ""}`) ? "clt" : "nenhum");
+            }}
             placeholder="Selecione..."
             options={templates.map((t) => ({ value: t.id, label: t.nome }))}
           />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-muted">Convênio</label>
+          <Select
+            value={convenio}
+            onChange={(v) => {
+              setConvenio(v);
+              setConvenioEscolhido(true);
+            }}
+            options={[{ value: "nenhum", label: "Não marcar" }, ...OPCOES_CONVENIO]}
+          />
+          <p className="mt-1 text-xs text-muted">
+            Vira a etiqueta da conversa. Em CLT, INSS e SIAPE, a Maisa segue direto para o produto quando o lead responder.
+          </p>
         </div>
 
         <div>

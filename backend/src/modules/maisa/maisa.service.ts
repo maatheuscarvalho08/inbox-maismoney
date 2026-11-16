@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import type { Prisma, StatusProposta } from "@prisma/client";
+import type { Convenio, Prisma, StatusProposta } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 import { env } from "../../config/env.js";
 import { emitAvisoMaisa, emitCarrinhoNovo, emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
@@ -253,6 +253,14 @@ async function processar(conversaId: string, gatilho: Gatilho) {
   }
 }
 
+// Conversa no começo, sem produto, com convênio marcado por uma pessoa (no disparo ou na
+// etiqueta): a Maisa segue direto para ele. Convênio que ela mesma marcou não conta.
+function comConvenioMarcado(estado: EstadoMaisa | null, conversa: { convenio: Convenio | null; convenioOrigem: string | null }): EstadoMaisa | null {
+  if (!conversa.convenio || conversa.convenioOrigem !== "operador") return estado;
+  if (estado && (estado.etapa !== "inicio" || estado.produto || estado.convenioMarcado)) return estado;
+  return { ...(estado ?? { etapa: "inicio", tentativas: 0 }), convenioMarcado: { convenio: conversa.convenio, em: portasMaisa.agora().toISOString() } };
+}
+
 async function processarComLease(conversaId: string, gatilho: Gatilho) {
   const conversa = await prisma.conversa.findUnique({
     where: { id: conversaId },
@@ -265,7 +273,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     return;
   }
   const versaoLida = conversa.maisaVersao;
-  const estadoAntes = (conversa.maisaEstado as EstadoMaisa | null) ?? null;
+  const estadoAntes = comConvenioMarcado((conversa.maisaEstado as EstadoMaisa | null) ?? null, conversa);
 
   let entrada: Entrada;
   let arquivo: { midiaPath: string; tipo: string } | null = null;

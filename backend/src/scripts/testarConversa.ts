@@ -586,7 +586,7 @@ await caso("Redator: texto que fala do funcionamento interno é trocado pelo de 
 });
 
 // ---------- Disparo CLT ----------
-const inicioDisparo = (): EstadoMaisa => ({ etapa: "inicio", tentativas: 0, disparo: { produto: "clt", em: AGORA.toISOString() } });
+const inicioDisparo = (): EstadoMaisa => ({ etapa: "inicio", tentativas: 0, convenioMarcado: { convenio: "clt", em: AGORA.toISOString() } });
 const fluxoPuro = () => ({ ...depsBase(roteiro([])), conversa: undefined });
 
 await caso("Disparo CLT: 'SIM' segue direto para o CPF do CLT", async () => {
@@ -612,6 +612,15 @@ await caso("Disparo CLT: 'não' e pedido de parar encerram sem atendente e sem c
     assert.ok(p.efeitos.some((e) => e.tipo === "encerrar"), t);
   }
   assert.equal(chamadas.autorizacao + chamadas.consulta, 0);
+});
+
+await caso("Etiqueta INSS e convênio da equipe: INSS segue para o CPF, Marinha vai para a equipe", async () => {
+  let p = await diga({ etapa: "inicio", tentativas: 0, convenioMarcado: { convenio: "inss", em: AGORA.toISOString() } }, "sim", fluxoPuro());
+  assert.equal(p.estado.etapa, "cpf");
+  assert.equal(p.estado.produto, "inss");
+  p = await diga({ etapa: "inicio", tentativas: 0, convenioMarcado: { convenio: "marinha", em: AGORA.toISOString() } }, "sim", fluxoPuro());
+  assert.equal(p.estado.etapa, "finalizada");
+  assert.ok(p.efeitos.some((e) => e.tipo === "transferir"));
 });
 
 await caso("Sem disparo: 'SIM' na primeira mensagem continua pedindo o vínculo (como antes)", async () => {

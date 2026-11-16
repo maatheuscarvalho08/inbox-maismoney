@@ -126,9 +126,9 @@ export interface EstadoMaisa {
   contratoSalvo?: ContratoSalvo;
   // Memória conversacional (fase 7): perguntas já feitas, orientações dadas, sinais do cliente.
   memoria?: MemoriaConversa;
-  // A conversa nasceu de um disparo de um produto (ex.: template CLT). A resposta do lead
-  // segue direto para esse produto, sem perguntar o vínculo de novo.
-  disparo?: { produto: Produto; em: string };
+  // Convênio marcado na conversa por uma pessoa (no disparo ou na etiqueta). A primeira
+  // resposta do cliente segue direto para ele, sem perguntar o vínculo de novo.
+  convenioMarcado?: { convenio: Convenio; em: string };
   // "sim" da confirmação esperando a janela. Mensagem relevante do cliente cancela;
   // a digitação só acontece no evento "executar_digitacao", depois da revalidação.
   confirmacaoPendente?: { recebidoEm: string; executarEm: string; mensagemId?: string; consentimento: string };
@@ -544,13 +544,16 @@ function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora:
 }
 
 async function etapaInicio(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
-  // Resposta a um disparo de produto: "não" encerra com educação, o resto segue para o produto.
-  if (estado.disparo && !estado.produto) {
+  // Convênio já marcado na conversa: "não" encerra com educação, o resto segue para ele.
+  // CLT, INSS e SIAPE ela atende. Os outros convênios vão para a equipe, como sempre.
+  if (estado.convenioMarcado && !estado.produto) {
     const t = normalizar(texto);
     if (NAO_QUERO.test(t) || /^(nao|n|pare|parar|sair|stop|remover|descadastrar)\b/.test(t)) {
-      return encerrar(estado, "não quis seguir depois do disparo", TEXTOS.disparoSemInteresse, "disparo_sem_interesse");
+      return encerrar(estado, "não quis seguir depois do contato", TEXTOS.disparoSemInteresse, "disparo_sem_interesse");
     }
-    return decidirEContinuar(estado, estado.disparo.produto, texto, deps, [TEXTOS.disparoContinua[estado.disparo.produto]]);
+    const c = estado.convenioMarcado.convenio;
+    const intro = c === "clt" || c === "inss" || c === "siape" ? [TEXTOS.disparoContinua[c]] : [];
+    return decidirEContinuar(estado, c, texto, deps, intro);
   }
   const intencao = await deps.classificador.intencao(texto);
 

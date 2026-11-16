@@ -6,10 +6,8 @@ import { env } from "../../config/env.js";
 
 export function estadoLimpoPreservandoCadastro(estadoAtual: unknown): Prisma.InputJsonValue | typeof Prisma.DbNull {
   // Reaproveitar cadastro é da fase 7: com a camada desligada, o estado volta limpo como antes.
-  const atual = estadoAtual as { contratoSalvo?: unknown; disparo?: unknown } | null;
-  // Disparo de produto pendente: a próxima resposta do lead segue direto para o produto.
-  const disparo = atual?.disparo;
-  const salvo = env.MAISA_CONVERSA_MODO === "ativo" ? atual?.contratoSalvo : undefined;
-  if (!salvo && !disparo) return Prisma.DbNull;
-  return { etapa: "inicio", tentativas: 0, ...(salvo ? { contratoSalvo: salvo } : {}), ...(disparo ? { disparo } : {}) } as unknown as Prisma.InputJsonValue;
+  if (env.MAISA_CONVERSA_MODO !== "ativo") return Prisma.DbNull;
+  const salvo = (estadoAtual as { contratoSalvo?: unknown } | null)?.contratoSalvo;
+  if (!salvo) return Prisma.DbNull;
+  return { etapa: "inicio", tentativas: 0, contratoSalvo: salvo } as unknown as Prisma.InputJsonValue;
 }

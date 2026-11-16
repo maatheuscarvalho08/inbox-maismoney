@@ -1,6 +1,7 @@
 import { Queue, Worker, type Job } from "bullmq";
 import { env } from "../config/env.js";
 import { prisma } from "../db/prisma.js";
+import type { Convenio } from "@prisma/client";
 import { findOrCreateContato } from "../modules/contatos/contatos.service.js";
 import { findOrCreateConversaDisparo, produtoDoTemplate } from "../modules/conversas/conversas.service.js";
 import { criarMensagem } from "../modules/mensagens/mensagens.service.js";
@@ -18,6 +19,8 @@ interface LoteDisparoJob {
   destinatarios: { numeroWhatsapp: string; numeroWhatsappAlternativo?: string; nomeContato?: string }[];
   variaveis: string[];
   intervaloMs: number;
+  // Convênio escolhido no disparo (etiqueta da conversa). Ausente em lotes antigos da fila.
+  convenio?: Convenio | null;
   operadorId: string;
 }
 
@@ -110,7 +113,7 @@ export function startDisparoLoteWorker() {
         }
 
         const contato = await findOrCreateContato(numeroDestino, nomeContato);
-        const conversa = await findOrCreateConversaDisparo(instanciaId, contato.id, produtoDoTemplate(template));
+        const conversa = await findOrCreateConversaDisparo(instanciaId, contato.id, job.data.convenio === undefined ? produtoDoTemplate(template) : job.data.convenio);
 
         const mensagem = await criarMensagem({
           conversaId: conversa.id,

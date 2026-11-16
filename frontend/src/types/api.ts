@@ -38,6 +38,7 @@ export interface Template {
   nome: string;
   metaTemplateId: string;
   idioma: string;
+  corpo?: string | null;
   createdAt: string;
 }
 

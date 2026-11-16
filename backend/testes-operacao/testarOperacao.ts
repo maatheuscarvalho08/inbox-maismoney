@@ -979,47 +979,56 @@ async function main() {
     return cliente(conversaId, texto);
   }
 
-  caso("Disparo CLT", "Lead responde SIM ao disparo CLT: a Maisa segue direto pedindo o CPF", async () => {
+  caso("Disparo CLT", "Convênio escolhido no disparo vira a etiqueta da conversa (marcada por pessoa)", async () => {
     const contato = await contatoNovo();
     const c = await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, "clt");
-    assert.equal((await estadoDe(c.id)).disparo?.produto, "clt");
+    const conv = await conversaDe(c.id);
+    assert.equal(conv.convenio, "clt");
+    assert.equal(conv.convenioOrigem, "operador");
+  });
+
+  caso("Disparo CLT", "Lead responde SIM: a Maisa lê a etiqueta CLT e pede o CPF direto", async () => {
+    const contato = await contatoNovo();
+    const c = await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, "clt");
     await leadResponde(c.id, "SIM");
     const e = await estadoDe(c.id);
     assert.equal(e.etapa, "cpf");
     assert.equal(e.produto, "clt");
-    const r = (await respostasMaisa(c.id)).map((m) => m.conteudoTexto);
-    assert.deepEqual(r, [TEXTOS.disparoContinua.clt, TEXTOS.pedeCpf]);
+    assert.deepEqual((await respostasMaisa(c.id)).map((m) => m.conteudoTexto), [TEXTOS.disparoContinua.clt, TEXTOS.pedeCpf]);
     assert.equal((await conversaDe(c.id)).comMaisa, true);
   });
 
   caso("Disparo CLT", "Conversa antiga já finalizada: o novo disparo CLT vale na resposta", async () => {
     const contato = await contatoNovo();
-    const antiga = await prisma.conversa.create({ data: { instanciaId: instancia.id, contatoId: contato.id, status: "aberta", comMaisa: false, respondida: true, maisaEstado: { etapa: "finalizada", tentativas: 0, saida: "recusou" } as any } });
+    const antiga = await prisma.conversa.create({ data: { instanciaId: instancia.id, contatoId: contato.id, status: "aberta", comMaisa: false, respondida: false, maisaEstado: { etapa: "finalizada", tentativas: 0, saida: "recusou" } as any } });
     const c = await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, "clt");
     assert.equal(c.id, antiga.id);
-    // Respondida antes: marcarConversaRespondida não devolve à Maisa sozinha (regra de antes).
-    await prisma.conversa.update({ where: { id: c.id }, data: { respondida: false } });
     await leadResponde(c.id, "sim");
     const e = await estadoDe(c.id);
     assert.equal(e.etapa, "cpf");
     assert.equal(e.produto, "clt");
   });
 
-  caso("Disparo CLT", "Conversa com atendente não é tocada pelo disparo", async () => {
-    const contato = await contatoNovo();
-    const op = await prisma.usuario.findFirst();
-    const atual = await prisma.conversa.create({ data: { instanciaId: instancia.id, contatoId: contato.id, status: "aberta", comMaisa: false, operadorId: op?.id ?? null, maisaEstado: { etapa: "finalizada", tentativas: 0 } as any } });
-    await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, "clt");
-    const e = (await conversaDe(atual.id)).maisaEstado as any;
-    if (op) assert.equal(e.disparo, undefined);
+  caso("Disparo CLT", "Etiqueta CLT posta à mão e conversa devolvida à Maisa: segue direto para o CLT", async () => {
+    const c = await novaConversa(null, { convenio: "clt", convenioOrigem: "operador" });
+    await cliente(c.id, "oi, tudo bem?");
+    const e = await estadoDe(c.id);
+    assert.equal(e.produto, "clt");
+    assert.equal(e.etapa, "cpf");
   });
 
-  caso("Disparo CLT", "Conversa em andamento com a Maisa não é tocada pelo disparo", async () => {
+  caso("Disparo CLT", "Convênio que a própria Maisa marcou antes não é tratado como etiqueta", async () => {
+    const c = await novaConversa(null, { convenio: "clt", convenioOrigem: "maisa" });
+    await cliente(c.id, "oi");
+    const e = await estadoDe(c.id);
+    assert.equal(e.etapa, "convenio");
+  });
+
+  caso("Disparo CLT", "Conversa em andamento com a Maisa não muda com o disparo", async () => {
     const c = await novaConversa({ etapa: "nascimento", tentativas: 0, produto: "inss" } as EstadoMaisa);
     await conversasSvc.findOrCreateConversaDisparo(instancia.id, c.contatoId, "clt");
-    const e = await estadoDe(c.id);
-    assert.equal(e.etapa, "nascimento");
-    assert.equal(e.disparo, undefined);
+    assert.equal((await conversaDe(c.id)).convenio, null);
+    assert.equal((await estadoDe(c.id)).etapa, "nascimento");
   });
 
   caso("Disparo CLT", "Lead responde 'não tenho interesse': encerra com educação, sem consulta", async () => {
@@ -1027,16 +1036,17 @@ async function main() {
     const c = await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, "clt");
     const antes = facta.chamadas.length;
     await leadResponde(c.id, "não tenho interesse");
-    const conv = await conversaDe(c.id);
-    assert.equal(conv.status, "encerrada");
+    assert.equal((await conversaDe(c.id)).status, "encerrada");
     assert.equal(facta.chamadas.length - antes, 0);
     assert.deepEqual((await respostasMaisa(c.id)).map((m) => m.conteudoTexto), [TEXTOS.disparoSemInteresse]);
   });
 
-  caso("Disparo CLT", "Disparo sem produto (template de outro convênio) não marca nada", async () => {
+  caso("Disparo CLT", "Disparo sem convênio não marca nada (fluxo de antes)", async () => {
     const contato = await contatoNovo();
     const c = await conversasSvc.findOrCreateConversaDisparo(instancia.id, contato.id, null);
-    assert.equal((await conversaDe(c.id)).maisaEstado, null);
+    assert.equal((await conversaDe(c.id)).convenio, null);
+    await leadResponde(c.id, "SIM");
+    assert.equal((await estadoDe(c.id)).etapa, "convenio");
   });
 
   // ---------- execução ----------

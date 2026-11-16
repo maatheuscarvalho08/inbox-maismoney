@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma.js";
+import { Convenio } from "@prisma/client";
 import { authenticate } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { findOrCreateContato } from "../contatos/contatos.service.js";
@@ -84,6 +85,8 @@ const disparoSchema = z.object({
   numeroDestino: z.string().min(8),
   variaveis: z.array(z.string()).default([]),
   loteId: z.string().uuid().optional(),
+  // Convênio escolhido no disparo: vira a etiqueta da conversa. null: não marcar.
+  convenio: z.nativeEnum(Convenio).nullable().optional(),
 });
 
 router.post(
@@ -94,7 +97,7 @@ router.post(
       return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
     }
 
-    const { instanciaId, templateId, numeroDestino, variaveis, loteId } = parsed.data;
+    const { instanciaId, templateId, numeroDestino, variaveis, loteId, convenio } = parsed.data;
 
     const [instancia, template] = await Promise.all([
       prisma.instancia.findUnique({ where: { id: instanciaId } }),
@@ -109,7 +112,7 @@ router.post(
     }
 
     const contato = await findOrCreateContato(numeroDestino);
-    const conversa = await findOrCreateConversaDisparo(instanciaId, contato.id, produtoDoTemplate(template));
+    const conversa = await findOrCreateConversaDisparo(instanciaId, contato.id, convenio === undefined ? produtoDoTemplate(template) : convenio);
 
     let entregue = false;
     let erroEntrega: string | undefined;
@@ -166,6 +169,7 @@ const loteSchema = z.object({
     .min(1),
   variaveis: z.array(z.string()).default([]),
   intervaloMs: z.coerce.number().min(0).default(0),
+  convenio: z.nativeEnum(Convenio).nullable().optional(),
 });
 
 // Envio em massa roda no backend (fila), não no navegador — sobrevive a fechar a
@@ -178,7 +182,7 @@ router.post(
       return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
     }
 
-    const { instanciaId, templateId, destinatarios, variaveis, intervaloMs } = parsed.data;
+    const { instanciaId, templateId, destinatarios, variaveis, intervaloMs, convenio } = parsed.data;
 
     const [instancia, template] = await Promise.all([
       prisma.instancia.findUnique({ where: { id: instanciaId } }),
@@ -199,6 +203,7 @@ router.post(
       destinatarios,
       variaveis,
       intervaloMs,
+      convenio: convenio === undefined ? produtoDoTemplate(template) : convenio,
       operadorId: req.user!.id,
     });
 

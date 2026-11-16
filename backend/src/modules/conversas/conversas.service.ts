@@ -126,7 +126,7 @@ export async function findOrCreateConversaAberta(instanciaId: string, contatoId:
 
 // Usado só pelo módulo de disparos — se a conversa já existe (já é atendimento em
 // andamento, por exemplo), não mexe em origemDisparo/respondida, só reaproveita.
-export async function findOrCreateConversaDisparo(instanciaId: string, contatoId: string, produto?: "clt" | "inss" | "siape" | null) {
+export async function findOrCreateConversaDisparo(instanciaId: string, contatoId: string, convenio?: Convenio | null) {
   const existente = await prisma.conversa.findFirst({
     where: { instanciaId, contatoId, status: { not: "encerrada" } },
     orderBy: { createdAt: "desc" },
@@ -136,23 +136,15 @@ export async function findOrCreateConversaDisparo(instanciaId: string, contatoId
     (await prisma.conversa.create({
       data: { instanciaId, contatoId, status: "aberta", origemDisparo: true, respondida: false },
     }));
-  if (produto) await marcarProdutoDoDisparo(conversa, produto);
+  // O convênio escolhido no disparo vira a etiqueta da conversa, marcada por pessoa: a Maisa
+  // usa e a IA não sobrescreve. Conversa em andamento (com a Maisa ou com atendente) não muda.
+  if (convenio && !conversa.comMaisa && !conversa.operadorId) {
+    return prisma.conversa.update({ where: { id: conversa.id }, data: { convenio, convenioOrigem: "operador" } });
+  }
   return conversa;
 }
 
-// Marca na conversa o produto do disparo, para a Maisa seguir direto quando o lead responder.
-// Só em conversa parada: sem estado, no início ou finalizada, fora da Maisa e sem atendente.
-// Conversa em andamento (com a Maisa ou com alguém da equipe) não é tocada.
-async function marcarProdutoDoDisparo(conversa: { id: string; comMaisa: boolean; operadorId: string | null; maisaEstado: unknown }, produto: "clt" | "inss" | "siape") {
-  if (conversa.comMaisa || conversa.operadorId) return;
-  const estado = conversa.maisaEstado as { etapa?: string } | null;
-  if (estado && estado.etapa !== "inicio" && estado.etapa !== "finalizada") return;
-  const disparo = { produto, em: new Date().toISOString() };
-  const novo = estado ? { ...estado, disparo } : { etapa: "inicio", tentativas: 0, disparo };
-  await prisma.conversa.update({ where: { id: conversa.id }, data: { maisaEstado: novo as Prisma.InputJsonValue, maisaVersao: { increment: 1 } } });
-}
-
-// Produto que um template de disparo oferece. Só CLT por enquanto: nome ou texto do template.
+// Convênio sugerido pelo template, quando o disparo não diz qual (cliente antigo da API).
 export function produtoDoTemplate(t: { nome: string; corpo: string | null }): "clt" | null {
   return /(^|[^a-z])clt([^a-z]|$)|carteira assinada/i.test(`${t.nome} ${t.corpo ?? ""}`) ? "clt" : null;
 }
