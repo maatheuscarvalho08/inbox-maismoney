@@ -11,7 +11,7 @@ import { cltDigitavel, motivoTravaDigitacao } from "./travaDigitacao.js";
 import type { Pendencia } from "./conversa/contexto.js";
 import type { SaidaMotor } from "./conversa/motor.js";
 import type { MemoriaConversa, RegistroInterpretacao } from "./conversa/tipos.js";
-import type { VinculoClt } from "./bancos.js";
+import type { OpcaoOferta, VinculoClt } from "./bancos.js";
 import { invalidaConfirmacao } from "./ordemMensagens.js";
 import {
   ACEITE_NO_FIM,
@@ -91,6 +91,10 @@ export interface EstadoMaisa {
     contaSalario?: { bancoConta: string; agencia: string; conta: string } | null;
     // CLT: o vínculo da Dataprev simulado (matrícula, nascimento, admissão, CNPJ do empregador).
     clt?: VinculoClt;
+    // Tabelas da Facta mostradas ao cliente. Com mais de uma, ele escolhe pelo número, e a
+    // escolhida vira os campos acima (é a que vai ser digitada).
+    opcoes?: OpcaoOferta[];
+    escolhida?: number;
   };
   // Quantas objeções ela já tentou contornar nesta oferta.
   contornos?: number;
@@ -539,9 +543,13 @@ function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora:
     return transferir(estado, `erro no banco: ${resultado.motivo}`, TEXTOS.erroBanco, "erro_banco", [efeito]);
   }
   const { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula, contaSalario, clt } = resultado;
-  const mensagem = TEXTOS.oferta(formatarReais(valorCentavos), prazoMeses, formatarReais(parcelaCentavos), DESCONTO[estado.produto ?? "clt"]);
+  const opcoes = resultado.opcoes && resultado.opcoes.length > 1 ? resultado.opcoes : undefined;
+  const desconto = DESCONTO[estado.produto ?? "clt"];
+  const mensagem = opcoes
+    ? TEXTOS.ofertaOpcoes(opcoes.map((o) => ({ valor: formatarReais(o.valorCentavos), prazo: o.prazoMeses, parcela: formatarReais(o.parcelaCentavos), taxa: o.taxa })), desconto)
+    : TEXTOS.oferta(formatarReais(valorCentavos), prazoMeses, formatarReais(parcelaCentavos), desconto);
   return ir(estado, "oferta", [mensagem], "com_saldo", [efeito], {
-    oferta: { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula, contaSalario, ...(clt ? { clt } : {}) },
+    oferta: { banco, valorCentavos, parcelaCentavos, prazoMeses, tabela, renda, especie, matricula, contaSalario, ...(clt ? { clt } : {}), ...(opcoes ? { opcoes } : {}) },
     autorizacaoPedidaEm: undefined,
     proximaVerificacao: undefined,
     ofertaEm: agora.toISOString(),
@@ -929,11 +937,25 @@ async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencia
     return { estado: { ...estado, tentativas: n }, respostas, efeitos: [], rotulo };
   };
 
+  // Várias opções da Facta: o número escolhe. "sim" sem número pergunta qual.
+  const opcoes = !port && estado.oferta?.opcoes && estado.oferta.opcoes.length > 1 && !estado.oferta.escolhida ? estado.oferta.opcoes : null;
+  if (opcoes) {
+    const n = escolhaDeOpcao(texto, opcoes.length);
+    if (n) {
+      const o = opcoes[n - 1];
+      const escolhido: EstadoMaisa = {
+        ...estado,
+        oferta: { ...estado.oferta!, valorCentavos: o.valorCentavos, parcelaCentavos: o.parcelaCentavos, prazoMeses: o.prazoMeses, tabela: o.tabela, escolhida: n },
+      };
+      return seguirComAceite(escolhido, deps, texto, [TEXTOS.opcaoEscolhida(n, formatarReais(o.valorCentavos), o.prazoMeses, formatarReais(o.parcelaCentavos))]);
+    }
+  }
+
   if (PEDE_EXPLICACAO.test(t)) return duvida([explicarOferta(estado), pergunta], "explicacao_oferta");
 
   const social = mensagemSocial(texto);
   if (social) {
-    if (pediuConfirmacao && socialPositivo(social, texto)) return seguirComAceite(estado, deps, texto);
+    if (pediuConfirmacao && socialPositivo(social, texto)) return opcoes ? fica([TEXTOS.qualOpcao(opcoes.length)], "qual_opcao") : seguirComAceite(estado, deps, texto);
     if (social === "confuso") return duvida([explicarOferta(estado), pergunta], "explicacao_oferta");
     const antes = RESPOSTA_SOCIAL[social] ? [RESPOSTA_SOCIAL[social]!] : [];
     // "ok", "👍", "valeu": não é sim nem não. Pergunta de novo, e o próximo "sim" ou "ok" vale.
@@ -975,6 +997,7 @@ async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencia
     // Aceite com pergunta ou pedido junto ("sim, quando cai?", "quero, e me manda o contato"):
     // responde e segue.
     const antes = [respostaSobreOferta(estado, t), buscarFaq(texto)].filter((x): x is string => Boolean(x));
+    if (opcoes) return fica([...antes, TEXTOS.qualOpcao(opcoes.length)], "qual_opcao");
     return seguirComAceite(estado, deps, texto, antes);
   }
   if (leitura?.tipo === "pensar") return fica([TEXTOS.semPressa], "pensando");
@@ -1001,6 +1024,17 @@ async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencia
     return transferir(estado, `dúvida sem resposta pronta na oferta: ${texto.slice(0, 120)}`, TEXTOS.duvidaParaEquipe, "objecao", [], "objecao");
   }
   return duvida([TEXTOS.naoSeiSeEntendi], "oferta_nao_entendida");
+}
+
+// "2", "opção 2", "quero a 2", "a segunda": o número da opção escolhida. null: não escolheu.
+const ORDINAIS = ["primeira", "segunda", "terceira", "quarta", "quinta"];
+const VERBO_ESCOLHA = "(?:(?:quero|prefiro|escolho|vou de|fico com|pode ser)\\s+)?";
+export function escolhaDeOpcao(texto: string, total: number): number | null {
+  const t = normalizar(texto).replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  const num = t.match(new RegExp(`^${VERBO_ESCOLHA}(?:(?:a|o)\\s+)?(?:opcao\\s*|numero\\s*)?(\\d)(?:\\s+(?:por favor|pfv|pf))?$`));
+  const ord = ORDINAIS.findIndex((o) => new RegExp(`^${VERBO_ESCOLHA}(?:a\\s+)?${o}(?:\\s+opcao)?$`).test(t));
+  const n = num ? Number(num[1]) : ord >= 0 ? ord + 1 : null;
+  return n && n >= 1 && n <= total ? n : null;
 }
 
 // Data ou CPF na oferta. Igual ao que ela já tem: avisa que está anotado. Diferente: a

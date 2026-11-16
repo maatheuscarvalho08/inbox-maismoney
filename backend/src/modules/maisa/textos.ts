@@ -239,6 +239,13 @@ export const TEXTOS = {
   oferta: (valor: string, prazo: number, parcela: string, desconto = "no seu salário") =>
     `Boa notícia! Você pode receber até ${valor}, em ${prazo} parcelas de ${parcela}, descontadas direto ${desconto}.\n\n` +
     "Esse valor é uma estimativa e ainda passa pela análise do banco. Se fizer sentido para você, é só me responder SIM que eu já começo. Ficou alguma dúvida? Pode me perguntar.",
+  // Várias tabelas da Facta: todas, com os valores como vieram. O cliente escolhe pelo número.
+  ofertaOpcoes: (opcoes: { valor: string; prazo: number; parcela: string; taxa?: number }[], desconto = "no seu salário") =>
+    `Boa notícia! A Facta liberou ${opcoes.length} opções para você, descontadas direto ${desconto}:\n\n` +
+    opcoes.map((o, i) => `${i + 1}. Até ${o.valor}, em ${o.prazo} parcelas de ${o.parcela}${o.taxa ? ` (taxa de ${o.taxa.toLocaleString("pt-BR")}% ao mês)` : ""}`).join("\n") +
+    "\n\nOs valores são estimativas e ainda passam pela análise do banco. Qual opção você prefere? Responda com o número. Ficou alguma dúvida? Pode me perguntar.",
+  qualOpcao: (n: number) => `Qual das ${n} opções você prefere? Responda só com o número dela.`,
+  opcaoEscolhida: (n: number, valor: string, prazo: number, parcela: string) => `Combinado: opção ${n}, até ${valor} em ${prazo} parcelas de ${parcela}.`,
   // Uma vez só, 10 minutos depois da oferta sem resposta.
   followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",
   inicioContrato: "Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta.",

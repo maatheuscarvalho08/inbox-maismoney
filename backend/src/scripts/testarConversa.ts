@@ -777,6 +777,55 @@ await caso("Órgão emissor: o que está na lista da Facta fica como está", asy
   assert.equal(orgaoNaFacta("XYZW", ORGAOS).orgao, null);
 });
 
+// ---------- Várias opções da Facta ----------
+const { escolhaDeOpcao } = await import("../modules/maisa/fluxo.js");
+const op = (valor: number, prazo: number, parcela: number, cod: number) => ({
+  valorCentavos: valor * 100, parcelaCentavos: parcela * 100, prazoMeses: prazo, taxa: 1.8,
+  tabela: { codigoTabela: cod, prazo, contrato: valor, parcela, coeficiente: 0.02 },
+});
+const OPCOES = [op(7021, 96, 150, 115169), op(5716, 96, 150, 115174), op(5658, 96, 150, 115175)];
+const estadoOpcoes = (): EstadoMaisa => ({
+  etapa: "oferta", tentativas: 0, produto: "siape", dataNascimento: "1960-01-01",
+  oferta: { banco: "Facta", valorCentavos: OPCOES[0].valorCentavos, parcelaCentavos: 15000, prazoMeses: 96, tabela: OPCOES[0].tabela, opcoes: OPCOES },
+  ofertaEm: AGORA.toISOString(),
+});
+const depsOpcoes = () => ({ ...depsBase(roteiro([])), conversa: undefined, digitacaoAtiva: true });
+
+await caso("Opções: o número escolhe a tabela que vai ser digitada", async () => {
+  const p = await diga(estadoOpcoes(), "2", depsOpcoes());
+  assert.equal(p.estado.etapa, "coleta");
+  assert.equal(p.estado.oferta?.tabela?.codigoTabela, 115174);
+  assert.equal(p.estado.oferta?.valorCentavos, 571600);
+  assert.equal(p.estado.oferta?.escolhida, 2);
+  assert.ok(p.respostas.some((r) => /opção 2/.test(r)));
+});
+
+await caso("Opções: 'sim' sem número pergunta qual opção", async () => {
+  const p = await diga(estadoOpcoes(), "sim", depsOpcoes());
+  assert.equal(p.estado.etapa, "oferta");
+  assert.equal(p.rotulo, "qual_opcao");
+});
+
+await caso("Opções: 'quero a terceira' escolhe a 3", async () => {
+  const p = await diga(estadoOpcoes(), "quero a terceira", depsOpcoes());
+  assert.equal(p.estado.oferta?.tabela?.codigoTabela, 115175);
+});
+
+await caso("Opções: número fora da lista não escolhe", async () => {
+  assert.equal(escolhaDeOpcao("7", 3), null);
+  assert.equal(escolhaDeOpcao("opção 1", 3), 1);
+  assert.equal(escolhaDeOpcao("Quero a 2", 3), 2);
+  assert.equal(escolhaDeOpcao("a segunda", 3), 2);
+  assert.equal(escolhaDeOpcao("2 parcelas?", 3), null);
+  assert.equal(escolhaDeOpcao("12345", 3), null);
+});
+
+await caso("Opções: texto da oferta lista todas, com os valores da Facta", async () => {
+  const msg = TEXTOS.ofertaOpcoes([{ valor: "R$ 7.021,00", prazo: 96, parcela: "R$ 150,00", taxa: 1.59 }, { valor: "R$ 5.716,00", prazo: 96, parcela: "R$ 150,00" }]);
+  assert.match(msg, /1\. Até R\$ 7\.021,00, em 96 parcelas de R\$ 150,00 \(taxa de 1,59% ao mês\)/);
+  assert.match(msg, /2\. Até R\$ 5\.716,00/);
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

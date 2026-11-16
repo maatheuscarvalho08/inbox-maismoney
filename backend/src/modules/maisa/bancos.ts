@@ -21,12 +21,27 @@ export type ResultadoBanco =
       contaSalario?: { bancoConta: string; agencia: string; conta: string } | null;
       // CLT: o vínculo da Dataprev que foi simulado, para digitar a proposta depois.
       clt?: VinculoClt;
+      // Todas as tabelas sem seguro que a Facta devolveu, da que libera mais para a que libera
+      // menos. A primeira é a dos campos acima. Com mais de uma, o cliente escolhe.
+      opcoes?: OpcaoOferta[];
     }
   // revisar: a leitura do extrato ficou com dúvida, então a equipe confere antes de desistir.
   | { tipo: "sem_saldo"; banco: string; motivo: string; revisar?: boolean }
   | { tipo: "erro"; banco: string; motivo: string };
 
 export type ResultadoAutorizacao = facta.ResultadoAutorizacao;
+
+// Uma tabela da Facta, com os valores exatamente como vieram. Nada calculado aqui.
+export interface OpcaoOferta {
+  valorCentavos: number;
+  parcelaCentavos: number;
+  prazoMeses: number;
+  taxa?: number;
+  tabela: { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number };
+}
+
+// Quantas opções no máximo vão para o cliente no WhatsApp.
+export const MAX_OPCOES = 5;
 
 export interface VinculoClt {
   matricula: string;
@@ -135,8 +150,25 @@ function melhorTabela(nome: string, tabelas: facta.Tabela[], mensagem: string): 
     const motivo = tabelas.length ? "só há tabelas com seguro" : mensagem || "nenhuma tabela disponível";
     return { tipo: "sem_saldo", banco: nome, motivo };
   }
-  const melhor = semSeguro.reduce((a, b) => (b.valorLiquido > a.valorLiquido ? b : a));
+  const ordenadas = [...semSeguro].sort((a, b) => b.valorLiquido - a.valorLiquido || a.parcela - b.parcela);
+  const melhor = ordenadas[0];
+  // Mesma condição em tabelas diferentes (mesmo valor, prazo e parcela): mostra uma vez só.
+  const vistas = new Set<string>();
+  const opcoes: OpcaoOferta[] = [];
+  for (const t of ordenadas) {
+    const chave = `${t.valorLiquido}|${t.prazo}|${t.parcela}`;
+    if (vistas.has(chave) || opcoes.length >= MAX_OPCOES) continue;
+    vistas.add(chave);
+    opcoes.push({
+      valorCentavos: reais(t.valorLiquido),
+      parcelaCentavos: reais(t.parcela),
+      prazoMeses: t.prazo,
+      ...(t.taxa ? { taxa: t.taxa } : {}),
+      tabela: { codigoTabela: t.codigoTabela, prazo: t.prazo, contrato: t.contrato, parcela: t.parcela, coeficiente: t.coeficiente },
+    });
+  }
   return {
+    opcoes,
     tipo: "com_saldo",
     banco: nome,
     valorCentavos: reais(melhor.valorLiquido),
