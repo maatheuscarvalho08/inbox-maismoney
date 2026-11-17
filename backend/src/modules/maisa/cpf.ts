@@ -1,6 +1,6 @@
 // Acha um CPF no texto do cliente, com ou sem pontuação.
 export function extrairCpf(texto: string): string | null {
-  const achado = texto.match(/\d{3}\.?\s?\d{3}\.?\s?\d{3}\s?-?\s?\d{2}/);
+  const achado = texto.match(/\d{3}\.?\s?\d{3}\.?\s?\d{3}\s?[-\u2010-\u2015\u2212]?\s?\d{2}/);
   if (!achado) return null;
   return achado[0].replace(/\D/g, "");
 }
