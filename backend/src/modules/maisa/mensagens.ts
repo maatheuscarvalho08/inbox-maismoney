@@ -41,9 +41,9 @@ export const socialPositivo = (s: Social | null, texto: string) =>
   (s === "confirmacao_curta" && CONFIRMA_CURTA.test(normalizar(texto))) || (s === "emoji" && EMOJI_POSITIVO.test(texto));
 
 export const RESPOSTA_SOCIAL: Partial<Record<Social, string>> = {
-  cumprimento: "Oi! Tudo bem? 😊",
-  agradecimento: "Por nada! 😊",
-  atraso: "Sem problema!",
+  cumprimento: "Oi! Tudo bem?",
+  agradecimento: "Por nada! Estou aqui para te ajudar. 😊",
+  atraso: "Sem problema, sem pressa. Quando puder, é só me responder por aqui.",
 };
 
 // "Não entendi" começa com "não", mas é pedido de explicação. Inclui grafias de áudio.

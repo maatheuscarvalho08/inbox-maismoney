@@ -154,6 +154,7 @@ export function criarMotor(deps: { interpretador: Interpretador; redator: Redato
         orientacao: orientacaoUsada ? orientacaoUsada.texto() : null,
         fatos: acao.acao === "responder_duvida" ? e.fatosOferta : [],
         tom: i.tom,
+        intencao: i.intencao,
         ultimasMaisa,
       };
       const redacao = await redigir(plano, deps.redator);

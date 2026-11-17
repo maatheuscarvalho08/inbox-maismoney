@@ -15,6 +15,8 @@ export interface PlanoMensagem {
   orientacao: string | null; // texto aprovado da base de conhecimento
   fatos: string[]; // fatos já simulados que podem ser citados
   tom: Tom;
+  // O que o cliente disse querer ("aguardando_orientacao", "perguntar"...): só dá contexto ao texto.
+  intencao?: string;
   ultimasMaisa: string[]; // últimas mensagens da Maisa, para não repetir
 }
 
@@ -40,6 +42,11 @@ function jaccard(a: Set<string>, b: Set<string>) {
   return comum / (a.size + b.size - comum);
 }
 
+// Aberturas que a Maisa não pode repetir duas mensagens seguidas ("Perfeito! ... Perfeito!").
+const ABERTURA = /^(perfeito|otimo|pronto|certo|combinado|entendi|obrigada|claro|que bom|vamos la)\b/;
+const primeiraAbertura = (s: string) => norm(s.trim()).replace(/^[^a-z]+/, "").match(ABERTURA)?.[1] ?? null;
+const EMOJI = /\p{Extended_Pictographic}/gu;
+
 const NAVEGACAO = /\b(aplicativo|app|menu|botao|clique|clicar|toque|tocar|aba|tela|opcao|site|link|pagina)\b/;
 
 // Devolve o motivo da reprovação, ou null se a mensagem pode ir.
@@ -60,10 +67,22 @@ export function validarSaida(texto: string, plano: PlanoMensagem): string | null
   // Número só dos fatos permitidos.
   const permitidos = digitosDe([plano.pergunta, plano.orientacao ?? "", ...plano.fatos, ...plano.faltando, ...plano.coletados, plano.dadoPedido].join(" "));
   for (const d of digitosDe(t)) if (!permitidos.has(d)) return "numero_fora_dos_fatos";
+  // Mais de um emoji deixa a conversa artificial.
+  if ((t.match(EMOJI) ?? []).length > 1) return "emoji_demais";
+  // A mesma abertura da mensagem anterior ("Perfeito!" duas vezes) soa como formulário.
+  const abre = primeiraAbertura(t);
+  if (abre && plano.ultimasMaisa[0] && primeiraAbertura(plano.ultimasMaisa[0]) === abre) return "abertura_repetida";
   // Não repete a Maisa.
   const p = palavras(t);
   for (const antes of plano.ultimasMaisa) if (jaccard(p, palavras(antes)) >= 0.8) return "repete_mensagem_anterior";
   return null;
+}
+
+// Uma frase curta que mostra que a Maisa viu como o cliente está. Neutro e satisfeito: nada.
+function reconhecimento(tom: Tom): string {
+  if (tom === "confuso") return "Sem problemas, vamos resolver isso juntos. ";
+  if (tom === "irritado") return "Entendo, desculpa pelo transtorno. ";
+  return "";
 }
 
 const lista = (xs: string[]) => (xs.length > 1 ? `${xs.slice(0, -1).join(", ")} e ${xs[xs.length - 1]}` : (xs[0] ?? ""));
@@ -74,25 +93,25 @@ export function textoReserva(p: PlanoMensagem): string {
   const avisoEquipe = " Se preferir, é só pedir que um atendente da nossa equipe te ajuda.";
   switch (p.acao) {
     case "continuar_com_orientacao":
-      return `Ótimo! Quando você conseguir ${p.dadoPedido}, é só me mandar por aqui.${orient} Se não souber onde achar, me avisa que eu te ajudo.`;
+      return `Certo, sem pressa. Quando você conseguir ${p.dadoPedido}, é só me mandar por aqui.${orient} Se não souber onde achar, me avisa que eu te ajudo.`;
     case "explicar_proximo_passo":
-      return `Pode deixar, estou aguardando. Do meu lado está tudo pronto: falta só ${p.dadoPedido}.${orient} Pode me mandar por aqui quando tiver.`;
+      return `${p.intencao === "aguardando_orientacao" ? "Claro, obrigada por aguardar" : "Claro"}. Do meu lado está tudo pronto: falta só ${p.dadoPedido}.${orient} Pode me mandar por aqui quando tiver.`;
     case "explicar_onde_achar":
-      return `Sem problema, eu te ajudo a achar ${p.dadoPedido}.${orient} Conseguiu? Me conta como foi.`;
+      return `${reconhecimento(p.tom) || "Sem problema. "}Eu te ajudo a achar ${p.dadoPedido}.${orient} Conseguiu? Me conta como foi.`;
     case "reformular":
-      return `Deixa eu perguntar de outro jeito: ${p.pergunta}`;
+      return `${reconhecimento(p.tom)}Deixa eu perguntar de outro jeito: ${p.pergunta}`;
     case "confirmar_ambiguo":
-      return `Não tenho certeza se entendi o que você quis dizer. Pode me explicar de outro jeito? Eu preciso de ${p.dadoPedido}.`;
+      return `${reconhecimento(p.tom)}Não tenho certeza se entendi o que você quis dizer. Pode me explicar de outro jeito? O que eu preciso agora é ${p.dadoPedido}.`;
     case "responder_duvida":
       return `${p.fatos.join(" ")} Quando puder, me manda ${p.dadoPedido} para eu seguir.`;
     case "reconhecer_e_mudar_abordagem":
-      return `Desculpa a confusão, vamos resolver isso. ${p.faltando.length ? `Por enquanto só preciso de: ${lista(p.faltando)}.` : `Eu preciso de ${p.dadoPedido}.`}${avisoEquipe}`;
+      return `Desculpa a confusão, vamos resolver isso. ${p.faltando.length ? `Por enquanto só preciso de: ${lista(p.faltando)}.` : `O que eu preciso agora é ${p.dadoPedido}.`}${avisoEquipe}`;
     case "aproveitar_dado":
       return `Você tem razão, desculpa. Já tenho: ${lista(p.coletados)}.${p.faltando.length ? ` Falta só: ${lista(p.faltando)}.` : ""}`;
     case "alternativa_sem_orientacao":
-      return `Não sei te dizer o caminho exato para achar ${p.dadoPedido}. Se conseguir encontrar, me manda por aqui.${avisoEquipe}`;
+      return `${reconhecimento(p.tom)}Não sei te dizer o caminho exato para achar ${p.dadoPedido}. Se conseguir encontrar, me manda por aqui.${avisoEquipe}`;
     case "documento_sem_dado":
-      return `Recebi o arquivo, mas não consegui achar ${p.dadoPedido} nele. Pode mandar uma foto mais nítida ou digitar por aqui?`;
+      return `Obrigada por mandar. Recebi o arquivo, mas não consegui achar ${p.dadoPedido} nele. Pode mandar uma foto mais nítida ou digitar por aqui?`;
   }
 }
 
@@ -106,7 +125,13 @@ REGRAS:
 - Não repita nenhuma das mensagens em ultimasMaisa: mude a abordagem (explique melhor, dê um exemplo, simplifique).
 - Reconheça o que o cliente sentiu quando o tom for confuso ou irritado, em uma frase só.
 - Termine dizendo claramente o que o cliente precisa fazer agora.
-- Tamanho: até 3 frases.`;
+- Tamanho: até 3 frases, com uma ideia principal.
+PERSONALIDADE: converse como uma boa atendente humana: simpática, atenta, educada e segura, sem parecer formulário nem exagerar.
+- Responda ao que o cliente acabou de dizer antes de pedir qualquer coisa. Se ele agradeceu, agradeça de volta. Se está esperando, agradeça a espera. Se já mandou algo, reconheça. Se está inseguro ou irritado, acolha em uma frase.
+- Conecte com a etapa: diga por que está pedindo o dado ou o que vem depois, sem repetir o que o cliente já entendeu.
+- Varie a abertura. Não comece com a mesma palavra da mensagem anterior (ultimasMaisa), principalmente "Perfeito", "Ótimo" ou "Pronto".
+- No máximo um emoji, e só se o cliente agradeceu ou está satisfeito. Sem gírias e sem intimidade forçada.
+- Nunca presuma que o cliente concordou. Educação não é autorização.`;
 
 const SCHEMA_REDATOR = {
   type: "object",
@@ -148,6 +173,8 @@ export async function redigir(plano: PlanoMensagem, redator: Redator): Promise<R
 function reserva(plano: PlanoMensagem, motivo: string, meta: MetaChamada | null): RedacaoPronta {
   let texto = textoReserva(plano);
   // A reserva também não pode repetir a mensagem anterior: se repetir, muda de abordagem de verdade.
+  // Mesma abertura da mensagem anterior: tira a palavra de abertura da reserva.
+  if (validarSaida(texto, plano) === "abertura_repetida") texto = texto.replace(/^(Perfeito|Ótimo|Pronto|Certo|Combinado|Entendi|Obrigada|Claro|Que bom|Vamos lá)[,.!]?\s*/i, "");
   if (validarSaida(texto, plano) === "repete_mensagem_anterior") {
     texto = `Vou explicar de um jeito mais simples. ${textoReserva({ ...plano, acao: plano.acao === "reformular" ? "alternativa_sem_orientacao" : "reformular" })}`;
   }

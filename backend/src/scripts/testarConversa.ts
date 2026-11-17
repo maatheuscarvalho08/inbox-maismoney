@@ -826,6 +826,144 @@ await caso("Opções: texto da oferta lista todas, com os valores da Facta", asy
   assert.match(msg, /2\. Até R\$ 5\.716,00/);
 });
 
+// ---------- Etapa 6: naturalidade e empatia ----------
+// Os 10 cenários do pedido, com interpretador falso e redator de reserva. Nenhuma API.
+const { validarSaida, textoReserva } = await import("../modules/maisa/conversa/redator.js");
+const { RESPOSTA_SOCIAL } = await import("../modules/maisa/mensagens.js");
+const VER = process.env.NATURALIDADE_VER === "1";
+const ver = (rotulo: string, p: Passo) => { if (VER) console.log(`   [${rotulo}] ${p.respostas.join(" || ").replace(/\n+/g, " ")}`); };
+const ABRE_FORMULARIO = /^\s*(perfeito|ótimo|otimo|pronto)\b/i;
+const estadoOfertaN = (): EstadoMaisa => ({
+  etapa: "oferta", tentativas: 0, produto: "clt", nome: "Maria da Silva",
+  oferta: { banco: "Facta", valorCentavos: 133724, parcelaCentavos: 15000, prazoMeses: 12, tabela: { codigoTabela: 1, prazo: 12, contrato: 1337.24, parcela: 150, coeficiente: 0.11 } },
+  ofertaEm: AGORA.toISOString(),
+});
+const estadoConsent: EstadoMaisa = { etapa: "consentimento", tentativas: 0, produto: "clt", nome: "Maria da Silva" };
+
+await caso("Naturalidade 1: cliente agradecendo é acolhido e a oferta continua pendente", async () => {
+  const p = await diga(estadoOfertaN(), "obrigada", depsBase(roteiro([]), {}, TODAS));
+  ver("agradecendo", p);
+  assert.match(p.respostas[0], /Por nada/);
+  assert.equal(p.estado.etapa, "oferta");
+  assert.equal(chamadas.digitar, 0);
+});
+
+await caso("Naturalidade 2: cliente inseguro é acolhido e continua no mesmo passo", async () => {
+  const deps = depsBase(roteiro([interp({ intencao: "pedir_ajuda", tom: "confuso" })]));
+  const p = await diga(estadoCef(), "nao sei se devo passar isso", deps);
+  ver("inseguro", p);
+  assert.match(p.respostas.join(" "), /juntos|Sem problema/);
+  assert.equal(p.estado.etapa, "numero_contrato");
+  assert.doesNotMatch(p.respostas[0], ABRE_FORMULARIO);
+});
+
+await caso("Naturalidade 3: cliente irritado ouve um pedido de desculpa curto e não a mesma pergunta", async () => {
+  const deps = depsBase(roteiro([interp({ intencao: "impaciencia", tom: "irritado", reclamaRepeticao: true })]));
+  const p = await diga(estadoCef(), "voce ja me perguntou isso", deps);
+  ver("irritado", p);
+  assert.match(p.respostas.join(" "), /desculpa|Desculpa/);
+  assert.notEqual(p.respostas[0], TEXTO_NUM_INVALIDO);
+});
+
+await caso("Naturalidade 4: cliente que não entendeu recebe reconhecimento e uma explicação", async () => {
+  const deps = depsBase(roteiro([interp({ intencao: "pedir_ajuda", tom: "confuso" })]));
+  const p = await diga(estadoCef(), "como assim, nao entendi", deps);
+  ver("nao entendeu", p);
+  assert.match(p.respostas.join(" "), /juntos|Sem problema|Deixa eu/);
+  assert.equal(p.estado.etapa, "numero_contrato");
+});
+
+await caso("Naturalidade 5: cliente aguardando ouve agradecimento pela espera", async () => {
+  const deps = depsBase(roteiro([interp({ intencao: "aguardando_orientacao" })]));
+  const p = await diga(estadoCef(), "to esperando", deps);
+  ver("aguardando", p);
+  assert.match(p.respostas[0], /obrigada por aguardar/i);
+  assert.equal(p.estado.etapa, "numero_contrato");
+});
+
+await caso("Naturalidade 6: 'já mandei' reconhece o envio antes de pedir de novo", async () => {
+  const t = textoReserva({
+    acao: "documento_sem_dado", estrategia: "reformular", dadoPedido: "o número do contrato do CEF", pergunta: "Qual o número do contrato?",
+    faltando: [], coletados: [], orientacao: null, fatos: [], tom: "neutro", ultimasMaisa: [],
+  });
+  assert.match(t, /Obrigada por mandar/);
+  assert.match(t, /Recebi o arquivo/);
+});
+
+// RISCO registrado no relatório da etapa 6: hoje o classificador trata "ok" como "sim" no consentimento.
+// A etapa 6 não mexe nessa regra (pedido: preservar o consentimento). Este teste só trava que nada mudou.
+await caso("Naturalidade 7: 'ok' ao consentimento segue tratado como antes (regra preservada, ver risco)", async () => {
+  const deps = depsBase(roteiro([]), { solicitarAutorizacao: async () => { chamadas.autorizacao++; throw new Error("sem rede nos testes"); } }, TODAS);
+  await diga(estadoConsent, "ok", deps);
+  assert.equal(chamadas.autorizacao, 1);
+});
+
+await caso("Naturalidade 8: 'sim' ao consentimento segue como sempre (pede a autorização do banco)", async () => {
+  const deps = depsBase(roteiro([]), { solicitarAutorizacao: async () => { chamadas.autorizacao++; throw new Error("sem rede nos testes"); } }, TODAS);
+  await diga(estadoConsent, "sim", deps);
+  assert.equal(chamadas.autorizacao, 1);
+});
+
+await caso("Naturalidade 8b: 'sim, mas...' e 'talvez' ao consentimento também não autorizam", async () => {
+  for (const msg of ["talvez", "sera?", "hum", "depende", "nao sei"]) {
+    const p = await diga(estadoConsent, msg, depsBase(roteiro([]), {}, TODAS));
+    ver(`consentimento "${msg}"`, p);
+    assert.equal(chamadas.autorizacao, 0, msg);
+  }
+});
+
+await caso("Naturalidade 9: pergunta fora da etapa é respondida sem inventar valor nem avançar", async () => {
+  const deps = depsBase(roteiro([interp({ intencao: "perguntar" })]));
+  const p = await diga(estadoCef(), "voces cobram alguma taxa?", deps);
+  ver("fora da etapa", p);
+  assert.equal(p.estado.etapa, "numero_contrato");
+  assert.doesNotMatch(p.respostas.join(" "), /R\$|%/);
+  assert.doesNotMatch(p.respostas.join(" "), /aguardar/, "não agradece uma espera que não houve");
+});
+
+await caso("Naturalidade 10: resposta muito curta ('ok', 'sim') não vira dado nem avanço", async () => {
+  for (const msg of ["ok", "sim", "?"]) {
+    const deps = depsBase(roteiro([interp({ intencao: msg === "?" ? "ininteligivel" : "social", confianca: 0.9 })]));
+    const p = await diga(estadoCef(), msg, deps);
+    ver(`curta "${msg}"`, p);
+    assert.equal(p.estado.etapa, "numero_contrato", msg);
+    assert.equal(chamadas.digitar, 0);
+  }
+});
+
+await caso("Naturalidade: transições fixas não repetem 'Perfeito', 'Ótimo' ou 'Pronto'", async () => {
+  const seq = [TEXTOS.pedeCpf, TEXTOS.pedeNome, TEXTOS.pedeNascimento, TEXTOS.avisoLink, TEXTOS.inicioContrato, TEXTOS.confirmacaoRecebida, TEXTOS.aceitou, TEXTOS.contratoEnviado("")];
+  for (const t of seq) assert.doesNotMatch(t, ABRE_FORMULARIO, t.slice(0, 40));
+  const aberturas = seq.map((t) => t.split(/[ ,!.]/)[0].toLowerCase());
+  assert.ok(new Set(aberturas).size >= seq.length - 2, `aberturas muito repetidas: ${aberturas.join(", ")}`);
+});
+
+await caso("Naturalidade: emojis só no agradecimento, no máximo um por mensagem", async () => {
+  const EMOJI = /\p{Extended_Pictographic}/gu;
+  for (const [k, v] of Object.entries(RESPOSTA_SOCIAL)) assert.ok(((v as string).match(EMOJI) ?? []).length <= 1, k);
+  for (const k of ["pedeCpf", "pedeNome", "pedeNascimento", "avisoLink", "confirmaAceite", "perguntaConsentimento", "cpfJaAnotado", "dataJaAnotada"] as const) {
+    assert.doesNotMatch(TEXTOS[k] as string, EMOJI, k);
+  }
+});
+
+await caso("Naturalidade: o redator reprova abertura repetida e emoji demais", async () => {
+  const plano = {
+    acao: "reformular" as const, estrategia: "reformular" as const, dadoPedido: "o número do contrato", pergunta: "Qual o número?",
+    faltando: [], coletados: [], orientacao: null, fatos: [], tom: "neutro" as const, ultimasMaisa: ["Perfeito! Agora me manda o contrato do banco."],
+  };
+  assert.equal(validarSaida("Perfeito! Pode me mandar o número do contrato por aqui?", plano), "abertura_repetida");
+  assert.equal(validarSaida("Certo, pode me mandar o número do contrato por aqui?", plano), null);
+  assert.equal(validarSaida("Claro 😊😊 pode me mandar o número do contrato por aqui?", plano), "emoji_demais");
+});
+
+await caso("Naturalidade: consentimento e confirmação mantêm SIM ou NÃO explícitos", async () => {
+  for (const t of [TEXTOS.pedeConsentimento, TEXTOS.perguntaConsentimento, TEXTOS.confirmaAceite, TEXTOS.perguntaConfirmacao, TEXTOS.confirmeComSimOuNao]) {
+    assert.match(t, /SIM/);
+  }
+  assert.match(TEXTOS.pedeConsentimento, /LGPD/);
+  assert.match(TEXTOS.pedeConsentimento, /Responda SIM ou NÃO/);
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

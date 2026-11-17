@@ -63,10 +63,10 @@ export const TEXTOS = {
     "Trabalhamos com estes produtos. Qual te interessa? Responda com o número.\n" +
     OPCOES_CONVENIO,
   perguntaConvenio: PERGUNTA_CONVENIO,
-  pedeCpf: "Perfeito! Para simular, preciso do seu CPF. Pode mandar só os números.",
+  pedeCpf: "Vamos lá! Para fazer a sua simulação, preciso do seu CPF. Pode mandar só os números.",
   cpfInvalido: "Esse CPF não parece válido. Pode conferir e me mandar de novo?",
-  pedeNome: "Obrigada! Agora me manda o seu nome completo, igual está no documento.",
-  pedeNascimento: "Obrigada! Agora me manda a sua data de nascimento. Por exemplo: 15/03/1958.",
+  pedeNome: "Agora só preciso confirmar o seu nome completo, exatamente como aparece no documento.",
+  pedeNascimento: "Certo, falta só a sua data de nascimento. Pode mandar assim: 15/03/1958.",
   extratoGuardado: "Recebi o seu documento, obrigada! Já guardei aqui para a sua simulação.",
   confirmaData: (data: string) => `Acho que o ano saiu trocado. Você quis dizer ${data}? Se for isso, é só me responder SIM.`,
   nascimentoInvalido: "Não entendi a data. Pode mandar assim: 15/03/1958?",
@@ -92,9 +92,9 @@ export const TEXTOS = {
     "Olhei o seu documento e, no momento, não sobra margem para um empréstimo novo. Vou te passar para um atendente ver outras opções com você.",
   nomeInvalido: "Preciso do nome completo, com sobrenome. Pode mandar de novo?",
   avisoLink:
-    "Pronto! Agora vai chegar no seu WhatsApp uma mensagem do banco Facta, nosso parceiro, com um link. " +
-    "É só abrir e autorizar. É rapidinho e seguro.\n\n" +
-    "Assim que você autorizar, eu te mostro o valor aqui.",
+    "Estamos avançando. Agora você vai receber no seu WhatsApp uma mensagem do banco Facta, nosso parceiro, com um link. " +
+    "É só abrir e autorizar. É rápido e seguro.\n\n" +
+    "Assim que você autorizar, eu vejo aqui e te mostro o valor. Se quiser, pode me avisar também.",
   aindaNaoAutorizou:
     "Ainda não apareceu a sua autorização. Procure a mensagem do banco Facta no seu WhatsApp e toque no link.\n\n" +
     "Se a mensagem não chegou, me responda: não chegou.",
@@ -108,7 +108,7 @@ export const TEXTOS = {
     "consignável (eSocial/Dataprev) junto ao banco parceiro Facta, conforme a LGPD. " +
     "Você vai receber um link do banco para confirmar.\n\n" +
     "Posso seguir? Responda SIM ou NÃO.",
-  perguntaConsentimento: "Posso consultar o seu crédito no banco Facta? Responda SIM ou NÃO.",
+  perguntaConsentimento: "Só preciso confirmar uma coisinha antes de continuar: posso consultar o seu crédito no banco Facta? Responda SIM ou NÃO, por favor.",
   perguntaOferta: "Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.",
   naoEntendi: "Desculpa, não entendi.",
   transferindo: "Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.",
@@ -208,7 +208,7 @@ export const TEXTOS = {
         ? `Pela simulação na Facta, a parcela do ${banco} cai de ${atual} para ${nova}, com uma taxa menor.`
         : `Pela simulação na Facta, dá para trazer o seu contrato do ${banco} com uma taxa menor.`,
   pedeNumeroContrato: (banco: string, parcela: string, produto?: string) =>
-    `Ótimo! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}.${ondeAcharContrato(produto)} Pode mandar só o número.`,
+    `Combinado! Eu mesma faço o seu contrato agora. Primeiro preciso do número do contrato do ${banco} com parcela de ${parcela}.${ondeAcharContrato(produto)} Pode mandar só o número.`,
   cpfNoLugarDoContrato: (banco: string) =>
     `Esse número parece ser um CPF. O que eu preciso agora é o número do contrato do ${banco}, que é diferente do CPF. Pode me mandar esse número?`,
   contratoOutroBanco: (citado: string, pedido: string) =>
@@ -231,7 +231,7 @@ export const TEXTOS = {
   portProntaEquipe:
     "Recebi tudo! Um especialista da nossa equipe vai cadastrar a sua portabilidade agora e te manda aqui o link para assinar. Já já alguém continua com você.",
   aceitouPort:
-    "Ótimo! Vou te passar para um especialista da nossa equipe. Ele confirma o saldo com o seu banco e fecha a proposta com você. Já já alguém continua aqui.",
+    "Combinado! Vou te passar para um especialista da nossa equipe. Ele confirma o saldo com o seu banco e fecha a proposta com você. Já já alguém continua aqui.",
   semSaldo:
     "Consultei aqui e, no momento, o banco não liberou valor para o seu CPF. Vou te passar para um atendente ver outras opções com você.",
   erroBanco: "Não consegui consultar o banco agora. Vou te passar para um atendente continuar daqui.",
@@ -248,13 +248,13 @@ export const TEXTOS = {
   opcaoEscolhida: (n: number, valor: string, prazo: number, parcela: string) => `Combinado: opção ${n}, até ${valor} em ${prazo} parcelas de ${parcela}.`,
   // Uma vez só, 10 minutos depois da oferta sem resposta.
   followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",
-  inicioContrato: "Ótimo! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta.",
+  inicioContrato: "Que bom! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta.",
   continuarCadastro: "Vamos continuar o seu cadastro.",
   confirmaDados: (resumo: string) => `Confere se está tudo certo:\n\n${resumo}\n\nEstá tudo certo? Responda SIM ou NÃO.`,
   confirmeComSimOuNao: "Só para ter certeza de que entendi: você confirma? Responda SIM ou NÃO.",
   perguntaConfirmacao: "Os dados estão certos? Responda SIM ou NÃO.",
   contratoEnviado: (url: string) =>
-    "Pronto! O seu contrato foi feito no banco Facta. Agora o banco vai te mandar no WhatsApp um link para assinar. " +
+    "Deu certo! O seu contrato foi feito no banco Facta. Agora o banco vai te mandar no WhatsApp um link para assinar. " +
     "É só abrir, conferir e assinar." +
     (url ? `\n\nSe a mensagem do banco não chegar, o link é este: ${url}` : "") +
     "\n\nUm atendente da nossa equipe acompanha com você até o dinheiro cair.",
@@ -262,11 +262,11 @@ export const TEXTOS = {
   corrigirDados: "Sem problema. Vou passar para um atendente corrigir os dados com você.",
   // Confirmação: o cliente apontou erro. Ela corrige ali mesmo, sem passar para a equipe.
   qualCorrigir: "Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.",
-  dadosCorrigidos: "Corrigi aqui!",
+  dadosCorrigidos: "Corrigi aqui, obrigada por avisar.",
   // Oferta: "ok", "👍", "valeu" não são sim nem não. Ela pergunta de novo.
-  confirmaAceite: "Só para confirmar: quer que eu siga com a sua proposta? É só me responder SIM.",
+  confirmaAceite: "Só preciso confirmar uma coisinha antes de continuar: quer que eu siga com a sua proposta? Responda SIM ou NÃO, por favor.",
   // "sim" na confirmação: a digitação espera a janela, e o cliente ainda pode corrigir.
-  confirmacaoRecebida: "Perfeito! Vou fazer o seu contrato agora. Se lembrar de algum dado para corrigir, me avisa aqui.",
+  confirmacaoRecebida: "Certo, obrigada por confirmar. Vou fazer o seu contrato agora. Se lembrar de algum dado para corrigir, me avisa aqui nos próximos instantes.",
   // Digitação automática travada: os dados estão completos e a equipe digita.
   digitacaoComEquipe:
     "Recebi tudo! Um especialista da nossa equipe vai fazer o seu contrato agora e te manda aqui o link para assinar. Já já alguém continua com você.",
@@ -291,8 +291,8 @@ export const TEXTOS = {
   // Data ou CPF diferente depois da oferta: a simulação usou o dado antigo.
   dadoCorrigidoEquipe:
     "Obrigada por avisar! Como esse dado mudou, um especialista da nossa equipe vai refazer a sua simulação. Já já alguém continua aqui com você.",
-  cpfJaAnotado: "O seu CPF já está anotado aqui 😊",
-  dataJaAnotada: "Essa data já está anotada aqui 😊",
+  cpfJaAnotado: "O seu CPF já está anotado aqui, não precisa mandar de novo.",
+  dataJaAnotada: "Essa data já está anotada aqui, não precisa mandar de novo.",
   dataCorrigida: (data: string) => `Pronto, corrigi a sua data de nascimento para ${data}.`,
   numeroNaOferta: "Recebi esse número, mas não sei a que ele se refere.",
   recomecar: "Sem problema! Se quiser refazer, é só me mandar outro extrato aqui. Se preferir, chamo alguém da equipe para olhar com você.",
@@ -304,7 +304,7 @@ export const TEXTOS = {
   mensagemNaoSuportada: "Essa mensagem não abriu aqui para mim. Pode mandar o extrato de novo, em PDF ou foto?",
   retomaNumero: (banco: string) => `Quando puder, me manda o número do contrato do ${banco}.`,
   // Foto chegou, mas o dado pedido não aparece nela (foto torta, apagada, de lado).
-  fotoSemDado: "Recebi a foto, mas não consegui ler esse dado nela.",
+  fotoSemDado: "Obrigada pela foto, mas não consegui ler esse dado nela.",
   fotoSemSexo: "Recebi a foto. O documento não mostra o sexo, então preciso que você me responda por escrito.",
   // Arquivo antes de saber o vínculo: guarda (pode ser o extrato) e pergunta o vínculo.
   arquivoNoInicio: "Recebi o seu arquivo e já guardei aqui. Antes de olhar, me conta qual é o seu vínculo.",
@@ -316,7 +316,7 @@ export const TEXTOS = {
   extratoPorLink:
     "Não consigo abrir links. Me manda o próprio arquivo aqui na conversa: no Acrobat, toque em Compartilhar, depois em Enviar uma cópia, e escolha o WhatsApp. Também pode ser uma foto bem nítida.",
   pixRecusado: "Tudo bem. Vou passar para um atendente ver outra forma de pagamento com você.",
-  aceitou:"Ótimo! Vou te passar para um atendente finalizar a sua proposta. Já já alguém da equipe continua com você.",
+  aceitou: "Certo! Vou te passar para um atendente finalizar a sua proposta. Já já alguém da equipe continua com você.",
   recusou: "Tudo bem! Se mudar de ideia, é só me chamar aqui.",
   semConsentimento: "Sem problema. Vou te passar para um atendente, que pode te explicar melhor como funciona.",
   statusProposta: (banco: string, status: string) =>
