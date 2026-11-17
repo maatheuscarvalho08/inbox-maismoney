@@ -758,6 +758,12 @@ async function etapaExtrato(
       const comAlternativa: EstadoMaisa = { ...estado, alternativa: { operacao, trocoCentavos, motivo, ...lidos } };
       return transferir(comAlternativa, `sem margem para novo; ${motivo}`, TEXTOS.semMargemExtrato, "alternativa", [], "alternativa");
     }
+    // Port pura (sem refin): a Maisa não oferta. A Facta não digita pela API e a equipe
+    // decide com o cliente. Só a port com refin é ofertada.
+    if (operacao === "portabilidade") {
+      const comAlternativa: EstadoMaisa = { ...estado, alternativa: { operacao, trocoCentavos, motivo, ...(digitacao ? { digitacao } : {}), ...(reducoes?.length ? { reducoes } : {}), ...lidos } };
+      return transferir(comAlternativa, `sem margem para novo; ${motivo}; port pura não é ofertada pela Maisa`, TEXTOS.semMargemExtrato, "alternativa", [], "alternativa");
+    }
     // Já tinha dito SIM: avisa que vai digitar e pede o que falta, começando pelo contrato.
     if (estado.aceitouOferta && digitacao && deps.digitacaoAtiva) {
       const ganho = TEXTOS.ganhoPort(troco, digitacao.banco, r$(digitacao.parcela), digitacao.refin ? null : r$(digitacao.port.parcela));
@@ -1151,14 +1157,8 @@ function contornar(estado: EstadoMaisa, texto: string, l: LeituraOferta): Passo 
       if (a?.trocoCentavos && dig?.refin) return fica([TEXTOS.contornoPoucoValor(r$(dig.refin.parcela), formatarReais(a.trocoCentavos))]);
       break;
     case "prazo_longo":
-      // Não quer esticar: oferece a port sem refin, que mantém as parcelas que faltam.
-      if (a && dig?.refin && dig.port.parcela < dig.parcela) {
-        const reducoes = [{ banco: dig.banco, atual: dig.parcela, nova: dig.port.parcela, restantes: dig.prazoRestante }];
-        return fica([TEXTOS.contornoPrazo(dig.banco, dig.prazoRestante, r$(dig.parcela), r$(dig.port.parcela))], {
-          alternativa: { ...a, operacao: "portabilidade", trocoCentavos: null, digitacao: { ...dig, refin: undefined }, reducoes },
-        });
-      }
-      break;
+      // Não quer esticar: a port sem refin não é ofertada pela Maisa. A equipe conversa.
+      return transferir(estado, `${motivo}; quer port sem refin, a equipe avalia`, TEXTOS.duvidaParaEquipe, "objecao", [], "objecao");
     case "oferta_melhor":
       if (l.outraOferta) return transferir(estado, motivo, TEXTOS.ofertaMelhorEquipe, "objecao", [], "objecao");
       return fica([TEXTOS.perguntaOutraOferta]);

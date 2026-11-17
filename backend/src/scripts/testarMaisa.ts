@@ -357,28 +357,10 @@ const CASOS: Caso[] = [
     respostaContem: "já guardei aqui",
   },
   {
-    nome: "Extrato de novo depois da oferta: não passa para a equipe",
-    acoes: [...ATE_EXTRATO, { extrato: "port_pura" }, { extrato: "port_pura" }],
-    etapaFinal: "oferta_port",
-    respostaContem: "já foi feita com o seu extrato",
-  },
-  {
-    nome: "Port pura, não entendi: explica em palavras simples",
-    acoes: [...ATE_EXTRATO, { extrato: "port_pura" }, "Não entendi"],
-    etapaFinal: "oferta_port",
-    respostaContem: "Te explico de um jeito simples",
-  },
-  {
-    nome: "Port pura, quanto eu ficaria: diz que não tem troco e soma a economia",
-    acoes: [...ATE_EXTRATO, { extrato: "port_pura" }, "Quanto seria o valor que eu ficaria?"],
-    etapaFinal: "oferta_port",
-    respostaContem: "somando os 2 contratos",
-  },
-  {
-    nome: "Port pura, somando tudo dá quanto de troco: não tem troco",
-    acoes: [...ATE_EXTRATO, { extrato: "port_pura" }, "Mas somando tudo da quanto de troco pra mim"],
-    etapaFinal: "oferta_port",
-    respostaContem: "não tem troco",
+    nome: "Port pura: a Maisa não oferta, passa para a equipe",
+    acoes: [...ATE_EXTRATO, { extrato: "port_pura" }],
+    etapaFinal: "finalizada",
+    saida: "alternativa",
   },
   {
     nome: "Extrato de ontem serve: responde que sim",
@@ -518,10 +500,10 @@ const CASOS: Caso[] = [
     notaContem: "outra oferta",
   },
   {
-    nome: "Não quer esticar o prazo: oferece a port sem refin mantendo as parcelas",
+    nome: "Não quer esticar o prazo: port sem refin não é ofertada, equipe assume",
     acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "alternativa_digitavel" }, "não quero aumentar o prazo"],
-    etapaFinal: "oferta_port",
-    respostaContem: "sem refinanciar",
+    etapaFinal: "finalizada",
+    saida: "objecao",
   },
   {
     nome: "Terceira objeção: depois de dois contornos a equipe assume",
