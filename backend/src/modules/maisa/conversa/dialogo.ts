@@ -82,7 +82,9 @@ export function decidirDialogo(e: EntradaDialogo): AcaoDialogo {
     case "perguntar":
     case "fora_do_fluxo":
       if (i.intencao === "perguntar" && e.temFatosDaOferta) return { tipo: "responder", acao: "responder_duvida", estrategia, topico: null, chave: p.chave };
-      // Sem fatos para responder: diz o que falta e segue. Na repetição, a equipe responde melhor.
+      // Sem fatos da oferta: o fluxo antigo responde (FAQ ou fatos aprovados) antes de repetir a pergunta.
+      if (i.intencao === "perguntar" && tent < 2) return { tipo: "delegar", motivo: "perguntar" };
+      // Na repetição, a equipe responde melhor.
       if (tent >= 2) return { tipo: "encaminhar", categoria: "duvida_sem_resposta", motivo: "pergunta sem resposta aprovada, repetida" };
       return { tipo: "responder", acao: "explicar_proximo_passo", estrategia, topico: p.topico, chave: p.chave };
     case "ininteligivel":

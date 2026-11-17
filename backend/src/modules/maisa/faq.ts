@@ -25,6 +25,12 @@ const FAQ: { padrao: RegExp; resposta: string }[] = [
       "Pode ligar para conferir. E a Mais Money é a correspondente que cuida da sua proposta: CNPJ 45.027.472/0001-76, Instagram @maismoneyrj.",
   },
   {
+    // Idade no SIAPE: portabilidade até 74 anos; empréstimo novo quem decide é a Facta.
+    padrao: /\b(idade|anos)\b.*\b(limite|maxim|maior|ate quantos|ate que)|\b(limite|maxim|ate quantos|ate que).*\b(idade|anos)\b/,
+    resposta:
+      "No SIAPE, a portabilidade vai até 74 anos. No empréstimo novo, quem decide a idade máxima é a Facta, na hora da simulação.",
+  },
+  {
     padrao: /\b(robo|bot|inteligencia artificial|e uma pessoa|e humano|e gente)\b/,
     resposta: "Eu sou a Maisa, assistente virtual da Mais Money. Se preferir falar com uma pessoa, é só pedir.",
   },

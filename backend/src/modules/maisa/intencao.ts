@@ -65,6 +65,7 @@ const FATOS = `- A Mais Money é correspondente bancário (promotora de crédito
 - Para ver os contratos e a margem, a Maisa precisa do extrato: no SIAPE, o extrato de consignações do SouGov.br; no INSS, o extrato de empréstimos do Meu INSS.
 - Na portabilidade, o dinheiro só cai depois que a operação é aprovada. O contrato só é assinado pelo próprio cliente, pelo link da Facta, e só se ele concordar.
 - Os documentos que o cliente manda servem só para a simulação e o contrato. Os arquivos são apagados do nosso sistema depois de 4 dias sem conversa.
+- Idade no SIAPE: a portabilidade vai até 74 anos. No empréstimo novo, a idade máxima é decidida pela Facta na simulação.
 - Produtos da Mais Money: INSS, CLT, SIAPE, servidor de prefeitura, Marinha, militar, crédito na conta de luz, LOAS ou BPC, crédito pessoal e antecipação do FGTS. A Maisa simula INSS, CLT e SIAPE; os outros produtos são com a equipe.
 - No CLT, antes da simulação, a Facta manda pelo WhatsApp um link de autorização de consulta. Esse link não é contrato: só autoriza a consulta da margem.
 - No cadastro do contrato, o banco Facta pede dados pessoais (documento com foto, como RG ou CNH, filiação, naturalidade, endereço, e-mail e conta para receber). Os dados vão só para a Facta e servem para fazer o contrato.`;

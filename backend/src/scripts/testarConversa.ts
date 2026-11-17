@@ -964,6 +964,12 @@ await caso("Naturalidade: consentimento e confirmação mantêm SIM ou NÃO expl
   assert.match(TEXTOS.pedeConsentimento, /Responda SIM ou NÃO/);
 });
 
+await caso("Pergunta de idade fora da etapa é respondida direto, sem repetir só o pedido", async () => {
+  const deps = depsBase(roteiro([interp({ intencao: "perguntar" })]));
+  const p = await diga({ etapa: "cpf", tentativas: 0, produto: "siape" } as EstadoMaisa, "Qual limite idade para fazer portabilidade", deps);
+  assert.match(p.respostas.join(" "), /74 anos/);
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });
