@@ -204,7 +204,9 @@ async function validar(m: Record<CampoModelo, string | null>, faltando: Set<Camp
   // Conta salário (SIAPE): banco pela lista de códigos, agência e conta só com dígitos.
   const banco = m.banco_conta ? facta.codigoBancoPorNome(m.banco_conta) : null;
   if (quer("bancoConta") && banco) d.bancoConta = banco;
-  const agencia = (m.agencia ?? "").replace(/\D/g, "");
+  // A Facta aceita agência de até 4 dígitos: "02836" vira "2836" (zero à esquerda sai).
+  let agencia = (m.agencia ?? "").replace(/\D/g, "");
+  if (agencia.length > 4) agencia = agencia.replace(/^0+/, "");
   if (quer("agencia") && agencia.length >= 3 && agencia.length <= 5) d.agencia = agencia;
   const conta = (m.conta ?? "").replace(/\D/g, "");
   if (quer("conta") && conta.length >= 4 && conta.length <= 15) d.conta = conta;
