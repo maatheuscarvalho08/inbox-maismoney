@@ -69,6 +69,7 @@ export interface EstadoMaisa {
   dataSugerida?: string;
   // Extrato que chegou antes da hora (na etapa do CPF, por exemplo): é lido quando tiver a data.
   extratoPendenteId?: string;
+  extratosPendentes?: string[]; // todos os arquivos que chegaram antes da hora (até 3)
   // Nome completo, que o banco exige no pedido de autorização.
   nome?: string;
   // Espera pela autorização do cliente no link do banco (ISO).
@@ -666,12 +667,17 @@ export function sugerirDataNascimento(texto: string, agora: Date): string | null
   return lerDataNascimento(`${m[1]}/${m[2]}/19${m[3].slice(2)}`, agora);
 }
 
+// Arquivos guardados antes da hora, do mais antigo ao mais novo (até 3).
+const pendentes = (e: EstadoMaisa): string[] => e.extratosPendentes ?? (e.extratoPendenteId ? [e.extratoPendenteId] : []);
+const guardarPendente = (e: EstadoMaisa, id: string): string[] => [...pendentes(e).filter((x) => x !== id), id].slice(-3);
+
 const dataBr = (iso: string) => iso.split("-").reverse().join("/");
 
 // Com a data em mãos: se o extrato já chegou antes, lê e simula agora; senão, pede o extrato.
 async function seguirParaExtrato(estado: EstadoMaisa, data: string, deps: Dependencias): Promise<Passo> {
-  const pronto: EstadoMaisa = { ...estado, etapa: "extrato", tentativas: 0, dataNascimento: data, dataSugerida: undefined, extratoPendenteId: undefined };
-  if (estado.extratoPendenteId) return etapaExtrato(pronto, { texto: null, documento: true }, deps, estado.extratoPendenteId);
+  const pronto: EstadoMaisa = { ...estado, etapa: "extrato", tentativas: 0, dataNascimento: data, dataSugerida: undefined, extratoPendenteId: undefined, extratosPendentes: undefined };
+  const ids = pendentes(estado);
+  if (ids.length) return etapaExtrato(pronto, { texto: null, documento: true }, deps, ids);
   return { estado: pronto, respostas: [TEXTOS.pedeExtrato(produtoExtrato(estado))], efeitos: [], rotulo: "nascimento_valido" };
 }
 
@@ -702,7 +708,7 @@ async function etapaExtrato(
   estado: EstadoMaisa,
   entrada: { texto: string | null; documento?: boolean },
   deps: Dependencias,
-  documentoId?: string,
+  documentoIds?: string | string[],
 ): Promise<Passo> {
   if (!entrada.documento) {
     const texto = entrada.texto?.trim() ?? "";
@@ -738,12 +744,22 @@ async function etapaExtrato(
     }
     return ouvirCliente(estado, texto, deps);
   }
-  let resultado: ResultadoExtrato;
-  try {
-    resultado = await deps.simularPorExtrato(produtoExtrato(estado), estado.dataNascimento ?? "", documentoId);
-  } catch (err) {
-    resultado = { tipo: "erro", banco: "desconhecido", motivo: err instanceof Error ? err.message : "falha na leitura do extrato" };
+  // Vários arquivos antes da hora: lê do mais novo ao mais antigo e fica com a primeira
+  // leitura conclusiva. Inválido, erro ou margem zerada com dúvida: tenta o próximo.
+  const ids = documentoIds === undefined ? [undefined] : Array.isArray(documentoIds) ? [...documentoIds].reverse() : [documentoIds];
+  const peso = (r: ResultadoExtrato) => (r.tipo === "extrato_invalido" ? 0 : r.tipo === "erro" ? 1 : r.tipo === "sem_saldo" && r.revisar ? 2 : 3);
+  let resultado: ResultadoExtrato | null = null;
+  for (const id of ids) {
+    let r: ResultadoExtrato;
+    try {
+      r = await deps.simularPorExtrato(produtoExtrato(estado), estado.dataNascimento ?? "", id);
+    } catch (err) {
+      r = { tipo: "erro", banco: "desconhecido", motivo: err instanceof Error ? err.message : "falha na leitura do extrato" };
+    }
+    if (!resultado || peso(r) > peso(resultado)) resultado = r;
+    if (peso(r) === 3) break;
   }
+  if (!resultado) resultado = { tipo: "erro", banco: "desconhecido", motivo: "nenhum arquivo para ler" };
   if (resultado.tipo === "alternativa") {
     const troco = resultado.trocoCentavos ? formatarReais(resultado.trocoCentavos) : null;
     const { operacao, trocoCentavos, motivo, digitacao, reducoes, simulacoes, renda, matricula, contaSalario } = resultado;
@@ -1856,9 +1872,11 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps);
   // Extrato antes da hora (INSS ou SIAPE, ainda no CPF, nome ou data): guarda e pede o que falta.
   if (entrada.documento && entrada.documentoId && porExtrato(estado.produto) && ["cpf", "nome", "nascimento"].includes(estado.etapa)) {
+    // Segundo arquivo seguido: guarda sem repetir o "Recebi o seu documento".
+    const jaTinha = pendentes(estado).length > 0;
     return {
-      estado: { ...estado, extratoPendenteId: entrada.documentoId },
-      respostas: [TEXTOS.extratoGuardado, PERGUNTA_DA_ETAPA[estado.etapa]],
+      estado: { ...estado, extratoPendenteId: undefined, extratosPendentes: guardarPendente(estado, entrada.documentoId) },
+      respostas: jaTinha ? [] : [TEXTOS.extratoGuardado, PERGUNTA_DA_ETAPA[estado.etapa]],
       efeitos: [],
       rotulo: "extrato_antecipado",
     };
@@ -1869,7 +1887,8 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   // Arquivo antes de saber o vínculo: costuma ser o extrato. Guarda e pergunta o vínculo.
   if (entrada.documento && entrada.documentoId && (estado.etapa === "inicio" || estado.etapa === "convenio")) {
     const respostas = estado.etapa === "inicio" ? [`${TEXTOS.apresentacao} ${TEXTOS.arquivoNoInicio}`, TEXTOS.perguntaConvenio] : [TEXTOS.arquivoNoInicio];
-    return ir(estado, "convenio", respostas, "arquivo_no_inicio", [], { extratoPendenteId: entrada.documentoId });
+    const jaTinha = pendentes(estado).length > 0;
+    return ir(estado, "convenio", jaTinha && estado.etapa === "convenio" ? [] : respostas, "arquivo_no_inicio", [], { extratoPendenteId: undefined, extratosPendentes: guardarPendente(estado, entrada.documentoId) });
   }
   // Extrato de novo depois da oferta: a simulação já foi feita com ele.
   if (entrada.documento && (estado.etapa === "oferta" || estado.etapa === "oferta_port")) {

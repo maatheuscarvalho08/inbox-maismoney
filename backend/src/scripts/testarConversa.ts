@@ -983,6 +983,26 @@ await caso("Lembrete: cliente some no extrato ganha um lembrete só, entre 30 mi
   assert.equal(verificarSilencio({ ...e, etapa: "consentimento" }, new Date(base.getTime() + 40 * 60_000)).respostas.length, 0);
 });
 
+await caso("Dois arquivos antes da hora: guarda os dois, avisa uma vez e lê até achar o extrato", async () => {
+  const lidos: (string | undefined)[] = [];
+  const deps = depsBase(roteiro([]), {
+    simularPorExtrato: async (_c, _d, id) => {
+      lidos.push(id);
+      return id === "pdf-2" ? { tipo: "extrato_invalido", motivo: "não é contracheque" } : { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
+    },
+  }, []);
+  const ini: EstadoMaisa = { etapa: "cpf", tentativas: 0, produto: "siape" };
+  const p1 = await avancar(ini, { texto: null, temMidia: true, documento: true, documentoId: "pdf-1" }, deps);
+  assert.equal(p1.respostas.length, 2);
+  const p2 = await avancar(p1.estado, { texto: null, temMidia: true, documento: true, documentoId: "pdf-2" }, deps);
+  assert.equal(p2.respostas.length, 0);
+  assert.deepEqual(p2.estado.extratosPendentes, ["pdf-1", "pdf-2"]);
+  const p3 = await avancar({ ...p2.estado, etapa: "nascimento", nome: "Afonso" }, { texto: "14/07/1952", temMidia: false }, deps);
+  assert.deepEqual(lidos, ["pdf-2", "pdf-1"]);
+  assert.equal(p3.estado.saida, "sem_saldo");
+  assert.equal(p3.estado.extratosPendentes, undefined);
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });
