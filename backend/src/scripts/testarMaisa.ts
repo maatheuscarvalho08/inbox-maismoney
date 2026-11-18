@@ -357,10 +357,11 @@ const CASOS: Caso[] = [
     respostaContem: "já guardei aqui",
   },
   {
-    nome: "Port pura: a Maisa não oferta, passa para a equipe",
+    nome: "Port pura: a Maisa não oferta e encerra, sem equipe",
     acoes: [...ATE_EXTRATO, { extrato: "port_pura" }],
     etapaFinal: "finalizada",
-    saida: "alternativa",
+    saida: "port_pura",
+    encerra: true,
   },
   {
     nome: "Extrato de ontem serve: responde que sim",

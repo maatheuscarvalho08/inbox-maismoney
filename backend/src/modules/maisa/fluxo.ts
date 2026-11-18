@@ -758,11 +758,11 @@ async function etapaExtrato(
       const comAlternativa: EstadoMaisa = { ...estado, alternativa: { operacao, trocoCentavos, motivo, ...lidos } };
       return transferir(comAlternativa, `sem margem para novo; ${motivo}`, TEXTOS.semMargemExtrato, "alternativa", [], "alternativa");
     }
-    // Port pura (sem refin): a Maisa não oferta. A Facta não digita pela API e a equipe
-    // decide com o cliente. Só a port com refin é ofertada.
+    // Port pura (sem refin): não é ofertada nem vai para a equipe. Encerra o atendimento.
+    // Só a port com refin é ofertada.
     if (operacao === "portabilidade") {
       const comAlternativa: EstadoMaisa = { ...estado, alternativa: { operacao, trocoCentavos, motivo, ...(digitacao ? { digitacao } : {}), ...(reducoes?.length ? { reducoes } : {}), ...lidos } };
-      return transferir(comAlternativa, `sem margem para novo; ${motivo}; port pura não é ofertada pela Maisa`, TEXTOS.semMargemExtrato, "alternativa", [], "alternativa");
+      return encerrar(comAlternativa, `sem margem para novo; ${motivo}; port pura não é ofertada`, TEXTOS.semMargemFim, "port_pura", [], "port_pura");
     }
     // Já tinha dito SIM: avisa que vai digitar e pede o que falta, começando pelo contrato.
     if (estado.aceitouOferta && digitacao && deps.digitacaoAtiva) {
