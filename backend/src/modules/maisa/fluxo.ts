@@ -79,6 +79,7 @@ export interface EstadoMaisa {
   ofertaEm?: string;
   ultimoContatoCliente?: string;
   followupEnviado?: boolean;
+  lembreteEnviado?: boolean; // lembrete único quando o cliente some no meio dos dados
   oferta?: {
     banco: string;
     valorCentavos: number;
@@ -156,7 +157,7 @@ export interface EstadoMaisa {
 // documento = PDF ou imagem, que pode ser o extrato. Áudio chega já transcrito em texto.
 export type Entrada =
   | { texto: string | null; temMidia: boolean; documento?: boolean; documentoId?: string; mensagemId?: string; viaAudio?: boolean }
-  | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" };
+  | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" | "verificar_silencio" };
 type EntradaTexto = Exclude<Entrada, { evento: string }>;
 
 // Camada conversacional (fase 7). Ausente ou desligada: tudo funciona como antes.
@@ -1805,6 +1806,20 @@ function verificarOferta(estado: EstadoMaisa, agora: Date, followupPort = false)
   return parado;
 }
 
+// Cliente sumiu no meio dos dados: um lembrete só, 30 minutos depois da última mensagem
+// dele. Depois de 22 horas não manda: a janela de 24h da Meta pode fechar.
+const LEMBRETE_MS = 30 * 60_000;
+const LEMBRETE_LIMITE_MS = 22 * 60 * 60_000;
+const ETAPAS_LEMBRETE = new Set<Etapa>(["cpf", "nome", "nascimento", "extrato", "numero_contrato", "coleta"]);
+export function verificarSilencio(estado: EstadoMaisa, agora: Date): Passo {
+  const parado: Passo = { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
+  if (!ETAPAS_LEMBRETE.has(estado.etapa) || estado.lembreteEnviado || !estado.ultimaMensagemEm) return parado;
+  const passou = agora.getTime() - new Date(estado.ultimaMensagemEm).getTime();
+  if (passou < LEMBRETE_MS || passou > LEMBRETE_LIMITE_MS) return parado;
+  const pergunta = estado.etapa === "coleta" ? estado.contrato?.pergunta ?? PERGUNTA_DA_ETAPA.coleta : RETOMA_ETAPA[estado.etapa] ?? PERGUNTA_DA_ETAPA[estado.etapa];
+  return { estado: { ...estado, lembreteEnviado: true }, respostas: [`${TEXTOS.lembreteSilencio} ${pergunta}`], efeitos: [], rotulo: "lembrete_silencio" };
+}
+
 export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps: Dependencias): Promise<Passo> {
   let estado: EstadoMaisa = atual ?? { etapa: "inicio", tentativas: 0 };
   if (estado.etapa === "finalizada") return { estado, respostas: [], efeitos: [], rotulo: "ja_finalizada" };
@@ -1813,10 +1828,13 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   if ("evento" in entrada) {
     if (entrada.evento === "verificar_oferta") return verificarOferta(estado, deps.agora(), deps.followupPort === true);
     if (entrada.evento === "executar_digitacao") return executarDigitacao(estado, deps);
+    if (entrada.evento === "verificar_silencio") return verificarSilencio(estado, deps.agora());
     if (estado.etapa !== "aguardando") return { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
     return consultarAgora(estado, deps, "verificacao_automatica", false);
   }
 
+  // O cliente respondeu: um novo sumiço pode ganhar outro lembrete.
+  if (estado.lembreteEnviado) estado = { ...estado, lembreteEnviado: undefined };
   // O cliente falou durante a oferta: o relógio do follow-up recomeça daqui.
   if (estado.etapa === "oferta" || estado.etapa === "oferta_port") estado = { ...estado, ultimoContatoCliente: deps.agora().toISOString() };
 

@@ -970,6 +970,19 @@ await caso("Pergunta de idade fora da etapa é respondida direto, sem repetir s�
   assert.match(p.respostas.join(" "), /74 anos/);
 });
 
+await caso("Lembrete: cliente some no extrato ganha um lembrete só, entre 30 min e 22 h", async () => {
+  const { verificarSilencio } = await import("../modules/maisa/fluxo.js");
+  const base = new Date("2026-11-18T12:00:00Z");
+  const e: EstadoMaisa = { etapa: "extrato", tentativas: 0, produto: "siape", ultimaMensagemEm: base.toISOString() };
+  assert.equal(verificarSilencio(e, new Date(base.getTime() + 10 * 60_000)).respostas.length, 0);
+  const p = verificarSilencio(e, new Date(base.getTime() + 40 * 60_000));
+  assert.match(p.respostas[0], /Ainda estou por aqui.*extrato/);
+  assert.equal(p.estado.lembreteEnviado, true);
+  assert.equal(verificarSilencio(p.estado, new Date(base.getTime() + 60 * 60_000)).respostas.length, 0);
+  assert.equal(verificarSilencio(e, new Date(base.getTime() + 23 * 60 * 60_000)).respostas.length, 0);
+  assert.equal(verificarSilencio({ ...e, etapa: "consentimento" }, new Date(base.getTime() + 40 * 60_000)).respostas.length, 0);
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

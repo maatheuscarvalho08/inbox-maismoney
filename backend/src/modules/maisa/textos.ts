@@ -247,6 +247,7 @@ export const TEXTOS = {
   qualOpcao: (n: number) => `Qual das ${n} opções você prefere? Responda só com o número dela.`,
   opcaoEscolhida: (n: number, valor: string, prazo: number, parcela: string) => `Combinado: opção ${n}, até ${valor} em ${prazo} parcelas de ${parcela}.`,
   // Uma vez só, 10 minutos depois da oferta sem resposta.
+  lembreteSilencio: "Oi! Ainda estou por aqui para seguir com a sua simulação.",
   followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",
   inicioContrato: "Que bom! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta.",
   continuarCadastro: "Vamos continuar o seu cadastro.",

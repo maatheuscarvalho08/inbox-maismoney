@@ -221,7 +221,7 @@ async function soltarLease(conversaId: string) {
 
 // O que fez a Maisa andar: uma mensagem do cliente ou uma checagem do relógio.
 // reler: a equipe mandou a Maisa ler de novo um arquivo antigo (o extrato).
-type Gatilho = { mensagemId: string; reler?: boolean } | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" };
+type Gatilho = { mensagemId: string; reler?: boolean } | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" | "verificar_silencio" };
 
 // Outra gravação mudou o estado no meio (operador devolveu a conversa, outro processo).
 class ConflitoEstado extends Error {}
@@ -709,6 +709,22 @@ export async function verificarOfertasPendentes() {
   return ofertadas.length;
 }
 
+// Cliente parado nas etapas de dados: o fluxo decide se cabe o lembrete único.
+export async function verificarSilencios() {
+  const etapas = ["cpf", "nome", "nascimento", "extrato", "numero_contrato", "coleta"];
+  const paradas = await prisma.conversa.findMany({
+    where: {
+      comMaisa: true, status: { not: "encerrada" }, instancia: { maisaAtiva: true },
+      lastMessageAt: { gte: new Date(Date.now() - 23 * 60 * 60_000), lte: new Date(Date.now() - 30 * 60_000) },
+      OR: etapas.map((e) => ({ maisaEstado: { path: ["etapa"], equals: e } })),
+      NOT: { maisaEstado: { path: ["lembreteEnviado"], equals: true } },
+    },
+    select: { id: true },
+  });
+  for (const c of paradas) await enfileirar(c.id, { evento: "verificar_silencio" });
+  return paradas.length;
+}
+
 // "sim" na confirmação com a janela vencida: tenta digitar (o fluxo revalida tudo).
 // Sobrevive a reinício: o agendamento está no estado salvo, não num temporizador.
 export async function executarDigitacoesPendentes() {
@@ -800,6 +816,7 @@ export function startMaisaJobs() {
     try {
       await verificarAutorizacoesPendentes();
       await verificarOfertasPendentes();
+      await verificarSilencios();
     } catch (err) {
       console.error("Erro nas checagens de tempo da Maisa:", err);
     }
