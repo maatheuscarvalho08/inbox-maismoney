@@ -1026,6 +1026,24 @@ await caso("Sexo pelo nome: claro não pergunta, ambíguo pergunta", async () =>
   assert.match(resumoDados({ nome: "Afonso Rosa", sexo: "M" }, true), /Sexo: masculino/);
 });
 
+await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS segue ofertando", async () => {
+  const { configFluxo } = await import("../modules/maisa/fluxo.js");
+  const antes = configFluxo.siapeOutrosBancos;
+  configFluxo.siapeOutrosBancos = true;
+  try {
+    const comSaldo = async () => ({ tipo: "com_saldo" as const, banco: "Facta", valorCentavos: 500000, parcelaCentavos: 15000, prazoMeses: 96, tabela: { codigoTabela: 1, prazo: 96, contrato: 5000, parcela: 150, coeficiente: 0.03 } });
+    const deps = depsBase(roteiro([]), { simularPorExtrato: comSaldo }, []);
+    const siape = await avancar({ etapa: "extrato", tentativas: 0, produto: "siape", dataNascimento: "1960-01-01" }, { texto: null, temMidia: true, documento: true, documentoId: "x" }, deps);
+    assert.equal(siape.estado.etapa, "finalizada");
+    assert.equal(siape.estado.saida, "siape_outros_bancos");
+    assert.match(siape.respostas.join(" "), /especialista/);
+    const inss = await avancar({ etapa: "extrato", tentativas: 0, produto: "inss", dataNascimento: "1960-01-01" }, { texto: null, temMidia: true, documento: true, documentoId: "x" }, deps);
+    assert.equal(inss.estado.etapa, "oferta");
+  } finally {
+    configFluxo.siapeOutrosBancos = antes;
+  }
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

@@ -175,7 +175,9 @@ export interface ConversaDeps {
 // Dias em que o cadastro de um atendimento anterior vale. Ajustado pelo serviço, de env.
 // cadastroAtivo: o reaproveitamento de cadastro é um comportamento da fase 7 e só vale com
 // MAISA_CONVERSA_MODO=ativo. Desligado ou em sombra, o fluxo é o de antes da fase 7.
-export const configFluxo = { reaproveitaDias: 7, cadastroAtivo: false, confiancaMin: 0.6 };
+// siapeOutrosBancos: SIAPE com tabela aberta na Facta vai para a equipe tentar outro banco
+// (comissão da Facta baixa). Ligado pelo MAISA_SIAPE_OUTROS_BANCOS.
+export const configFluxo = { reaproveitaDias: 7, cadastroAtivo: false, confiancaMin: 0.6, siapeOutrosBancos: false };
 
 export interface ContratoSalvo {
   dados: DadosContrato;
@@ -528,6 +530,10 @@ const DESCONTO: Record<Produto, string> = { clt: "no seu salário", inss: "no se
 
 function mostrarResultado(estado: EstadoMaisa, resultado: ResultadoBanco, agora: Date): Passo {
   const efeito: Efeito = { tipo: "simulacao", convenio: estado.produto ?? "clt", resultado };
+  // SIAPE que passou na Facta: não oferta. A equipe tenta outro banco com mais comissão.
+  if (configFluxo.siapeOutrosBancos && estado.produto === "siape" && resultado.tipo === "com_saldo") {
+    return transferir(estado, `SIAPE passou na Facta (até ${formatarReais(resultado.valorCentavos)}): tentar outro banco, comissão da Facta baixa`, TEXTOS.siapeOutrosBancos, "siape_outros_bancos", [efeito], "siape_outros_bancos");
+  }
   if (resultado.tipo === "sem_saldo") {
     // "extrato" = a margem já acabou no extrato, nem chegou a consultar o banco.
     const doExtrato = resultado.banco === "extrato";
@@ -781,6 +787,11 @@ async function etapaExtrato(
     if (operacao === "portabilidade") {
       const comAlternativa: EstadoMaisa = { ...estado, alternativa: { operacao, trocoCentavos, motivo, ...(digitacao ? { digitacao } : {}), ...(reducoes?.length ? { reducoes } : {}), ...lidos } };
       return encerrar(comAlternativa, `sem margem para novo; ${motivo}; port pura não é ofertada`, TEXTOS.semMargemFim, "port_pura", [], "port_pura");
+    }
+    // SIAPE com port + refin aberta na Facta: a equipe tenta outro banco.
+    if (configFluxo.siapeOutrosBancos && estado.produto === "siape") {
+      const comAlternativa: EstadoMaisa = { ...estado, alternativa: { operacao, trocoCentavos, motivo, ...(digitacao ? { digitacao } : {}), ...(reducoes?.length ? { reducoes } : {}), ...lidos } };
+      return transferir(comAlternativa, `SIAPE passou na Facta (${motivo}): tentar outro banco, comissão da Facta baixa`, TEXTOS.siapeOutrosBancos, "siape_outros_bancos", [], "siape_outros_bancos");
     }
     // Já tinha dito SIM: avisa que vai digitar e pede o que falta, começando pelo contrato.
     if (estado.aceitouOferta && digitacao && deps.digitacaoAtiva) {

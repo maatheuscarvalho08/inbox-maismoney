@@ -21,6 +21,7 @@ configFluxo.reaproveitaDias = env.MAISA_CADASTRO_REAPROVEITA_DIAS;
 // Reaproveitar cadastro é comportamento da fase 7: só com a camada ativa.
 configFluxo.cadastroAtivo = env.MAISA_CONVERSA_MODO === "ativo";
 configFluxo.confiancaMin = env.MAISA_CONVERSA_CONFIANCA_MIN;
+configFluxo.siapeOutrosBancos = env.MAISA_SIAPE_OUTROS_BANCOS;
 
 let motor: MotorConversacional | null = null;
 export function motorDoServico(): MotorConversacional {

@@ -70,6 +70,11 @@ const envSchema = z.object({
   MAISA_JANELA_CONFIRMACAO_S: z.coerce.number().min(5).max(600).default(30),
   // Lembrete em 10 minutos e Carrinho em 24 horas também na oferta de portabilidade.
   // Desligado até a equipe validar.
+  // SIAPE que passa na Facta vai para a equipe tentar outro banco (comissão baixa).
+  MAISA_SIAPE_OUTROS_BANCOS: z
+    .string()
+    .default("true")
+    .transform((v) => v === "true"),
   MAISA_FOLLOWUP_PORT: z
     .string()
     .default("false")
