@@ -1003,6 +1003,16 @@ await caso("Dois arquivos antes da hora: guarda os dois, avisa uma vez e lê at�
   assert.equal(p3.estado.extratosPendentes, undefined);
 });
 
+await caso("Órgão emissor por extenso no cabeçalho do RG vira a sigla da Facta", async () => {
+  const { orgaoNaFacta } = await import("../modules/maisa/coleta.js");
+  const o = { SSP: "x", IFP: "x", DETRAN: "x", DIC: "x", SDS: "x", IGP: "x", IPF: "x" };
+  assert.deepEqual(orgaoNaFacta("INSTITUTO FÉLIX PACHECO", o), { orgao: "IFP", uf: "RJ" });
+  assert.deepEqual(orgaoNaFacta("DETRAN RJ", o), { orgao: "DETRAN", uf: "RJ" });
+  assert.equal(orgaoNaFacta("SECRETARIA DA SEGURANÇA PÚBLICA", o).orgao, "SSP");
+  assert.equal(orgaoNaFacta("Diretoria de Identificação Civil", o).orgao, "DIC");
+  assert.equal(orgaoNaFacta("Secretaria de Defesa Social", o).orgao, "SDS");
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });
