@@ -4,6 +4,7 @@ import type { DigitacaoPort, ReducaoParcela, TabelaDigitacao, ResultadoAutorizac
 import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
+import { sexoPeloNome } from "./sexoPeloNome.js";
 import { PERGUNTA_SEXO, ROTULO_CAMPO, camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato, type ProdutoContrato } from "./contrato.js";
 import type { ResultadoContratacao } from "./facta.js";
 import { NAO_QUERO, SIM_FORTE, normalizar, temReceio } from "./classificador.js";
@@ -1259,11 +1260,18 @@ function cadastroAnterior(estado: EstadoMaisa, agora: Date): ContratoSalvo | nul
 // O ponto único de entrada do cadastro. dadosBase: o que veio do extrato (vale mais que o
 // anterior). Dado de atendimento anterior entra marcado como "anterior", sem PIX nem qualquer
 // autorização: o cliente confirma o cadastro inteiro de novo.
+// Sexo claro pelo primeiro nome: não pergunta. O cliente confere no resumo.
+function comSexoDoNome(d: DadosContrato): DadosContrato {
+  if (d.sexo || !d.nome) return d;
+  const s = sexoPeloNome(d.nome);
+  return s ? { ...d, sexo: s } : d;
+}
+
 function iniciarCadastro(estado: EstadoMaisa, dadosBase: DadosContrato, rotulo: string, antes: string[], agora: Date, extra: Partial<EstadoMaisa> = {}): Passo {
   const produto = produtoCadastro(estado);
   const anterior = cadastroAnterior(estado, agora);
   const reaproveitados = anterior ? Object.fromEntries(Object.entries(anterior.dados).filter(([k, v]) => k !== "pixCpf" && v !== undefined && v !== null && v !== "" && !(k in dadosBase))) as DadosContrato : {};
-  const dados: DadosContrato = { ...reaproveitados, ...dadosBase };
+  const dados: DadosContrato = comSexoDoNome({ ...reaproveitados, ...dadosBase });
   const origem: Partial<Record<CampoContrato, "extrato" | "anterior">> = {
     ...Object.fromEntries(Object.keys(reaproveitados).map((k) => [k, "anterior"])),
     ...origemExtrato(dadosBase),
@@ -1534,7 +1542,7 @@ async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null;
     return transferir(estado, "não quer receber por PIX no CPF", TEXTOS.pixRecusado, "pix_recusado", [], "dados_contrato");
   }
 
-  const junto = { ...dados, ...novos };
+  const junto = comSexoDoNome({ ...dados, ...novos });
   const proxima = proximaPergunta(junto, produto);
   if (!proxima) {
     // RG e conta inteiros: mascarados, o cliente achava que estavam incompletos.

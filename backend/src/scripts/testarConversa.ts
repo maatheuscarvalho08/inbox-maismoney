@@ -1013,6 +1013,19 @@ await caso("Órgão emissor por extenso no cabeçalho do RG vira a sigla da Fact
   assert.equal(orgaoNaFacta("Secretaria de Defesa Social", o).orgao, "SDS");
 });
 
+await caso("Sexo pelo nome: claro não pergunta, ambíguo pergunta", async () => {
+  const { sexoPeloNome } = await import("../modules/maisa/sexoPeloNome.js");
+  const { resumoDados } = await import("../modules/maisa/contrato.js");
+  assert.equal(sexoPeloNome("Afonso Rosa"), "M");
+  assert.equal(sexoPeloNome("Maria José"), "F");
+  assert.equal(sexoPeloNome("José Maria"), "M");
+  assert.equal(sexoPeloNome("Darlete Souza"), "F");
+  assert.equal(sexoPeloNome("Grace Gil"), "F");
+  assert.equal(sexoPeloNome("Darci Lima"), null);
+  assert.equal(sexoPeloNome("Edwalldi"), null);
+  assert.match(resumoDados({ nome: "Afonso Rosa", sexo: "M" }, true), /Sexo: masculino/);
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

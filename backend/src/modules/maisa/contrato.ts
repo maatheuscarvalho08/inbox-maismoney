@@ -172,6 +172,7 @@ export function resumoDados(d: DadosContrato, completo = false): string {
     `Nome: ${d.nome}`,
     `Naturalidade: ${d.cidadeNaturalNome}/${d.estadoNatural}`,
     `RG: ${completo ? d.rg : `final ${String(d.rg).slice(-3)}`}, ${d.orgaoEmissor}/${d.estadoRg}, expedido em ${dataBr(d.dataExpedicao)}`,
+    ...(d.sexo ? [`Sexo: ${d.sexo === "F" ? "feminino" : "masculino"}`] : []),
     `Mãe: ${d.nomeMae}`,
     `Pai: ${d.nomePai}`,
     `Estado civil: ${d.estadoCivilNome}`,
