@@ -76,8 +76,8 @@ export const TEXTOS = {
         "No aplicativo Meu INSS, entre em \"Extrato de Empréstimos\" e baixe o PDF. Pode mandar aqui o PDF ou uma foto bem nítida. " +
         "Uso o extrato só para fazer a sua simulação."
       : "Agora preciso do seu extrato de consignações, que é o extrato dos seus empréstimos. É ele que mostra quanto ainda sobra de margem e quais contratos você tem.\n\n" +
-        "No aplicativo SouGov.br, entre em \"Consignações\" e baixe o extrato em PDF. Pode mandar aqui o PDF ou uma foto bem nítida. " +
-        "Uso o documento só para fazer a sua simulação.",
+        "No aplicativo SouGov.br, entre em \"Consignações\" e baixe o extrato em PDF. Junto, me manda também o seu último contracheque, que fica no mesmo aplicativo. " +
+        "Pode ser PDF ou foto bem nítida. Uso os documentos só para fazer a sua simulação.",
   lembraExtrato: "Pode me mandar o documento aqui, em PDF ou foto? É com ele que eu faço a sua simulação.",
   comoTirarExtrato: (produto: "inss" | "siape") =>
     (produto === "inss"
@@ -119,6 +119,12 @@ export const TEXTOS = {
     `Para ${rotulo}, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.`,
   servidorComEquipe:
     "Para servidor público, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
+  pedeContracheque:
+    "Recebi o extrato, obrigada! Agora só preciso do seu último contracheque, que fica no aplicativo SouGov.br. Pode mandar em PDF ou foto bem nítida.",
+  naoEhContracheque:
+    "Esse documento não parece ser o contracheque. Pode me mandar o seu último contracheque do SouGov.br, em PDF ou foto bem nítida?",
+  vinculoSemConsignado:
+    "Olhei o seu contracheque com atenção. Para o seu tipo de vínculo, no momento não temos uma opção de empréstimo consignado. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
   servidorNaoFederal:
     "Pelo seu documento, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",

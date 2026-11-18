@@ -1044,6 +1044,98 @@ await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS 
   }
 });
 
+// ---------- SIAPE: contracheque para conferir o vínculo ----------
+{
+  const comSaldo = { tipo: "com_saldo" as const, banco: "Facta", valorCentavos: 500000, parcelaCentavos: 15000, prazoMeses: 96, tabela: { codigoTabela: 1, prazo: 96, contrato: 5000, parcela: 150, coeficiente: 0.03 } };
+  const docs: Record<string, { documento: string; vinculo: string | null }> = {};
+  let simulou = 0;
+  const depsSiape = () => depsBase(roteiro([]), {
+    simularPorExtrato: async (_c, _d, id) => {
+      simulou++;
+      return { ...comSaldo, siape: docs[id ?? "atual"] ?? { documento: "extrato_consignacoes", vinculo: null } };
+    },
+    lerVinculoSiape: async (id) => docs[id ?? "atual"] ?? { documento: "outro", vinculo: null },
+  }, []);
+  const noExtrato = (): EstadoMaisa => ({ etapa: "extrato", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" });
+  const arquivo = (id: string) => ({ texto: null, temMidia: true, documento: true, documentoId: id });
+
+  await caso("SIAPE: extrato que passa pede o contracheque antes de seguir", async () => {
+    docs.atual = { documento: "extrato_consignacoes", vinculo: null };
+    const p = await avancar(noExtrato(), arquivo("e1"), depsSiape());
+    assert.equal(p.estado.etapa, "extrato");
+    assert.equal(p.rotulo, "pede_contracheque");
+    assert.match(p.respostas.join(" "), /contracheque/);
+    assert.ok(p.estado.extratoSiapePendente);
+  });
+
+  await caso("SIAPE: contracheque de efetivo depois do extrato segue com a simulação guardada", async () => {
+    docs.atual = { documento: "extrato_consignacoes", vinculo: null };
+    const p1 = await avancar(noExtrato(), arquivo("e1"), depsSiape());
+    docs.atual = { documento: "contracheque", vinculo: "efetivo" };
+    const antes = simulou;
+    const p2 = await avancar(p1.estado, arquivo("c1"), depsSiape());
+    assert.equal(simulou, antes, "não simula de novo");
+    assert.equal(p2.estado.vinculoSiape, "efetivo");
+    assert.equal(p2.estado.extratoSiapePendente, undefined);
+    assert.notEqual(p2.estado.etapa, "extrato");
+  });
+
+  for (const vinculo of ["comissionado", "celetista", "contratado_temporario", "pensao_temporaria"]) {
+    await caso(`SIAPE: contracheque de ${vinculo} encerra o atendimento`, async () => {
+      docs.atual = { documento: "extrato_consignacoes", vinculo: null };
+      const p1 = await avancar(noExtrato(), arquivo("e1"), depsSiape());
+      docs.atual = { documento: "contracheque", vinculo };
+      const p2 = await avancar(p1.estado, arquivo("c1"), depsSiape());
+      assert.equal(p2.estado.etapa, "finalizada");
+      assert.equal(p2.estado.saida, "vinculo_siape");
+      assert.ok(p2.efeitos.some((e) => e.tipo === "encerrar"));
+      assert.match(p2.respostas.join(" "), /tipo de vínculo/);
+    });
+  }
+
+  await caso("SIAPE: contracheque já como primeiro documento confere o vínculo na hora", async () => {
+    docs.atual = { documento: "contracheque", vinculo: "comissionado" };
+    const p = await avancar(noExtrato(), arquivo("c1"), depsSiape());
+    assert.equal(p.estado.saida, "vinculo_siape");
+    docs.atual = { documento: "contracheque", vinculo: "aposentado" };
+    const p2 = await avancar(noExtrato(), arquivo("c2"), depsSiape());
+    assert.equal(p2.estado.vinculoSiape, "aposentado");
+    assert.notEqual(p2.rotulo, "pede_contracheque");
+  });
+
+  await caso("SIAPE: no lugar do contracheque chega outro documento, pede de novo", async () => {
+    docs.atual = { documento: "extrato_consignacoes", vinculo: null };
+    const p1 = await avancar(noExtrato(), arquivo("e1"), depsSiape());
+    docs.atual = { documento: "outro", vinculo: null };
+    const p2 = await avancar(p1.estado, arquivo("x1"), depsSiape());
+    assert.equal(p2.estado.etapa, "extrato");
+    assert.match(p2.respostas.join(" "), /não parece ser o contracheque/);
+    assert.ok(p2.estado.extratoSiapePendente);
+  });
+
+  await caso("SIAPE: extrato e contracheque mandados antes da hora são lidos juntos", async () => {
+    docs.ext = { documento: "extrato_consignacoes", vinculo: null };
+    docs.cc = { documento: "contracheque", vinculo: "pensao_temporaria" };
+    const ini: EstadoMaisa = { etapa: "nascimento", tentativas: 0, produto: "siape", nome: "Ana Souza", extratosPendentes: ["cc", "ext"] };
+    const p = await avancar(ini, { texto: "10/12/1966", temMidia: false }, depsSiape());
+    assert.equal(p.estado.saida, "vinculo_siape");
+  });
+
+  await caso("SIAPE: sem margem nenhuma encerra sem pedir contracheque", async () => {
+    const deps = depsBase(roteiro([]), {
+      simularPorExtrato: async () => ({ tipo: "sem_saldo" as const, banco: "extrato", motivo: "sem margem", siape: { documento: "extrato_consignacoes", vinculo: null } }),
+      lerVinculoSiape: async () => ({ documento: "outro", vinculo: null }),
+    }, []);
+    const p = await avancar(noExtrato(), arquivo("e1"), deps);
+    assert.equal(p.estado.saida, "sem_saldo");
+  });
+
+  await caso("SIAPE: pedido do extrato já pede o contracheque junto", async () => {
+    assert.match(TEXTOS.pedeExtrato("siape"), /contracheque/);
+    assert.doesNotMatch(TEXTOS.pedeExtrato("inss"), /contracheque/);
+  });
+}
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

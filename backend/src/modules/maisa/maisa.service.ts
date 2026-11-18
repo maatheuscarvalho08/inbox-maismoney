@@ -359,6 +359,9 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       // Sem empréstimo novo: antes de desistir, vê se dá para portar ou refinanciar.
       // Renda e matrícula do documento vão junto: o contrato não pergunta de novo.
       const lido = registro.leitura as ExtratoLido;
+      // SIAPE: qual documento chegou e o vínculo (o contracheque mostra). O fluxo decide.
+      const siape = convenio === "siape" ? { documento: lido.documento_siape ?? null, vinculo: lido.vinculo_siape ?? null } : undefined;
+      const com = <T extends object>(r: T) => (siape ? { ...r, siape } : r);
       const bancoSal = lido.conta_banco ? codigoBancoPorNome(lido.conta_banco) : null;
       const agenciaSal = (lido.conta_agencia ?? "").replace(/\D/g, "");
       const contaSal = (lido.conta_numero ?? "").replace(/\D/g, "");
@@ -370,11 +373,23 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       };
       // Mesmo com leitura em dúvida: se a Facta abrir tabela, ela oferta. Se não abrir e
       // houver dúvida, a equipe confere (o fluxo trata "revisar").
-      if (leitura.tipo === "sem_saldo") return (await alternativa()) ?? leitura;
-      if (leitura.tipo !== "ok") return leitura;
+      if (leitura.tipo === "sem_saldo") return com((await alternativa()) ?? leitura);
+      if (leitura.tipo !== "ok") return com(leitura);
       const resultado = await banco.simularConsignado({ convenio, cpf, dataNascimento, parcelaMaxima: leitura.parcelaMaxima });
-      if (resultado.tipo === "sem_saldo") return (await alternativa()) ?? resultado;
-      return resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie, matricula: leitura.matricula, contaSalario } : resultado;
+      if (resultado.tipo === "sem_saldo") return com((await alternativa()) ?? resultado);
+      return com(resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie, matricula: leitura.matricula, contaSalario } : resultado);
+    },
+    // Só lê o documento (sem banco): o contracheque do SIAPE, para conferir o vínculo.
+    lerVinculoSiape: async (documentoId) => {
+      const m = documentoId ? await prisma.mensagem.findUnique({ where: { id: documentoId } }) : null;
+      const tipo = m?.tipoMidia?.split(";")[0].trim();
+      const doc = m?.midiaPath && tipo && !m.midiaDeleted ? { midiaPath: m.midiaPath, tipo } : arquivo;
+      if (!doc) return { documento: null, vinculo: null };
+      const { registro } = await parcelaPeloExtrato(await lerArquivo(doc.midiaPath), doc.tipo, "siape");
+      if (documentoId) await guardarAnalise(documentoId, registro).catch(() => undefined);
+      const lido = registro.leitura as ExtratoLido;
+      console.log(`Maisa leu o vínculo SIAPE da conversa ${conversa.id}: ${lido.documento_siape ?? "?"} ${lido.vinculo_siape ?? "?"}`);
+      return { documento: lido.documento_siape ?? null, vinculo: lido.vinculo_siape ?? null };
     },
     digitacaoAtiva: env.MAISA_DIGITA_PROPOSTA && (banco === bancoSimulado || (banco === bancoFacta && digitacaoConfigurada())),
     // Trava própria, independente do código master. Desligada por padrão.

@@ -6,6 +6,7 @@ import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
 import { sexoPeloNome } from "./sexoPeloNome.js";
 import { leituraCurta } from "./conversa/leituraCurta.js";
+import { VINCULOS_SEM_CONSIGNADO } from "../extratos/leitor.js";
 import { PERGUNTA_SEXO, ROTULO_CAMPO, camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato, type ProdutoContrato } from "./contrato.js";
 import type { ResultadoContratacao } from "./facta.js";
 import { NAO_QUERO, SIM_FORTE, normalizar, temReceio } from "./classificador.js";
@@ -71,7 +72,9 @@ export interface EstadoMaisa {
   dataSugerida?: string;
   // Extrato que chegou antes da hora (na etapa do CPF, por exemplo): é lido quando tiver a data.
   extratoPendenteId?: string;
-  extratosPendentes?: string[]; // todos os arquivos que chegaram antes da hora (até 3)
+  extratosPendentes?: string[];
+  vinculoSiape?: string; // vínculo lido no contracheque do SIAPE
+  extratoSiapePendente?: ResultadoExtrato; // simulação feita com o extrato, esperando o contracheque // todos os arquivos que chegaram antes da hora (até 3)
   // Nome completo, que o banco exige no pedido de autorização.
   nome?: string;
   // Espera pela autorização do cliente no link do banco (ISO).
@@ -178,6 +181,11 @@ export interface ConversaDeps {
 // MAISA_CONVERSA_MODO=ativo. Desligado ou em sombra, o fluxo é o de antes da fase 7.
 // siapeOutrosBancos: SIAPE com tabela aberta na Facta vai para a equipe tentar outro banco
 // (comissão da Facta baixa). Ligado pelo MAISA_SIAPE_OUTROS_BANCOS.
+export interface InfoSiape { documento: string | null; vinculo: string | null }
+
+// SIAPE: resultado que leva a oferta ou à equipe precisa do vínculo do contracheque antes.
+const precisaVinculo = (r: ResultadoExtrato) => r.tipo === "com_saldo" || (r.tipo === "alternativa" && r.simulada) || (r.tipo === "sem_saldo" && r.revisar === true);
+
 export const configFluxo = { reaproveitaDias: 7, cadastroAtivo: false, confiancaMin: 0.6, siapeOutrosBancos: false };
 
 export interface ContratoSalvo {
@@ -213,7 +221,9 @@ export interface Dependencias {
   statusProposta(): Promise<{ banco: string; status: string } | null>;
   // Lê o extrato que acabou de chegar e simula com a margem dele.
   // documentoId: extrato que o cliente mandou antes da hora. Sem ele, o da mensagem atual.
-  simularPorExtrato(produto: ProdutoExtrato, dataNascimento: string, documentoId?: string): Promise<ResultadoExtrato>;
+  simularPorExtrato(produto: ProdutoExtrato, dataNascimento: string, documentoId?: string): Promise<ResultadoExtrato & { siape?: InfoSiape }>;
+  // SIAPE: lê só o documento (sem banco) para saber se é contracheque e qual o vínculo.
+  lerVinculoSiape?(documentoId?: string): Promise<InfoSiape>;
   // Digitação na Facta (INSS e SIAPE). Desligada, o "sim" vai para a equipe.
   digitacaoAtiva: boolean;
   extrairDados(pergunta: string, entrada: { texto: string | null; documento?: boolean }, faltando: CampoContrato[]): Promise<DadosContrato>;
@@ -349,6 +359,7 @@ export function notaEquipe(estado: EstadoMaisa, motivo: string, efeitos: Efeito[
   const linhas = [`Passei para a equipe: ${motivo}.`];
   const produto = estado.produto ? estado.produto.toUpperCase() : "não definido";
   linhas.push(`Produto: ${produto}. Parei na etapa: ${NOME_ETAPA[estado.etapa]}.`);
+  if (estado.vinculoSiape) linhas.push(`Vínculo no contracheque: ${estado.vinculoSiape.replace(/_/g, " ")}.`);
 
   for (const e of efeitos) {
     if (e.tipo !== "simulacao") continue;
@@ -759,18 +770,55 @@ async function etapaExtrato(
   // leitura conclusiva. Inválido, erro ou margem zerada com dúvida: tenta o próximo.
   const ids = documentoIds === undefined ? [undefined] : Array.isArray(documentoIds) ? [...documentoIds].reverse() : [documentoIds];
   const peso = (r: ResultadoExtrato) => (r.tipo === "extrato_invalido" ? 0 : r.tipo === "erro" ? 1 : r.tipo === "sem_saldo" && r.revisar ? 2 : 3);
-  let resultado: ResultadoExtrato | null = null;
-  for (const id of ids) {
+  let resultado: (ResultadoExtrato & { siape?: InfoSiape }) | null = null;
+  let idUsado: string | undefined;
+
+  // SIAPE com a simulação do extrato guardada: este arquivo deve ser o contracheque.
+  if (estado.extratoSiapePendente && deps.lerVinculoSiape) {
+    const info = await deps.lerVinculoSiape(ids[0]).catch(() => null);
+    if (!info || info.documento !== "contracheque") return tentarDeNovo(estado, TEXTOS.naoEhContracheque, "contracheque_invalido", "sem_extrato");
+    const vinculo = info.vinculo ?? "nao_informado";
+    if (VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
+      return encerrar({ ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined }, `vínculo SIAPE sem consignado: ${vinculo}`, TEXTOS.vinculoSemConsignado, "vinculo_siape", [], "vinculo_siape");
+    }
+    resultado = estado.extratoSiapePendente;
+    estado = { ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined };
+  }
+
+  for (const id of resultado ? [] : ids) {
     let r: ResultadoExtrato;
     try {
       r = await deps.simularPorExtrato(produtoExtrato(estado), estado.dataNascimento ?? "", id);
     } catch (err) {
       r = { tipo: "erro", banco: "desconhecido", motivo: err instanceof Error ? err.message : "falha na leitura do extrato" };
     }
-    if (!resultado || peso(r) > peso(resultado)) resultado = r;
+    if (!resultado || peso(r) > peso(resultado)) {
+      resultado = r;
+      idUsado = id;
+    }
     if (peso(r) === 3) break;
   }
   if (!resultado) resultado = { tipo: "erro", banco: "desconhecido", motivo: "nenhum arquivo para ler" };
+
+  // SIAPE: antes de ofertar ou passar para a equipe, confere o vínculo no contracheque.
+  if (estado.produto === "siape" && deps.lerVinculoSiape && !estado.vinculoSiape && precisaVinculo(resultado)) {
+    const doDoc = resultado.siape;
+    let vinculo: string | undefined = doDoc?.documento === "contracheque" ? doDoc.vinculo ?? "nao_informado" : undefined;
+    // Outro arquivo que já chegou pode ser o contracheque.
+    for (const id of ids) {
+      if (vinculo || id === idUsado || id === undefined) continue;
+      const info = await deps.lerVinculoSiape(id).catch(() => null);
+      if (info?.documento === "contracheque") vinculo = info.vinculo ?? "nao_informado";
+    }
+    if (vinculo && VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
+      return encerrar({ ...estado, vinculoSiape: vinculo }, `vínculo SIAPE sem consignado: ${vinculo}`, TEXTOS.vinculoSemConsignado, "vinculo_siape", [], "vinculo_siape");
+    }
+    if (!vinculo) {
+      const { siape: _s, ...guardado } = resultado;
+      return { estado: { ...estado, extratoSiapePendente: guardado as ResultadoExtrato, tentativas: 0 }, respostas: [TEXTOS.pedeContracheque], efeitos: [], rotulo: "pede_contracheque" };
+    }
+    estado = { ...estado, vinculoSiape: vinculo };
+  }
   if (resultado.tipo === "alternativa") {
     const troco = resultado.trocoCentavos ? formatarReais(resultado.trocoCentavos) : null;
     const { operacao, trocoCentavos, motivo, digitacao, reducoes, simulacoes, renda, matricula, contaSalario } = resultado;
@@ -2068,7 +2116,7 @@ export function descreverPendencia(estado: EstadoMaisa): Pendencia {
     case "confirmacao":
       return { ...base, chave: etapa, tipo: "confirmacao", topico: null, pergunta: estado.contrato?.pergunta ?? PERGUNTA_DA_ETAPA[etapa] ?? "", dadoPedido: "a sua confirmação" };
     case "extrato":
-      return { ...base, chave: "extrato", tipo: "arquivo", topico: estado.produto === "inss" ? "extrato_inss" : "extrato_siape", pergunta: TEXTOS.lembraExtrato, dadoPedido: "o extrato" };
+      return { ...base, chave: "extrato", tipo: "arquivo", topico: estado.produto === "inss" ? "extrato_inss" : "extrato_siape", pergunta: estado.extratoSiapePendente ? TEXTOS.pedeContracheque : TEXTOS.lembraExtrato, dadoPedido: estado.extratoSiapePendente ? "o último contracheque" : "o extrato" };
     case "cpf":
       return { ...base, chave: "cpf", tipo: "dado", topico: "cpf", pergunta: PERGUNTA_DA_ETAPA.cpf, dadoPedido: "o seu CPF" };
     case "nascimento":
