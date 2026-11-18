@@ -49,6 +49,12 @@ export function normalizarCpf(texto: string): LeituraCpf {
   const cpf = extrairCpf(texto);
   if (cpf) return cpfValido(cpf) ? { tipo: "valido", cpf } : { tipo: "invalido", cpf };
   const n = cpfComTamanhoErrado(texto);
+  // CPF que começa com zero e perdeu o zero (planilha, cadastro antigo): com o zero na frente
+  // e os verificadores fechando, é o CPF. Sem fechar, segue como tamanho errado.
+  if (n === 10) {
+    const dez = (texto.match(/\d[\d.\s\-‐-―−]*\d/g) ?? []).map(soDigitos).find((x) => x.length === 10);
+    if (dez && cpfValido(`0${dez}`)) return { tipo: "valido", cpf: `0${dez}` };
+  }
   return n ? { tipo: "tamanho_errado", digitos: n } : { tipo: "ausente" };
 }
 
