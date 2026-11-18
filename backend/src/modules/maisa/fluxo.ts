@@ -336,7 +336,7 @@ function transferir(
     // devolvida à Maisa não recomeçar do zero. Notas livres da equipe não são fonte de dado.
     estado: { ...estado, etapa: "finalizada", tentativas: 0, motivoTransferencia: motivo, paradaEm: estado.etapa, saida, contrato: undefined, contratoSalvo: guardarCadastro(estado) },
     respostas: resposta ? [resposta] : [],
-    efeitos: [...efeitos, { tipo: "transferir", motivo, nota: notaEquipe(estado, motivo, efeitos) }],
+    efeitos: [...efeitos, { tipo: "transferir", motivo, nota: notaEquipe({ ...estado, saida }, motivo, efeitos) }],
     rotulo,
   };
 }
@@ -375,18 +375,21 @@ export function notaEquipe(estado: EstadoMaisa, motivo: string, efeitos: Efeito[
     const nome = { port_refin: "port + refin", portabilidade: "portabilidade", refin: "refin" }[a.operacao];
     linhas.push(...dadosDoCliente(estado));
     linhas.push(`Simulei na Facta (${nome}, operação 003500): ${a.motivo}.`);
-    if (a.trocoCentavos) linhas.push(`Troco ofertado: até ${formatarReais(a.trocoCentavos)}.`);
+    // SIAPE que foi para outro banco: nada foi ofertado ao cliente. A nota não pode dizer que foi.
+    const ofertou = estado.saida !== "siape_outros_bancos";
+    if (!ofertou) linhas.push("NADA FOI OFERTADO AO CLIENTE: a Facta abriu tabela, mas pela regra do SIAPE a equipe tenta outro banco. Os números abaixo são só referência da Facta.");
+    if (a.trocoCentavos) linhas.push(`${ofertou ? "Troco ofertado" : "Melhor troco na Facta (referência)"}: até ${formatarReais(a.trocoCentavos)}.`);
     if (a.numeroContrato) linhas.push(`Número do contrato informado pelo cliente: ${a.numeroContrato}.`);
-    if (a.digitacao) linhas.push(`Contrato que ela ofertou: ${a.digitacao.banco}, parcela ${r$(a.digitacao.parcela)}.`);
+    if (a.digitacao) linhas.push(`${ofertou ? "Contrato que ela ofertou" : "Melhor contrato na Facta (referência)"}: ${a.digitacao.banco}, parcela ${r$(a.digitacao.parcela)}.`);
     // Tudo o que a Facta abriu, contrato por contrato, para a equipe digitar no portal.
     if (a.simulacoes?.length) {
       linhas.push("", "SIMULAÇÕES NA FACTA (SIAPE, averbador 15, operação 003500). Saldo estimado: confirmar na CIP.");
-      a.simulacoes.forEach((s, i) => linhas.push(...blocoSimulacao(s, i + 1, a.numeroContrato, a.digitacao)));
+      a.simulacoes.forEach((s, i) => linhas.push(...blocoSimulacao(s, i + 1, a.numeroContrato, a.digitacao, ofertou)));
     }
   }
   // Conversa antiga, sem a lista: só o contrato ofertado e as reduções.
   if (a && !a.simulacoes?.length) {
-    if (a.digitacao) linhas.push("", "SIMULAÇÃO NA FACTA (SIAPE, averbador 15, operação 003500). Saldo estimado: confirmar na CIP.", ...blocoSimulacao(a.digitacao, 1, a.numeroContrato, a.digitacao));
+    if (a.digitacao) linhas.push("", "SIMULAÇÃO NA FACTA (SIAPE, averbador 15, operação 003500). Saldo estimado: confirmar na CIP.", ...blocoSimulacao(a.digitacao, 1, a.numeroContrato, a.digitacao, estado.saida !== "siape_outros_bancos"));
     for (const red of a.reducoes ?? []) linhas.push(`Port ${red.banco}: parcela de ${r$(red.atual)} cai para ${r$(red.nova)}.`);
   }
 
@@ -418,13 +421,13 @@ function linhaTabela(rotulo: string, t: TabelaDigitacao, refin: boolean): string
 }
 
 // Um contrato simulado, com tudo o que o portal pede para digitar.
-function blocoSimulacao(s: DigitacaoPort, n: number, numeroCliente?: string, ofertado?: DigitacaoPort): string[] {
+function blocoSimulacao(s: DigitacaoPort, n: number, numeroCliente?: string, ofertado?: DigitacaoPort, ofertou = true): string[] {
   const foiOfertado = ofertado && ofertado.banco === s.banco && ofertado.parcela === s.parcela;
   const numero = s.numeroContrato || (foiOfertado ? numeroCliente : undefined);
   const economia = s.parcela - s.port.parcela;
   return [
     `${n}) ${s.banco}${s.bancoCodigo ? `, código ${s.bancoCodigo}` : ", código do banco não identificado"}` +
-      `${numero ? `, contrato nº ${numero}` : ", nº do contrato: pegar na BRB"}${foiOfertado ? "  [OFERTADO]" : ""}`,
+      `${numero ? `, contrato nº ${numero}` : ", nº do contrato: pegar na BRB"}${foiOfertado ? (ofertou ? "  [OFERTADO]" : "  [MELHOR NA FACTA]") : ""}`,
     // Sem o total no extrato, o prazo original enviado à Facta é o próprio restante.
     `   Hoje: parcela ${r$(s.parcela)}, faltam ${s.prazoRestante}` +
       (s.prazoOriginal > s.prazoRestante ? ` de ${s.prazoOriginal}` : " (total e pagas não informados no extrato: conferir na BRB)") +
