@@ -1,7 +1,7 @@
 import type { Convenio } from "@prisma/client";
 import type { Classificador, ConvenioEntendido, LeituraOferta } from "./classificador.js";
 import type { DigitacaoPort, ReducaoParcela, TabelaDigitacao, ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta, ResultadoExtrato } from "./bancos.js";
-import { cpfValido, extrairCpf } from "./cpf.js";
+import { cpfComTamanhoErrado, cpfValido, extrairCpf, normalizarCpf, trechoDoCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
 import { sexoPeloNome } from "./sexoPeloNome.js";
@@ -26,6 +26,7 @@ import {
   PEDE_EXPLICACAO,
   RECOMECAR,
   RESPOSTA_SOCIAL,
+  dataInexistente,
   datasNoTexto,
   idadeEm,
   mensagemSocial,
@@ -633,12 +634,16 @@ async function decidirEContinuar(estado: EstadoMaisa, convenio: ConvenioEntendid
 }
 
 async function etapaCpf(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
-  const cpf = extrairCpf(texto);
+  // Normalização determinística: pontuação, espaços e traços não fazem um CPF válido ser recusado.
+  const lido = normalizarCpf(texto);
+  if (lido.tipo === "tamanho_errado") return tentarDeNovo(estado, TEXTOS.cpfTamanho(lido.digitos), "cpf_tamanho_errado");
+  const cpf = lido.tipo === "ausente" ? null : lido.cpf;
   if (cpf) {
     if (!cpfValido(cpf)) return tentarDeNovo(estado, TEXTOS.cpfInvalido, "cpf_invalido");
     if (porExtrato(estado.produto)) {
-      // "CPF 15/03/1958": a data veio junto, segue direto para o extrato.
-      const data = lerDataNascimento(texto.replace(/\d{3}\.?\s?\d{3}\.?\s?\d{3}\s?-?\s?\d{2}/, " "), deps.agora());
+      // "CPF 15/03/1958": a data veio junto, segue direto para o extrato. O trecho do CPF sai antes.
+      const trecho = trechoDoCpf(texto);
+      const data = lerDataNascimento(trecho ? texto.replace(trecho, " ") : texto, deps.agora());
       if (data) {
         const q = await seguirParaExtrato({ ...estado, etapa: "nascimento", cpfFim: cpf.slice(-4) }, data, deps);
         return { ...q, efeitos: [{ tipo: "cpf", cpf }, ...q.efeitos], rotulo: "cpf_e_data" };
@@ -685,7 +690,10 @@ const produtoCadastro = (estado: EstadoMaisa): ProdutoContrato => (estado.produt
 // provavelmente era. null se não der para adivinhar com segurança.
 export function sugerirDataNascimento(texto: string, agora: Date): string | null {
   const m = texto.match(/\b(\d{1,2})\s*[/.\- ]\s*(\d{1,2})\s*[/.\- ]\s*(\d{4})\b/);
-  if (!m || m[3].startsWith("19")) return null;
+  if (!m) return null;
+  // "12/25/1966": mês maior que 12 com dia até 12 é o formato americano. Pergunta se é 25/12.
+  if (Number(m[2]) > 12 && Number(m[1]) <= 12) return lerDataNascimento(`${m[2]}/${m[1]}/${m[3]}`, agora);
+  if (m[3].startsWith("19")) return null;
   return lerDataNascimento(`${m[1]}/${m[2]}/19${m[3].slice(2)}`, agora);
 }
 
@@ -719,7 +727,15 @@ async function etapaNascimento(estado: EstadoMaisa, texto: string, deps: Depende
     return { estado, respostas: [TEXTOS.perguntaIdade], efeitos: [], rotulo: "pergunta_idade" };
   }
   const sugerida = sugerirDataNascimento(texto, deps.agora());
-  if (sugerida) return ir(estado, "nascimento", [TEXTOS.confirmaData(dataBr(sugerida))], "nascimento_sugerido", [], { dataSugerida: sugerida });
+  if (sugerida) {
+    // Mês maior que 12 ("12/25/1966"): dia e mês vieram trocados. Senão, foi o ano.
+    const trocada = /\b\d{1,2}\s*[/.\- ]\s*(\d{1,2})\s*[/.\- ]/.exec(texto);
+    const texto_ = trocada && Number(trocada[1]) > 12 ? TEXTOS.confirmaDataTrocada(dataBr(sugerida)) : TEXTOS.confirmaData(dataBr(sugerida));
+    return ir(estado, "nascimento", [texto_], "nascimento_sugerido", [], { dataSugerida: sugerida });
+  }
+  // "31/02/1966": diz qual data não existe, em vez de "não entendi".
+  const inexistente = dataInexistente(texto);
+  if (inexistente) return tentarDeNovo(estado, TEXTOS.dataInexistente(inexistente), "data_inexistente");
   // Sem número nenhum, é conversa: responde antes de pedir a data de novo.
   if (!/\d/.test(texto)) return ouvirCliente(estado, texto, deps);
   return tentarDeNovo(estado, TEXTOS.nascimentoInvalido, "nascimento_invalido");
@@ -2021,7 +2037,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   // orienta, reformula ou encaminha. O que muda estado financeiro segue no motor abaixo, que valida
   // tudo com as regras de sempre. Qualquer falha da camada: vale o fluxo de sempre.
   let decisao: SaidaMotor | null = null;
-  if (deps.conversa?.etapas.has(estado.etapa)) {
+  if (deps.conversa?.etapas.has(estado.etapa) && !dadoDireto(estado, texto, deps.agora())) {
     decisao = await deps.conversa
       .decidir({ estado, texto, pendencia: descreverPendencia(estado), viaAudio: entrada.viaAudio === true, agora: deps.agora() })
       .catch(() => null);
@@ -2065,6 +2081,18 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     }
   }
   return { ...passo, estado: { ...passo.estado, memoria }, interpretacao: decisao.registro };
+}
+
+// CPF ou data reconhecidos pelas regras na etapa que pede esse dado: vão direto ao motor, que
+// normaliza e valida. A interpretação não pode atrasar nem reformular um dado que já veio certo.
+function dadoDireto(estado: EstadoMaisa, texto: string, agora: Date): boolean {
+  if (estado.etapa === "cpf") return Boolean(extrairCpf(texto) || cpfComTamanhoErrado(texto));
+  // No extrato, a correção da data ("errei, é 12/12/1966") também é dado certo.
+  if (estado.etapa === "extrato") return lerDataNascimento(texto, agora) !== null;
+  // Data sugerida esperando o "sim": a confirmação é do motor, não vira "vou conseguir".
+  if (estado.etapa === "nascimento" && estado.dataSugerida) return true;
+  if (estado.etapa === "nascimento") return datasNoTexto(texto, agora).length > 0 || dataInexistente(texto) !== null || sugerirDataNascimento(texto, agora) !== null;
+  return false;
 }
 
 const interpretacaoConfirma = (d: SaidaMotor) =>

@@ -64,12 +64,15 @@ export const TEXTOS = {
     OPCOES_CONVENIO,
   perguntaConvenio: PERGUNTA_CONVENIO,
   pedeCpf: "Vamos lá! Para fazer a sua simulação, preciso do seu CPF. Pode mandar só os números.",
-  cpfInvalido: "Esse CPF não parece válido. Pode conferir e me mandar de novo?",
+  cpfInvalido: "Não consegui validar esse CPF. Pode conferir os números e me enviar novamente, por favor?",
+  cpfTamanho: (n: number) => `O CPF tem 11 números, e aqui eu contei ${n}. Pode conferir e me enviar novamente, por favor?`,
+  dataInexistente: (d: string) => `A data ${d} não existe no calendário. Pode conferir o dia e o mês e me mandar de novo, por favor?`,
   pedeNome: "Agora só preciso confirmar o seu nome completo, exatamente como aparece no documento.",
   pedeNascimento: "Certo, falta só a sua data de nascimento. Pode mandar assim: 15/03/1958.",
   extratoGuardado: "Recebi o seu documento, obrigada! Já guardei aqui para a sua simulação.",
   confirmaData: (data: string) => `Acho que o ano saiu trocado. Você quis dizer ${data}? Se for isso, é só me responder SIM.`,
-  nascimentoInvalido: "Não entendi a data. Pode mandar assim: 15/03/1958?",
+  confirmaDataTrocada: (data: string) => `Só para confirmar: a sua data de nascimento é ${data}, com o dia antes do mês? Se for isso, é só me responder SIM.`,
+  nascimentoInvalido: "Não consegui validar essa data. Pode conferir o dia, o mês e o ano e me mandar assim: 15/03/1958?",
   pedeExtrato: (produto: "inss" | "siape") =>
     produto === "inss"
       ? "Agora preciso do seu extrato de empréstimos do INSS. É ele que mostra quanto ainda sobra de margem no seu benefício.\n\n" +

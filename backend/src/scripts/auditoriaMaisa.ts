@@ -188,18 +188,18 @@ c(V, "SEGUP no vínculo não é pedido de atendente", ["oi", "SEGUP"], { naoCont
 c(V, "Quer acompanhar proposta", ["quero saber da minha proposta"], { fim: "transferiu" });
 c(V, "Pede atendente logo de cara", ["quero falar com um atendente"], { fim: "transferiu" });
 c(V, "Áudio transcrito 'CIAP'", ["oi", "eu sou do ciap"], { etapa: "cpf" }, "Áudio 'CIAP'");
-c(V, "Cliente muda de ideia: INSS e depois SIAPE no CPF", ["oi", "1", "na verdade sou siape"], { naoContem: [nao(/CPF não parece válido/, "interpretacao")], responde: true });
+c(V, "Cliente muda de ideia: INSS e depois SIAPE no CPF", ["oi", "1", "na verdade sou siape"], { naoContem: [nao(/validar esse CPF/, "interpretacao")], responde: true });
 c(V, "Pergunta se trabalha com cartão", ["oi", "vcs fazem cartão consignado?"], { responde: true, naoContem: [nao(/R\$\s?\d/, "precisao")] });
 
 // ===== 2. CPF =====
 const C = "CPF";
 for (const t of [CPF, fmt(CPF), `meu cpf é ${fmt(CPF)}`, `Ta ai ${CPF}`, `${CPF.slice(0, 3)} ${CPF.slice(3, 6)} ${CPF.slice(6, 9)} ${CPF.slice(9)}`, `cpf: ${CPF}.`])
   c(C, `CPF no formato "${t.replace(/\d/g, "#")}"`, ["oi", "3", t], { etapa: "nascimento", fim: "continua" }, t.startsWith("Ta ai") ? "Produção: 'Ta ai ###'" : undefined);
-c(C, "CPF inválido pede de novo", ["oi", "3", "12345678900"], { etapa: "cpf", contem: [/não parece válido/] });
+c(C, "CPF inválido pede de novo", ["oi", "3", "12345678900"], { etapa: "cpf", contem: [/Não consegui validar esse CPF/] });
 c(C, "CPF incompleto pede de novo", ["oi", "3", "123456"], { etapa: "cpf", fim: "continua" });
 c(C, "Palavra 'cpf' sem número", ["oi", "3", "Cpf"], { etapa: "cpf", fim: "continua", naoContem: [nao(/Desculpa, não entendi\. Perfeito!/, "tom")] }, "Zizi: 'Desculpa, não entendi. Perfeito!'");
 c(C, "Pergunta por que precisa do CPF", ["oi", "3", "pra que vc precisa do meu cpf?"], { etapa: "cpf", fim: "continua", responde: true });
-c(C, "Não quer passar o CPF", ["oi", "3", "não vou passar meu cpf por aqui"], { responde: true, naoContem: [nao(/CPF não parece válido/, "interpretacao")] });
+c(C, "Não quer passar o CPF", ["oi", "3", "não vou passar meu cpf por aqui"], { responde: true, naoContem: [nao(/validar esse CPF/, "interpretacao")] });
 c(C, "CPF e data juntos", ["oi", "3", `${CPF} 15/03/1958`], { etapa: ["nascimento", "extrato"], fim: "continua" });
 c(C, "CPF de outra pessoa (mãe)", ["oi", "3", `é pra minha mãe, o cpf dela é ${CPF}`], { etapa: "nascimento", fim: "continua" });
 c(C, "Três CPFs inválidos vão para a equipe", ["oi", "3", "111", "222", "333"], { fim: "transferiu" });

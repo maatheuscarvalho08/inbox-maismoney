@@ -100,6 +100,19 @@ export function datasNoTexto(texto: string, agora: Date): { iso: string; pos: nu
     .filter((x): x is { iso: string; pos: number } => x !== null);
 }
 
+// "31/02/1966", "29/02/1967": tem formato de data, mas o dia não existe. Devolve o texto
+// como o cliente mandou, para a Maisa dizer qual data não existe.
+export function dataInexistente(texto: string): string | null {
+  const t = normalizar(texto);
+  for (const x of t.matchAll(/\b(\d{1,2})\s*[/.\- ]\s*(\d{1,2})\s*[/.\- ]\s*(\d{4})\b/g)) {
+    const d = Number(x[1]), m = Number(x[2]), a = Number(x[3]);
+    if (m < 1 || m > 12 || d < 1) continue; // mês fora: pode ser MM/DD, quem trata é a sugestão
+    const data = new Date(Date.UTC(a, m - 1, d));
+    if (data.getUTCDate() !== d) return `${x[1].padStart(2, "0")}/${x[2].padStart(2, "0")}/${x[3]}`;
+  }
+  return null;
+}
+
 export function idadeEm(iso: string, agora: Date): number {
   return (agora.getTime() - new Date(iso).getTime()) / (365.25 * 24 * 60 * 60_000);
 }

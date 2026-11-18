@@ -405,7 +405,7 @@ const CASOS: Caso[] = [
     nome: "INSS com data inválida pergunta de novo",
     acoes: ["oi", "1", CPF_SALDO, "31/02/1958"],
     etapaFinal: "nascimento",
-    respostaContem: "Não entendi a data",
+    respostaContem: "não existe no calendário",
   },
   {
     nome: "INSS sem margem e sem port ou refin encerra sem a equipe",
