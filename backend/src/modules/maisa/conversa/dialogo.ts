@@ -20,7 +20,14 @@ export interface EntradaDialogo {
   temFatosDaOferta: boolean;
   // O cliente já mandou arquivo nesta conversa (para "já mandei").
   temArquivoRecebido?: boolean;
+  // A orientação de como achar ou mandar o que está pendente já foi dada nesta conversa.
+  orientacaoJaDada?: boolean;
+  agora?: Date;
 }
+
+const ANDAMENTO = new Set(["vai_fazer", "fazendo", "entendeu", "pausa"]);
+// Depois de reconhecer, outro "pera aí" dentro deste tempo não precisa de resposta.
+const SILENCIO_MS = 15 * 60_000;
 
 const ESPERA_AJUDA = new Set(["disponibilidade", "aguardando_orientacao", "nao_sabe_encontrar", "pedir_ajuda", "ininteligivel"]);
 const SEGUE_NO_MOTOR = new Set(["informar_dado", "corrigir_dado", "confirmar", "negar", "enviar_arquivo", "social", "recusar"]);
@@ -40,9 +47,22 @@ export function decidirDialogo(e: EntradaDialogo): AcaoDialogo {
       : bruta;
   const tent = tentativasDa(m, p.chave);
 
+  // Andamento ("vou mandar", "procurando", "ok", "depois mando"): só numa espera de dado ou
+  // arquivo. Em confirmação ou decisão, vai para o motor, que exige SIM explícito.
+  if (ANDAMENTO.has(i.intencao)) {
+    if (p.tipo !== "dado" && p.tipo !== "arquivo") return { tipo: "delegar", motivo: i.intencao };
+    if (i.intencao === "pausa") return { tipo: "responder", acao: "combinar_pausa", estrategia: "pergunta_original", topico: p.topico, chave: p.chave };
+    const s = m.situacao;
+    const recente = s && s.chave === p.chave && e.agora && e.agora.getTime() - new Date(s.em).getTime() < SILENCIO_MS;
+    if (recente && (s.tipo === "cliente_vai_fazer" || s.tipo === "cliente_fazendo")) return { tipo: "responder", acao: "aguardar", estrategia: "pergunta_original", topico: p.topico, chave: p.chave };
+    return { tipo: "responder", acao: "reconhecer_acao", estrategia: "pergunta_original", topico: p.topico, chave: p.chave };
+  }
+
   if (i.intencao === "pedir_humano") return { tipo: "encaminhar", categoria: "pediu_humano", motivo: "o cliente pediu uma pessoa" };
 
   // Irritação ou "você já me perguntou isso": reconhece e muda de abordagem. Na segunda vez, a equipe.
+  // "Já mandei" sem nenhum arquivo recebido: o motor diz que não chegou e como mandar.
+  if (i.reclamaRepeticao && p.tipo === "arquivo" && !e.temArquivoRecebido && sinaisDeIrritacao(m) < 1) return { tipo: "delegar", motivo: "diz_que_mandou" };
   if (i.reclamaRepeticao || i.intencao === "impaciencia" || i.tom === "irritado") {
     if (sinaisDeIrritacao(m) >= 1) return { tipo: "encaminhar", categoria: "irritacao_repetida", motivo: "o cliente demonstrou irritação ou reclamou de repetição mais de uma vez" };
     // "Já mandei": antes de pedir de novo, confere o que já chegou (dado coletado ou arquivo).
@@ -69,6 +89,8 @@ export function decidirDialogo(e: EntradaDialogo): AcaoDialogo {
 
   switch (i.intencao) {
     case "disponibilidade":
+      // "Sim, consigo": se já explicou como, só reconhece. Senão, diz como.
+      if (e.orientacaoJaDada) return { tipo: "responder", acao: "reconhecer_acao", estrategia: "pergunta_original", topico: p.topico, chave: p.chave };
       return { tipo: "responder", acao: "continuar_com_orientacao", estrategia, topico: p.topico, chave: p.chave };
     case "aguardando_orientacao":
       return { tipo: "responder", acao: "explicar_proximo_passo", estrategia, topico: p.topico, chave: p.chave };

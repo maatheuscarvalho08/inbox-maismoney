@@ -37,7 +37,12 @@ Escolha UMA intenção principal:
 - pedir_ajuda: pede explicação ("não entendi", "pode explicar melhor?", "não sei fazer").
 - perguntar: pergunta sobre a oferta, o processo ou o produto. Ex.: "quanto eu vou receber?".
 - impaciencia: irritação, demora, repetição ("você já me perguntou isso", "estou esperando há muito tempo").
-- pedir_humano, recusar, enviar_arquivo, social (cumprimento, agradecimento, "ok"), fora_do_fluxo, ininteligivel.
+- vai_fazer: entendeu o pedido e vai executar. Ex.: "ok, vou mandar agora", "já envio", "pode deixar".
+- fazendo: está executando agora. Ex.: "estou procurando", "baixando aqui", "só um momento", "pera aí".
+- entendeu: só confirma que entendeu um pedido de dado ou arquivo. Ex.: "ok", "certo", "entendi", "beleza".
+- pausa: vai fazer depois. Ex.: "depois eu mando", "mais tarde", "quando chegar em casa".
+- pedir_humano, recusar, enviar_arquivo, social (cumprimento, agradecimento), fora_do_fluxo, ininteligivel.
+Use vai_fazer, fazendo, entendeu e pausa só quando a Maisa pediu um dado ou um arquivo. Numa pergunta de confirmação ou de autorização, "ok" NÃO é confirmar: use social.
 "sim" a uma pergunta do tipo "você consegue me informar...?" ou "pode me mandar...?" é disponibilidade, NÃO é o dado e NÃO é confirmação.
 dados: só dados que a mensagem ATUAL realmente traz. "evidencia" é um trecho EXATO copiado da mensagem atual. Nunca invente, complete nem deduza valores. Sem dado: lista vazia.
 respondeu_pergunta_pendente: sim, nao, parcial ou nao_se_aplica.

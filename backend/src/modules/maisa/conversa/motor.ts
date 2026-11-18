@@ -6,10 +6,11 @@ import { TEXTOS } from "../textos.js";
 import { BASE, orientacaoPara, type ItemConhecimento } from "./conhecimento.js";
 import { montarContexto, type MensagemHistorico, type Pendencia } from "./contexto.js";
 import { decidirDialogo } from "./dialogo.js";
+import { leituraCurta } from "./leituraCurta.js";
 import type { Interpretador, MetaChamada } from "./interpretador.js";
 import { obter, proximaEstrategia, registrarOrientacao, registrarTentativa, tentativasDa } from "./memoria.js";
 import { redigir, type PlanoMensagem, type Redator } from "./redator.js";
-import type { AcaoDialogo, Interpretacao, MemoriaConversa, RegistroInterpretacao } from "./tipos.js";
+import type { AcaoDialogo, Interpretacao, MemoriaConversa, RegistroInterpretacao, SituacaoConversa } from "./tipos.js";
 
 export interface EntradaMotor {
   modo: "ativo" | "sombra";
@@ -85,7 +86,13 @@ export function criarMotor(deps: { interpretador: Interpretador; redator: Redato
         viaAudio: e.viaAudio,
       });
 
-      const r = await deps.interpretador.interpretar(contexto, e.texto, e.agora).catch((err): { ok: false; falha: string; meta: MetaChamada } => ({
+      // Mensagem curta de andamento numa espera de dado ou arquivo: lida sem o modelo.
+      const curta = e.pendencia.tipo === "dado" || e.pendencia.tipo === "arquivo" ? leituraCurta(e.texto) : null;
+      const r = curta
+        ? { ok: true as const, descartados: 0, meta: { latenciaMs: 0, modelo: "regras", tokensEntrada: null, tokensSaida: null }, interpretacao: {
+            intencao: curta, secundarias: [], respondeuPerguntaPendente: "nao_se_aplica" as const, dados: [], topicoAjuda: null, tom: "neutro" as const, reclamaRepeticao: false, confianca: 0.95,
+          } satisfies Interpretacao }
+        : await deps.interpretador.interpretar(contexto, e.texto, e.agora).catch((err): { ok: false; falha: string; meta: MetaChamada } => ({
         ok: false, falha: err instanceof Error ? err.message : "erro", meta: { latenciaMs: 0, modelo: null, tokensEntrada: null, tokensSaida: null },
       }));
       somarMeta(registro, r.meta);
@@ -102,7 +109,17 @@ export function criarMotor(deps: { interpretador: Interpretador; redator: Redato
       registro.campos = i.dados.map((d) => d.campo);
       registro.descartados = r.descartados;
 
+      // A orientação de como achar ou mandar já foi dada? Memória da camada, ou o pedido de
+      // arquivo já veio com o passo a passo (mensagem longa da Maisa nas últimas).
+      const ultimasMaisa = e.historico.filter((m) => m.de === "maisa" && m.texto).sort((a, b) => b.quando.getTime() - a.quando.getTime()).slice(0, 3).map((m) => m.texto!);
+      const itemDoTopico = e.pendencia.topico ? orientacaoPara(e.pendencia.topico, { produto: e.produto, banco: e.banco }, base) : null;
+      const orientacaoJaDada =
+        Boolean(memoria.orientadas?.includes(e.pendencia.chave)) ||
+        Boolean(itemDoTopico && memoria.orientacoes.some((o) => o.id === itemDoTopico.id)) ||
+        (e.pendencia.tipo === "arquivo" && ultimasMaisa.some((t) => t.length >= 120));
       const acao: AcaoDialogo = decidirDialogo({
+        orientacaoJaDada,
+        agora: e.agora,
         interpretacao: i,
         pendencia: e.pendencia,
         memoria,
@@ -137,13 +154,23 @@ export function criarMotor(deps: { interpretador: Interpretador; redator: Redato
         };
       }
 
+      // Situação da conversa depois desta resposta (não muda etapa nem autoriza nada).
+      const situar = (tipo: SituacaoConversa, m: MemoriaConversa): MemoriaConversa => ({ ...m, situacao: { tipo, chave: e.pendencia.chave, em: e.agora.toISOString() } });
+
+      // Já reconheceu e o cliente segue executando: não manda nada, só espera.
+      if (acao.acao === "aguardar") {
+        registro.acao = "responder:aguardar";
+        registro.estrategia = acao.estrategia;
+        return { tipo: "responder", respostas: [], memoria: situar(i.intencao === "fazendo" ? "cliente_fazendo" : "cliente_vai_fazer", memoria), rotulo: "conversa_aguardar", registro, interpretacao: i };
+      }
+
       // Responder: monta o plano com a orientação aprovada e os fatos permitidos.
       const topico = acao.topico;
       const item = acao.acao === "explicar_onde_achar" || acao.acao === "continuar_com_orientacao" || acao.acao === "explicar_proximo_passo" || acao.acao === "responder_duvida" || acao.acao === "reconhecer_e_mudar_abordagem"
         ? topico ? orientacaoPara(topico, { produto: e.produto, banco: e.banco }, base) : null
         : null;
-      const orientacaoUsada = acao.acao === "responder_duvida" ? null : item;
-      const ultimasMaisa = e.historico.filter((m) => m.de === "maisa" && m.texto).sort((a, b) => b.quando.getTime() - a.quando.getTime()).slice(0, 3).map((m) => m.texto!);
+      // Não repete a orientação já dada. Só quando o cliente pede ajuda (explicar_onde_achar).
+      const orientacaoUsada = acao.acao === "responder_duvida" || (orientacaoJaDada && acao.acao !== "explicar_onde_achar") ? null : item;
       const plano: PlanoMensagem = {
         acao: acao.acao,
         estrategia: acao.estrategia,
@@ -155,6 +182,7 @@ export function criarMotor(deps: { interpretador: Interpretador; redator: Redato
         fatos: acao.acao === "responder_duvida" ? e.fatosOferta : [],
         tom: i.tom,
         intencao: i.intencao,
+        tipoPendencia: e.pendencia.tipo,
         ultimasMaisa,
       };
       const redacao = await redigir(plano, deps.redator);
@@ -166,8 +194,20 @@ export function criarMotor(deps: { interpretador: Interpretador; redator: Redato
       registro.fonteTexto = redacao.fonte;
       if (redacao.motivoReserva) registro.falha = `redator:${redacao.motivoReserva}`;
 
-      memoria = registrarTentativa(memoria, e.pendencia.chave, acao.estrategia, e.agora);
-      if (orientacaoUsada) memoria = registrarOrientacao(memoria, orientacaoUsada.id, orientacaoUsada.versao, e.agora);
+      // Reconhecer o que o cliente está fazendo não é nova tentativa da pergunta: não sobe o degrau.
+      const andamento = acao.acao === "reconhecer_acao" || acao.acao === "combinar_pausa";
+      if (!andamento) memoria = registrarTentativa(memoria, e.pendencia.chave, acao.estrategia, e.agora);
+      if (orientacaoUsada) {
+        memoria = registrarOrientacao(memoria, orientacaoUsada.id, orientacaoUsada.versao, e.agora);
+        memoria = { ...memoria, orientadas: [...(memoria.orientadas ?? []).filter((c) => c !== e.pendencia.chave), e.pendencia.chave].slice(-8) };
+      }
+      memoria = situar(
+        acao.acao === "combinar_pausa" ? "pausa"
+          : acao.acao === "reconhecer_acao" ? (i.intencao === "fazendo" ? "cliente_fazendo" : "cliente_vai_fazer")
+          : acao.acao === "responder_duvida" ? "duvida_pendente"
+          : orientacaoUsada ? "orientacao_dada" : "aguardando_cliente",
+        memoria,
+      );
       if (["explicar_onde_achar", "alternativa_sem_orientacao", "continuar_com_orientacao", "explicar_proximo_passo", "confirmar_ambiguo"].includes(acao.acao)) {
         memoria = { ...memoria, ajudasSemProgresso: memoria.ajudasSemProgresso + 1 };
       }

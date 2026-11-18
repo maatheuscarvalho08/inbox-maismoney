@@ -5,6 +5,7 @@ import { cpfValido, extrairCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
 import { sexoPeloNome } from "./sexoPeloNome.js";
+import { leituraCurta } from "./conversa/leituraCurta.js";
 import { PERGUNTA_SEXO, ROTULO_CAMPO, camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato, type ProdutoContrato } from "./contrato.js";
 import type { ResultadoContratacao } from "./facta.js";
 import { NAO_QUERO, SIM_FORTE, normalizar, temReceio } from "./classificador.js";
@@ -1937,7 +1938,11 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 
   // Cumprimento, agradecimento, "ok", emoji, riso, desculpa pela demora: responde curto e
   // retoma a pergunta, sem contar como erro. A oferta tem o seu próprio tratamento.
-  const social = ETAPAS_SOCIAIS.includes(estado.etapa) ? mensagemSocial(texto) : null;
+  // "ok", "vou mandar", "pera aí", "depois eu mando" numa espera de dado ou arquivo: com a camada
+  // conversacional ligada, ela reconhece o andamento em vez de repetir a pergunta da etapa.
+  const pendTipo = descreverPendencia(estado).tipo;
+  const andamento = Boolean(deps.conversa?.etapas.has(estado.etapa)) && (pendTipo === "dado" || pendTipo === "arquivo") && leituraCurta(texto) !== null;
+  const social = ETAPAS_SOCIAIS.includes(estado.etapa) && !andamento ? mensagemSocial(texto) : null;
   if (social && !(estado.etapa === "confirmacao" && (social === "confirmacao_curta" || social === "emoji"))) {
     const retoma = retomaDaEtapa(estado);
     const antes = RESPOSTA_SOCIAL[social];

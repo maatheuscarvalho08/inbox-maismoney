@@ -17,7 +17,11 @@ export const INTENCOES = [
   "recusar",
   "enviar_arquivo",
   "fora_do_fluxo", // assunto que não tem a ver com o atendimento
-  "social", // cumprimento, agradecimento, "ok"
+  "social", // cumprimento, agradecimento
+  "vai_fazer", // "vou mandar agora", "já envio": entendeu e vai executar
+  "fazendo", // "estou procurando", "baixando", "só um momento": está executando
+  "entendeu", // "ok", "certo", "entendi" depois de um pedido de dado ou arquivo
+  "pausa", // "depois eu mando", "mais tarde": volta outra hora
   "ininteligivel",
 ] as const;
 export type Intencao = (typeof INTENCOES)[number];
@@ -72,6 +76,8 @@ export interface MemoriaConversa {
   baixaConfianca: number;
   falhasModelo: number;
   ajudasSemProgresso: number;
+  situacao?: { tipo: SituacaoConversa; chave: string; em: string };
+  orientadas?: string[]; // chaves de pergunta que já receberam a orientação de como fazer
 }
 
 export const memoriaVazia = (): MemoriaConversa => ({
@@ -88,7 +94,14 @@ export type AcaoResposta =
   | "reconhecer_e_mudar_abordagem" // impaciência ou "já respondi"
   | "aproveitar_dado" // diz o que já tem e o que falta
   | "alternativa_sem_orientacao" // não tenho essa instrução: oferece outro caminho
-  | "documento_sem_dado"; // recebi o arquivo mas não achei o dado
+  | "documento_sem_dado" // recebi o arquivo mas não achei o dado
+  | "reconhecer_acao" // "vou mandar": reconhece, sem repetir a orientação
+  | "combinar_pausa" // "depois eu mando": combina a volta
+  | "aguardar"; // já reconheceu e o cliente segue executando: não manda nada
+
+// Estado conversacional: o que está acontecendo na conversa, separado da etapa financeira.
+// Nunca muda a etapa nem autoriza nada; só orienta a próxima resposta.
+export type SituacaoConversa = "aguardando_cliente" | "orientacao_dada" | "cliente_vai_fazer" | "cliente_fazendo" | "pausa" | "duvida_pendente";
 
 export type AcaoDialogo =
   | { tipo: "delegar"; motivo: string }

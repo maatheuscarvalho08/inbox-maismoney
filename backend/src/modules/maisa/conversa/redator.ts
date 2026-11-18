@@ -17,6 +17,7 @@ export interface PlanoMensagem {
   tom: Tom;
   // O que o cliente disse querer ("aguardando_orientacao", "perguntar"...): só dá contexto ao texto.
   intencao?: string;
+  tipoPendencia?: "dado" | "arquivo" | "confirmacao" | "decisao";
   ultimasMaisa: string[]; // últimas mensagens da Maisa, para não repetir
 }
 
@@ -112,6 +113,15 @@ export function textoReserva(p: PlanoMensagem): string {
       return `${reconhecimento(p.tom)}Não sei te dizer o caminho exato para achar ${p.dadoPedido}. Se conseguir encontrar, me manda por aqui.${avisoEquipe}`;
     case "documento_sem_dado":
       return `Obrigada por mandar. Recebi o arquivo, mas não consegui achar ${p.dadoPedido} nele. Pode mandar uma foto mais nítida ou digitar por aqui?`;
+    case "reconhecer_acao":
+      if (p.intencao === "fazendo") return "Sem pressa, fico aguardando por aqui.";
+      return p.tipoPendencia === "arquivo"
+        ? "Combinado! Pode mandar por aqui quando estiver com o arquivo. Vou conferir assim que chegar."
+        : `Combinado! Quando tiver ${p.dadoPedido}, é só me mandar por aqui.`;
+    case "combinar_pausa":
+      return "Tudo bem, sem problema! Quando puder, é só me mandar por aqui. Eu continuo de onde paramos.";
+    case "aguardar":
+      return "";
   }
 }
 
@@ -131,7 +141,11 @@ PERSONALIDADE: converse como uma boa atendente humana: simpática, atenta, educa
 - Conecte com a etapa: diga por que está pedindo o dado ou o que vem depois, sem repetir o que o cliente já entendeu.
 - Varie a abertura. Não comece com a mesma palavra da mensagem anterior (ultimasMaisa), principalmente "Perfeito", "Ótimo" ou "Pronto".
 - No máximo um emoji, e só se o cliente agradeceu ou está satisfeito. Sem gírias e sem intimidade forçada.
-- Nunca presuma que o cliente concordou. Educação não é autorização.`;
+- Nunca presuma que o cliente concordou. Educação não é autorização.
+AÇÕES DE ANDAMENTO:
+- reconhecer_acao: o cliente disse que vai fazer ou está fazendo o que foi pedido. Responda curto (1 frase), reconhecendo e dizendo que fica aguardando. NÃO repita como fazer, onde clicar nem qual documento mandar.
+- combinar_pausa: o cliente vai voltar depois. Diga que tudo bem e que continua de onde parou. Sem cobrar.
+- Se orientacao for null porque já foi dada, não explique o caminho de novo.`;
 
 const SCHEMA_REDATOR = {
   type: "object",
