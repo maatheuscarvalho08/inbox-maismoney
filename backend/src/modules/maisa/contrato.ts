@@ -112,7 +112,11 @@ export const GRUPOS: Grupo[] = [
   {
     id: "renda",
     campos: ["renda"],
-    pergunta: (p) => (p === "inss" ? "Qual o valor bruto do seu benefício?" : "Qual o seu salário bruto?"),
+    // Aposentado e pensionista do SIAPE recebem benefício: a pergunta serve para os dois.
+    pergunta: (p) =>
+      p === "inss"
+        ? "Qual o valor bruto do seu benefício?"
+        : "Qual o valor bruto que você recebe por mês, salário ou benefício, antes dos descontos? No contracheque, é o total de rendimentos.",
   },
   {
     id: "especie",

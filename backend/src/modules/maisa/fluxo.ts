@@ -185,7 +185,14 @@ export interface ConversaDeps {
 // MAISA_CONVERSA_MODO=ativo. Desligado ou em sombra, o fluxo é o de antes da fase 7.
 // siapeOutrosBancos: SIAPE com tabela aberta na Facta vai para a equipe tentar outro banco
 // (comissão da Facta baixa). Ligado pelo MAISA_SIAPE_OUTROS_BANCOS.
-export interface InfoSiape { documento: string | null; vinculo: string | null }
+export interface InfoSiape { documento: string | null; vinculo: string | null; renda?: number | null }
+
+// A simulação veio do extrato (sem renda) e o contracheque tem o bruto: o cadastro não pergunta.
+function comRendaDoContracheque<T extends ResultadoExtrato>(r: T, renda: number | null | undefined): T {
+  if (!renda || renda <= 0) return r;
+  if ((r.tipo === "alternativa" || r.tipo === "com_saldo") && !r.renda) return { ...r, renda };
+  return r;
+}
 
 // SIAPE: resultado que leva a oferta ou à equipe precisa do vínculo do contracheque antes.
 const precisaVinculo = (r: ResultadoExtrato) => r.tipo === "com_saldo" || (r.tipo === "alternativa" && r.simulada) || (r.tipo === "sem_saldo" && r.revisar === true);
@@ -803,7 +810,7 @@ async function etapaExtrato(
     if (VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
       return encerrar({ ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined }, `vínculo SIAPE sem consignado: ${vinculo}`, TEXTOS.vinculoSemConsignado, "vinculo_siape", [], "vinculo_siape");
     }
-    resultado = estado.extratoSiapePendente;
+    resultado = comRendaDoContracheque(estado.extratoSiapePendente, info.renda);
     estado = { ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined };
   }
 
@@ -830,7 +837,10 @@ async function etapaExtrato(
     for (const id of ids) {
       if (vinculo || id === idUsado || id === undefined) continue;
       const info = await deps.lerVinculoSiape(id).catch(() => null);
-      if (info?.documento === "contracheque") vinculo = info.vinculo ?? "nao_informado";
+      if (info?.documento === "contracheque") {
+        vinculo = info.vinculo ?? "nao_informado";
+        resultado = comRendaDoContracheque(resultado, info.renda);
+      }
     }
     if (vinculo && VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
       return encerrar({ ...estado, vinculoSiape: vinculo }, `vínculo SIAPE sem consignado: ${vinculo}`, TEXTOS.vinculoSemConsignado, "vinculo_siape", [], "vinculo_siape");

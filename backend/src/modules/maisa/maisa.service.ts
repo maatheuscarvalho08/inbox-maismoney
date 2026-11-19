@@ -393,7 +393,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       if (documentoId) await guardarAnalise(documentoId, registro).catch(() => undefined);
       const lido = registro.leitura as ExtratoLido;
       console.log(`Maisa leu o vínculo SIAPE da conversa ${conversa.id}: ${lido.documento_siape ?? "?"} ${lido.vinculo_siape ?? "?"}`);
-      return { documento: lido.documento_siape ?? null, vinculo: lido.vinculo_siape ?? null };
+      return { documento: lido.documento_siape ?? null, vinculo: lido.vinculo_siape ?? null, renda: lido.renda_bruta ?? null };
     },
     digitacaoAtiva: env.MAISA_DIGITA_PROPOSTA && (banco === bancoSimulado || (banco === bancoFacta && digitacaoConfigurada())),
     // Trava própria, independente do código master. Desligada por padrão.
