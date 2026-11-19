@@ -12,6 +12,7 @@ import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
 import { avancar, fichaCliente, transferirPeloAgente, type Efeito, type Entrada, type EstadoMaisa, type Passo, type PropostaRecente, type ResultadoDigitacao } from "./fluxo.js";
 import { mascararNumeros } from "./conversa/contexto.js";
+import { agenciaSemDigito } from "./agencia.js";
 import { aplicarDecisao, decidirAgente, memoriaDoCliente, recomecou, registrarAgente, rodarAgenteSombra, roteiroManda } from "./agente.js";
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
 import { TEXTOS } from "./textos.js";
@@ -426,7 +427,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       const siape = convenio === "siape" ? { documento: lido.documento_siape ?? null, vinculo: vinculoConferido(lido) } : undefined;
       const com = <T extends object>(r: T) => (siape ? { ...r, siape } : r);
       const bancoSal = lido.conta_banco ? codigoBancoPorNome(lido.conta_banco) : null;
-      const agenciaSal = (lido.conta_agencia ?? "").replace(/\D/g, "");
+      const agenciaSal = agenciaSemDigito(lido.conta_agencia) ?? "";
       const contaSal = (lido.conta_numero ?? "").replace(/\D/g, "");
       const contaSalario = bancoSal && agenciaSal.length >= 3 && contaSal.length >= 4 ? { bancoConta: bancoSal, agencia: agenciaSal, conta: contaSal } : null;
       const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula, contaSalario };

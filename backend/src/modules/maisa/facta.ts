@@ -4,6 +4,7 @@
 // parcela do extrato e, quando o cliente aceita, digitam a proposta (etapas 1, 2 e 3)
 // e mandam o link de assinatura.
 import { env } from "../../config/env.js";
+import { agenciaSemDigito } from "./agencia.js";
 import { mascararCpf } from "./cpf.js";
 
 // Constantes fixas do produto (manual v9.0, etapa 4).
@@ -485,7 +486,7 @@ async function concluirProposta(c: Contratacao, idSimulador: string): Promise<Re
       // SIAPE: crédito na conta salário (roteiro da Facta). INSS: PIX na chave CPF, que
       // precisa ser o mesmo da proposta.
       ...(c.convenio === "siape" && p.conta && p.agencia && p.bancoConta
-        ? { banco: p.bancoConta, agencia: p.agencia.length > 4 ? p.agencia.replace(/^0+/, "") : p.agencia, conta: p.conta, tipo_conta: "C" }
+        ? { banco: p.bancoConta, agencia: agenciaSemDigito(p.agencia) ?? p.agencia, conta: p.conta, tipo_conta: "C" }
         : { tipo_chave_pix: "1", chave_pix: cpf }),
       ...(c.convenio === "inss"
         ? { tipo_credito_nb: p.tipoCreditoNb ?? "1", tipo_beneficio: p.tipoBeneficio ?? "", estado_beneficio: p.estado }

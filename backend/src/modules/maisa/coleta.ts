@@ -2,6 +2,7 @@
 // só transcreve o que o cliente escreveu ou o que aparece na foto do documento. Quem
 // valida cada campo é o código, contra as listas da Facta e o CEP no ViaCEP.
 import { env } from "../../config/env.js";
+import { agenciaSemDigito } from "./agencia.js";
 import * as facta from "./facta.js";
 import type { CampoContrato, DadosContrato } from "./contrato.js";
 
@@ -218,10 +219,9 @@ async function validar(m: Record<CampoModelo, string | null>, faltando: Set<Camp
   // Conta salário (SIAPE): banco pela lista de códigos, agência e conta só com dígitos.
   const banco = m.banco_conta ? facta.codigoBancoPorNome(m.banco_conta) : null;
   if (quer("bancoConta") && banco) d.bancoConta = banco;
-  // A Facta aceita agência de até 4 dígitos: "02836" vira "2836" (zero à esquerda sai).
-  let agencia = (m.agencia ?? "").replace(/\D/g, "");
-  if (agencia.length > 4) agencia = agencia.replace(/^0+/, "");
-  if (quer("agencia") && agencia.length >= 3 && agencia.length <= 5) d.agencia = agencia;
+  // A Facta aceita agência de 4 dígitos, sem o dígito verificador ("002836" é 0283-6).
+  const agencia = agenciaSemDigito(m.agencia);
+  if (quer("agencia") && agencia) d.agencia = agencia;
   const conta = (m.conta ?? "").replace(/\D/g, "");
   if (quer("conta") && conta.length >= 4 && conta.length <= 15) d.conta = conta;
   return d;
