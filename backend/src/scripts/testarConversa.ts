@@ -1088,8 +1088,10 @@ await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS 
       const p2 = await avancar(p1.estado, arquivo("c1"), depsSiape());
       assert.equal(p2.estado.etapa, "finalizada");
       assert.equal(p2.estado.saida, "vinculo_siape");
-      assert.ok(p2.efeitos.some((e) => e.tipo === "encerrar"));
-      assert.match(p2.respostas.join(" "), /tipo de vínculo/);
+      // A leitura do vínculo ainda é conferida pela equipe: passa, não encerra.
+      assert.ok(p2.efeitos.some((e) => e.tipo === "transferir"));
+      assert.ok(!p2.efeitos.some((e) => e.tipo === "encerrar"));
+      assert.match(p2.respostas.join(" "), /conferir o seu contracheque/);
     });
   }
 

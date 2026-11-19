@@ -143,6 +143,7 @@ export function orgaoNaFacta(lido: string, orgaos: Record<string, string>): { or
   if (/DIRETORIA DE IDENTIFICACAO CIVIL/.test(bruto) && orgaos.DIC) return { orgao: "DIC", uf };
   if (/DEFESA SOCIAL/.test(bruto) && orgaos.SDS) return { orgao: "SDS", uf };
   if (/GERAL DE PERICIAS/.test(bruto) && orgaos.IGP) return { orgao: "IGP", uf };
+  if (/^(SIAC|SAC|POUPATEMPO|VAPTVUPT|NAHORA|PSIU|RAPIDAO)/.test(sigla) || /\b(SIAC|SAC|POUPATEMPO|VAPT VUPT|NA HORA)\b/.test(bruto)) return { orgao: "SSP", uf };
   if (ORGAO_ESTADUAL.test(semUf) || /^(SSP|SEGUP|PC|PJC)[A-Z]{2}$/.test(sigla) || /INSTITUTO DE IDENTIFICACAO|POLICIA CIVIL|SEGURANCA PUBLICA/.test(bruto)) return { orgao: "SSP", uf };
   return { orgao: null, uf };
 }

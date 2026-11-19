@@ -134,6 +134,8 @@ export const TEXTOS = {
     "Estou digitando o seu contrato no banco Facta agora. Assim que ficar pronto, te mando aqui o link para você assinar.",
   digitacaoAindaEmAndamento:
     "Ainda estou finalizando o seu contrato no banco. Assim que ficar pronto, te mando o link aqui.",
+  vinculoConferir:
+    "Obrigada pelos documentos! Vou pedir para um especialista da nossa equipe conferir o seu contracheque e seguir com você. Já já alguém continua aqui.",
   servidorNaoFederal:
     "Pelo seu documento, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",
