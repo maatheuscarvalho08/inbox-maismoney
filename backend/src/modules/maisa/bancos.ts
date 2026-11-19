@@ -291,7 +291,7 @@ export const bancoFacta: BancoClt = {
 };
 
 // Refin FLEX paga menos comissão: o dono pediu para nunca usar.
-export const refinFlex = (t: { tabela: string }) => /FLEX/i.test(t.tabela);
+export const refinFlex = (t: { tabela: string }) => /FLEX/i.test(t.tabela);
 
 // Sem grupo informado nas duas (teste ou resposta antiga): não barra.
 export function mesmoGrupo(refin: facta.Tabela, port: facta.Tabela | undefined): boolean {
