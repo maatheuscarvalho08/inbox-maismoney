@@ -1182,6 +1182,35 @@ async function main() {
     assert.equal(await prisma.proposta.count({ where: { conversaId: c.id } }), 0);
   });
 
+  // ---------- Lembrete de assinatura ----------
+  const lembretesAssinatura = async (id: string) => (await respostasMaisa(id)).filter((m) => m.conteudoTexto === TEXTOS.lembreteAssinatura).length;
+  const daqui = (min: number) => new Date(Date.now() + min * 60_000);
+  caso("Assinatura", "10 min depois do link, cliente calado: pergunta uma vez se conseguiu assinar", async () => {
+    const c = await novaConversa();
+    await simEJanela(c.id);
+    await svc.verificarAssinaturas(daqui(11));
+    await svc.aguardarFilas();
+    assert.equal(await lembretesAssinatura(c.id), 1);
+    await svc.verificarAssinaturas(daqui(30));
+    await svc.aguardarFilas();
+    assert.equal(await lembretesAssinatura(c.id), 1, "lembrete repetido");
+  });
+  caso("Assinatura", "Antes de 10 min: nada", async () => {
+    const c = await novaConversa();
+    await simEJanela(c.id);
+    await svc.verificarAssinaturas(daqui(5));
+    await svc.aguardarFilas();
+    assert.equal(await lembretesAssinatura(c.id), 0);
+  });
+  caso("Assinatura", "Cliente falou depois do link: sem lembrete", async () => {
+    const c = await novaConversa();
+    await simEJanela(c.id);
+    await prisma.mensagem.create({ data: { conversaId: c.id, remetenteTipo: "cliente", conteudoTexto: "assinei", createdAt: new Date(Date.now() + 1000), timestamp: new Date(Date.now() + 1000) } });
+    await svc.verificarAssinaturas(daqui(11));
+    await svc.aguardarFilas();
+    assert.equal(await lembretesAssinatura(c.id), 0);
+  });
+
   // ---------- execução ----------
   const lista = filtro ? casos.filter((c) => `${c.grupo} ${c.nome}`.toLowerCase().includes(filtro)) : casos;
   let ok = 0;

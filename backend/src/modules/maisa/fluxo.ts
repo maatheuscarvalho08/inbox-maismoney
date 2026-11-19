@@ -92,6 +92,8 @@ export interface EstadoMaisa {
   ultimoContatoCliente?: string;
   followupEnviado?: boolean;
   lembreteEnviado?: boolean; // lembrete único quando o cliente some no meio dos dados
+  // Proposta digitada: lembrete único de assinatura, 10 min depois do link, se o cliente não falou.
+  lembreteAssinaturaEm?: string;
   oferta?: {
     banco: string;
     valorCentavos: number;

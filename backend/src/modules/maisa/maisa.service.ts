@@ -790,6 +790,39 @@ export async function verificarSilencios() {
   return paradas.length;
 }
 
+// Proposta digitada pela Maisa há 10 min, cliente calado desde o link: pergunta uma vez se
+// conseguiu assinar. A conversa já está com a equipe; o lembrete sai em nome da Maisa.
+export const ESPERA_ASSINATURA_MS = 10 * 60_000;
+export async function verificarAssinaturas(agora = new Date()) {
+  const propostas = await prisma.proposta.findMany({
+    where: {
+      status: "digitada",
+      createdAt: { gte: new Date(agora.getTime() - 24 * 60 * 60_000), lte: new Date(agora.getTime() - ESPERA_ASSINATURA_MS) },
+      conversa: { status: { not: "encerrada" }, instancia: { maisaAtiva: true } },
+    },
+    select: { createdAt: true, conversaId: true, conversa: { select: { maisaEstado: true } } },
+  });
+  let enviados = 0;
+  for (const p of propostas) {
+    const estado = p.conversa.maisaEstado as EstadoMaisa | null;
+    if (!estado || estado.lembreteAssinaturaEm) continue;
+    // Só a proposta que a Maisa digitou (tem link da Facta) e só se ninguém falou depois dela.
+    const op = await prisma.operacaoFacta.findFirst({ where: { conversaId: p.conversaId, status: "concluida", url: { not: null } }, select: { id: true } });
+    if (!op) continue;
+    const depois = await prisma.mensagem.findFirst({ where: { conversaId: p.conversaId, remetenteTipo: { in: ["cliente", "operador"] }, createdAt: { gt: p.createdAt } }, select: { id: true } });
+    const marcado = { ...estado, lembreteAssinaturaEm: agora.toISOString() };
+    await prisma.$transaction(async (tx) => {
+      await tx.conversa.update({ where: { id: p.conversaId }, data: { maisaEstado: marcado as unknown as Prisma.InputJsonValue } });
+      if (!depois) await registrarSaidas(tx, p.conversaId, [TEXTOS.lembreteAssinatura], true);
+    });
+    if (!depois) {
+      void despachar(p.conversaId);
+      enviados++;
+    }
+  }
+  return enviados;
+}
+
 // "sim" na confirmação com a janela vencida: tenta digitar (o fluxo revalida tudo).
 // Sobrevive a reinício: o agendamento está no estado salvo, não num temporizador.
 export async function executarDigitacoesPendentes() {
@@ -882,6 +915,7 @@ export function startMaisaJobs() {
       await verificarAutorizacoesPendentes();
       await verificarOfertasPendentes();
       await verificarSilencios();
+      await verificarAssinaturas();
     } catch (err) {
       console.error("Erro nas checagens de tempo da Maisa:", err);
     }

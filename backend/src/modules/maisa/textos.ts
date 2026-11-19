@@ -290,6 +290,7 @@ export const TEXTOS = {
   prazoNovo: "Depois que você assinar, o banco confere e libera o valor na sua conta. Assim que liberar, a gente te avisa.",
   trocoMudou: (antes: string, depois: string, parcela: string) =>
     `Antes de fazer o contrato, conferi de novo no banco e o valor mudou: o que cai na sua conta agora é ${depois} (antes era ${antes}). A parcela fica em ${parcela}. Quer seguir assim? Responda SIM ou NÃO.`,
+  lembreteAssinatura: "Conseguiu assinar o contrato pelo link? Se tiver qualquer dificuldade para abrir ou assinar, me conta aqui que eu te ajudo.",
   erroDigitacao: "Tive um problema para fazer o contrato no sistema do banco. Vou passar para um atendente terminar com você.",
   corrigirDados: "Sem problema. Vou passar para um atendente corrigir os dados com você.",
   // Confirmação: o cliente apontou erro. Ela corrige ali mesmo, sem passar para a equipe.
