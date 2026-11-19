@@ -1136,6 +1136,18 @@ await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS 
   });
 }
 
+await caso("Oferta de port: cliente pede outro contrato e vai para a equipe com a resposta certa", async () => {
+  const p = await diga(estadoCef(), "x", depsBase(roteiro([])));
+  void p;
+  const est: EstadoMaisa = { ...estadoCef(), etapa: "oferta_port" };
+  const r = await diga(est, "Não, obrigado, não quero mexer no Sicredi, só no Brb", depsBase(roteiro([])));
+  assert.equal(r.estado.etapa, "finalizada");
+  assert.match(r.respostas.join(" "), /prefere trazer o contrato do BRB/);
+  assert.doesNotMatch(r.respostas.join(" "), /querer mais/);
+  const s2 = await diga(est, "sim, quero", depsBase(roteiro([])));
+  assert.notEqual(s2.rotulo, "outro_contrato");
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });

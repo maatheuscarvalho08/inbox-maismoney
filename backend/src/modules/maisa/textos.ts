@@ -128,6 +128,8 @@ export const TEXTOS = {
     "Esse documento não parece ser o contracheque. Pode me mandar o seu último contracheque do SouGov.br, em PDF ou foto bem nítida?",
   vinculoSemConsignado:
     "Olhei o seu contracheque com atenção. Para o seu tipo de vínculo, no momento não temos uma opção de empréstimo consignado. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
+  outroContratoPort: (banco: string) =>
+    `Entendi, você prefere trazer o contrato do ${banco}. Vou passar para um especialista da nossa equipe simular esse contrato para você. Já já alguém continua aqui.`,
   servidorNaoFederal:
     "Pelo seu documento, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",

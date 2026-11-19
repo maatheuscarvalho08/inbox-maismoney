@@ -1015,7 +1015,35 @@ async function etapaAguardando(estado: EstadoMaisa, texto: string, deps: Depende
 
 // Aceitou a port ou o refin: a equipe confirma o saldo na CIP e digita. Recusou: encerra.
 async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  // "Não quero mexer no Sicredi, só no BRB": pede outro contrato, não mais dinheiro.
+  const outro = outroContratoPedido(texto, estado.alternativa?.digitacao?.banco);
+  if (outro) {
+    return transferir(estado, `pediu para portar outro contrato (${outro}) no lugar do ofertado`, TEXTOS.outroContratoPort(outro), "outro_contrato", [], "objecao");
+  }
   return tratarOferta(estado, texto, deps);
+}
+
+// Bancos como o cliente escreve, e como a Maisa repete.
+const BANCOS_CITADOS: [RegExp, string][] = [
+  [/\bbrb\b/, "BRB"], [/\b(bb|banco do brasil)\b/, "Banco do Brasil"], [/\b(caixa|cef)\b/, "Caixa"], [/\bbradesco\b/, "Bradesco"],
+  [/\bitau\b/, "Itaú"], [/\bsantander\b/, "Santander"], [/\bsicredi\b/, "Sicredi"], [/\bsicoob\b/, "Sicoob"], [/\bbanco inter\b|\binter\b/, "Inter"],
+  [/\bpan\b/, "PAN"], [/\bbmg\b/, "BMG"], [/\bdaycoval\b/, "Daycoval"], [/\bsafra\b/, "Safra"], [/\bc6\b/, "C6"], [/\bbanrisul\b/, "Banrisul"],
+  [/\bmercantil\b/, "Mercantil"], [/\bagibank\b/, "Agibank"], [/\bole\b/, "Olé"], [/\bdigio\b/, "Digio"], [/\bnossacoop\b/, "Nossacoop"],
+];
+const PEDE_OUTRO = /\b(so|somente|apenas|quero|prefiro|queria|gostaria|trazer|portar|mexer|outro contrato|o outro)\b/;
+
+// O cliente cita um banco que não é o do contrato ofertado, pedindo para mexer nele: devolve o nome.
+export function outroContratoPedido(texto: string, bancoOfertado?: string): string | null {
+  const t = normalizar(texto);
+  if (!PEDE_OUTRO.test(t) || t.includes("?")) return null;
+  const ofertado = normalizar(bancoOfertado ?? "");
+  for (const [re, nome] of BANCOS_CITADOS) {
+    if (!re.test(t)) continue;
+    const chave = normalizar(nome).split(" ")[0].slice(0, 4);
+    if (ofertado && (ofertado.includes(chave) || re.test(ofertado))) continue; // é o próprio ofertado
+    return nome;
+  }
+  return null;
 }
 
 // Quantas dúvidas seguidas ela responde na oferta antes de chamar a equipe.

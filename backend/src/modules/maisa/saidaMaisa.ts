@@ -40,6 +40,8 @@ export async function registrarSaidas(tx: Prisma.TransactionClient, conversaId: 
     // A tela usa saidaStatus para não tratar mensagem na fila como "sugestão não enviada".
     criadas.push({ ...m, saidaStatus: enviar ? "pendente" : null });
   }
+  // Mensagem da Maisa também é atividade da conversa: sobe na lista, como a da equipe.
+  if (criadas.length) await tx.conversa.update({ where: { id: conversaId }, data: { lastMessageAt: new Date() } });
   return criadas;
 }
 
