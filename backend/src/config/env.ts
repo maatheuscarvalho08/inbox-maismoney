@@ -108,6 +108,9 @@ const envSchema = z.object({
   MAISA_CONVERSA_PRAZO_MS: z.coerce.number().min(1000).max(60_000).default(12_000),
   // Abaixo desta confiança a Maisa reformula em vez de agir sobre a interpretação.
   MAISA_CONVERSA_CONFIANCA_MIN: z.coerce.number().min(0).max(1).default(0.6),
+  // Fase 4: o agente que conduz a conversa. sombra = decide e registra ao lado do roteiro, sem
+  // enviar nada. ativo = a decisão dele vale nas conversas sem efeito financeiro no passo.
+  MAISA_AGENTE_MODO: z.enum(["desligado", "sombra", "ativo"]).default("desligado"),
   // Dias em que o cadastro validado de um atendimento anterior pode ser reaproveitado.
   MAISA_CADASTRO_REAPROVEITA_DIAS: z.coerce.number().min(0).max(30).default(7),
   // OpenAI. A leitura de extrato usa um modelo com visão; as etapas simples, um barato.

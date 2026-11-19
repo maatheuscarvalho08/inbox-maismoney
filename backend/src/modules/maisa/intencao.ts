@@ -58,7 +58,7 @@ async function lerOfertaComModelo(texto: string, contexto: string): Promise<Leit
 }
 
 // Fatos que a Maisa pode afirmar. Fora disso, o modelo não responde (devolve null).
-const FATOS = `- A Mais Money é correspondente bancário (promotora de crédito), CNPJ 45.027.472/0001-76, Rio de Janeiro, Instagram @maismoneyrj.
+export const FATOS = `- A Mais Money é correspondente bancário (promotora de crédito), CNPJ 45.027.472/0001-76, Rio de Janeiro, Instagram @maismoneyrj.
 - O banco parceiro é a Facta Financeira. SAC da Facta: 0800 942 0462, que também atende pelo WhatsApp.
 - A Maisa é a assistente virtual da Mais Money. Se o cliente quiser, pode falar com uma pessoa da equipe.
 - Com margem zerada ou negativa não sai empréstimo novo, mas ainda pode dar para fazer portabilidade de um contrato para a Facta (a Facta aceita portabilidade com margem zerada ou negativa), às vezes com dinheiro extra (troco). Isso depende dos contratos que aparecem no extrato.

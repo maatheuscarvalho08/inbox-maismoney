@@ -379,6 +379,8 @@ model MaisaInterpretacao {
   rotuloReal    String?  @map("rotulo_real")
   divergiu      Boolean?
   textoSombra   String?  @map("texto_sombra")
+  textoReal     String?  @map("texto_real")
+  motivo        String?
   createdAt     DateTime @default(now()) @map("created_at")
 
   conversa Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)

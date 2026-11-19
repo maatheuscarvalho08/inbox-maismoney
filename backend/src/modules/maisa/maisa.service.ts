@@ -10,8 +10,9 @@ import { bancoFacta, bancoSimulado, mesmoGrupo, refinFlex, type BancoClt } from 
 import { codigoBancoPorNome, codigosBancoPortabilidade, contratar, contratarPortRefin, simularPortRefinSiape, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
-import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo, type PropostaRecente, type ResultadoDigitacao } from "./fluxo.js";
+import { avancar, fichaCliente, type Efeito, type Entrada, type EstadoMaisa, type Passo, type PropostaRecente, type ResultadoDigitacao } from "./fluxo.js";
 import { mascararNumeros } from "./conversa/contexto.js";
+import { memoriaDoCliente, rodarAgenteSombra } from "./agente.js";
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
 import { TEXTOS } from "./textos.js";
 import { guardarAnalise } from "../extratos/guardadas.js";
@@ -77,9 +78,9 @@ async function propostaRecente(contatoId: string): Promise<PropostaRecente | nul
 }
 
 // Últimas mensagens da conversa, para a resposta livre ver o que já foi dito. Números longos mascarados.
-async function historicoCurto(conversaId: string): Promise<string> {
+async function historicoCurto(conversaId: string, ate?: Date): Promise<string> {
   const ms = await prisma.mensagem.findMany({
-    where: { conversaId, remetenteTipo: { in: ["cliente", "maisa", "operador"] } },
+    where: { conversaId, remetenteTipo: { in: ["cliente", "maisa", "operador"] }, ...(ate ? { createdAt: { lt: ate } } : {}) },
     orderBy: { timestamp: "desc" }, take: 10, select: { remetenteTipo: true, conteudoTexto: true, tipoMidia: true },
   });
   return ms.reverse().map((m) => {
@@ -560,6 +561,23 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     throw err;
   });
 
+
+  // Fase 4, agente em modo sombra: decide o que faria com esta mensagem e registra ao lado do
+  // roteiro. Roda depois do passo real gravado e enviado; não envia nada.
+  if (env.MAISA_AGENTE_MODO === "sombra" && "texto" in entrada && entrada.texto && lida && !ehTeste(conversa)) {
+    const texto = entrada.texto;
+    const viaAudio = entrada.viaAudio === true;
+    const ate = lida.createdAt;
+    const base = estadoAntes ?? { etapa: "inicio" as const, tentativas: 0 };
+    void (async () => {
+      const [historico, memoriaCliente] = await Promise.all([historicoCurto(conversa.id, ate), memoriaDoCliente(conversa.contatoId, conversa.id)]);
+      await rodarAgenteSombra({
+        conversaId: conversa.id, mensagemId: lida.id, rotuloReal: passo.rotulo,
+        entrada: { etapa: base.etapa, produto: base.produto, ficha: fichaCliente(base), memoriaCliente, historico, mensagem: texto, viaAudio,
+          roteiro: passo.respostas, efeitosRoteiro: [...new Set(passo.efeitos.map((e) => e.tipo))] },
+      });
+    })().catch((err) => console.error(`Agente sombra da conversa ${conversa.id} falhou:`, err instanceof Error ? err.message : err));
+  }
 
   // Modo sombra: depois do passo real já gravado, a camada nova só olha e registra. Não envia nada.
   if (modoConversa() === "sombra" && estadoAntes && "texto" in entrada && entrada.texto && !ehTeste(conversa)) {
