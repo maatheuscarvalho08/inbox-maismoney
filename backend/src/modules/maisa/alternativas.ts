@@ -48,7 +48,7 @@ export async function buscarAlternativa(p: {
     for (const contrato of candidatos) {
       try {
         const s = await p.banco.simularPortabilidadeSiape({ cpf: p.cpf, dataNascimento: p.dataNascimento, contrato });
-        if (s.digitacao) simulacoes.push(s.digitacao);
+        if (s.digitacao) simulacoes.push({ ...s.digitacao, digitavel: digitavel(s.digitacao) });
         if (s.temPortabilidade) {
           algumaPort = true;
           portas.push(`parcela de ${contrato.parcela} cai para ${s.parcelaPortabilidade ?? "?"} na Facta`);

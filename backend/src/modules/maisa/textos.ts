@@ -128,6 +128,11 @@ export const TEXTOS = {
     "Esse documento não parece ser o contracheque. Pode me mandar o seu último contracheque do SouGov.br, em PDF ou foto bem nítida?",
   vinculoSemConsignado:
     "Olhei o seu contracheque com atenção. Para o seu tipo de vínculo, no momento não temos uma opção de empréstimo consignado. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
+  trocaContratoPort: (banco: string) => `Certo, vamos com o seu contrato do ${banco}. Simulei esse também:`,
+  contratoSemTroco: (banco: string) =>
+    `Para o contrato do ${banco}, a Facta não abriu agora uma condição com dinheiro extra. Só daria para trazer sem troco, e isso não fazemos por aqui.`,
+  contratoNaoSimulado: (banco: string) =>
+    `Entendi, você quer mexer no contrato do ${banco}. Esse eu não consegui simular por aqui. Vou passar para um especialista da nossa equipe simular para você. Já já alguém continua aqui.`,
   outroContratoPort: (banco: string) =>
     `Entendi, você prefere trazer o contrato do ${banco}. Vou passar para um especialista da nossa equipe simular esse contrato para você. Já já alguém continua aqui.`,
   digitandoContrato:

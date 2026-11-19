@@ -113,6 +113,8 @@ export interface DigitacaoPort {
   port: TabelaDigitacao;
   // Sem refin: port pura, que a API da Facta não digita. A equipe digita no portal.
   refin?: TabelaDigitacao;
+  // A Facta compra este contrato pela API (banco na lista de portabilidade e número no extrato).
+  digitavel?: boolean;
 }
 
 export type OperacaoAlternativa = "port_refin" | "portabilidade" | "refin";

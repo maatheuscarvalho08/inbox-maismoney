@@ -542,7 +542,7 @@ export function fichaCliente(estado: EstadoMaisa): string {
     else l.push(`Só portabilidade, sem dinheiro extra: parcela na Facta ${r$(d.port.parcela)}.`);
   }
   for (const s of (a?.simulacoes ?? []).filter((x) => x.numeroContrato !== numero).slice(0, 4)) {
-    l.push(`Outro contrato simulado: ${s.banco}${s.numeroContrato ? ` nº ${s.numeroContrato}` : ""}, parcela hoje ${r$(s.parcela)}: ${s.refin?.liquido ? `a simulação mostrou troco de ${r$(s.refin.liquido)} com refinanciamento, mas esse contrato não é o ofertado: para seguir com ele, a equipe confere antes` : "a Facta não abriu tabela com troco para ele"}.`);
+    l.push(`Outro contrato simulado: ${s.banco}${s.numeroContrato ? ` nº ${s.numeroContrato}` : ""}, parcela hoje ${r$(s.parcela)}: ${s.refin?.liquido ? `a simulação mostrou troco de ${r$(s.refin.liquido)} com refinanciamento${s.digitavel ? "; se o cliente pedir este contrato, a oferta pode ser trocada por ele" : ", mas para seguir com ele a equipe confere antes"}` : "a Facta não abriu tabela com troco para ele"}.`);
   }
   return l.join("\n");
 }
@@ -1119,12 +1119,73 @@ async function etapaAguardando(estado: EstadoMaisa, texto: string, deps: Depende
 
 // Aceitou a port ou o refin: a equipe confirma o saldo na CIP e digita. Recusou: encerra.
 async function etapaOfertaPort(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
-  // "Não quero mexer no Sicredi, só no BRB": pede outro contrato, não mais dinheiro.
-  const outro = outroContratoPedido(texto, estado.alternativa?.digitacao?.banco);
-  if (outro) {
-    return transferir(estado, `pediu para portar outro contrato (${outro}) no lugar do ofertado`, TEXTOS.outroContratoPort(outro), "outro_contrato", [], "objecao");
-  }
+  // "Não quero mexer no Sicredi, só no BRB", "e o do BRB, dá pra fazer?": o pedido do cliente
+  // entra na oferta. Contrato simulado com troco que a Facta digita: a oferta passa a ser ele.
+  const pedido = contratosPedidos(texto, estado);
+  if (pedido) return ofertarContratoPedido(estado, pedido, deps);
   return tratarOferta(estado, texto, deps);
+}
+
+type ContratoPedido = { nomes: string[]; simulados: DigitacaoPort[] };
+
+// Como o cliente chama o banco e como ele aparece no extrato.
+const APELIDOS_BANCO: [RegExp, RegExp][] = [
+  [/\bsicredi\b/, /sicredi/], [/\b(caixa|cef)\b/, /\b(cef|caixa)\b/], [/\b(bb|banco do brasil)\b/, /\b(bb|brasil)\b/], [/\bqi\b/, /\bqi\b/],
+  [/\bbrb\b/, /\bbrb\b/], [/\bc6\b/, /\bc6\b/], [/\bpan\b/, /\bpan\b/], [/\bbmg\b/, /\bbmg\b/], [/\bitau\b/, /\bitau\b/], [/\bbradesco\b/, /bradesco/],
+  [/\bsantander\b/, /santander/], [/\bdaycoval\b/, /daycoval/], [/\bsafra\b/, /safra/], [/\binter(medium)?\b/, /\binter/], [/\bsicoob\b/, /sicoob/],
+  [/\bbanrisul\b/, /banrisul/], [/\bmercantil\b/, /mercantil/], [/\bagibank\b/, /agibank/], [/\bole\b/, /\bole\b/], [/\bdigio\b/, /digio/], [/\balfa\b/, /\balfa\b/],
+  [/\bparana\b/, /parana/],
+];
+const PERGUNTA_CONTRATO = /\b(da pra|consegue|pode|tem como|e o|e a|e os|e as|fazer|faz|portar|trazer)\b/;
+
+// Contratos que o cliente pede, diferentes do ofertado. null: não pediu outro contrato.
+export function contratosPedidos(texto: string, estado: EstadoMaisa): ContratoPedido | null {
+  const t = normalizar(texto);
+  if (!PEDE_OUTRO.test(t) && !(t.includes("?") && PERGUNTA_CONTRATO.test(t))) return null;
+  const ofertado = estado.alternativa?.digitacao;
+  const numeroOfertado = estado.alternativa?.numeroContrato ?? ofertado?.numeroContrato ?? null;
+  const sims = (estado.alternativa?.simulacoes ?? []).filter((s) => !(numeroOfertado && s.numeroContrato === numeroOfertado));
+  const nomes: string[] = [];
+  const simulados: DigitacaoPort[] = [];
+  // "Não quero mexer no Sicredi, só no BRB": vale o que vem depois de "só"; banco negado sai.
+  const marcas = [...t.matchAll(/\b(so|somente|apenas)\b/g)];
+  const so = marcas.length ? t.slice(marcas.at(-1)!.index) : t;
+  const negado = (re: RegExp) => new RegExp(`\\bnao\\s+(\\w+\\s+){0,3}${re.source}`).test(t) && !re.test(so === t ? "" : so);
+  for (const [doCliente, doExtrato] of APELIDOS_BANCO) {
+    if (!doCliente.test(so) || negado(doCliente)) continue;
+    if (ofertado && doExtrato.test(normalizar(ofertado.banco))) continue; // é o próprio ofertado ("não quero mexer no Sicredi")
+    const achados = sims.filter((s) => doExtrato.test(normalizar(s.banco)));
+    // Nome como está no extrato; sem contrato simulado, como o cliente escreveu.
+    nomes.push(achados[0]?.banco ?? t.match(doCliente)![0].toUpperCase());
+    simulados.push(...achados.filter((s) => !simulados.includes(s)));
+  }
+  return nomes.length ? { nomes, simulados } : null;
+}
+
+async function ofertarContratoPedido(estado: EstadoMaisa, p: ContratoPedido, deps: Dependencias): Promise<Passo> {
+  const comTroco = p.simulados.filter((s) => (s.refin?.liquido ?? 0) > 0);
+  const digitaveis = comTroco.filter((s) => s.digitavel === true).sort((a, b) => (b.refin!.liquido ?? 0) - (a.refin!.liquido ?? 0));
+  const avisos = p.simulados.filter((s) => !(s.refin?.liquido ?? 0)).map((s) => TEXTOS.contratoSemTroco(s.banco));
+  const naoSimulados = p.nomes.filter((n) => !p.simulados.some((s) => s.banco === n));
+  const escolhido = digitaveis[0];
+  if (escolhido) {
+    const troco = Math.round((escolhido.refin!.liquido ?? 0) * 100);
+    const alternativa = { ...estado.alternativa!, operacao: "port_refin" as const, trocoCentavos: troco, digitacao: escolhido, numeroContrato: escolhido.numeroContrato ?? undefined,
+      motivo: `cliente pediu o contrato do ${escolhido.banco}: port + refin ${escolhido.refin!.nome ?? ""}, troco ${escolhido.refin!.liquido}` };
+    return ir(estado, "oferta_port", [...avisos, TEXTOS.trocaContratoPort(escolhido.banco), TEXTOS.ofertaPort({ operacao: "port_refin", trocoCentavos: troco, digitacao: escolhido })], "contrato_pedido_ofertado", [], {
+      alternativa, ofertaEm: deps.agora().toISOString(), followupEnviado: false,
+    });
+  }
+  // Troco em contrato que a API não digita, ou contrato que não foi simulado: a equipe confere.
+  const paraEquipe = [...comTroco.map((s) => `${s.banco}${s.numeroContrato ? ` nº ${s.numeroContrato}` : ""} (troco ${r$(s.refin!.liquido ?? 0)} na simulação, digitar no portal)`), ...naoSimulados.map((n) => `${n} (não simulado)`)];
+  if (paraEquipe.length) {
+    const nome = comTroco[0]?.banco ?? naoSimulados[0];
+    return transferir(estado, `pediu para portar outro contrato: ${paraEquipe.join("; ")}`, comTroco.length ? TEXTOS.outroContratoPort(nome) : TEXTOS.contratoNaoSimulado(nome), "outro_contrato", [], "objecao");
+  }
+  // Só contrato sem troco: explica e mantém a oferta de agora.
+  const atual = estado.alternativa?.digitacao?.banco;
+  const pergunta = atual ? `Quer seguir com o contrato do ${atual}, como te mostrei? É só me responder SIM.` : PERGUNTA_DA_ETAPA[estado.etapa];
+  return { estado, respostas: [...avisos, pergunta], efeitos: [], rotulo: "contrato_pedido_sem_troco" };
 }
 
 // Bancos como o cliente escreve, e como a Maisa repete.

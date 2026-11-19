@@ -1144,7 +1144,8 @@ await caso("Oferta de port: cliente pede outro contrato e vai para a equipe com 
   const est: EstadoMaisa = { ...estadoCef(), etapa: "oferta_port" };
   const r = await diga(est, "Não, obrigado, não quero mexer no Sicredi, só no Brb", depsBase(roteiro([])));
   assert.equal(r.estado.etapa, "finalizada");
-  assert.match(r.respostas.join(" "), /prefere trazer o contrato do BRB/);
+  // BRB não foi simulado: a equipe simula (fase 3; com o BRB simulado, a oferta troca para ele).
+  assert.match(r.respostas.join(" "), /contrato do BRB.*não consegui simular/);
   assert.doesNotMatch(r.respostas.join(" "), /querer mais/);
   const s2 = await diga(est, "sim, quero", depsBase(roteiro([])));
   assert.notEqual(s2.rotulo, "outro_contrato");

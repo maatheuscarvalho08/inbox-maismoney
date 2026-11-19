@@ -134,5 +134,60 @@ await caso("Início, dúvida fora do FAQ: responde e segue para o vínculo", asy
   assert.ok(r.respostas.length > 0);
 });
 
+// ---------- Fase 3: o pedido do cliente entra na oferta ----------
+const SICREDI: DigitacaoPort = { ...DIG, banco: "BANSICREDI", bancoCodigo: "748", numeroContrato: "908050871", parcela: 3185.88, digitavel: true,
+  refin: { ...DIG.refin!, parcela: 3185.88, liquido: 20274.92 } };
+const BRB: DigitacaoPort = { ...DIG, banco: "BRB CFI", bancoCodigo: "70", numeroContrato: "1100793551", parcela: 532.72, digitavel: true,
+  refin: { ...DIG.refin!, codigoTabela: 117037, parcela: 532.72, liquido: 2235.87 } };
+const QI: DigitacaoPort = { ...DIG, banco: "QI SCD", bancoCodigo: "329", numeroContrato: "0274731642", parcela: 183.22, digitavel: true, refin: undefined };
+const ofertaCarlos = (brb: DigitacaoPort = BRB): EstadoMaisa => ({
+  etapa: "oferta_port", tentativas: 0, produto: "siape", dataNascimento: "1960-01-01",
+  alternativa: { operacao: "port_refin", trocoCentavos: 2027492, motivo: "t", numeroContrato: "908050871", digitacao: SICREDI, simulacoes: [SICREDI, brb, QI] },
+} as EstadoMaisa);
+
+await caso("Fase 3: 'não quero mexer no Sicredi, só no BRB' troca a oferta para o BRB", async () => {
+  const r = await diga(ofertaCarlos(), "Não, obrigado, não quero mexer no Sicredi, só no Brb", deps());
+  assert.ok(!transferiu(r));
+  assert.equal(r.estado.etapa, "oferta_port");
+  assert.equal(r.estado.alternativa?.digitacao?.banco, "BRB CFI");
+  assert.equal(r.estado.alternativa?.numeroContrato, "1100793551");
+  assert.equal(r.estado.alternativa?.trocoCentavos, 223587);
+  assert.match(txt(r), /vamos com o seu contrato do BRB CFI/);
+  assert.match(txt(r), /R\$\s?2\.235,87/);
+});
+
+await caso("Fase 3: 'e o contrato do BRB, dá pra fazer?' também oferta o BRB", async () => {
+  const r = await diga(ofertaCarlos(), "E o contrato do BRB, dá pra fazer?", deps());
+  assert.equal(r.estado.alternativa?.digitacao?.banco, "BRB CFI");
+});
+
+await caso("Fase 3: contrato pedido com troco, mas a API não digita: equipe com o valor na nota", async () => {
+  const r = await diga(ofertaCarlos({ ...BRB, digitavel: false }), "quero só o do BRB", deps());
+  assert.ok(transferiu(r));
+  const nota = r.efeitos.find((e) => e.tipo === "transferir") as { nota?: string } | undefined;
+  assert.match(String(r.estado.motivoTransferencia ?? nota?.nota ?? ""), /BRB CFI.*2\.235,87/);
+});
+
+await caso("Fase 3: contrato pedido sem troco: explica e mantém a oferta, sem transferir", async () => {
+  const r = await diga(ofertaCarlos(), "e o do QI, consegue fazer?", deps());
+  assert.ok(!transferiu(r));
+  assert.match(txt(r), /QI SCD.*não abriu/);
+  assert.match(txt(r), /BANSICREDI/);
+  assert.equal(r.estado.alternativa?.digitacao?.banco, "BANSICREDI");
+});
+
+await caso("Fase 3: banco que não foi simulado (C6): equipe simula", async () => {
+  const r = await diga(ofertaCarlos(), "Meu interesse é apenas em portabilidade dos contratos com o QI e do C6", deps());
+  assert.ok(transferiu(r));
+  assert.match(String(r.estado.motivoTransferencia ?? ""), /C6/);
+});
+
+await caso("Fase 3: depois da troca, SIM segue com o contrato pedido", async () => {
+  const r1 = await diga(ofertaCarlos(), "só o BRB", deps());
+  const r2 = await diga(r1.estado, "sim", deps());
+  assert.ok(!transferiu(r2), txt(r2));
+  assert.equal(r2.estado.alternativa?.numeroContrato, "1100793551");
+});
+
 console.log(`\n${ok} de ${ok + falhas.length} passaram`);
 if (falhas.length) process.exit(1);
