@@ -153,6 +153,11 @@ export function camposFaltando(dados: DadosContrato, produto: ProdutoContrato): 
   return gruposDo(produto).flatMap((g) => g.campos.filter((c) => falta(dados, c)));
 }
 
+// O grupo que a Maisa está pedindo agora (o primeiro com campo faltando).
+export function grupoPendente(dados: DadosContrato, produto: ProdutoContrato): string | null {
+  return gruposDo(produto).find((g) => g.campos.some((c) => falta(dados, c)))?.id ?? null;
+}
+
 // A próxima pergunta. Grupo pela metade (a foto não mostrou tudo): pede só o que faltou.
 export function proximaPergunta(dados: DadosContrato, produto: ProdutoContrato): string | null {
   for (const g of gruposDo(produto)) {

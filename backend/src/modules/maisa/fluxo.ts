@@ -5,6 +5,7 @@ import { cpfComTamanhoErrado, cpfValido, extrairCpf, normalizarCpf, trechoDoCpf 
 import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
 import { sexoPeloNome } from "./sexoPeloNome.js";
+import { grupoPendente } from "./contrato.js";
 import { leituraCurta } from "./conversa/leituraCurta.js";
 import { lerEndereco, temAlgo } from "./endereco.js";
 import { VINCULOS_SEM_CONSIGNADO } from "../extratos/leitor.js";
@@ -1618,6 +1619,22 @@ async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencia
 // Cada resposta do cliente (texto, foto do documento ou áudio já transcrito) preenche
 // o que der do cadastro. Falta algo: pergunta o próximo. Completo: mostra o resumo.
 const ROTULO_ENDERECO: Record<string, string> = { cep: "CEP", numero: "número", complemento: "complemento" };
+// Correção de endereço fora da pergunta do endereço precisa dizer do que fala.
+const FALA_DE_ENDERECO = /\b(cep|numero|n[º°]|casa|endereco|apto|apartamento|bloco|complemento)\b/;
+
+// A mensagem é endereço? Só com a pergunta do endereço na vez; depois dela, só uma correção que
+// cite o endereço ou o complemento que faltou. Número solto pedindo o RG não vira número da casa.
+function leituraDeEndereco(estado: EstadoMaisa, texto: string) {
+  const dados = estado.contrato?.dados ?? {};
+  const lido = lerEndereco(texto);
+  if (!temAlgo(lido)) return null;
+  const t = normalizar(texto);
+  const naVez = grupoPendente(dados, produtoCadastro(estado)) === "endereco";
+  const enderecoCompleto = Boolean(dados.cep && dados.numero);
+  const correcao = enderecoCompleto && CORRECAO.test(t) && (FALA_DE_ENDERECO.test(t) || lido.cep !== undefined);
+  const complementoDepois = enderecoCompleto && lido.cep === undefined && lido.numero === undefined && Boolean(lido.complemento) && !dados.complemento;
+  return naVez || correcao || complementoDepois ? lido : null;
+}
 
 // Esperando o endereço (CEP ou número faltando), ou corrigindo um que já veio: lê CEP, número e
 // complemento da mensagem, sem modelo. Acumula com o que já tinha, registra a correção e pergunta
@@ -1627,13 +1644,8 @@ async function enderecoEmPedacos(estado: EstadoMaisa, texto: string, deps: Depen
   const produto = produtoCadastro(estado);
   const dados = estado.contrato?.dados ?? {};
   const faltaEndereco = !dados.cep || !dados.numero;
-  const corrige = CORRECAO.test(normalizar(texto));
-  // Complemento que chega logo depois do endereço completo também vale.
-  const lido = lerEndereco(texto);
-  if (!temAlgo(lido)) return null;
-  const soComplemento = lido.cep === undefined && lido.numero === undefined;
-  if (!faltaEndereco && !corrige && !(soComplemento && !dados.complemento)) return null;
-  if (!faltaEndereco && !corrige && soComplemento && lido.complemento === "") return null;
+  const lido = leituraDeEndereco(estado, texto);
+  if (!lido) return null;
 
   const novos: DadosContrato = {};
   const correcoes: Correcao[] = [];
@@ -2212,11 +2224,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 function dadoDireto(estado: EstadoMaisa, texto: string, agora: Date): boolean {
   if (estado.etapa === "cpf") return Boolean(extrairCpf(texto) || cpfComTamanhoErrado(texto));
   // Coleta esperando o endereço: CEP, número ou complemento lidos pelas regras.
-  if (estado.etapa === "coleta") {
-    const d = estado.contrato?.dados ?? {};
-    const lido = lerEndereco(texto);
-    return temAlgo(lido) && (!d.cep || !d.numero || CORRECAO.test(normalizar(texto)) || (lido.cep === undefined && lido.numero === undefined && !d.complemento));
-  }
+  if (estado.etapa === "coleta") return leituraDeEndereco(estado, texto) !== null;
   // No extrato, a correção da data ("errei, é 12/12/1966") também é dado certo.
   if (estado.etapa === "extrato") return lerDataNascimento(texto, agora) !== null;
   // Data sugerida esperando o "sim": a confirmação é do motor, não vira "vou conseguir".
@@ -2290,7 +2298,7 @@ export function descreverPendencia(estado: EstadoMaisa): Pendencia {
         etapa, faltando, coletados, chave: `coleta:${primeiro ?? "resumo"}`, topico: null,
         tipo: primeiro === "pixCpf" ? "decisao" : "dado",
         pergunta: estado.contrato?.pergunta ?? TEXTOS.continuarCadastro,
-        dadoPedido: primeiro ? `${rotuloDoCampo(primeiro) ?? "o próximo dado"} do cadastro` : "os dados do cadastro",
+        dadoPedido: primeiro && rotuloDoCampo(primeiro) ? `a informação de ${rotuloDoCampo(primeiro)}` : "os dados do cadastro",
       };
     }
     default:
