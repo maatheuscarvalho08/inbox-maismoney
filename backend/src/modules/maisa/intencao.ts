@@ -71,10 +71,13 @@ const FATOS = `- A Mais Money é correspondente bancário (promotora de crédito
 - No cadastro do contrato, o banco Facta pede dados pessoais (documento com foto, como RG ou CNH, filiação, naturalidade, endereço, e-mail e conta para receber). Os dados vão só para a Facta e servem para fazer o contrato.`;
 
 const INSTRUCOES_LIVRE = `Você é a Maisa, assistente virtual da Mais Money, falando com um cliente de crédito consignado no WhatsApp.
-O cliente mandou uma mensagem que não é a resposta que você esperava nesta etapa. Responda ao que ele disse em 1 ou 2 frases curtas, com empatia e em português simples, usando SÓ estes fatos:
+O cliente mandou uma mensagem que não é a resposta que você esperava nesta etapa. Responda ao que ele disse em 1 a 3 frases curtas, como uma boa atendente humana: direta, simpática, em português simples. Use SÓ estes fatos gerais:
 ${FATOS}
+e a FICHA DO CLIENTE e as ÚLTIMAS MENSAGENS que vêm junto com a mensagem. Os valores da ficha saíram da simulação no banco: pode citar exatamente como estão (banco, número do contrato, parcela, troco, prazo).
 Regras:
-- Nunca prometa valor, taxa, prazo ou aprovação. Nunca invente informação fora dos fatos acima.
+- Responda primeiro o que o cliente perguntou. Se ele pergunta qual o banco, qual contrato, quanto cai ou qual a parcela e isso está na ficha, diga.
+- Nunca cite valor, taxa ou prazo que não esteja escrito na ficha ou nos fatos. Nunca prometa aprovação. Nunca invente informação.
+- Não repita o que você já disse nas últimas mensagens com as mesmas palavras.
 - Você só responde. Nunca diga que anotou, corrigiu, salvou, enviou, cadastrou ou fez qualquer coisa: quem faz é o sistema.
 - Use só os fatos do produto da conversa (ex.: o link de autorização do CLT não é o link do contrato).
 - Não faça a pergunta da etapa: ela é enviada logo depois da sua resposta.
@@ -90,7 +93,7 @@ const SCHEMA_LIVRE = {
   properties: { resposta: { type: ["string", "null"] } },
 };
 
-export async function responderLivre(texto: string, etapa: string, produto: string | undefined, pergunta = ""): Promise<string | null> {
+export async function responderLivre(texto: string, etapa: string, produto: string | undefined, pergunta = "", ficha = "", historico = ""): Promise<string | null> {
   if (!env.OPENAI_API_KEY) return null;
   const r = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -103,7 +106,7 @@ export async function responderLivre(texto: string, etapa: string, produto: stri
         { role: "system", content: INSTRUCOES_LIVRE },
         {
           role: "user",
-          content: `Etapa: ${etapa}. Produto: ${produto ?? "ainda não definido"}.\nO que você pediu nesta etapa: ${pergunta}\nMensagem do cliente:\n${texto}`,
+          content: `Etapa: ${etapa}. Produto: ${produto ?? "ainda não definido"}.\nO que você pediu nesta etapa: ${pergunta}\nFICHA DO CLIENTE:\n${ficha || "(nada simulado ainda)"}\nÚLTIMAS MENSAGENS (mais antigas primeiro):\n${historico || "(nenhuma)"}\nMensagem do cliente:\n${texto}`,
         },
       ],
       text: { format: { type: "json_schema", name: "resposta_livre", schema: SCHEMA_LIVRE, strict: true } },
@@ -117,9 +120,9 @@ export async function responderLivre(texto: string, etapa: string, produto: stri
   const resposta = (JSON.parse(saida) as { resposta: string | null }).resposta?.trim();
   // Resposta longa demais é sinal de que fugiu do combinado: não manda.
   if (!resposta || resposta.length > 400) return null;
-  // Valor, taxa, prazo ou qualquer número fora dos fatos aprovados: o modelo inventou. Não manda.
-  if (/R\$|%/.test(resposta)) return null;
-  const permitidos = new Set(`${FATOS} ${pergunta}`.match(/\d+/g) ?? []);
+  // Número fora dos fatos, da pergunta e da ficha (valores da simulação): o modelo inventou. Não manda.
+  if (/R\$|%/.test(resposta) && !ficha) return null;
+  const permitidos = new Set(`${FATOS} ${pergunta} ${ficha}`.match(/\d+/g) ?? []);
   if ((resposta.match(/\d+/g) ?? []).some((n) => !permitidos.has(n))) return null;
   return resposta;
 }

@@ -10,7 +10,8 @@ import { bancoFacta, bancoSimulado, mesmoGrupo, refinFlex, type BancoClt } from 
 import { codigoBancoPorNome, codigosBancoPortabilidade, contratar, contratarPortRefin, simularPortRefinSiape, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
-import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo, type ResultadoDigitacao } from "./fluxo.js";
+import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo, type PropostaRecente, type ResultadoDigitacao } from "./fluxo.js";
+import { mascararNumeros } from "./conversa/contexto.js";
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
 import { TEXTOS } from "./textos.js";
 import { guardarAnalise } from "../extratos/guardadas.js";
@@ -59,6 +60,33 @@ async function cpfDoContato(contatoId: string) {
   const contato = await prisma.contato.findUnique({ where: { id: contatoId }, select: { cpf: true } });
   if (!contato?.cpf) throw new Error("CPF não encontrado no contato");
   return contato.cpf;
+}
+
+// Proposta feita para o cliente nos últimos 30 dias, em qualquer conversa, com o link da Facta.
+async function propostaRecente(contatoId: string): Promise<PropostaRecente | null> {
+  const proposta = await prisma.proposta.findFirst({
+    where: { conversa: { contatoId }, createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60_000) }, status: { notIn: ["recusada", "cancelada"] } },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!proposta) return null;
+  const op = await prisma.operacaoFacta.findFirst({ where: { conversa: { contatoId }, status: "concluida" }, orderBy: { createdAt: "desc" }, select: { codigoAf: true, url: true } });
+  return {
+    banco: proposta.banco, status: proposta.status, statusTexto: STATUS_PROPOSTA[proposta.status],
+    codigoAf: op?.codigoAf ?? proposta.numeroContrato ?? null, url: op?.url || null, criadaEm: proposta.createdAt.toISOString(),
+  };
+}
+
+// Últimas mensagens da conversa, para a resposta livre ver o que já foi dito. Números longos mascarados.
+async function historicoCurto(conversaId: string): Promise<string> {
+  const ms = await prisma.mensagem.findMany({
+    where: { conversaId, remetenteTipo: { in: ["cliente", "maisa", "operador"] } },
+    orderBy: { timestamp: "desc" }, take: 10, select: { remetenteTipo: true, conteudoTexto: true, tipoMidia: true },
+  });
+  return ms.reverse().map((m) => {
+    const quem = m.remetenteTipo === "cliente" ? "Cliente" : m.remetenteTipo === "maisa" ? "Maisa" : "Equipe";
+    const corpo = m.conteudoTexto ? mascararNumeros(m.conteudoTexto).replace(/\s+/g, " ").slice(0, 280) : `[${m.tipoMidia ?? "arquivo"}]`;
+    return `${quem}: ${corpo}`;
+  }).join("\n");
 }
 
 async function ultimaProposta(contatoId: string) {
@@ -356,7 +384,8 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
   const semBanco = () => Promise.reject(new Error("Nenhum banco configurado para a Maisa"));
   const passo: Passo = await avancar(estadoAntes, entrada, {
     classificador: comModelo(classificadorRegras),
-    responderLivre,
+    responderLivre: async (texto, etapa, produto, pergunta, ficha) => responderLivre(texto, etapa, produto, pergunta, ficha ?? "", await historicoCurto(conversa.id)),
+    propostaRecente: () => propostaRecente(conversa.contatoId),
     // Camada conversacional (fase 7): só no modo ativo. Desligada ou em sombra, o fluxo é o de sempre.
     conversa: modoConversa() === "ativo" && !ehTeste(conversa) ? conversaAtiva(conversa.id, arquivo) : undefined,
     agora: portasMaisa.agora,
@@ -449,7 +478,8 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       console.log(`Maisa leu dados do contrato na conversa ${conversa.id}: ${Object.keys(dados).length} campo(s)`);
       return dados;
     },
-    digitar: (dados) => digitarComSeguranca(conversa, estadoAntes, dados, banco === bancoSimulado),
+    // A condição conferida agora vale na digitação e no registro da proposta (troco certo).
+    digitar: (dados, alternativa) => digitarComSeguranca(conversa, alternativa && estadoAntes ? { ...estadoAntes, alternativa } : estadoAntes, dados, banco === bancoSimulado),
   });
 
   // A mensagem lida passa a ser a última: a recuperação e a digitação contam a partir dela.

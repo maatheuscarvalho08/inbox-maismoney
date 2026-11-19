@@ -17,7 +17,7 @@ import type { Pendencia } from "./conversa/contexto.js";
 import type { SaidaMotor } from "./conversa/motor.js";
 import type { MemoriaConversa, RegistroInterpretacao } from "./conversa/tipos.js";
 import type { OpcaoOferta, VinculoClt } from "./bancos.js";
-import { invalidaConfirmacao, perguntaSobreAndamento, type AssuntoAndamento } from "./ordemMensagens.js";
+import { invalidaConfirmacao, mensagemRelevante, perguntaSobreAndamento, type AssuntoAndamento } from "./ordemMensagens.js";
 import {
   ACEITE_NO_FIM,
   CORRECAO,
@@ -227,6 +227,15 @@ export type ResultadoDigitacao =
   | ResultadoContratacao
   | { tipo: "bloqueada"; motivo: string; status: string; codigoAf?: string | null };
 
+export interface PropostaRecente {
+  banco: string;
+  status: "digitada" | "em_analise" | "aprovada" | "paga" | "recusada" | "cancelada";
+  statusTexto: string;
+  codigoAf: string | null;
+  url: string | null;
+  criadaEm: string;
+}
+
 export interface Dependencias {
   classificador: Classificador;
   agora(): Date;
@@ -245,7 +254,10 @@ export interface Dependencias {
   // CEP do endereço do cadastro. Sem ela, o endereço em pedaços segue pela leitura do modelo.
   consultarCep?(cep: string): Promise<{ cep: string; cidade: string; cidadeNome: string; estado: string; endereco?: string; bairro?: string } | null>;
   // Idempotente: quem chama garante uma digitação por oferta (chave única no banco).
-  digitar(dados: DadosContrato): Promise<ResultadoDigitacao>;
+  // alternativa: a condição conferida agora (pode ter troco diferente da oferta).
+  digitar(dados: DadosContrato, alternativa?: EstadoMaisa["alternativa"]): Promise<ResultadoDigitacao>;
+  // Proposta já feita para este cliente (qualquer conversa). Com ela, a Maisa nunca manda o menu.
+  propostaRecente?(): Promise<PropostaRecente | null>;
   // Trava própria da digitação automática (MAISA_DIGITACAO_LIBERADA). Desligada por padrão.
   digitacaoLiberada?: boolean;
   // Espera depois do "sim" da confirmação antes de digitar. Ausente: 30 segundos.
@@ -265,7 +277,8 @@ export interface Dependencias {
   conversa?: ConversaDeps;
   // Responde ao que o cliente disse fora do esperado (ex.: "estou negativo"), só com fatos
   // aprovados. null: não tem o que dizer. Ausente nos testes: valem as regras.
-  responderLivre?(texto: string, etapa: string, produto: string | undefined, pergunta: string): Promise<string | null>;
+  // ficha: o que já se sabe do cliente (oferta, contratos, proposta). Os valores dela podem ser citados.
+  responderLivre?(texto: string, etapa: string, produto: string | undefined, pergunta: string, ficha?: string): Promise<string | null>;
 }
 
 export type Efeito =
@@ -512,6 +525,60 @@ function tentarDeNovo(estado: EstadoMaisa, resposta: string, rotulo: string, sai
   return { estado: { ...estado, tentativas }, respostas: [resposta], efeitos: [], rotulo };
 }
 
+// O que já se sabe do cliente, em linhas que o modelo pode citar. Os valores daqui saíram
+// da simulação na Facta (tabela do banco): podem ser ditos ao cliente como estão.
+export function fichaCliente(estado: EstadoMaisa): string {
+  const l: string[] = [];
+  if (estado.produto) l.push(`Produto: ${estado.produto.toUpperCase()}.`);
+  l.push(`Etapa do atendimento: ${NOME_ETAPA[estado.etapa] ?? estado.etapa}.`);
+  const o = estado.oferta;
+  if (o) l.push(`Oferta simulada no banco ${o.banco}: até ${formatarReais(o.valorCentavos)}${o.prazoMeses ? ` em ${o.prazoMeses}x` : ""}${o.parcelaCentavos ? ` de ${formatarReais(o.parcelaCentavos)}` : ""}.`);
+  const a = estado.alternativa;
+  const d = a?.digitacao;
+  const numero = a?.numeroContrato ?? d?.numeroContrato ?? null;
+  if (a && d) {
+    l.push(`Oferta de portabilidade para o banco Facta: contrato do ${d.banco}${numero ? ` nº ${numero}` : ""}, parcela hoje ${r$(d.parcela)}, faltam ${d.prazoRestante} de ${d.prazoOriginal} parcelas.`);
+    if (d.refin) l.push(`Com o refinanciamento na Facta: ${d.refin.prazo} parcelas de ${r$(d.refin.parcela)}, e cai na conta do cliente ${a.trocoCentavos ? formatarReais(a.trocoCentavos) : "um valor a confirmar"} (troco).`);
+    else l.push(`Só portabilidade, sem dinheiro extra: parcela na Facta ${r$(d.port.parcela)}.`);
+  }
+  for (const s of (a?.simulacoes ?? []).filter((x) => x.numeroContrato !== numero).slice(0, 4)) {
+    l.push(`Outro contrato simulado: ${s.banco}${s.numeroContrato ? ` nº ${s.numeroContrato}` : ""}, parcela hoje ${r$(s.parcela)}: ${s.refin?.liquido ? `troco de ${r$(s.refin.liquido)} com refinanciamento` : "a Facta não abriu tabela com troco para ele"}.`);
+  }
+  return l.join("\n");
+}
+
+// Resposta livre com a ficha do cliente. null: o modelo não tinha fato para responder.
+async function respostaLivre(estado: EstadoMaisa, texto: string, deps: Dependencias, pergunta: string): Promise<string | null> {
+  if (!deps.responderLivre || !texto.trim()) return null;
+  try {
+    return await deps.responderLivre(texto, NOME_ETAPA[estado.etapa] ?? estado.etapa, estado.produto, pergunta, fichaCliente(estado));
+  } catch (err) {
+    console.error("Resposta livre falhou:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+// Reação a um balão (emoji em cima da mensagem): não é resposta, em nenhuma etapa.
+const REACAO = /^\[Mensagem do tipo "reaction"/;
+
+// Cliente que já tem proposta e voltou a falar com a conversa no início: nunca o menu.
+// Mensagem neutra (ok, obrigada, emoji): silêncio. Pergunta do andamento: o status e o link.
+// Qualquer outra coisa: a equipe que acompanha a proposta.
+async function posProposta(estado: EstadoMaisa, texto: string, p: PropostaRecente, deps: Dependencias): Promise<Passo> {
+  // Sem emoji e pontuação, sobra só "ok", "obrigada", "beleza"...: não pede resposta.
+  const limpo = normalizar(texto.replace(/[\p{Extended_Pictographic}\p{Emoji_Modifier}‍️]/gu, "")).replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
+  const neutra = !limpo || /^(ok|okay|oks|blz|beleza|certo|ta bom|ta|entendi|entendido|combinado|obrigad[oa]|muito obrigad[oa]|obg|valeu|vlw|show|perfeito|otimo|joia|amem|deus abencoe|ok obrigad[oa]|ok ok)$/.test(limpo);
+  if (neutra || !mensagemRelevante({ conteudoTexto: texto, tipoMidia: null })) return { estado, respostas: [], efeitos: [], rotulo: "pos_proposta_silencio" };
+  const andamento = perguntaSobreAndamento(texto) !== null || (await deps.classificador.intencao(texto)) === "acompanhar_proposta";
+  if (andamento) {
+    const resposta = p.status === "digitada" && p.url
+      ? `A sua proposta no banco ${p.banco} já está feita e espera a sua assinatura. É só abrir o link, conferir e assinar: ${p.url}\n\nDepois que você assinar, o banco segue com a liberação e a gente te avisa por aqui.`
+      : TEXTOS.statusProposta(p.banco, p.statusTexto);
+    return { estado, respostas: [resposta], efeitos: [], rotulo: "pos_proposta_status" };
+  }
+  return transferir(estado, `cliente com proposta ${p.codigoAf ?? ""} no ${p.banco} (${p.statusTexto}) mandou: "${texto.slice(0, 160)}"`, TEXTOS.posPropostaEquipe, "pos_proposta");
+}
+
 // Resposta fora do que a etapa espera. Se for uma dúvida conhecida, responde e repete
 // a pergunta. Dúvida desconhecida vai para a equipe, em vez de a Maisa improvisar.
 // Antes de repetir a pergunta da etapa, responde ao que o cliente disse. Sem resposta
@@ -522,7 +589,7 @@ async function ouvirCliente(estado: EstadoMaisa, texto: string, deps: Dependenci
   const tentativas = estado.tentativas + 1;
   if (deps.responderLivre && texto.trim() && tentativas <= MAX_TENTATIVAS) {
     try {
-      const resposta = await deps.responderLivre(texto, NOME_ETAPA[estado.etapa], estado.produto, pergunta);
+      const resposta = await deps.responderLivre(texto, NOME_ETAPA[estado.etapa], estado.produto, pergunta, fichaCliente(estado));
       if (resposta) {
         const retoma = RETOMA_ETAPA[estado.etapa] ?? pergunta;
         return { estado: { ...estado, tentativas }, respostas: [resposta, retoma], efeitos: [], rotulo: "resposta_livre" };
@@ -643,8 +710,10 @@ async function etapaInicio(estado: EstadoMaisa, texto: string, deps: Dependencia
 
   if (intencao === "duvida") {
     const faq = buscarFaq(texto);
-    if (!faq) return transferir(estado, "dúvida sem resposta pronta", TEXTOS.transferindo, intencao);
-    return ir(estado, "convenio", [faq, TEXTOS.saudacao], intencao);
+    if (faq) return ir(estado, "convenio", [faq, TEXTOS.saudacao], intencao);
+    const livre = await respostaLivre(estado, texto, deps, TEXTOS.saudacao);
+    if (livre) return ir(estado, "convenio", [livre, TEXTOS.saudacao], "resposta_livre");
+    return transferir(estado, "dúvida sem resposta pronta", TEXTOS.transferindo, intencao);
   }
 
   return ir(estado, "convenio", [TEXTOS.saudacao], intencao);
@@ -1187,6 +1256,9 @@ async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencia
   if (OUTRO_VALOR.test(t) && /\b(da pra|pode ser|consegue|quero|queria|faz|fazer|tem como|seria possivel|aceito|prefiro)\b/.test(t) && !/\bpor que\b|\bporque\b/.test(t)) return transferir(estado, `pediu outro valor ou prazo: "${texto.slice(0, 120)}"`, TEXTOS.outroValorEquipe, "outro_valor", [], "alternativa");
   if (temReceio(t)) return transferir(estado, port ? "objeção na oferta de portabilidade" : "objeção na oferta", TEXTOS.objecao, "objecao", [], "objecao");
   if (texto.includes("?")) {
+    // Responde com o que a simulação mostrou (banco, contrato, valores) e repete a pergunta da oferta.
+    const livre = await respostaLivre(estado, texto, deps, PERGUNTA_DA_ETAPA[estado.etapa]);
+    if (livre) return { estado, respostas: [livre, PERGUNTA_DA_ETAPA[estado.etapa]], efeitos: [], rotulo: "oferta_duvida_respondida" };
     return transferir(estado, `dúvida sem resposta pronta na oferta: ${texto.slice(0, 120)}`, TEXTOS.duvidaParaEquipe, "objecao", [], "objecao");
   }
   return duvida([TEXTOS.naoSeiSeEntendi], "oferta_nao_entendida");
@@ -1776,7 +1848,7 @@ async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null;
       /\b(falecid|nao (tenho|sei|conheco|lembro) (o |a |do |da |meu |minha )?(pai|mae|rg|cnh|identidade|email|e-mail|cep|endereco|conta)|nao vou (passar|mandar|dar|informar))/.test(tt);
     if (!entrada.documento && texto && (texto.includes("?") || travou)) {
       try {
-        const r = deps.responderLivre ? await deps.responderLivre(texto, NOME_ETAPA.coleta, estado.produto, pergunta) : null;
+        const r = deps.responderLivre ? await deps.responderLivre(texto, NOME_ETAPA.coleta, estado.produto, pergunta, fichaCliente(estado)) : null;
         if (r) return { estado: { ...estado, contrato: { ...estado.contrato, dados, pergunta }, tentativas: estado.tentativas + 1 }, respostas: [r, pergunta], efeitos: [], rotulo: "resposta_livre" };
       } catch (err) {
         console.error("Resposta livre falhou no cadastro:", err instanceof Error ? err.message : err);
@@ -1929,7 +2001,7 @@ async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promi
 
   let resultado: ResultadoDigitacao;
   try {
-    resultado = await deps.digitar(estado.contrato?.dados ?? {});
+    resultado = await deps.digitar(estado.contrato?.dados ?? {}, limpo.alternativa);
   } catch (err) {
     // Exceção fora da Facta (banco de dados, código): sem saber se a Facta foi chamada,
     // trata como resultado desconhecido. Nunca como "pode tentar de novo".
@@ -2110,6 +2182,11 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 
   // O cliente respondeu: um novo sumiço pode ganhar outro lembrete.
   if (estado.lembreteEnviado) estado = { ...estado, lembreteEnviado: undefined };
+  if (!entrada.temMidia && entrada.texto && REACAO.test(entrada.texto)) return { estado, respostas: [], efeitos: [], rotulo: "reacao_ignorada" };
+  if (estado.etapa === "inicio" && !estado.produto && !estado.convenioMarcado && deps.propostaRecente && !entrada.temMidia) {
+    const p = await deps.propostaRecente().catch(() => null);
+    if (p) return posProposta(estado, entrada.texto ?? "", p, deps);
+  }
   // REDE: digitação com erro esperando alguém olhar. Não refaz nada; avisa no máximo a cada 30 min.
   if (estado.digitacaoErro && estado.etapa === "confirmacao") {
     const ultimo = estado.redeAvisoEm ? new Date(estado.redeAvisoEm).getTime() : 0;

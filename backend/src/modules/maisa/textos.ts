@@ -284,6 +284,7 @@ export const TEXTOS = {
     "É só abrir, conferir e assinar." +
     (url ? `\n\nSe a mensagem do banco não chegar, o link é este: ${url}` : "") +
     "\n\nUm atendente da nossa equipe acompanha com você até o dinheiro cair.",
+  posPropostaEquipe: "Vou chamar alguém da nossa equipe que acompanha a sua proposta. Já já responde aqui.",
   finalizandoContrato: "Estou finalizando o seu contrato e já te mando o link para assinar.",
   prazoPortabilidade:
     "Na portabilidade, o dinheiro cai depois que você assina e o seu banco atual libera a transferência do contrato. O prazo depende desse banco. Assim que liberar, a gente te avisa.",
