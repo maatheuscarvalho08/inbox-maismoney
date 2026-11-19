@@ -1148,6 +1148,14 @@ await caso("Oferta de port: cliente pede outro contrato e vai para a equipe com 
   assert.notEqual(s2.rotulo, "outro_contrato");
 });
 
+await caso("Cliente chama o Leonardo ou a Vania pelo nome: vai para a fila", async () => {
+  for (const t of ["Por favor, Leonardo! Veja se já está na conta o valor do empréstimo?", "quero falar com a Vânia"]) {
+    const p = await diga({ etapa: "convenio", tentativas: 0 }, t, depsBase(roteiro([])));
+    assert.equal(p.estado.etapa, "finalizada", t);
+    assert.equal(p.estado.saida, "humano", t);
+  }
+});
+
 await caso("Nenhuma chamada externa foi feita", async () => {
   assert.equal(fetchChamado, 0);
 });
