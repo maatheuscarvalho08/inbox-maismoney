@@ -207,6 +207,8 @@ export interface Tabela {
   parcela: number;
   valorLiquido: number;
   valorSeguro: number;
+  // Port + refin: a Facta só aceita refin do mesmo grupo da port ("SIAPE 12 PAGAS").
+  grupo?: string;
 }
 
 // INSS (manual INSS v11.0): mesmo endpoint, averbador 3 e sem renda. A Facta não
@@ -252,6 +254,7 @@ function lerTabelas(lista: unknown): Tabela[] {
     parcela: Number(t.parcela),
     valorLiquido: Number(t.valor_liquido ?? 0),
     valorSeguro: Number(t.valor_seguro ?? 0),
+    grupo: String(t.grupos ?? ""),
   }));
 }
 

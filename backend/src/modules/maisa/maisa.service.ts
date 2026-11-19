@@ -6,7 +6,7 @@ import { emitAvisoMaisa, emitCarrinhoNovo, emitConversaAtualizada, emitNovaMensa
 import { getConversaById } from "../conversas/conversas.service.js";
 import { avancarEtapa } from "../funil/funil.service.js";
 import { classificadorRegras } from "./classificador.js";
-import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
+import { bancoFacta, bancoSimulado, mesmoGrupo, refinFlex, type BancoClt } from "./bancos.js";
 import { codigoBancoPorNome, codigosBancoPortabilidade, contratar, contratarPortRefin, simularPortRefinSiape, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
@@ -174,7 +174,7 @@ async function digitarProposta(
   return resultado;
 }
 
-type TabelaDigitacao = { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number; liquido?: number };
+type TabelaDigitacao = { nome?: string; codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number; liquido?: number };
 async function valoresAtuaisDaPort(
   cpf: string,
   dataNascimento: string,
@@ -185,14 +185,16 @@ async function valoresAtuaisDaPort(
     prazo: d.refin?.prazo ?? d.port.prazo,
   });
   const igual = (t: { codigoTabela: number }, alvo: TabelaDigitacao) => Number(t.codigoTabela) === Number(alvo.codigoTabela);
-  const comoDigitacao = (t: (typeof s.portabilidade)[number]): TabelaDigitacao => ({ codigoTabela: t.codigoTabela, prazo: t.prazo, contrato: t.contrato, parcela: t.parcela, coeficiente: t.coeficiente, liquido: t.valorLiquido });
+  const comoDigitacao = (t: (typeof s.portabilidade)[number]): TabelaDigitacao => ({ nome: t.tabela, codigoTabela: t.codigoTabela, prazo: t.prazo, contrato: t.contrato, parcela: t.parcela, coeficiente: t.coeficiente, liquido: t.valorLiquido });
   const p = s.portabilidade.find((t) => igual(t, d.port));
   if (!p) return { erro: `tabela da port ${d.port.codigoTabela} não voltou na simulação de agora (${s.mensagem || "sem mensagem"})` };
   if (!d.refin) return { port: { ...d.port, ...comoDigitacao(p) } };
-  const r = s.refin.find((t) => igual(t, d.refin!));
+  // Mesma tabela se for do grupo da port; senão a do grupo com maior troco.
+  const doGrupo = s.refin.filter((t) => mesmoGrupo(t, p) && !refinFlex(t) && t.valorSeguro === 0);
+  const r = doGrupo.find((t) => igual(t, d.refin!)) ?? [...doGrupo].sort((a, b) => b.valorLiquido - a.valorLiquido)[0];
   if (!r) return { erro: `tabela do refin ${d.refin.codigoTabela} não voltou na simulação de agora (${s.mensagem || "sem mensagem"})` };
   if ((r.valorLiquido ?? 0) + 0.01 < (d.refin.liquido ?? 0)) return { erro: `troco caiu de ${d.refin.liquido} para ${r.valorLiquido}: confirmar com o cliente antes de digitar` };
-  console.log(`Port ressimulada antes de digitar: refin coef ${d.refin.coeficiente} -> ${r.coeficiente}, troco ${d.refin.liquido} -> ${r.valorLiquido}`);
+  console.log(`Port ressimulada antes de digitar: refin coef ${d.refin.coeficiente} -> ${r.coeficiente}, troco ${d.refin.liquido} -> ${r.valorLiquido} (${r.tabela})`);
   return { port: { ...d.port, ...comoDigitacao(p) }, refin: { ...d.refin, ...comoDigitacao(r) } };
 }
 

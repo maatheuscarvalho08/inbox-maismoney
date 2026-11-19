@@ -245,14 +245,17 @@ export const bancoFacta: BancoClt = {
       prazo,
     });
     // Troco do refin: sem seguro, com o bruto e o troco mínimos do roteiro.
+    const port = [...s.portabilidade].sort((a, b) => a.parcela - b.parcela)[0];
+    // Refin só do mesmo grupo da port: tabela sem grupo ou de outro grupo a Facta recusa.
     const refins = s.refin.filter(
       (t) =>
+        mesmoGrupo(t, port) &&
+        !refinFlex(t) &&
         t.valorSeguro === 0 &&
         t.contrato >= REGRAS_PORTABILIDADE.refinBrutoMinimo &&
         t.valorLiquido >= REGRAS_PORTABILIDADE.trocoMinimo,
     );
     const melhor = refins.sort((a, b) => b.valorLiquido - a.valorLiquido)[0];
-    const port = [...s.portabilidade].sort((a, b) => a.parcela - b.parcela)[0];
     const tabela = (t: facta.Tabela): TabelaDigitacao => ({
       codigoTabela: t.codigoTabela,
       prazo: t.prazo,
@@ -286,6 +289,16 @@ export const bancoFacta: BancoClt = {
     };
   },
 };
+
+// Refin FLEX paga menos comissão: o dono pediu para nunca usar.
+export const refinFlex = (t: { tabela: string }) => /FLEX/i.test(t.tabela);
+
+// Sem grupo informado nas duas (teste ou resposta antiga): não barra.
+export function mesmoGrupo(refin: facta.Tabela, port: facta.Tabela | undefined): boolean {
+  if (!port) return false;
+  if (refin.grupo === undefined && port.grupo === undefined) return true;
+  return Boolean(refin.grupo) && refin.grupo === port.grupo;
+}
 
 // Banco de mentira, para testar o fluxo sem a Facta. O último dígito do CPF decide:
 // 0 e 1 já autorizados; 9 celular ligado a outro CPF; os outros esperam o link.
