@@ -277,11 +277,19 @@ export const TEXTOS = {
   confirmaDados: (resumo: string) => `Confere se está tudo certo:\n\n${resumo}\n\nEstá tudo certo? Responda SIM ou NÃO.`,
   confirmeComSimOuNao: "Só para ter certeza de que entendi: você confirma? Responda SIM ou NÃO.",
   perguntaConfirmacao: "Os dados estão certos? Responda SIM ou NÃO.",
-  contratoEnviado: (url: string) =>
-    "Deu certo! O seu contrato foi feito no banco Facta. Agora o banco vai te mandar no WhatsApp um link para assinar. " +
+  contratoEnviado: (url: string, troco: string | null = null) =>
+    "Deu certo! O seu contrato foi feito no banco Facta." +
+    (troco ? ` O valor que cai na sua conta é ${troco}.` : "") +
+    " Agora o banco vai te mandar no WhatsApp um link para assinar. " +
     "É só abrir, conferir e assinar." +
     (url ? `\n\nSe a mensagem do banco não chegar, o link é este: ${url}` : "") +
     "\n\nUm atendente da nossa equipe acompanha com você até o dinheiro cair.",
+  finalizandoContrato: "Estou finalizando o seu contrato e já te mando o link para assinar.",
+  prazoPortabilidade:
+    "Na portabilidade, o dinheiro cai depois que você assina e o seu banco atual libera a transferência do contrato. O prazo depende desse banco. Assim que liberar, a gente te avisa.",
+  prazoNovo: "Depois que você assinar, o banco confere e libera o valor na sua conta. Assim que liberar, a gente te avisa.",
+  trocoMudou: (antes: string, depois: string, parcela: string) =>
+    `Antes de fazer o contrato, conferi de novo no banco e o valor mudou: o que cai na sua conta agora é ${depois} (antes era ${antes}). A parcela fica em ${parcela}. Quer seguir assim? Responda SIM ou NÃO.`,
   erroDigitacao: "Tive um problema para fazer o contrato no sistema do banco. Vou passar para um atendente terminar com você.",
   corrigirDados: "Sem problema. Vou passar para um atendente corrigir os dados com você.",
   // Confirmação: o cliente apontou erro. Ela corrige ali mesmo, sem passar para a equipe.

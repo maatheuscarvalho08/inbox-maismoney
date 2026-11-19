@@ -179,6 +179,7 @@ async function valoresAtuaisDaPort(
   cpf: string,
   dataNascimento: string,
   d: { port: TabelaDigitacao; refin?: TabelaDigitacao; parcela: number; prazoRestante: number; prazoOriginal: number; saldoDevedor: number },
+  exigirTroco = true,
 ): Promise<{ port: TabelaDigitacao; refin?: TabelaDigitacao } | { erro: string }> {
   const s = await simularPortRefinSiape({
     cpf, dataNascimento, parcela: d.parcela, prazoRestante: d.prazoRestante, prazoOriginal: d.prazoOriginal, saldoDevedor: d.saldoDevedor,
@@ -193,7 +194,7 @@ async function valoresAtuaisDaPort(
   const doGrupo = s.refin.filter((t) => mesmoGrupo(t, p) && !refinFlex(t) && t.valorSeguro === 0);
   const r = doGrupo.find((t) => igual(t, d.refin!)) ?? [...doGrupo].sort((a, b) => b.valorLiquido - a.valorLiquido)[0];
   if (!r) return { erro: `tabela do refin ${d.refin.codigoTabela} não voltou na simulação de agora (${s.mensagem || "sem mensagem"})` };
-  if ((r.valorLiquido ?? 0) + 0.01 < (d.refin.liquido ?? 0)) return { erro: `troco caiu de ${d.refin.liquido} para ${r.valorLiquido}: confirmar com o cliente antes de digitar` };
+  if (exigirTroco && (r.valorLiquido ?? 0) + 0.01 < (d.refin.liquido ?? 0)) return { erro: `troco caiu de ${d.refin.liquido} para ${r.valorLiquido}: confirmar com o cliente antes de digitar` };
   console.log(`Port ressimulada antes de digitar: refin coef ${d.refin.coeficiente} -> ${r.coeficiente}, troco ${d.refin.liquido} -> ${r.valorLiquido} (${r.tabela})`);
   return { port: { ...d.port, ...comoDigitacao(p) }, refin: { ...d.refin, ...comoDigitacao(r) } };
 }
@@ -435,6 +436,12 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     digitaClt: env.MAISA_DIGITA_CLT,
     digitaPortPura: env.MAISA_DIGITA_PORT_PURA,
     mensagemDepoisDoSim: (simId, recebidoEm) => mensagemDepoisDoSim(conversa.id, simId, recebidoEm),
+    ...(banco === bancoSimulado
+      ? {}
+      : {
+          revalidarPort: async (dig) =>
+            valoresAtuaisDaPort(await cpfDoContato(conversa.contatoId), exigir(estadoAntes?.dataNascimento, "data de nascimento"), dig, false),
+        }),
     consultarCep: (cep) => buscarCep(cep),
     extrairDados: async (pergunta, recebida, faltando) => {
       const doc = recebida.documento && arquivo ? { conteudo: await lerArquivo(arquivo.midiaPath), tipo: arquivo.tipo } : null;

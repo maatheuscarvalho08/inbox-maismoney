@@ -17,7 +17,7 @@ import type { Pendencia } from "./conversa/contexto.js";
 import type { SaidaMotor } from "./conversa/motor.js";
 import type { MemoriaConversa, RegistroInterpretacao } from "./conversa/tipos.js";
 import type { OpcaoOferta, VinculoClt } from "./bancos.js";
-import { invalidaConfirmacao } from "./ordemMensagens.js";
+import { invalidaConfirmacao, perguntaSobreAndamento, type AssuntoAndamento } from "./ordemMensagens.js";
 import {
   ACEITE_NO_FIM,
   CORRECAO,
@@ -252,6 +252,8 @@ export interface Dependencias {
   // O cliente mandou mensagem relevante depois do "sim" (pelo horário do WhatsApp, ou
   // recebida depois dele)? Ausente: não mandou.
   mensagemDepoisDoSim?(simMensagemId: string | undefined, recebidoEm: string): Promise<boolean>;
+  // Port + refin: simula de novo com as mesmas tabelas logo antes de digitar.
+  revalidarPort?(d: DigitacaoPort): Promise<{ port: DigitacaoPort["port"]; refin?: DigitacaoPort["refin"] } | { erro: string }>;
   // Lembrete e Carrinho também na oferta de portabilidade.
   followupPort?: boolean;
   // MAISA_DIGITA_CLT: digitação automática do CLT. Desligada, o aceite do CLT vai para a equipe.
@@ -370,6 +372,17 @@ function transferir(
 }
 
 const r$ = (reais: number) => formatarReais(Math.round(reais * 100));
+
+// Resposta curta sobre o contrato que está sendo feito, com os números da oferta aceita.
+function respostaAndamento(estado: EstadoMaisa, assunto: AssuntoAndamento): string {
+  const a = estado.alternativa;
+  const valor = a?.trocoCentavos ?? estado.oferta?.valorCentavos ?? null;
+  const parcela = a?.digitacao?.refin?.parcela ?? (estado.oferta?.parcelaCentavos != null ? estado.oferta.parcelaCentavos / 100 : null);
+  if (assunto === "valor" && valor) return `O valor que cai na sua conta é ${formatarReais(valor)}.`;
+  if (assunto === "parcela" && parcela) return `A parcela fica em ${r$(parcela)} por mês.`;
+  if (assunto === "link") return "O link para assinar chega aqui no WhatsApp assim que o contrato ficar pronto.";
+  return a ? TEXTOS.prazoPortabilidade : TEXTOS.prazoNovo;
+}
 
 // Nota para o operador ao passar a conversa: o que a Maisa fez, onde simulou e o que
 // voltou. Fica na conversa, só para a equipe. Os dados do cadastro saem resumidos.
@@ -1867,7 +1880,7 @@ async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promi
   const p = estado.confirmacaoPendente;
   if (estado.etapa !== "confirmacao" || !p) return parado("nada_a_executar");
   if (deps.agora().getTime() < new Date(p.executarEm).getTime()) return parado("aguardando_janela");
-  const limpo: EstadoMaisa = { ...estado, confirmacaoPendente: undefined };
+  let limpo: EstadoMaisa = { ...estado, confirmacaoPendente: undefined };
   // Mensagem relevante mandada depois do "sim": o "sim" não vale mais. A mensagem é (ou
   // já foi) lida e decide o que fazer; a digitação só volta com um "sim" novo.
   if (deps.mensagemDepoisDoSim && (await deps.mensagemDepoisDoSim(p.mensagemId, p.recebidoEm))) {
@@ -1878,14 +1891,6 @@ async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promi
     return transferir(limpo, `digitação automática não executada (${trava}): a equipe digita no portal com os dados da nota`, TEXTOS.digitacaoComEquipe, "digitacao_bloqueada", [], "dados_contrato");
   }
 
-  let resultado: ResultadoDigitacao;
-  try {
-    resultado = await deps.digitar(estado.contrato?.dados ?? {});
-  } catch (err) {
-    // Exceção fora da Facta (banco de dados, código): sem saber se a Facta foi chamada,
-    // trata como resultado desconhecido. Nunca como "pode tentar de novo".
-    resultado = { tipo: "desconhecido", etapa: "sistema", mensagem: err instanceof Error ? err.message : "falha na digitação" };
-  }
   // REDE: falha na digitação não vai para a equipe. O cliente ouve que o contrato está sendo
   // digitado, o erro vira nota e alerta, e a conversa fica parada até alguém olhar.
   const rede = (tipo: string, etapa: string, mensagem: string, aviso: string): Passo => ({
@@ -1894,6 +1899,40 @@ async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promi
     efeitos: [{ tipo: "rede", nota: `REDE: a digitação não passou (${tipo}). Etapa: ${etapa}. Erro da Facta: ${mensagem.slice(0, 500)}.\n${aviso}\nO cliente ouviu que o contrato está sendo digitado. A conversa continua com a Maisa, parada, sem refazer nada sozinha.` }],
     rotulo: `rede_${tipo}`,
   });
+
+  // Port + refin: o coeficiente muda com o tempo. Confere a condição de agora antes de digitar.
+  // Troco menor: não digita, mostra o valor novo e pede outro SIM. Troco igual ou maior: segue.
+  const dig = estado.alternativa?.digitacao;
+  if (estado.alternativa && dig?.refin && deps.revalidarPort) {
+    let atual: Awaited<ReturnType<NonNullable<Dependencias["revalidarPort"]>>>;
+    try {
+      atual = await deps.revalidarPort(dig);
+    } catch (err) {
+      atual = { erro: err instanceof Error ? err.message : "falha na nova simulação" };
+    }
+    if ("erro" in atual) return rede("erro", "nova simulação antes de digitar", atual.erro, "A Facta não foi chamada para digitar: nenhuma proposta foi criada.");
+    const antes = dig.refin.liquido ?? 0;
+    const depois = atual.refin?.liquido ?? 0;
+    const alternativa = { ...estado.alternativa, trocoCentavos: Math.round(depois * 100), digitacao: { ...dig, port: atual.port, refin: atual.refin } };
+    if (depois + 0.01 < antes) {
+      return {
+        estado: { ...limpo, alternativa, ...(limpo.contrato ? { contrato: { ...limpo.contrato, pergunta: TEXTOS.perguntaConfirmacao } } : {}) },
+        respostas: [TEXTOS.trocoMudou(r$(antes), r$(depois), r$(atual.refin?.parcela ?? dig.refin.parcela))],
+        efeitos: [],
+        rotulo: "troco_caiu",
+      };
+    }
+    limpo = { ...limpo, alternativa };
+  }
+
+  let resultado: ResultadoDigitacao;
+  try {
+    resultado = await deps.digitar(estado.contrato?.dados ?? {});
+  } catch (err) {
+    // Exceção fora da Facta (banco de dados, código): sem saber se a Facta foi chamada,
+    // trata como resultado desconhecido. Nunca como "pode tentar de novo".
+    resultado = { tipo: "desconhecido", etapa: "sistema", mensagem: err instanceof Error ? err.message : "falha na digitação" };
+  }
   if (resultado.tipo === "bloqueada" && (resultado.status === "concluida" || resultado.codigoAf)) {
     // Já existe proposta feita para esta oferta: não é erro, e "estou digitando" seria mentira.
     return transferir(
@@ -1920,7 +1959,8 @@ async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promi
   if (resultado.tipo === "erro") {
     return rede("erro", resultado.etapa, resultado.mensagem, "Parou antes do cadastro da proposta: pela sequência da API, nenhuma proposta foi criada.");
   }
-  return transferir(limpo, `proposta ${resultado.codigoAf} digitada na Facta`, TEXTOS.contratoEnviado(resultado.url), "contrato_enviado", [
+  const troco = limpo.alternativa?.trocoCentavos ?? null;
+  return transferir(limpo, `proposta ${resultado.codigoAf} digitada na Facta`, TEXTOS.contratoEnviado(resultado.url, troco ? formatarReais(troco) : null), "contrato_enviado", [
     { tipo: "proposta", codigoAf: resultado.codigoAf },
   ]);
 }
@@ -2085,6 +2125,9 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     // Neutra ("obrigado", 👍) ou outro "sim" puro: mantém o agendamento, sem repetir a resposta.
     const neutra = Boolean(entrada.texto) && !entrada.temMidia && !invalidaConfirmacao({ conteudoTexto: entrada.texto, tipoMidia: null });
     if (neutra) {
+      // Pergunta sobre o andamento (quanto cai, quando, parcela, link): responde e segue.
+      const assunto = entrada.texto ? perguntaSobreAndamento(entrada.texto) : null;
+      if (assunto) return { estado, respostas: [respostaAndamento(estado, assunto), TEXTOS.finalizandoContrato], efeitos: [], rotulo: "andamento_respondido" };
       const antes = s ? RESPOSTA_SOCIAL[s] : undefined;
       return { estado, respostas: antes ? [antes] : [], efeitos: [], rotulo: "confirmacao_mantida" };
     }

@@ -57,5 +57,21 @@ const CONFIRMACAO_PURA = /^(sim+|s|ss|sim sim|pode (mandar|seguir|fazer)|confirm
 export function invalidaConfirmacao(m: { conteudoTexto: string | null; tipoMidia: string | null }): boolean {
   if (!mensagemRelevante(m)) return false;
   if (!m.tipoMidia && m.conteudoTexto && CONFIRMACAO_PURA.test(normalizar(m.conteudoTexto))) return false;
+  if (!m.tipoMidia && m.conteudoTexto && perguntaSobreAndamento(m.conteudoTexto)) return false;
   return true;
+}
+
+// Pergunta que não muda a decisão: quanto cai, quando cai, qual a parcela, cadê o link.
+// O "sim" continua valendo e ela responde. Correção, dúvida sobre seguir ou desistência
+// ("espera", "errado", "não quero") continuam cancelando.
+const MUDA_DECISAO = /\b(espera|pera|aguarda|errad|corrig|troc|mud|outr[oa]|cancel|desist|nao quero|nao (vou|posso)|para tudo|melhor nao|pensar|depois)\b/;
+const SOBRE_ANDAMENTO = /\b(quant[oa]|valor|cai|caiu|libera|liberar|deposit|recebo|receber|quando|dias?|prazo|demora|parcela|link|assinar|assinatura|chega|chegar)\b/;
+export type AssuntoAndamento = "valor" | "prazo" | "parcela" | "link";
+export function perguntaSobreAndamento(texto: string): AssuntoAndamento | null {
+  const t = normalizar(texto);
+  if (t.length > 160 || MUDA_DECISAO.test(t) || !SOBRE_ANDAMENTO.test(t)) return null;
+  if (/\b(link|assinar|assinatura)\b/.test(t)) return "link";
+  if (/\bparcela\b/.test(t)) return "parcela";
+  if (/\b(quando|dias?|prazo|demora)\b/.test(t)) return "prazo";
+  return "valor";
 }
