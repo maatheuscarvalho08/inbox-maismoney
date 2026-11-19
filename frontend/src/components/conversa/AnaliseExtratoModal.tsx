@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, CircleAlert, Loader2, X } from "../icones";
 import { api, ApiError } from "../../lib/api";
-import { MidiaMensagem } from "./MidiaMensagem";
-import { carregarMidia } from "../../lib/midia";
+import { Copiavel, DocumentoZoom } from "./DocumentoZoom";
 import type { Mensagem } from "../../types/api";
 
 interface Margem {
@@ -39,7 +38,19 @@ interface Resultado {
     comprometimento: { total: number; limite: number | null; percentual: number | null };
     possibilidades: Possibilidade[];
   };
-  leitura: { especie_codigo: number | null; especie_descricao: string | null; base_calculo: number | null; competencia: string | null };
+  leitura: {
+    especie_codigo: number | null;
+    especie_descricao: string | null;
+    base_calculo: number | null;
+    competencia: string | null;
+    matricula?: string | null;
+    renda_bruta?: number | null;
+    data_nascimento?: string | null;
+    conta_banco?: string | null;
+    conta_agencia?: string | null;
+    conta_numero?: string | null;
+    contratos?: { banco_nome?: string | null; numero?: string | null }[];
+  };
   // Guardada: quem leu ("maisa" ou id do usuário), quando, e o motivo se a Maisa recusou o documento.
   origem?: string;
   lidoEm?: string;
@@ -56,25 +67,6 @@ const NOME: Record<Possibilidade["tipo"], string> = {
 
 const reais = (v: number | null | undefined) =>
   v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-// O PDF aberto ao lado, para conferir sem baixar.
-function PdfAberto({ mensagemId }: { mensagemId: string }) {
-  const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => {
-    let atual: string | null = null;
-    carregarMidia(mensagemId, "application/pdf")
-      .then((u) => {
-        atual = u;
-        setUrl(u);
-      })
-      .catch(() => setUrl(null));
-    return () => {
-      if (atual) URL.revokeObjectURL(atual);
-    };
-  }, [mensagemId]);
-  if (!url) return <MidiaMensagem mensagemId={mensagemId} tipoMidia="application/pdf" />;
-  return <iframe src={url} title="Extrato" className="h-[60vh] w-full rounded-md border border-border bg-white" />;
-}
 
 interface Props {
   mensagem: Mensagem | null;
@@ -133,11 +125,7 @@ export function AnaliseExtratoModal({ mensagem, onFechar }: Props) {
         <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto p-5 md:grid-cols-[2fr_3fr]">
           <div className="min-w-0">
             <p className="mb-2 text-xs text-muted">Extrato enviado pelo cliente</p>
-            {mensagem.tipoMidia === "application/pdf" ? (
-              <PdfAberto mensagemId={mensagem.id} />
-            ) : (
-              <MidiaMensagem mensagemId={mensagem.id} tipoMidia={mensagem.tipoMidia} />
-            )}
+            <DocumentoZoom mensagemId={mensagem.id} tipoMidia={mensagem.tipoMidia} />
           </div>
 
           <div className="min-w-0 space-y-5">
@@ -171,6 +159,24 @@ export function AnaliseExtratoModal({ mensagem, onFechar }: Props) {
                     <p className="mt-1 text-xs font-semibold text-accent">Leitura com dúvida: confira os números com o extrato.</p>
                   )}
                 </div>
+
+                {resultado && (
+                  <div>
+                    <p className="mb-1 text-sm font-semibold text-ink">Dados lidos (clique para copiar)</p>
+                    <div className="divide-y divide-border rounded-md border border-border px-3">
+                      <Copiavel rotulo="Matrícula" valor={resultado.leitura.matricula} />
+                      <Copiavel rotulo="Renda bruta" valor={resultado.leitura.renda_bruta?.toFixed(2).replace(".", ",")} />
+                      <Copiavel rotulo="Base de cálculo" valor={resultado.leitura.base_calculo?.toFixed(2).replace(".", ",")} />
+                      <Copiavel rotulo="Nascimento" valor={resultado.leitura.data_nascimento} />
+                      <Copiavel rotulo="Banco da conta" valor={resultado.leitura.conta_banco} />
+                      <Copiavel rotulo="Agência" valor={resultado.leitura.conta_agencia} />
+                      <Copiavel rotulo="Conta" valor={resultado.leitura.conta_numero} />
+                      {(resultado.leitura.contratos ?? []).map((c, i) => (
+                        <Copiavel key={i} rotulo={`Contrato ${c.banco_nome ?? ""}`} valor={c.numero} />
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <ul className="divide-y divide-border rounded-md border border-border">
                   {a.possibilidades.map((p) => (

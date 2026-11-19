@@ -177,8 +177,12 @@ const dataBr = (iso?: string) => (iso ? iso.split("-").reverse().join("/") : "")
 
 // O que o cliente confere antes de a Maisa digitar. Sem CPF nem RG completo.
 // completo: para a nota da equipe, que digita no portal. Ao cliente, RG e conta saem mascarados.
-export function resumoDados(d: DadosContrato, completo = false): string {
-  const endereco = [d.endereco, d.numero, d.complemento].filter(Boolean).join(", ");
+export function resumoDados(dados: DadosContrato, completo = false): string {
+  // Campo ainda não informado aparece como "falta", nunca "undefined".
+  const d = Object.fromEntries(
+    Object.keys({ ...dados, nome: 1, cidadeNaturalNome: 1, estadoNatural: 1, rg: 1, orgaoEmissor: 1, estadoRg: 1, nomeMae: 1, nomePai: 1, estadoCivilNome: 1, bairro: 1, cidadeNome: 1, estado: 1, cep: 1, email: 1 }).map((k) => [k, (dados as Record<string, unknown>)[k] ?? "falta"]),
+  ) as unknown as DadosContrato;
+  const endereco = [dados.endereco, dados.numero, dados.complemento].filter(Boolean).join(", ") || "falta";
   return [
     `Nome: ${d.nome}`,
     `Naturalidade: ${d.cidadeNaturalNome}/${d.estadoNatural}`,
