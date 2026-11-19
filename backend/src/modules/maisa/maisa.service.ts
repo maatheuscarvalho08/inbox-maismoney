@@ -104,6 +104,10 @@ async function aplicarEfeito(tx: Prisma.TransactionClient, conversa: ConversaMai
       // A proposta já foi gravada junto com a conclusão da operação (operacaoFacta.ts).
       await avancarEtapa(conversa.id, "proposta_digitada", await etapaAtual(), tx);
       return;
+    case "rede":
+      // Alerta para quem acompanha a digitação. Sem CPF nem dado pessoal no log.
+      console.error(`REDE: digitação não passou na conversa ${conversa.id}: ${efeito.nota.split("\n")[0]}`);
+      return;
     case "transferir":
     case "encerrar":
       return;
@@ -470,6 +474,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       await tx.maisaInterpretacao.create({ data: dadosDoRegistro(conversa.id, lida?.id ?? null, { ...passo.interpretacao, rotuloReal: passo.rotulo }) });
     }
     const notas = transferencia?.tipo === "transferir" && transferencia.nota ? [await criarNota(tx, conversa.id, transferencia.nota)] : [];
+    for (const e of passo.efeitos) if (e.tipo === "rede") notas.push(await criarNota(tx, conversa.id, e.nota));
     const mensagens = await registrarSaidas(tx, conversa.id, respostas, enviar);
     return { notas, mensagens };
   });
@@ -492,6 +497,11 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
   }
 
   for (const m of [...gravado.notas, ...gravado.mensagens]) emitirSemFalhar(() => emitNovaMensagem(m));
+  // REDE: a digitação não passou. Aviso na tela de quem acompanha, com o erro da Facta.
+  const rede = passo.efeitos.find((e) => e.tipo === "rede");
+  if (rede?.tipo === "rede") {
+    avisar({ tipo: passo.rotulo === "rede_incerto" ? "digitacao_incerta" : "digitacao_bloqueada", conversaId: conversa.id, nome: conversa.contato.nome, detalhe: rede.nota.split("\n")[0] });
+  }
   if (passo.rotulo === "digitacao_incerta" || passo.rotulo === "digitacao_bloqueada_cliente") {
     avisar({ tipo: passo.rotulo === "digitacao_incerta" ? "digitacao_incerta" : "digitacao_bloqueada", conversaId: conversa.id, nome: conversa.contato.nome, detalhe: transferencia?.tipo === "transferir" ? transferencia.motivo : undefined });
   }

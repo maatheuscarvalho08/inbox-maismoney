@@ -382,10 +382,10 @@ const CASOS: Caso[] = [
     respostaContem: "Não consigo abrir links",
   },
   {
-    nome: "Contrato: erro na Facta vai para a equipe",
+    nome: "Contrato: erro na Facta fica na REDE, sem equipe",
     acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }, "sim", { dados: DADOS_COMPLETOS }, { digitacao: "erro" }, "sim"],
-    etapaFinal: "finalizada",
-    saida: "erro_digitacao",
+    etapaFinal: "confirmacao",
+    respostaContem: "Estou digitando o seu contrato",
   },
   {
     nome: "Contrato: não quer PIX no CPF vai para a equipe",

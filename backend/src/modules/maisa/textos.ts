@@ -130,6 +130,10 @@ export const TEXTOS = {
     "Olhei o seu contracheque com atenção. Para o seu tipo de vínculo, no momento não temos uma opção de empréstimo consignado. Se a sua situação mudar, é só me chamar de novo. Obrigada pelo contato!",
   outroContratoPort: (banco: string) =>
     `Entendi, você prefere trazer o contrato do ${banco}. Vou passar para um especialista da nossa equipe simular esse contrato para você. Já já alguém continua aqui.`,
+  digitandoContrato:
+    "Estou digitando o seu contrato no banco Facta agora. Assim que ficar pronto, te mando aqui o link para você assinar.",
+  digitacaoAindaEmAndamento:
+    "Ainda estou finalizando o seu contrato no banco. Assim que ficar pronto, te mando o link aqui.",
   servidorNaoFederal:
     "Pelo seu documento, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",

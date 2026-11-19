@@ -476,8 +476,9 @@ async function main() {
     await svc.executarDigitacoesPendentes();
     await svc.aguardarFilas();
     assert.equal(etapa1() - antes, 0);
-    assert.equal((await conversaDe(c.id)).comMaisa, false);
-    assert.ok((await notas(c.id)).some((n) => /NÃO feita/.test(n)));
+    // REDE: a reserva bloqueou. Fica com a Maisa, parada, e o erro vira nota REDE.
+    assert.equal((await conversaDe(c.id)).comMaisa, true);
+    assert.ok((await notas(c.id)).some((n) => /^REDE:.*bloqueada/.test(n)));
   });
 
   // G4: Facta, etapa a etapa
@@ -502,7 +503,13 @@ async function main() {
         const op = await prisma.operacaoFacta.findFirstOrThrow({ where: { conversaId: c.id } });
         assert.equal(op.status, esperado);
         const conv = await conversaDe(c.id);
-        assert.equal(conv.comMaisa, false, "passou para a equipe");
+        // REDE: só a concluída sai da Maisa. Falha fica com ela, parada, com nota REDE.
+        if (esperado === "concluida") assert.equal(conv.comMaisa, false, "concluída sai da Maisa");
+        else {
+          assert.equal(conv.comMaisa, true, "REDE: não vai para a equipe");
+          assert.ok((await notas(c.id)).some((n) => /^REDE:/.test(n)), "nota REDE");
+          assert.ok((await respostasMaisa(c.id)).some((m) => /Estou digitando o seu contrato/.test(m.conteudoTexto ?? "")), "cliente ouve que está digitando");
+        }
         const propostas = await prisma.proposta.count({ where: { conversaId: c.id } });
         assert.equal(propostas, esperado === "concluida" ? 1 : 0, "proposta registrada só quando concluída");
         const textos = (await respostasMaisa(c.id)).map((m) => m.conteudoTexto ?? "");
@@ -510,6 +517,7 @@ async function main() {
         else assert.ok(!textos.some((t) => /contrato foi feito/.test(t)), "nunca diz que fez");
         if (esperado === "desconhecida") {
           assert.ok((await notas(c.id)).some((n) => /RESULTADO INCERTO/.test(n)));
+          assert.equal(await prisma.operacaoFacta.count({ where: { conversaId: c.id } }), 1, "não refaz sozinha");
           assert.ok(eventos.some((e) => e.nome === "maisa:aviso" && e.dado.conversaId === c.id && e.dado.tipo === "digitacao_incerta"), "aviso na tela");
         }
       });

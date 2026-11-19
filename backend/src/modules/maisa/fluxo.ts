@@ -74,6 +74,9 @@ export interface EstadoMaisa {
   // Extrato que chegou antes da hora (na etapa do CPF, por exemplo): é lido quando tiver a data.
   extratoPendenteId?: string;
   extratosPendentes?: string[];
+  // REDE: a digitação falhou e espera alguém olhar o erro. Enquanto isso, nada é refeito.
+  digitacaoErro?: { tipo: string; etapa: string; mensagem: string; em: string };
+  redeAvisoEm?: string;
   vinculoSiape?: string; // vínculo lido no contracheque do SIAPE
   extratoSiapePendente?: ResultadoExtrato; // simulação feita com o extrato, esperando o contracheque // todos os arquivos que chegaram antes da hora (até 3)
   // Nome completo, que o banco exige no pedido de autorização.
@@ -258,7 +261,10 @@ export type Efeito =
   | { tipo: "transferir"; motivo: string; nota?: string }
   // Não há o que fazer: a conversa fecha sem passar para a equipe.
   | { tipo: "encerrar"; motivo: string }
-  | { tipo: "proposta"; codigoAf: string };
+  | { tipo: "proposta"; codigoAf: string }
+  // REDE: a digitação não passou. Não vai para a equipe: vira nota e alerta no log, o cliente
+  // ouve que o contrato está sendo digitado e a conversa fica parada com a Maisa.
+  | { tipo: "rede"; nota: string };
 
 export interface Passo {
   estado: EstadoMaisa;
@@ -1791,8 +1797,16 @@ async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promi
     // trata como resultado desconhecido. Nunca como "pode tentar de novo".
     resultado = { tipo: "desconhecido", etapa: "sistema", mensagem: err instanceof Error ? err.message : "falha na digitação" };
   }
-  if (resultado.tipo === "bloqueada") {
-    // A Facta não foi chamada. Nada antigo é apresentado como contrato novo.
+  // REDE: falha na digitação não vai para a equipe. O cliente ouve que o contrato está sendo
+  // digitado, o erro vira nota e alerta, e a conversa fica parada até alguém olhar.
+  const rede = (tipo: string, etapa: string, mensagem: string, aviso: string): Passo => ({
+    estado: { ...limpo, digitacaoErro: { tipo, etapa, mensagem: mensagem.slice(0, 500), em: deps.agora().toISOString() }, redeAvisoEm: deps.agora().toISOString() },
+    respostas: [TEXTOS.digitandoContrato],
+    efeitos: [{ tipo: "rede", nota: `REDE: a digitação não passou (${tipo}). Etapa: ${etapa}. Erro da Facta: ${mensagem.slice(0, 500)}.\n${aviso}\nO cliente ouviu que o contrato está sendo digitado. A conversa continua com a Maisa, parada, sem refazer nada sozinha.` }],
+    rotulo: `rede_${tipo}`,
+  });
+  if (resultado.tipo === "bloqueada" && (resultado.status === "concluida" || resultado.codigoAf)) {
+    // Já existe proposta feita para esta oferta: não é erro, e "estou digitando" seria mentira.
     return transferir(
       limpo,
       `digitação NÃO feita: ${resultado.motivo}. Confira no portal Facta; para tentar de novo, a operação precisa ser liberada por alguém da equipe`,
@@ -1802,21 +1816,20 @@ async function executarDigitacao(estado: EstadoMaisa, deps: Dependencias): Promi
       "erro_digitacao",
     );
   }
+  if (resultado.tipo === "bloqueada") {
+    // A Facta não foi chamada. Nada antigo é apresentado como contrato novo.
+    return rede("bloqueada", "reserva", resultado.motivo, "A Facta não foi chamada. Para tentar de novo, a operação precisa ser liberada.");
+  }
   if (resultado.tipo === "abortada") {
     // O cliente mandou mensagem antes do ponto sem volta: nada foi criado. A mensagem dele
     // é lida em seguida.
     return parado("digitacao_abortada", limpo);
   }
   if (resultado.tipo === "desconhecido") {
-    return transferir(limpo, `RESULTADO INCERTO na digitação (${resultado.etapa}: ${resultado.mensagem}). A proposta pode existir: conferir no portal Facta antes de digitar de novo`, TEXTOS.digitacaoEmConferencia, "digitacao_incerta", [], "erro_digitacao");
+    return rede("incerto", resultado.etapa, resultado.mensagem, "RESULTADO INCERTO: a proposta pode existir. Conferir no portal Facta antes de digitar de novo.");
   }
   if (resultado.tipo === "erro") {
-    return transferir(
-      limpo,
-      `a digitação parou na etapa "${resultado.etapa}" (${resultado.mensagem}), antes do cadastro da proposta. Pela sequência da API a proposta não chega a ser criada nessa etapa, mas confira no portal Facta antes de digitar`,
-      TEXTOS.erroDigitacao,
-      "erro_digitacao",
-    );
+    return rede("erro", resultado.etapa, resultado.mensagem, "Parou antes do cadastro da proposta: pela sequência da API, nenhuma proposta foi criada.");
   }
   return transferir(limpo, `proposta ${resultado.codigoAf} digitada na Facta`, TEXTOS.contratoEnviado(resultado.url), "contrato_enviado", [
     { tipo: "proposta", codigoAf: resultado.codigoAf },
@@ -1966,6 +1979,12 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 
   // O cliente respondeu: um novo sumiço pode ganhar outro lembrete.
   if (estado.lembreteEnviado) estado = { ...estado, lembreteEnviado: undefined };
+  // REDE: digitação com erro esperando alguém olhar. Não refaz nada; avisa no máximo a cada 30 min.
+  if (estado.digitacaoErro && estado.etapa === "confirmacao") {
+    const ultimo = estado.redeAvisoEm ? new Date(estado.redeAvisoEm).getTime() : 0;
+    if (deps.agora().getTime() - ultimo < 30 * 60_000) return { estado, respostas: [], efeitos: [], rotulo: "rede_aguardando" };
+    return { estado: { ...estado, redeAvisoEm: deps.agora().toISOString() }, respostas: [TEXTOS.digitacaoAindaEmAndamento], efeitos: [], rotulo: "rede_aguardando" };
+  }
   // O cliente falou durante a oferta: o relógio do follow-up recomeça daqui.
   if (estado.etapa === "oferta" || estado.etapa === "oferta_port") estado = { ...estado, ultimoContatoCliente: deps.agora().toISOString() };
 
