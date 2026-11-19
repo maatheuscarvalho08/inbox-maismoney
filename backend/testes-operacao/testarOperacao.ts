@@ -35,6 +35,8 @@ const RESPOSTA_FACTA: Record<string, Record<string, unknown>> = {
   "/proposta/etapa2-dados-pessoais": { erro: false, codigo_cliente: "CLI1" },
   "/proposta/etapa3-proposta-cadastro": { erro: false, codigo: "AF777", url_formalizacao: "https://facta.teste/af777" },
   "/proposta/envio-link": { erro: false, mensagem: "enviado" },
+  // Nova simulação antes de digitar a port: devolve as tabelas que os testes usam.
+  "/proposta/operacoes-disponiveis": { erro: false, tabelas_portabilidade: [{ tabela: "T", codigoTabela: 1, coeficiente: 0.02, contrato: 20000, prazo: 96, taxa: 1.5, parcela: 390, valor_liquido: 0, valor_seguro: 0 }, { tabela: "T", codigoTabela: 115304, coeficiente: 0.02, contrato: 20000, prazo: 96, taxa: 1.5, parcela: 390, valor_liquido: 0, valor_seguro: 0 }], tabelas_refin_portabilidade: [{ tabela: "T", codigoTabela: 1, coeficiente: 0.02, contrato: 20000, prazo: 96, taxa: 1.5, parcela: 390, valor_liquido: 900, valor_seguro: 0 }] },
   // Formato do manual "Consulta Dados CLT v2.0", com valores fictícios.
   "/consignado-trabalhador/autoriza-consulta": {
     erro: false, mensagem: "CPF autorizado com sucesso",

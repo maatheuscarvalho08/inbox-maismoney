@@ -7,7 +7,7 @@ import { getConversaById } from "../conversas/conversas.service.js";
 import { avancarEtapa } from "../funil/funil.service.js";
 import { classificadorRegras } from "./classificador.js";
 import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
-import { codigoBancoPorNome, codigosBancoPortabilidade, contratar, contratarPortRefin, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
+import { codigoBancoPorNome, codigosBancoPortabilidade, contratar, contratarPortRefin, simularPortRefinSiape, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo, type ResultadoDigitacao } from "./fluxo.js";
@@ -138,14 +138,18 @@ async function digitarProposta(
   };
   // Port + refin aceito: compra o contrato do outro banco e libera o troco.
   const port = estado?.alternativa;
+  // O coeficiente muda ao longo do tempo: simula de novo com as mesmas tabelas e digita
+  // com os valores de agora. Troco menor que o ofertado: não digita.
+  const atual = port?.digitacao && port.numeroContrato ? await valoresAtuaisDaPort(base.cpf, base.dataNascimento, port.digitacao) : null;
+  if (atual && "erro" in atual) return { tipo: "erro", etapa: "nova simulação antes de digitar", mensagem: atual.erro };
   const resultado =
-    port?.digitacao && port.numeroContrato
+    port?.digitacao && port.numeroContrato && atual
       ? await contratarPortRefin({
           ...base,
-          port: port.digitacao.port,
+          port: atual.port,
           // Port pura (só SIAPE, com a trava própria): sem a etapa do refin.
-          ...(port.digitacao.refin
-            ? { refin: port.digitacao.refin }
+          ...(atual.refin
+            ? { refin: atual.refin }
             : produto === "siape" && env.MAISA_DIGITA_PORT_PURA
               ? {}
               : { refin: exigir(port.digitacao.refin, "tabela do refin da port") }),
@@ -168,6 +172,28 @@ async function digitarProposta(
         });
   console.log(`Maisa digitou na Facta, conversa ${conversa.id}: ${resultado.tipo === "enviada" ? `proposta ${resultado.codigoAf}` : `erro em ${resultado.etapa}`}`);
   return resultado;
+}
+
+type TabelaDigitacao = { codigoTabela: number; prazo: number; contrato: number; parcela: number; coeficiente: number; liquido?: number };
+async function valoresAtuaisDaPort(
+  cpf: string,
+  dataNascimento: string,
+  d: { port: TabelaDigitacao; refin?: TabelaDigitacao; parcela: number; prazoRestante: number; prazoOriginal: number; saldoDevedor: number },
+): Promise<{ port: TabelaDigitacao; refin?: TabelaDigitacao } | { erro: string }> {
+  const s = await simularPortRefinSiape({
+    cpf, dataNascimento, parcela: d.parcela, prazoRestante: d.prazoRestante, prazoOriginal: d.prazoOriginal, saldoDevedor: d.saldoDevedor,
+    prazo: d.refin?.prazo ?? d.port.prazo,
+  });
+  const igual = (t: { codigoTabela: number }, alvo: TabelaDigitacao) => Number(t.codigoTabela) === Number(alvo.codigoTabela);
+  const comoDigitacao = (t: (typeof s.portabilidade)[number]): TabelaDigitacao => ({ codigoTabela: t.codigoTabela, prazo: t.prazo, contrato: t.contrato, parcela: t.parcela, coeficiente: t.coeficiente, liquido: t.valorLiquido });
+  const p = s.portabilidade.find((t) => igual(t, d.port));
+  if (!p) return { erro: `tabela da port ${d.port.codigoTabela} não voltou na simulação de agora (${s.mensagem || "sem mensagem"})` };
+  if (!d.refin) return { port: { ...d.port, ...comoDigitacao(p) } };
+  const r = s.refin.find((t) => igual(t, d.refin!));
+  if (!r) return { erro: `tabela do refin ${d.refin.codigoTabela} não voltou na simulação de agora (${s.mensagem || "sem mensagem"})` };
+  if ((r.valorLiquido ?? 0) + 0.01 < (d.refin.liquido ?? 0)) return { erro: `troco caiu de ${d.refin.liquido} para ${r.valorLiquido}: confirmar com o cliente antes de digitar` };
+  console.log(`Port ressimulada antes de digitar: refin coef ${d.refin.coeficiente} -> ${r.coeficiente}, troco ${d.refin.liquido} -> ${r.valorLiquido}`);
+  return { port: { ...d.port, ...comoDigitacao(p) }, refin: { ...d.refin, ...comoDigitacao(r) } };
 }
 
 function pessoaDoContrato(d: DadosContrato) {
