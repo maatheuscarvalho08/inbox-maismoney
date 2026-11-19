@@ -88,7 +88,10 @@ const PEDIDO_HUMANO =
   /\b(falar|conversar|atendimento|atender|chama|chamar|passa|passar|transfere|transferir|quero|queria|preciso|prefiro)\b[^.!?]{0,25}\b(atendente|humano|humana|pessoa|consultor|consultora|gerente|alguem|especialista)\b/;
 const SO_HUMANO = /^(atendente|humano|uma pessoa|pessoa|especialista)\W*(por favor|pf|pfv|por gentileza)?\W*$|\b(atendente|humano)\s*(por favor|pf|pfv|por gentileza)\b|nao quero (falar com )?(robo|maquina)/;
 const NAO_E_PEDIDO = /\b(alguem|pessoa|consultor|atendente)\b[^.!?]{0,12}\b(da|de) (minha |nossa )?famil|\bnao,? pode (fazer|seguir)|voce mesma/;
+// Atendentes da Mais Money: o cliente que chama um deles pelo nome quer a pessoa.
+export const ATENDENTE_PELO_NOME = /\b(leonardo|vania)\b/;
 export function pedeHumanoTexto(t: string): boolean {
+  if (ATENDENTE_PELO_NOME.test(t)) return true;
   if (NAO_E_PEDIDO.test(t)) return false;
   return SO_HUMANO.test(t) || PEDIDO_HUMANO.test(t);
 }

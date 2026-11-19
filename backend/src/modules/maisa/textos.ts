@@ -138,6 +138,8 @@ export const TEXTOS = {
   enderecoCorrigido: (campos: string) => `Certo, troquei o ${campos}.`,
   enderecoJaTenho: (campos: string) => `O ${campos} já está aqui comigo.`,
   cepNaoEncontrado: "Não encontrei esse CEP. Pode conferir os números e me mandar de novo, por favor?",
+  vinculoConferir:
+    "Obrigada pelos documentos! Vou pedir para um especialista da nossa equipe conferir o seu contracheque e seguir com você. Já já alguém continua aqui.",
   servidorNaoFederal:
     "Pelo seu documento, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",

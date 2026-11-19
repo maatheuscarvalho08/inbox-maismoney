@@ -7,7 +7,7 @@ import { getConversaById } from "../conversas/conversas.service.js";
 import { avancarEtapa } from "../funil/funil.service.js";
 import { classificadorRegras } from "./classificador.js";
 import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
-import { codigoBancoPorNome, contratar, contratarPortRefin, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
+import { codigoBancoPorNome, codigosBancoPortabilidade, contratar, contratarPortRefin, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo, type ResultadoDigitacao } from "./fluxo.js";
@@ -17,7 +17,7 @@ import { guardarAnalise } from "../extratos/guardadas.js";
 import { buscarAlternativa } from "./alternativas.js";
 import { comModelo, responderLivre } from "./intencao.js";
 import { TEXTO_FORA_DO_HORARIO, dentroDoHorario, proximaAbertura } from "./horario.js";
-import type { ExtratoLido } from "../extratos/leitor.js";
+import { vinculoConferido, type ExtratoLido } from "../extratos/leitor.js";
 import { executarReservada, invalidar, passarPontoSemVolta, recuperarOperacoesPresas, reservar } from "./operacaoFacta.js";
 import { aguardarDespachos as aguardarDespachosLocal, criarNota, despachar, recuperarSaidas, registrarSaidas } from "./saidaMaisa.js";
 import { DONO_PROCESSO, portasMaisa } from "./portasMaisa.js";
@@ -364,7 +364,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       // Renda e matrícula do documento vão junto: o contrato não pergunta de novo.
       const lido = registro.leitura as ExtratoLido;
       // SIAPE: qual documento chegou e o vínculo (o contracheque mostra). O fluxo decide.
-      const siape = convenio === "siape" ? { documento: lido.documento_siape ?? null, vinculo: lido.vinculo_siape ?? null } : undefined;
+      const siape = convenio === "siape" ? { documento: lido.documento_siape ?? null, vinculo: vinculoConferido(lido) } : undefined;
       const com = <T extends object>(r: T) => (siape ? { ...r, siape } : r);
       const bancoSal = lido.conta_banco ? codigoBancoPorNome(lido.conta_banco) : null;
       const agenciaSal = (lido.conta_agencia ?? "").replace(/\D/g, "");
@@ -372,7 +372,8 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       const contaSalario = bancoSal && agenciaSal.length >= 3 && contaSal.length >= 4 ? { bancoConta: bancoSal, agencia: agenciaSal, conta: contaSal } : null;
       const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula, contaSalario };
       const alternativa = async () => {
-        const alt = await buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento });
+        const codigosPort = banco === bancoFacta ? await codigosBancoPortabilidade().catch(() => undefined) : undefined;
+        const alt = await buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento, codigosPort });
         return alt ? { ...alt, ...lidos } : null;
       };
       // Mesmo com leitura em dúvida: se a Facta abrir tabela, ela oferta. Se não abrir e
@@ -390,10 +391,13 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       const doc = m?.midiaPath && tipo && !m.midiaDeleted ? { midiaPath: m.midiaPath, tipo } : arquivo;
       if (!doc) return { documento: null, vinculo: null };
       const { registro } = await parcelaPeloExtrato(await lerArquivo(doc.midiaPath), doc.tipo, "siape");
-      if (documentoId) await guardarAnalise(documentoId, registro).catch(() => undefined);
+      // A equipe vê no balão do arquivo o que ela leu (também o contracheque da mensagem atual).
+      const idDoc = documentoId ?? ("mensagemId" in gatilho ? gatilho.mensagemId : null);
+      if (idDoc) await guardarAnalise(idDoc, registro).catch(() => undefined);
       const lido = registro.leitura as ExtratoLido;
-      console.log(`Maisa leu o vínculo SIAPE da conversa ${conversa.id}: ${lido.documento_siape ?? "?"} ${lido.vinculo_siape ?? "?"}`);
-      return { documento: lido.documento_siape ?? null, vinculo: lido.vinculo_siape ?? null, renda: lido.renda_bruta ?? null };
+      const vinculo = vinculoConferido(lido);
+      console.log(`Maisa leu o vínculo SIAPE da conversa ${conversa.id}: ${lido.documento_siape ?? "?"} ${lido.vinculo_siape ?? "?"}${vinculo !== lido.vinculo_siape ? ` (sem prova no trecho: ${vinculo})` : ""}`);
+      return { documento: lido.documento_siape ?? null, vinculo, renda: lido.renda_bruta ?? null };
     },
     digitacaoAtiva: env.MAISA_DIGITA_PROPOSTA && (banco === bancoSimulado || (banco === bancoFacta && digitacaoConfigurada())),
     // Trava própria, independente do código master. Desligada por padrão.

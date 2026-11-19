@@ -313,6 +313,18 @@ async function combo(nome: string, chave: string): Promise<Record<string, unknow
   return j[chave];
 }
 
+// Códigos dos bancos que a Facta aceita comprar na portabilidade (combo banco-portabilidade).
+let codigosPortEmCache: { valor: Set<string>; ate: number } | null = null;
+export async function codigosBancoPortabilidade(): Promise<Set<string>> {
+  if (codigosPortEmCache && codigosPortEmCache.ate > Date.now()) return codigosPortEmCache.valor;
+  const j = await chamar("/proposta-combos/banco-portabilidade", "", { method: "GET" });
+  const lista = Object.values(j).find((v) => v && typeof v === "object") as Record<string, unknown> | undefined;
+  if (j.erro || !lista || !Object.keys(lista).length) throw new FactaErro("banco-portabilidade", String(j.mensagem ?? "lista indisponível"));
+  const valor = new Set(Object.keys(lista).map((k) => String(Number(k))));
+  codigosPortEmCache = { valor, ate: Date.now() + 24 * 60 * 60_000 };
+  return valor;
+}
+
 export async function estadosCivis(): Promise<Record<string, string>> {
   return (await combo("estado-civil", "estado_civil")) as Record<string, string>;
 }
@@ -594,6 +606,8 @@ const BANCO_POR_NOME: [RegExp, string][] = [
   [/crefisa/, "69"],
   [/\bbrb\b/, "70"],
   [/banrisul/, "41"],
+  // Sicredi ("BANSICREDI" no SouGov): 748, Banco Cooperativo Sicredi na lista de portabilidade da Facta.
+  [/sicredi/, "748"],
   [/\binter\b|interme/, "77"],
   [/original/, "212"],
   [/\bbv\b|votorantim/, "413"],

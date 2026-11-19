@@ -811,7 +811,7 @@ async function etapaExtrato(
     if (!info || info.documento !== "contracheque") return tentarDeNovo(estado, TEXTOS.naoEhContracheque, "contracheque_invalido", "sem_extrato");
     const vinculo = info.vinculo ?? "nao_informado";
     if (VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
-      return encerrar({ ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined }, `vínculo SIAPE sem consignado: ${vinculo}`, TEXTOS.vinculoSemConsignado, "vinculo_siape", [], "vinculo_siape");
+      return transferir({ ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined }, `vínculo lido no contracheque: ${vinculo.replace(/_/g, " ")}. Conferir no contracheque: se for mesmo esse vínculo, não há consignado; se a leitura errou, seguir o atendimento`, TEXTOS.vinculoConferir, "vinculo_siape", [], "vinculo_siape");
     }
     resultado = comRendaDoContracheque(estado.extratoSiapePendente, info.renda);
     estado = { ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined };
@@ -846,7 +846,7 @@ async function etapaExtrato(
       }
     }
     if (vinculo && VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
-      return encerrar({ ...estado, vinculoSiape: vinculo }, `vínculo SIAPE sem consignado: ${vinculo}`, TEXTOS.vinculoSemConsignado, "vinculo_siape", [], "vinculo_siape");
+      return transferir({ ...estado, vinculoSiape: vinculo }, `vínculo lido no contracheque: ${vinculo.replace(/_/g, " ")}. Conferir no contracheque: se for mesmo esse vínculo, não há consignado; se a leitura errou, seguir o atendimento`, TEXTOS.vinculoConferir, "vinculo_siape", [], "vinculo_siape");
     }
     if (!vinculo) {
       const { siape: _s, ...guardado } = resultado;

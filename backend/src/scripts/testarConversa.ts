@@ -1088,8 +1088,10 @@ await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS 
       const p2 = await avancar(p1.estado, arquivo("c1"), depsSiape());
       assert.equal(p2.estado.etapa, "finalizada");
       assert.equal(p2.estado.saida, "vinculo_siape");
-      assert.ok(p2.efeitos.some((e) => e.tipo === "encerrar"));
-      assert.match(p2.respostas.join(" "), /tipo de vínculo/);
+      // A leitura do vínculo ainda é conferida pela equipe: passa, não encerra.
+      assert.ok(p2.efeitos.some((e) => e.tipo === "transferir"));
+      assert.ok(!p2.efeitos.some((e) => e.tipo === "encerrar"));
+      assert.match(p2.respostas.join(" "), /conferir o seu contracheque/);
     });
   }
 
@@ -1146,6 +1148,14 @@ await caso("Oferta de port: cliente pede outro contrato e vai para a equipe com 
   assert.doesNotMatch(r.respostas.join(" "), /querer mais/);
   const s2 = await diga(est, "sim, quero", depsBase(roteiro([])));
   assert.notEqual(s2.rotulo, "outro_contrato");
+});
+
+await caso("Cliente chama o Leonardo ou a Vania pelo nome: vai para a fila", async () => {
+  for (const t of ["Por favor, Leonardo! Veja se já está na conta o valor do empréstimo?", "quero falar com a Vânia"]) {
+    const p = await diga({ etapa: "convenio", tentativas: 0 }, t, depsBase(roteiro([])));
+    assert.equal(p.estado.etapa, "finalizada", t);
+    assert.equal(p.estado.saida, "humano", t);
+  }
 });
 
 await caso("Nenhuma chamada externa foi feita", async () => {
