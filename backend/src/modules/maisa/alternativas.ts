@@ -15,7 +15,14 @@ export async function buscarAlternativa(p: {
   banco: BancoClt;
   cpf: string;
   dataNascimento: string;
+  // Códigos de banco que a Facta aceita na portabilidade. Sem a lista, vale o código conhecido.
+  codigosPort?: ReadonlySet<string>;
 }): Promise<Alternativa | null> {
+  // Só oferta o que tem certeza de que a Facta digita: banco de origem com código aceito na
+  // portabilidade e o número do contrato lido no extrato (contrato que só aparece no
+  // contracheque, sem número, não dá para conferir nem comprar).
+  const digitavel = (d?: DigitacaoPort) =>
+    Boolean(d?.bancoCodigo && d.numeroContrato && (!p.codigosPort || p.codigosPort.has(String(Number(d.bancoCodigo)))));
   const possivel = (tipo: "refin" | "portabilidade") => {
     const pos = p.analise.possibilidades.find((x) => x.tipo === tipo);
     return pos && pos.tipo === tipo && pos.possivel ? pos.contratos : [];
@@ -36,6 +43,8 @@ export async function buscarAlternativa(p: {
     const simulacoes: DigitacaoPort[] = [];
     // Port pura: o contrato que mais baixa a parcela é o que ela conduz.
     let melhorPort: { reducao: number; digitacao: DigitacaoPort } | null = null;
+    // Contratos com troco, mas de banco que a Facta não consegue comprar pela API.
+    const semCodigo: string[] = [];
     for (const contrato of candidatos) {
       try {
         const s = await p.banco.simularPortabilidadeSiape({ cpf: p.cpf, dataNascimento: p.dataNascimento, contrato });
@@ -55,7 +64,8 @@ export async function buscarAlternativa(p: {
             if (s.digitacao && (!melhorPort || reducao > melhorPort.reducao)) melhorPort = { reducao, digitacao: s.digitacao };
           }
         }
-        if (s.trocoCentavos && (!melhor?.trocoCentavos || s.trocoCentavos > melhor.trocoCentavos)) melhor = s;
+        if (s.trocoCentavos && !digitavel(s.digitacao)) semCodigo.push(contrato.banco);
+        if (s.trocoCentavos && digitavel(s.digitacao) && (!melhor?.trocoCentavos || s.trocoCentavos > melhor.trocoCentavos)) melhor = s;
       } catch (err) {
         falhou = true;
         console.error("Simulação de portabilidade falhou:", err instanceof Error ? err.message : err);
@@ -71,6 +81,11 @@ export async function buscarAlternativa(p: {
         simulacoes,
         ...(melhor.digitacao ? { digitacao: melhor.digitacao } : {}),
       };
+    }
+    // Troco só em contrato que a API não digita: não oferta. A equipe confere no portal.
+    if (semCodigo.length) {
+      return { tipo: "alternativa", operacao: "port_refin", trocoCentavos: null, simulada: false, simulacoes,
+        motivo: `port + refin abriu só em contrato sem número no extrato ou de banco que a Facta não compra pela API (${[...new Set(semCodigo)].join(", ")}): conferir no portal antes de ofertar` };
     }
     // Abriu tabela de portabilidade, mesmo sem troco: cliente em potencial, a equipe
     // simula e mostra a ele. Se a simulação falhou, a equipe confere com o saldo real.

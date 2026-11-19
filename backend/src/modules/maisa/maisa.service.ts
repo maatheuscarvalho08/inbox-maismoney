@@ -7,7 +7,7 @@ import { getConversaById } from "../conversas/conversas.service.js";
 import { avancarEtapa } from "../funil/funil.service.js";
 import { classificadorRegras } from "./classificador.js";
 import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
-import { codigoBancoPorNome, contratar, contratarPortRefin, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
+import { codigoBancoPorNome, codigosBancoPortabilidade, contratar, contratarPortRefin, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo, type ResultadoDigitacao } from "./fluxo.js";
@@ -372,7 +372,8 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       const contaSalario = bancoSal && agenciaSal.length >= 3 && contaSal.length >= 4 ? { bancoConta: bancoSal, agencia: agenciaSal, conta: contaSal } : null;
       const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula, contaSalario };
       const alternativa = async () => {
-        const alt = await buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento });
+        const codigosPort = banco === bancoFacta ? await codigosBancoPortabilidade().catch(() => undefined) : undefined;
+        const alt = await buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento, codigosPort });
         return alt ? { ...alt, ...lidos } : null;
       };
       // Mesmo com leitura em dúvida: se a Facta abrir tabela, ela oferta. Se não abrir e
