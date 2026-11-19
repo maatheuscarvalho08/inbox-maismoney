@@ -538,11 +538,11 @@ export function fichaCliente(estado: EstadoMaisa): string {
   const numero = a?.numeroContrato ?? d?.numeroContrato ?? null;
   if (a && d) {
     l.push(`Oferta de portabilidade para o banco Facta: contrato do ${d.banco}${numero ? ` nº ${numero}` : ""}, parcela hoje ${r$(d.parcela)}, faltam ${d.prazoRestante} de ${d.prazoOriginal} parcelas.`);
-    if (d.refin) l.push(`Com o refinanciamento na Facta: ${d.refin.prazo} parcelas de ${r$(d.refin.parcela)}, e cai na conta do cliente ${a.trocoCentavos ? formatarReais(a.trocoCentavos) : "um valor a confirmar"} (troco).`);
+    if (d.refin) l.push(`Com o refinanciamento na Facta: ${d.refin.prazo} parcelas de ${r$(d.refin.parcela)}, e cai na conta do cliente ${a.trocoCentavos ? formatarReais(a.trocoCentavos) : "um valor a confirmar"} (troco). Taxa ${pct(d.refin.taxa ?? 0)} no refinanciamento${d.port.taxa ? ` e ${pct(d.port.taxa)} na portabilidade` : ""}.`);
     else l.push(`Só portabilidade, sem dinheiro extra: parcela na Facta ${r$(d.port.parcela)}.`);
   }
   for (const s of (a?.simulacoes ?? []).filter((x) => x.numeroContrato !== numero).slice(0, 4)) {
-    l.push(`Outro contrato simulado: ${s.banco}${s.numeroContrato ? ` nº ${s.numeroContrato}` : ""}, parcela hoje ${r$(s.parcela)}: ${s.refin?.liquido ? `troco de ${r$(s.refin.liquido)} com refinanciamento` : "a Facta não abriu tabela com troco para ele"}.`);
+    l.push(`Outro contrato simulado: ${s.banco}${s.numeroContrato ? ` nº ${s.numeroContrato}` : ""}, parcela hoje ${r$(s.parcela)}: ${s.refin?.liquido ? `a simulação mostrou troco de ${r$(s.refin.liquido)} com refinanciamento, mas esse contrato não é o ofertado: para seguir com ele, a equipe confere antes` : "a Facta não abriu tabela com troco para ele"}.`);
   }
   return l.join("\n");
 }
