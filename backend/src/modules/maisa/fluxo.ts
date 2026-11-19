@@ -368,6 +368,11 @@ function guardarCadastro(estado: EstadoMaisa): ContratoSalvo | undefined {
   return { dados: c.dados, origem: c.origem, correcoes: c.correcoes, produto: estado.produto, salvoEm: new Date().toISOString() };
 }
 
+// O agente (fase 4) pediu a equipe: mesma passagem, com a nota de sempre.
+export function transferirPeloAgente(estado: EstadoMaisa, motivo: string): Passo {
+  return transferir(estado, `o agente chamou a equipe: ${motivo}`, TEXTOS.transferindo, "agente_equipe");
+}
+
 function transferir(
   estado: EstadoMaisa,
   motivo: string,

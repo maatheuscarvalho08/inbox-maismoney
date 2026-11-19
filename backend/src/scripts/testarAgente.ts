@@ -81,5 +81,67 @@ await caso("Sem chave: não chama o modelo", async () => {
   assert.equal(pedidos.length, 0);
 });
 
+// ---------- Modo ativo: quando a decisão vale ----------
+const { aplicarDecisao } = await import("../modules/maisa/agente.js");
+const { transferirPeloAgente } = await import("../modules/maisa/fluxo.js");
+type Estado = import("../modules/maisa/fluxo.js").EstadoMaisa;
+const est = (e: Partial<Estado>): Estado => ({ etapa: "oferta_port", tentativas: 0, produto: "siape", ...e }) as Estado;
+const dec = (acao: "seguir_roteiro" | "responder" | "silencio" | "equipe", texto: string | null = null) => ({ acao, texto, motivo: "teste" });
+
+await caso("Ativo: seguir o roteiro não muda nada", async () => {
+  const passo = { estado: est({}), respostas: ["roteiro"], efeitos: [], rotulo: "x" };
+  assert.equal(aplicarDecisao(est({}), passo, dec("seguir_roteiro"), transferirPeloAgente).aplicado, false);
+});
+
+await caso("Ativo: passo com simulação ou proposta: vale o roteiro", async () => {
+  for (const efeito of [{ tipo: "simulacao" }, { tipo: "proposta", codigoAf: "1" }, { tipo: "cpf", cpf: "1" }, { tipo: "rede", nota: "" }] as never[]) {
+    const passo = { estado: est({}), respostas: ["roteiro"], efeitos: [efeito], rotulo: "x" };
+    const r = aplicarDecisao(est({}), passo, dec("responder", "outro texto"), transferirPeloAgente);
+    assert.equal(r.aplicado, false);
+    assert.deepEqual(r.passo.respostas, ["roteiro"]);
+  }
+});
+
+await caso("Ativo: digitação agendada ou com erro: vale o roteiro", async () => {
+  const pendente = est({ etapa: "confirmacao", confirmacaoPendente: { recebidoEm: "", executarEm: "", consentimento: "sim" } });
+  const passo = { estado: pendente, respostas: ["roteiro"], efeitos: [], rotulo: "x" };
+  assert.equal(aplicarDecisao(pendente, passo, dec("silencio"), transferirPeloAgente).aplicado, false);
+  const erro = est({ etapa: "confirmacao", digitacaoErro: { tipo: "erro", etapa: "x", mensagem: "x", em: "" } });
+  assert.equal(aplicarDecisao(erro, { ...passo, estado: erro }, dec("responder", "oi"), transferirPeloAgente).aplicado, false);
+});
+
+await caso("Ativo: transferência por dúvida vira resposta e a conversa fica onde estava", async () => {
+  const antes = est({ etapa: "oferta_port" });
+  const passo = { estado: est({ etapa: "finalizada", saida: "objecao", motivoTransferencia: "dúvida sem resposta pronta na oferta: qual o banco?" }), respostas: ["vou chamar alguém"], efeitos: [{ tipo: "transferir", motivo: "x" }] as never[], rotulo: "objecao" };
+  const r = aplicarDecisao(antes, passo, dec("responder", "É a Facta. Quer seguir?"), transferirPeloAgente);
+  assert.equal(r.aplicado, true);
+  assert.equal(r.passo.estado.etapa, "oferta_port");
+  assert.deepEqual(r.passo.efeitos, []);
+  assert.deepEqual(r.passo.respostas, ["É a Facta. Quer seguir?"]);
+});
+
+await caso("Ativo: transferência que não é por dúvida (pediu atendente): vale o roteiro", async () => {
+  const passo = { estado: est({ etapa: "finalizada", saida: "humano" }), respostas: ["chamando"], efeitos: [{ tipo: "transferir", motivo: "x" }] as never[], rotulo: "humano" };
+  assert.equal(aplicarDecisao(est({}), passo, dec("responder", "posso ajudar"), transferirPeloAgente).aplicado, false);
+});
+
+await caso("Ativo: silêncio no lugar do menu, estado fica como estava", async () => {
+  const antes = est({ etapa: "inicio", produto: undefined });
+  const passo = { estado: est({ etapa: "convenio", produto: undefined }), respostas: ["menu"], efeitos: [], rotulo: "menu" };
+  const r = aplicarDecisao(antes, passo, dec("silencio"), transferirPeloAgente);
+  assert.equal(r.aplicado, true);
+  assert.deepEqual(r.passo.respostas, []);
+  assert.equal(r.passo.estado.etapa, "inicio");
+});
+
+await caso("Ativo: equipe quando o roteiro não transfere", async () => {
+  const passo = { estado: est({}), respostas: ["roteiro"], efeitos: [], rotulo: "x" };
+  const r = aplicarDecisao(est({}), passo, dec("equipe"), transferirPeloAgente);
+  assert.equal(r.aplicado, true);
+  assert.equal(r.passo.estado.etapa, "finalizada");
+  assert.equal(r.passo.estado.saida, "agente_equipe");
+  assert.ok(r.passo.efeitos.some((e) => e.tipo === "transferir"));
+});
+
 console.log(`\n${ok} de ${ok + falhas.length} passaram`);
 if (falhas.length) process.exit(1);

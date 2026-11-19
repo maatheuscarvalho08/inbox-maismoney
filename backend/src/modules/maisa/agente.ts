@@ -88,14 +88,14 @@ export interface MetaAgente {
   tokensSaida: number | null;
 }
 
-export async function decidirAgente(e: EntradaAgente): Promise<{ decisao: DecisaoAgente; meta: MetaAgente }> {
+export async function decidirAgente(e: EntradaAgente, prazoMs = 25_000): Promise<{ decisao: DecisaoAgente; meta: MetaAgente }> {
   if (!env.OPENAI_API_KEY) throw new Error("sem_chave");
   const modelo = env.OPENAI_MODELO_CONVERSA || env.OPENAI_MODELO_EXTRATO;
   const inicio = Date.now();
   const r = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
-    signal: AbortSignal.timeout(25_000),
+    signal: AbortSignal.timeout(prazoMs),
     body: JSON.stringify({
       model: modelo,
       store: false,
@@ -167,4 +167,74 @@ export function rodarAgenteSombra(p: { conversaId: string; mensagemId: string | 
   sombras.add(tarefa);
   void tarefa.finally(() => sombras.delete(tarefa));
   return tarefa;
+}
+
+// ---------- Modo ativo ----------
+// Efeitos que mexem em dinheiro, consentimento ou cadastro: ali vale sempre o roteiro.
+const EFEITOS_DO_ROTEIRO = new Set(["simulacao", "proposta", "rede", "cpf", "convenio", "encerrar"]);
+// Transferências que o agente pode desfazer respondendo: dúvida e "não entendi".
+const SAIDAS_MOLES = new Set(["duvida", "nao_entendeu", "sem_extrato"]);
+
+export interface PassoAgente {
+  estado: import("./fluxo.js").EstadoMaisa;
+  respostas: string[];
+  efeitos: import("./fluxo.js").Efeito[];
+  rotulo: string;
+}
+
+// O roteiro manda neste passo? (dinheiro, consentimento, digitação agendada ou com erro)
+export function roteiroManda(antes: PassoAgente["estado"] | null, passo: PassoAgente): boolean {
+  if (passo.efeitos.some((e) => EFEITOS_DO_ROTEIRO.has(e.tipo))) return true;
+  if (antes?.confirmacaoPendente || passo.estado.confirmacaoPendente) return true;
+  if (antes?.digitacaoErro || passo.estado.digitacaoErro) return true;
+  if (antes?.etapa === "aguardando" || antes?.etapa === "consentimento") return true;
+  return false;
+}
+
+const transferenciaMole = (passo: PassoAgente) => {
+  const t = passo.efeitos.find((e) => e.tipo === "transferir");
+  if (!t) return false;
+  const saida = passo.estado.saida ?? "";
+  return SAIDAS_MOLES.has(saida) || (saida === "objecao" && /^dúvida sem resposta pronta/.test(passo.estado.motivoTransferencia ?? ""));
+};
+
+// Aplica a decisão do agente ao passo do roteiro. Devolve o passo que vale e se o agente mudou algo.
+export function aplicarDecisao(
+  antes: PassoAgente["estado"] | null,
+  passo: PassoAgente,
+  d: DecisaoAgente,
+  transferirPeloAgente: (estado: PassoAgente["estado"], motivo: string) => PassoAgente,
+): { passo: PassoAgente; aplicado: boolean; porque: string } {
+  if (d.acao === "seguir_roteiro") return { passo, aplicado: false, porque: "seguir_roteiro" };
+  if (roteiroManda(antes, passo)) return { passo, aplicado: false, porque: "roteiro manda neste passo" };
+  const base = antes ?? { etapa: "inicio" as const, tentativas: 0 };
+  const transfere = passo.efeitos.some((e) => e.tipo === "transferir");
+  if (d.acao === "responder" && d.texto) {
+    if (transfere && !transferenciaMole(passo)) return { passo, aplicado: false, porque: "transferência do roteiro não é por dúvida" };
+    // Desfez uma transferência por dúvida: a conversa fica onde estava. Senão, vale o estado do roteiro.
+    const estado = transfere ? { ...base, tentativas: base.tentativas } : passo.estado;
+    return { passo: { estado, respostas: [d.texto], efeitos: [], rotulo: "agente_respondeu" }, aplicado: true, porque: "responder" };
+  }
+  if (d.acao === "silencio") {
+    if (transfere || passo.efeitos.length) return { passo, aplicado: false, porque: "roteiro tem efeito" };
+    return { passo: { estado: antes ?? passo.estado, respostas: [], efeitos: [], rotulo: "agente_silencio" }, aplicado: true, porque: "silencio" };
+  }
+  if (d.acao === "equipe") {
+    if (transfere) return { passo, aplicado: false, porque: "roteiro já transfere" };
+    return { passo: { ...transferirPeloAgente(base, d.motivo), rotulo: "agente_equipe" }, aplicado: true, porque: "equipe" };
+  }
+  return { passo, aplicado: false, porque: "sem texto" };
+}
+
+export async function registrarAgente(p: { conversaId: string; mensagemId: string | null; etapa: string; rotuloReal: string; roteiro: string[]; decisao: DecisaoAgente | null; meta: MetaAgente | null; aplicado: boolean; falha?: string }) {
+  await prisma.maisaInterpretacao
+    .create({
+      data: {
+        conversaId: p.conversaId, mensagemId: p.mensagemId, modo: "agente_ativo", etapa: p.etapa, acao: p.decisao ? `agente:${p.decisao.acao}` : "agente:falhou",
+        rotuloReal: p.rotuloReal, divergiu: p.aplicado, textoSombra: p.decisao?.texto ?? null, textoReal: p.roteiro.join("\n\n") || null,
+        motivo: p.decisao?.motivo.slice(0, 500) ?? null, falha: p.falha ?? null, latenciaMs: p.meta?.latenciaMs ?? null, modelo: p.meta?.modelo ?? null,
+        tokensEntrada: p.meta?.tokensEntrada ?? null, tokensSaida: p.meta?.tokensSaida ?? null, campos: [],
+      },
+    })
+    .catch((err) => console.error("Registro do agente falhou:", err instanceof Error ? err.message : err));
 }

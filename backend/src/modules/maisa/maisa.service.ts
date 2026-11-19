@@ -10,9 +10,9 @@ import { bancoFacta, bancoSimulado, mesmoGrupo, refinFlex, type BancoClt } from 
 import { codigoBancoPorNome, codigosBancoPortabilidade, contratar, contratarPortRefin, simularPortRefinSiape, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
-import { avancar, fichaCliente, type Efeito, type Entrada, type EstadoMaisa, type Passo, type PropostaRecente, type ResultadoDigitacao } from "./fluxo.js";
+import { avancar, fichaCliente, transferirPeloAgente, type Efeito, type Entrada, type EstadoMaisa, type Passo, type PropostaRecente, type ResultadoDigitacao } from "./fluxo.js";
 import { mascararNumeros } from "./conversa/contexto.js";
-import { memoriaDoCliente, rodarAgenteSombra } from "./agente.js";
+import { aplicarDecisao, decidirAgente, memoriaDoCliente, registrarAgente, rodarAgenteSombra, roteiroManda } from "./agente.js";
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
 import { TEXTOS } from "./textos.js";
 import { guardarAnalise } from "../extratos/guardadas.js";
@@ -383,7 +383,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
 
   const banco = bancoDaConversa(conversa);
   const semBanco = () => Promise.reject(new Error("Nenhum banco configurado para a Maisa"));
-  const passo: Passo = await avancar(estadoAntes, entrada, {
+  let passo: Passo = await avancar(estadoAntes, entrada, {
     classificador: comModelo(classificadorRegras),
     responderLivre: async (texto, etapa, produto, pergunta, ficha) => responderLivre(texto, etapa, produto, pergunta, ficha ?? "", await historicoCurto(conversa.id)),
     propostaRecente: () => propostaRecente(conversa.contatoId),
@@ -482,6 +482,31 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     // A condição conferida agora vale na digitação e no registro da proposta (troco certo).
     digitar: (dados, alternativa) => digitarComSeguranca(conversa, alternativa && estadoAntes ? { ...estadoAntes, alternativa } : estadoAntes, dados, banco === bancoSimulado),
   });
+
+  // Fase 4, agente ativo: lê a conversa inteira e decide se o roteiro serve, se responde com as
+  // próprias palavras, se fica em silêncio ou se chama a equipe. Onde o passo mexe em dinheiro,
+  // consentimento ou cadastro, vale o roteiro. Falhou ou demorou: vale o roteiro.
+  if (env.MAISA_AGENTE_MODO === "ativo" && env.OPENAI_API_KEY && "texto" in entrada && entrada.texto && lida && !ehTeste(conversa) && !roteiroManda(estadoAntes, passo)) {
+    const base = estadoAntes ?? { etapa: "inicio" as const, tentativas: 0 };
+    const roteiro = passo.respostas;
+    try {
+      const [historico, memoriaCliente] = await Promise.all([historicoCurto(conversa.id, lida.createdAt), memoriaDoCliente(conversa.contatoId, conversa.id)]);
+      const { decisao, meta } = await decidirAgente(
+        { etapa: base.etapa, produto: base.produto, ficha: fichaCliente(base), memoriaCliente, historico, mensagem: entrada.texto, viaAudio: entrada.viaAudio === true,
+          roteiro, efeitosRoteiro: [...new Set(passo.efeitos.map((e) => e.tipo))] },
+        15_000,
+      );
+      const r = aplicarDecisao(estadoAntes, passo, decisao, transferirPeloAgente);
+      void registrarAgente({ conversaId: conversa.id, mensagemId: lida.id, etapa: base.etapa, rotuloReal: passo.rotulo, roteiro, decisao, meta, aplicado: r.aplicado });
+      if (r.aplicado) {
+        console.log(`Agente na conversa ${conversa.id}: ${decisao.acao} no lugar de ${passo.rotulo} (${decisao.motivo.slice(0, 120)})`);
+        passo = r.passo;
+      }
+    } catch (err) {
+      const falha = err instanceof Error ? err.message.slice(0, 200) : "erro";
+      void registrarAgente({ conversaId: conversa.id, mensagemId: lida.id, etapa: base.etapa, rotuloReal: passo.rotulo, roteiro, decisao: null, meta: null, aplicado: false, falha });
+    }
+  }
 
   // A mensagem lida passa a ser a última: a recuperação e a digitação contam a partir dela.
   // Releitura de arquivo antigo não faz a marca voltar no tempo.

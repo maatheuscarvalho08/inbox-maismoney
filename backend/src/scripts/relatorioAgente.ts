@@ -5,12 +5,12 @@ import { mascararNumeros } from "../modules/maisa/conversa/contexto.js";
 
 const horas = Number(process.argv[2] ?? 24);
 const desde = new Date(Date.now() - horas * 60 * 60_000);
-const registros = await prisma.maisaInterpretacao.findMany({ where: { modo: "agente_sombra", createdAt: { gte: desde } }, orderBy: { createdAt: "asc" } });
+const registros = await prisma.maisaInterpretacao.findMany({ where: { modo: { in: ["agente_sombra", "agente_ativo"] }, createdAt: { gte: desde } }, orderBy: { createdAt: "asc" } });
 
 const contagem = new Map<string, number>();
 for (const r of registros) contagem.set(r.acao, (contagem.get(r.acao) ?? 0) + 1);
 const lat = registros.map((r) => r.latenciaMs ?? 0).filter(Boolean).sort((a, b) => a - b);
-console.log(`Agente em sombra, últimas ${horas}h: ${registros.length} mensagem(ns)`);
+console.log(`Agente, últimas ${horas}h: ${registros.length} mensagem(ns)`);
 for (const [acao, n] of [...contagem].sort((a, b) => b[1] - a[1])) console.log(`  ${acao}: ${n}`);
 if (lat.length) console.log(`  latência mediana: ${lat[Math.floor(lat.length / 2)]} ms`);
 
