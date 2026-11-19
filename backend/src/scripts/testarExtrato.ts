@@ -54,12 +54,28 @@ const CASOS: [string, () => void | Promise<void>][] = [
           tipo_documento: "siape",
           especie_codigo: null,
           margens_informadas: { emprestimo: 0, rmc: 0, rcc: 0 },
-          contratos: [contrato({ banco_nome: "CAIXA", parcela: 400, parcelas_restantes: 70 })],
+          contratos: [contrato({ banco_nome: "CAIXA", parcela: 400, parcelas_restantes: 70, numero: "190185110033" })],
         }),
       );
       const alt = await buscarAlternativa({ convenio: "siape", analise, banco: bancoSimulado, cpf: "00000000000", dataNascimento: "1970-01-01" });
       assert.equal(alt?.operacao, "port_refin");
       assert.ok(alt?.trocoCentavos && alt.trocoCentavos > 0);
+    },
+  ],
+  [
+    "Sem margem: SIAPE com troco só em contrato sem número no extrato não oferta, vai para a equipe",
+    async () => {
+      const analise = analisarExtrato(
+        extrato({
+          tipo_documento: "siape",
+          especie_codigo: null,
+          margens_informadas: { emprestimo: 0, rmc: 0, rcc: 0 },
+          contratos: [contrato({ banco_nome: "CAIXA", parcela: 400, parcelas_restantes: 70, numero: null })],
+        }),
+      );
+      const alt = await buscarAlternativa({ convenio: "siape", analise, banco: bancoSimulado, cpf: "00000000000", dataNascimento: "1970-01-01" });
+      assert.equal(alt?.simulada, false);
+      assert.equal(alt?.trocoCentavos, null);
     },
   ],
   [

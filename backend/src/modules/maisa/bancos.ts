@@ -338,6 +338,15 @@ export const bancoSimulado: BancoClt & { autorizar(cpf: string): void; reiniciar
   // Troco fictício de 10% do saldo, só para teste.
   async simularPortabilidadeSiape({ contrato }) {
     const troco = Math.round((contrato.saldoDevedorEstimado ?? 0) * 10);
-    return { trocoCentavos: troco || null, temPortabilidade: true, parcelaPortabilidade: contrato.parcela, motivo: "simulado" };
+    // Tabelas de mentira, com o número e o banco do extrato: digitável como na Facta de verdade.
+    const saldo = contrato.saldoDevedorEstimado ?? 0;
+    const restantes = contrato.parcelasRestantes ?? 0;
+    const tab = (prazo: number, liquido?: number) => ({ codigoTabela: 1, prazo, contrato: saldo, parcela: contrato.parcela ?? 0, coeficiente: 0.02, ...(liquido != null ? { liquido } : {}) });
+    const digitacao = {
+      banco: contrato.banco, bancoCodigo: facta.codigoBancoPorNome(contrato.bancoCodigo ?? contrato.banco), numeroContrato: contrato.numero,
+      parcela: contrato.parcela ?? 0, prazoRestante: restantes, prazoOriginal: restantes, saldoDevedor: saldo,
+      port: tab(restantes), ...(troco ? { refin: tab(120, troco / 100) } : {}),
+    };
+    return { trocoCentavos: troco || null, temPortabilidade: true, parcelaPortabilidade: contrato.parcela, motivo: "simulado", digitacao };
   },
 };
