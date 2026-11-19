@@ -226,6 +226,14 @@ async function validar(m: Record<CampoModelo, string | null>, faltando: Set<Camp
   return d;
 }
 
+// CEP para o cadastro: rua, bairro, cidade (código da Facta) e UF. null se não achou.
+export async function buscarCep(cep: string): Promise<{ cep: string; cidade: string; cidadeNome: string; estado: string; endereco?: string; bairro?: string } | null> {
+  const achado = await viaCep(cep);
+  const codigo = achado ? await facta.codigoCidade(achado.uf, achado.cidade) : null;
+  if (!achado || !codigo) return null;
+  return { cep, cidade: codigo, cidadeNome: achado.cidade.toUpperCase(), estado: achado.uf, ...(achado.logradouro ? { endereco: achado.logradouro } : {}), ...(achado.bairro ? { bairro: achado.bairro } : {}) };
+}
+
 export async function extrairDados(
   pergunta: string,
   texto: string | null,

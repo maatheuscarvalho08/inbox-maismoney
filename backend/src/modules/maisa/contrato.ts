@@ -158,7 +158,9 @@ export function proximaPergunta(dados: DadosContrato, produto: ProdutoContrato):
   for (const g of gruposDo(produto)) {
     const faltando = g.campos.filter((c) => falta(dados, c));
     if (!faltando.length) continue;
-    if (faltando.length === g.campos.length || g.id === "endereco") return g.pergunta(produto);
+    if (faltando.length === g.campos.length) return g.pergunta(produto);
+    // Endereço pela metade: pede só a parte que falta.
+    if (g.id === "endereco") return faltando.includes("cep") ? "Agora só preciso do CEP da sua casa." : "Agora só preciso do número da casa. Se tiver complemento, como apartamento ou bloco, pode mandar junto.";
     const nomes = faltando.map((c) => ROTULO_CAMPO[c] ?? c);
     const lista = nomes.length > 1 ? `${nomes.slice(0, -1).join(", ")} e ${nomes[nomes.length - 1]}` : nomes[0];
     return `Quase lá! Não consegui ver: ${lista}. Pode me mandar por escrito?`;

@@ -6,6 +6,7 @@ import { buscarFaq } from "./faq.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
 import { sexoPeloNome } from "./sexoPeloNome.js";
 import { leituraCurta } from "./conversa/leituraCurta.js";
+import { lerEndereco, temAlgo } from "./endereco.js";
 import { VINCULOS_SEM_CONSIGNADO } from "../extratos/leitor.js";
 import { PERGUNTA_SEXO, ROTULO_CAMPO, camposFaltando, proximaPergunta, resumoDados, todosCampos, type CampoContrato, type DadosContrato, type ProdutoContrato } from "./contrato.js";
 import type { ResultadoContratacao } from "./facta.js";
@@ -238,6 +239,8 @@ export interface Dependencias {
   // Digitação na Facta (INSS e SIAPE). Desligada, o "sim" vai para a equipe.
   digitacaoAtiva: boolean;
   extrairDados(pergunta: string, entrada: { texto: string | null; documento?: boolean }, faltando: CampoContrato[]): Promise<DadosContrato>;
+  // CEP do endereço do cadastro. Sem ela, o endereço em pedaços segue pela leitura do modelo.
+  consultarCep?(cep: string): Promise<{ cep: string; cidade: string; cidadeNome: string; estado: string; endereco?: string; bairro?: string } | null>;
   // Idempotente: quem chama garante uma digitação por oferta (chave única no banco).
   digitar(dados: DadosContrato): Promise<ResultadoDigitacao>;
   // Trava própria da digitação automática (MAISA_DIGITACAO_LIBERADA). Desligada por padrão.
@@ -1614,6 +1617,66 @@ async function etapaOferta(estado: EstadoMaisa, texto: string, deps: Dependencia
 
 // Cada resposta do cliente (texto, foto do documento ou áudio já transcrito) preenche
 // o que der do cadastro. Falta algo: pergunta o próximo. Completo: mostra o resumo.
+const ROTULO_ENDERECO: Record<string, string> = { cep: "CEP", numero: "número", complemento: "complemento" };
+
+// Esperando o endereço (CEP ou número faltando), ou corrigindo um que já veio: lê CEP, número e
+// complemento da mensagem, sem modelo. Acumula com o que já tinha, registra a correção e pergunta
+// só o que falta. null: a mensagem não traz endereço, segue o caminho de sempre.
+async function enderecoEmPedacos(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo | null> {
+  if (!deps.consultarCep) return null;
+  const produto = produtoCadastro(estado);
+  const dados = estado.contrato?.dados ?? {};
+  const faltaEndereco = !dados.cep || !dados.numero;
+  const corrige = CORRECAO.test(normalizar(texto));
+  // Complemento que chega logo depois do endereço completo também vale.
+  const lido = lerEndereco(texto);
+  if (!temAlgo(lido)) return null;
+  const soComplemento = lido.cep === undefined && lido.numero === undefined;
+  if (!faltaEndereco && !corrige && !(soComplemento && !dados.complemento)) return null;
+  if (!faltaEndereco && !corrige && soComplemento && lido.complemento === "") return null;
+
+  const novos: DadosContrato = {};
+  const correcoes: Correcao[] = [];
+  const repetidos: string[] = [];
+  const agora = deps.agora().toISOString();
+  const troca = (campo: "cep" | "numero" | "complemento", valor: string) => {
+    const antes = dados[campo];
+    if (antes !== undefined && antes !== "" && antes === valor) return repetidos.push(ROTULO_ENDERECO[campo]);
+    if (antes !== undefined && antes !== "" && antes !== valor) correcoes.push({ campo, origem: "cliente", anterior: antes, novo: valor, em: agora, aplicada: true });
+    novos[campo] = valor;
+  };
+  if (lido.cep !== undefined) {
+    if (dados.cep !== lido.cep) {
+      const achado = await deps.consultarCep(lido.cep).catch(() => null);
+      if (!achado) return tentarDeNovo(estado, TEXTOS.cepNaoEncontrado, "cep_nao_encontrado", "dados_contrato");
+      troca("cep", lido.cep);
+      Object.assign(novos, { cidade: achado.cidade, cidadeNome: achado.cidadeNome, estado: achado.estado });
+      // CEP novo: rua e bairro são do CEP novo (ou perguntados de novo, se o CEP for geral).
+      novos.endereco = achado.endereco ?? "";
+      novos.bairro = achado.bairro ?? "";
+    } else repetidos.push("CEP");
+  }
+  if (lido.numero !== undefined) troca("numero", lido.numero);
+  if (lido.complemento !== undefined) troca("complemento", lido.complemento);
+
+  const junto = { ...dados, ...novos };
+  const contrato = { ...estado.contrato!, dados: junto, correcoes: [...(estado.contrato?.correcoes ?? []), ...correcoes] };
+  const proxima = proximaPergunta(junto, produto);
+  const antes: string[] = [];
+  if (correcoes.length) antes.push(TEXTOS.enderecoCorrigido(correcoes.map((c) => ROTULO_ENDERECO[c.campo]).join(" e ")));
+  else if (repetidos.length && !Object.keys(novos).length) antes.push(TEXTOS.enderecoJaTenho(repetidos.join(" e ")));
+  if (!proxima) {
+    return ir(estado, "confirmacao", [...antes, TEXTOS.confirmaDados(resumoDados(junto, true))], "endereco_completo", [], {
+      contrato: { ...contrato, pergunta: TEXTOS.perguntaConfirmacao },
+    });
+  }
+  // Endereço acabou de ficar completo: diz que recebeu e segue para a próxima pergunta.
+  const completou = Boolean(junto.cep && junto.numero) && faltaEndereco;
+  if (completou && !antes.length) antes.push(TEXTOS.enderecoRecebido);
+  else if (!antes.length) antes.push("Obrigada!");
+  return { estado: { ...estado, contrato: { ...contrato, pergunta: proxima }, tentativas: 0 }, respostas: [`${antes.join(" ")} ${proxima}`], efeitos: [], rotulo: "endereco_em_pedacos" };
+}
+
 async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null; documento?: boolean }, deps: Dependencias): Promise<Passo> {
   const produto = produtoCadastro(estado);
   const dados = estado.contrato?.dados ?? {};
@@ -1653,6 +1716,10 @@ async function etapaColeta(estado: EstadoMaisa, entrada: { texto: string | null;
       };
     }
   }
+
+  // Endereço em pedaços ("31320022", "Apto 102", "774"): junta o que chegou e pede só o que falta.
+  const peloEndereco = !entrada.documento && texto ? await enderecoEmPedacos(estado, texto, deps) : null;
+  if (peloEndereco) return peloEndereco;
 
   let novos: DadosContrato;
   try {
@@ -2144,6 +2211,12 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 // normaliza e valida. A interpretação não pode atrasar nem reformular um dado que já veio certo.
 function dadoDireto(estado: EstadoMaisa, texto: string, agora: Date): boolean {
   if (estado.etapa === "cpf") return Boolean(extrairCpf(texto) || cpfComTamanhoErrado(texto));
+  // Coleta esperando o endereço: CEP, número ou complemento lidos pelas regras.
+  if (estado.etapa === "coleta") {
+    const d = estado.contrato?.dados ?? {};
+    const lido = lerEndereco(texto);
+    return temAlgo(lido) && (!d.cep || !d.numero || CORRECAO.test(normalizar(texto)) || (lido.cep === undefined && lido.numero === undefined && !d.complemento));
+  }
   // No extrato, a correção da data ("errei, é 12/12/1966") também é dado certo.
   if (estado.etapa === "extrato") return lerDataNascimento(texto, agora) !== null;
   // Data sugerida esperando o "sim": a confirmação é do motor, não vira "vou conseguir".

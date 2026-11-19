@@ -8,7 +8,7 @@ import { avancarEtapa } from "../funil/funil.service.js";
 import { classificadorRegras } from "./classificador.js";
 import { bancoFacta, bancoSimulado, type BancoClt } from "./bancos.js";
 import { codigoBancoPorNome, contratar, contratarPortRefin, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
-import { extrairDados } from "./coleta.js";
+import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
 import { avancar, type Efeito, type Entrada, type EstadoMaisa, type Passo, type ResultadoDigitacao } from "./fluxo.js";
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
@@ -403,6 +403,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     digitaClt: env.MAISA_DIGITA_CLT,
     digitaPortPura: env.MAISA_DIGITA_PORT_PURA,
     mensagemDepoisDoSim: (simId, recebidoEm) => mensagemDepoisDoSim(conversa.id, simId, recebidoEm),
+    consultarCep: (cep) => buscarCep(cep),
     extrairDados: async (pergunta, recebida, faltando) => {
       const doc = recebida.documento && arquivo ? { conteudo: await lerArquivo(arquivo.midiaPath), tipo: arquivo.tipo } : null;
       const dados = await extrairDados(pergunta, recebida.texto, doc, faltando);

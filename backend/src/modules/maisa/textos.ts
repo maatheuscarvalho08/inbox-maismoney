@@ -134,6 +134,10 @@ export const TEXTOS = {
     "Estou digitando o seu contrato no banco Facta agora. Assim que ficar pronto, te mando aqui o link para você assinar.",
   digitacaoAindaEmAndamento:
     "Ainda estou finalizando o seu contrato no banco. Assim que ficar pronto, te mando o link aqui.",
+  enderecoRecebido: "Recebi o endereço, obrigada!",
+  enderecoCorrigido: (campos: string) => `Certo, troquei o ${campos}.`,
+  enderecoJaTenho: (campos: string) => `O ${campos} já está aqui comigo.`,
+  cepNaoEncontrado: "Não encontrei esse CEP. Pode conferir os números e me mandar de novo, por favor?",
   servidorNaoFederal:
     "Pelo seu documento, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",
