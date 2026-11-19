@@ -12,7 +12,7 @@ import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
 import { avancar, fichaCliente, transferirPeloAgente, type Efeito, type Entrada, type EstadoMaisa, type Passo, type PropostaRecente, type ResultadoDigitacao } from "./fluxo.js";
 import { mascararNumeros } from "./conversa/contexto.js";
-import { aplicarDecisao, decidirAgente, memoriaDoCliente, registrarAgente, rodarAgenteSombra, roteiroManda } from "./agente.js";
+import { aplicarDecisao, decidirAgente, memoriaDoCliente, recomecou, registrarAgente, rodarAgenteSombra, roteiroManda } from "./agente.js";
 import { FORMATOS_EXTRATO, lerArquivo, parcelaPeloExtrato, transcreverAudio } from "./midia.js";
 import { TEXTOS } from "./textos.js";
 import { guardarAnalise } from "../extratos/guardadas.js";
@@ -496,7 +496,9 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
           roteiro, efeitosRoteiro: [...new Set(passo.efeitos.map((e) => e.tipo))] },
         15_000,
       );
-      const r = aplicarDecisao(estadoAntes, passo, decisao, transferirPeloAgente);
+      // A Maisa falou com o cliente nas últimas 24h: ele está no meio de um atendimento.
+      const recente = await prisma.mensagem.findFirst({ where: { conversaId: conversa.id, remetenteTipo: "maisa", createdAt: { gte: new Date(lida.createdAt.getTime() - 24 * 60 * 60_000), lt: lida.createdAt } }, select: { id: true } });
+      const r = aplicarDecisao(estadoAntes, passo, decisao, transferirPeloAgente, Boolean(recente));
       void registrarAgente({ conversaId: conversa.id, mensagemId: lida.id, etapa: base.etapa, rotuloReal: passo.rotulo, roteiro, decisao, meta, aplicado: r.aplicado });
       if (r.aplicado) {
         console.log(`Agente na conversa ${conversa.id}: ${decisao.acao} no lugar de ${passo.rotulo} (${decisao.motivo.slice(0, 120)})`);
@@ -505,6 +507,21 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     } catch (err) {
       const falha = err instanceof Error ? err.message.slice(0, 200) : "erro";
       void registrarAgente({ conversaId: conversa.id, mensagemId: lida.id, etapa: base.etapa, rotuloReal: passo.rotulo, roteiro, decisao: null, meta: null, aplicado: false, falha });
+    }
+  }
+
+  // Trava sem modelo: o roteiro recomeçou (apresentação, lista de produtos) com o cliente no meio
+  // de um atendimento (a Maisa falou com ele nas últimas 24h). Não manda o menu: a equipe segue.
+  if (lida && estadoAntes && passo.rotulo !== "agente_equipe" && recomecou(passo) && !passo.efeitos.some((e) => e.tipo === "transferir")) {
+    const ultimaMaisa = await prisma.mensagem.findFirst({
+      where: { conversaId: conversa.id, remetenteTipo: "maisa", createdAt: { gte: new Date(lida.createdAt.getTime() - 24 * 60 * 60_000), lt: lida.createdAt } },
+      orderBy: { createdAt: "desc" }, select: { conteudoTexto: true },
+    });
+    // Se a última fala dela foi só passar para a equipe (ou o aviso de horário), recomeçar é o certo.
+    const soPassou = /direcionando|equipe atende de segunda|já já alguém|Já já alguém/.test(ultimaMaisa?.conteudoTexto ?? "");
+    if (ultimaMaisa && !soPassou) {
+      console.log(`Maisa ia recomeçar o atendimento no meio da conversa ${conversa.id}: passou para a equipe`);
+      passo = { ...transferirPeloAgente(estadoAntes, "o roteiro ia recomeçar o atendimento (apresentação e lista de produtos) no meio da conversa; ver a última mensagem do cliente"), rotulo: "recomeco_bloqueado" };
     }
   }
 

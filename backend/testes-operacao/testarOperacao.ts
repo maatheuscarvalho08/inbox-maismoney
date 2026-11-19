@@ -1211,6 +1211,27 @@ async function main() {
     assert.equal(await lembretesAssinatura(c.id), 0);
   });
 
+  // ---------- Recomeço no meio do atendimento ----------
+  const menuEnviado = async (id: string) => (await respostasMaisa(id)).some((m) => /Trabalhamos com estes produtos/.test(m.conteudoTexto ?? ""));
+  caso("Recomeço", "Cliente responde SIM a uma oferta e o roteiro recomeçaria: nada de menu, vai para a equipe", async () => {
+    const c = await novaConversa({ etapa: "inicio", tentativas: 0 } as EstadoMaisa);
+    await prisma.mensagem.create({ data: { conversaId: c.id, remetenteTipo: "maisa", conteudoTexto: "Encontrei uma saída com o seu contrato. É só me responder SIM que eu já começo.", createdAt: new Date(Date.now() - 60 * 60_000) } });
+    await cliente(c.id, "Sim");
+    assert.equal(await menuEnviado(c.id), false);
+    assert.equal((await estadoDe(c.id)).etapa, "finalizada");
+  });
+  caso("Recomeço", "Devolvida logo depois de 'estou direcionando': o menu sai normal", async () => {
+    const c = await novaConversa({ etapa: "inicio", tentativas: 0 } as EstadoMaisa);
+    await prisma.mensagem.create({ data: { conversaId: c.id, remetenteTipo: "maisa", conteudoTexto: TEXTOS.transferindo, createdAt: new Date(Date.now() - 60 * 60_000) } });
+    await cliente(c.id, "oi");
+    assert.equal(await menuEnviado(c.id), true);
+  });
+  caso("Recomeço", "Primeiro contato: o menu sai normal", async () => {
+    const c = await novaConversa(null);
+    await cliente(c.id, "oi");
+    assert.equal(await menuEnviado(c.id), true);
+  });
+
   // ---------- execução ----------
   const lista = filtro ? casos.filter((c) => `${c.grupo} ${c.nome}`.toLowerCase().includes(filtro)) : casos;
   let ok = 0;

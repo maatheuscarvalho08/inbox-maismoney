@@ -44,7 +44,8 @@ Decida UMA ação:
 
 Travas, sem exceção:
 - Nunca diga que você fez algo (simulei agora, digitei, consultei, anotei, enviei): quem faz é o sistema.
-- Nunca registre aceite ou consentimento por conta própria: se o cliente aceitou ou confirmou, a ação é "seguir_roteiro".
+- Nunca registre aceite ou consentimento por conta própria. Se o cliente aceitou ou confirmou e a resposta do roteiro segue com esse aceite (pede o próximo dado, confirma, agenda), a ação é "seguir_roteiro".
+- Se o cliente respondeu a algo das últimas mensagens (aceitou uma oferta, respondeu uma pergunta) e a resposta do roteiro NÃO tem a ver com isso (recomeça o atendimento, se apresenta de novo, manda a lista de produtos, pergunta o vínculo a quem já está no meio do atendimento), o roteiro perdeu o fio. Nunca escolha "seguir_roteiro" nesse caso. Se o cliente aceitou ou decidiu algo que só o sistema registra, escolha "equipe" e diga no motivo o que ele aceitou. Senão, escolha "responder" e responda ao que ele disse.
 - Valor, parcela, taxa, prazo ou troco só se estiverem escritos na ficha, no histórico ou na resposta do roteiro. Nunca prometa aprovação nem data de pagamento.
 - Nunca peça senha. Se o cliente mandou uma senha, avise com gentileza para não mandar senha a ninguém e diga o que você precisa no lugar.
 - Não se apresente de novo se a conversa já começou. Português simples, sem emoji, sem listas longas.
@@ -199,12 +200,21 @@ const transferenciaMole = (passo: PassoAgente) => {
 };
 
 // Aplica a decisão do agente ao passo do roteiro. Devolve o passo que vale e se o agente mudou algo.
+// O roteiro recomeçou (apresentação, lista de produtos) com o cliente no meio de um atendimento.
+export const recomecou = (passo: PassoAgente) => passo.respostas.some((r) => /Eu sou a Maisa|Trabalhamos com estes produtos/.test(r));
+
 export function aplicarDecisao(
   antes: PassoAgente["estado"] | null,
   passo: PassoAgente,
   d: DecisaoAgente,
   transferirPeloAgente: (estado: PassoAgente["estado"], motivo: string) => PassoAgente,
+  meioDeAtendimento = false,
 ): { passo: PassoAgente; aplicado: boolean; porque: string } {
+  // Trava sem modelo: menu para quem falou com a Maisa nas últimas 24h é o roteiro sem o fio da
+  // conversa (a Jurema aceitou uma oferta e recebeu a lista de produtos). Não manda: a equipe segue.
+  if (meioDeAtendimento && recomecou(passo) && !passo.efeitos.some((e) => e.tipo === "transferir") && d.acao !== "responder") {
+    return { passo: { ...transferirPeloAgente(antes ?? passo.estado, `o roteiro recomeçou o atendimento no meio da conversa (${d.motivo})`), rotulo: "agente_equipe" }, aplicado: true, porque: "roteiro recomeçou" };
+  }
   if (d.acao === "seguir_roteiro") return { passo, aplicado: false, porque: "seguir_roteiro" };
   if (roteiroManda(antes, passo)) return { passo, aplicado: false, porque: "roteiro manda neste passo" };
   const base = antes ?? { etapa: "inicio" as const, tentativas: 0 };

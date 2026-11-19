@@ -143,5 +143,36 @@ await caso("Ativo: equipe quando o roteiro não transfere", async () => {
   assert.ok(r.passo.efeitos.some((e) => e.tipo === "transferir"));
 });
 
+await caso("Ativo: roteiro manda o menu no meio do atendimento: equipe, mesmo com 'seguir_roteiro'", async () => {
+  const antes = est({ etapa: "inicio", produto: undefined });
+  const passo = { estado: est({ etapa: "convenio", produto: undefined }), respostas: ["Olá! Eu sou a Maisa, assistente virtual da Mais Money. Trabalhamos com estes produtos."], efeitos: [], rotulo: "menu" };
+  const r = aplicarDecisao(antes, passo, dec("seguir_roteiro"), transferirPeloAgente, true);
+  assert.equal(r.aplicado, true);
+  assert.equal(r.passo.estado.etapa, "finalizada");
+  assert.doesNotMatch(r.passo.respostas.join(" "), /Trabalhamos com estes produtos/);
+  // Primeiro contato (sem atendimento recente): o menu sai normal.
+  assert.equal(aplicarDecisao(antes, passo, dec("seguir_roteiro"), transferirPeloAgente, false).aplicado, false);
+});
+
+// ---------- Devolver para a Maisa: continua de onde parou ----------
+const { estadoLimpoPreservandoCadastro } = await import("../modules/maisa/estadoLimpo.js");
+await caso("Devolver com oferta em aberto: volta para a oferta, com ela", async () => {
+  const alternativa = { operacao: "port_refin", trocoCentavos: 1930975, motivo: "t" };
+  const e = estadoLimpoPreservandoCadastro({ etapa: "finalizada", paradaEm: "oferta_port", saida: "alternativa", motivoTransferencia: "x", produto: "siape", alternativa }) as Record<string, unknown>;
+  assert.equal(e.etapa, "oferta_port");
+  assert.deepEqual(e.alternativa, alternativa);
+  assert.equal(e.saida, undefined);
+  assert.equal(e.motivoTransferencia, undefined);
+});
+await caso("Devolver parado no extrato: continua pedindo o extrato", async () => {
+  const e = estadoLimpoPreservandoCadastro({ etapa: "finalizada", paradaEm: "extrato", saida: "sem_extrato", produto: "siape", dataNascimento: "1960-01-01" }) as Record<string, unknown>;
+  assert.equal(e.etapa, "extrato");
+  assert.equal(e.dataNascimento, "1960-01-01");
+});
+await caso("Devolver parado na oferta, mas sem a oferta guardada: não finge que tem", async () => {
+  const e = estadoLimpoPreservandoCadastro({ etapa: "finalizada", paradaEm: "oferta_port", saida: "x" }) as unknown;
+  assert.ok(!e || (e as Record<string, unknown>).etapa !== "oferta_port");
+});
+
 console.log(`\n${ok} de ${ok + falhas.length} passaram`);
 if (falhas.length) process.exit(1);
