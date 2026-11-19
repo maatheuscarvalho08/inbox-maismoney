@@ -18,7 +18,7 @@ const mensagens = new Map(
   (await prisma.mensagem.findMany({ where: { id: { in: registros.map((r) => r.mensagemId).filter((x): x is string => Boolean(x)) } }, select: { id: true, conteudoTexto: true } })).map((m) => [m.id, m.conteudoTexto ?? ""]),
 );
 const corta = (s: string | null | undefined, n = 300) => (s ? mascararNumeros(s).replace(/\s+/g, " ").slice(0, n) : "(nada)");
-console.log("\nOnde o agente faria diferente:");
+console.log("\nOnde o agente mudou (ativo) ou mudaria (sombra) a resposta:");
 for (const r of registros.filter((x) => x.divergiu)) {
   console.log(`\n[${r.createdAt.toISOString().slice(5, 16).replace("T", " ")}] conversa ${r.conversaId.slice(0, 8)} | etapa ${r.etapa} | roteiro: ${r.rotuloReal}`);
   console.log(`  cliente: ${corta(mensagens.get(r.mensagemId ?? ""))}`);
