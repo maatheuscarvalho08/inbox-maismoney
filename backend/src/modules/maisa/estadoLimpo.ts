@@ -7,7 +7,7 @@ import { Prisma } from "@prisma/client";
 import { env } from "../../config/env.js";
 
 // Etapas em que dá para retomar sem perder nada: a pergunta da etapa ainda faz sentido.
-const RETOMAVEIS = new Set(["cpf", "nome", "nascimento", "extrato", "numero_contrato", "oferta", "oferta_port"]);
+const RETOMAVEIS = new Set(["cpf", "nome", "nascimento", "margem", "extrato", "numero_contrato", "oferta", "oferta_port"]);
 
 export function estadoLimpoPreservandoCadastro(estadoAtual: unknown): Prisma.InputJsonValue | typeof Prisma.DbNull {
   const e = estadoAtual as Record<string, unknown> | null;

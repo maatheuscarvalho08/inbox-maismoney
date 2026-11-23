@@ -867,7 +867,7 @@ export async function verificarOfertasPendentes() {
 
 // Cliente parado nas etapas de dados: o fluxo decide se cabe o lembrete único.
 export async function verificarSilencios() {
-  const etapas = ["cpf", "nome", "nascimento", "extrato", "numero_contrato", "coleta"];
+  const etapas = ["cpf", "nome", "nascimento", "margem", "extrato", "numero_contrato", "coleta"];
   const paradas = await prisma.conversa.findMany({
     where: {
       comMaisa: true, status: { not: "encerrada" }, instancia: { maisaAtiva: true },

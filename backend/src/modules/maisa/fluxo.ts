@@ -50,6 +50,8 @@ export type Etapa =
   | "consentimento"
   | "aguardando"
   | "nascimento"
+  // INSS e SIAPE: o cliente diz a margem que vê no aplicativo. Negativa encerra o atendimento.
+  | "margem"
   | "extrato"
   | "oferta"
   // Sem margem para novo, mas a Facta abriu port ou refin: ela oferta e a equipe digita.
@@ -73,6 +75,8 @@ export interface EstadoMaisa {
   dataNascimento?: string;
   // Data com ano impossível (ex.: 1852): a que ela acha que o cliente quis dizer, esperando confirmação.
   dataSugerida?: string;
+  // Margem disponível dita pelo cliente a partir do aplicativo, em reais. Só entra positiva.
+  margemInformada?: number;
   // Extrato que chegou antes da hora (na etapa do CPF, por exemplo): é lido quando tiver a data.
   extratoPendenteId?: string;
   extratosPendentes?: string[];
@@ -319,6 +323,7 @@ const PERGUNTA_DA_ETAPA: Record<Etapa, string> = {
   consentimento: TEXTOS.perguntaConsentimento,
   aguardando: TEXTOS.aindaNaoAutorizou,
   nascimento: "Qual a sua data de nascimento? Pode mandar assim: 15/03/1958.",
+  margem: TEXTOS.lembraMargem,
   extrato: TEXTOS.lembraExtrato,
   oferta: TEXTOS.perguntaOferta,
   oferta_port: TEXTOS.perguntaOferta,
@@ -335,6 +340,7 @@ const RETOMA_ETAPA: Partial<Record<Etapa, string>> = {
   convenio: "Me conta: qual é o seu vínculo? Por exemplo CLT, INSS, SIAPE ou outro.",
   cpf: "Pode me mandar o seu CPF? Só os números.",
   nascimento: "Qual a sua data de nascimento?",
+  margem: TEXTOS.lembraMargem,
   extrato: "Quando puder, me manda o extrato aqui, em PDF ou foto.",
   consentimento: "Posso consultar? É só me responder SIM.",
 };
@@ -347,6 +353,7 @@ const NOME_ETAPA: Record<Etapa, string> = {
   consentimento: "autorização",
   aguardando: "link do banco",
   nascimento: "data de nascimento",
+  margem: "margem",
   extrato: "extrato",
   oferta: "oferta",
   oferta_port: "oferta de portabilidade",
@@ -809,6 +816,54 @@ const guardarPendente = (e: EstadoMaisa, id: string): string[] => [...pendentes(
 
 const dataBr = (iso: string) => iso.split("-").reverse().join("/");
 
+export type LeituraMargem = { tipo: "negativa" } | { tipo: "valor"; valor: number } | { tipo: "positiva" } | { tipo: "varios" };
+
+function numeroDaMargem(token: string): number | null {
+  let t = token.replace(/[.,]+$/, "");
+  if (t.includes(",") && t.includes(".")) t = t.replace(/\./g, "").replace(",", ".");
+  else if (t.includes(",")) t = t.replace(",", ".");
+  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, "");
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+}
+
+// O que o cliente disse da margem que vê no aplicativo. null = não deu para ler.
+export function lerMargem(texto: string): LeituraMargem | null {
+  const t = normalizar(texto);
+  if (/negativ|estourad|no vermelho|\bmenos\s*(r\$\s*)?\d/.test(t) || /(^|\s|\$)-\s*(r\$\s*)?\d/.test(t)) return { tipo: "negativa" };
+  // CPF, telefone e datas têm muitos dígitos: não são margem.
+  const numeros = (t.match(/\d[\d.,]*/g) ?? []).filter((x) => x.replace(/\D/g, "").length <= 7).map(numeroDaMargem).filter((n): n is number => n !== null);
+  if (numeros.length > 1 && new Set(numeros).size > 1) return { tipo: "varios" };
+  if (numeros.length) return { tipo: "valor", valor: numeros[0] };
+  if (/(zerad|\bzero\b|sem margem|nao (tenho|tem|sobra|ha) margem|nao sobra)/.test(t)) return { tipo: "valor", valor: 0 };
+  if (/(tenho margem|tem margem|positiv|sobra|disponivel)/.test(t)) return { tipo: "positiva" };
+  return null;
+}
+
+// Pede a margem do aplicativo antes do extrato.
+function seguirParaMargem(estado: EstadoMaisa, data: string): Passo {
+  return ir(estado, "margem", [TEXTOS.pedeMargem(produtoExtrato(estado))], "nascimento_valido", [], { dataNascimento: data, dataSugerida: undefined });
+}
+
+// Margem negativa encerra. Zero ou positiva segue para o extrato, onde ainda pode haver port ou refin.
+async function etapaMargem(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  const t = normalizar(texto);
+  const leitura = lerMargem(texto);
+  if (leitura?.tipo === "negativa") {
+    return encerrar(estado, "margem negativa informada pelo cliente no aplicativo", TEXTOS.margemNegativaFim, "margem_negativa", [], "margem_negativa");
+  }
+  if (leitura?.tipo === "varios") return tentarDeNovo(estado, TEXTOS.margemMaisDeUmValor, "margem_varios_valores");
+  if (leitura) {
+    const comMargem: EstadoMaisa = { ...estado, margemInformada: leitura.tipo === "valor" && leitura.valor > 0 ? leitura.valor : undefined };
+    const p = await seguirParaExtrato(comMargem, estado.dataNascimento ?? "", deps);
+    return { ...p, respostas: [TEXTOS.margemAnotada, ...p.respostas], rotulo: "margem_informada" };
+  }
+  if (/(como|onde) (eu )?(vejo|ver|acho|achar|consulto|consultar|descubro|sei)|nao (sei|consigo|lembro|tenho acesso)|nao tenho (o |a )?(aplicativo|app|sougov|senha|gov|celular)|sougov|meu inss|aplicativo/.test(t)) {
+    return tentarDeNovo(estado, TEXTOS.comoVerMargem(produtoExtrato(estado)), "sem_margem_informada");
+  }
+  return ouvirCliente(estado, texto, deps);
+}
+
 // Com a data em mãos: se o extrato já chegou antes, lê e simula agora; senão, pede o extrato.
 async function seguirParaExtrato(estado: EstadoMaisa, data: string, deps: Dependencias): Promise<Passo> {
   const pronto: EstadoMaisa = { ...estado, etapa: "extrato", tentativas: 0, dataNascimento: data, dataSugerida: undefined, extratoPendenteId: undefined, extratosPendentes: undefined };
@@ -821,10 +876,10 @@ async function etapaNascimento(estado: EstadoMaisa, texto: string, deps: Depende
   const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   // Confirmou a data que ela sugeriu ("isso", "sim", "tá certa").
   if (estado.dataSugerida && ((await deps.classificador.simNao(texto)) === "sim" || /(cert|corret|exato|essa mesma|isso)/.test(t))) {
-    return seguirParaExtrato(estado, estado.dataSugerida, deps);
+    return seguirParaMargem(estado, estado.dataSugerida);
   }
   const data = lerDataNascimento(texto, deps.agora());
-  if (data) return seguirParaExtrato(estado, data, deps);
+  if (data) return seguirParaMargem(estado, data);
   const datas = datasNoTexto(texto, deps.agora());
   const ultima = datas[datas.length - 1];
   if (ultima && idadeEm(ultima.iso, deps.agora()) < 18) return tentarDeNovo(estado, TEXTOS.menorDeIdade, "menor_de_idade");
@@ -2168,7 +2223,7 @@ async function corrigirDados(estado: EstadoMaisa, entrada: { texto: string | nul
 const MAX_SOCIAIS = 4;
 
 // Etapas em que mensagem social recebe resposta curta e a pergunta de novo.
-const ETAPAS_SOCIAIS: Etapa[] = ["cpf", "nome", "nascimento", "extrato", "numero_contrato", "coleta", "confirmacao"];
+const ETAPAS_SOCIAIS: Etapa[] = ["cpf", "nome", "nascimento", "margem", "extrato", "numero_contrato", "coleta", "confirmacao"];
 
 function retomaDaEtapa(estado: EstadoMaisa): string {
   if (estado.etapa === "coleta") return estado.contrato?.pergunta ?? TEXTOS.continuarCadastro;
@@ -2223,7 +2278,7 @@ function verificarOferta(estado: EstadoMaisa, agora: Date, followupPort = false)
 // dele. Depois de 22 horas não manda: a janela de 24h da Meta pode fechar.
 const LEMBRETE_MS = 30 * 60_000;
 const LEMBRETE_LIMITE_MS = 22 * 60 * 60_000;
-const ETAPAS_LEMBRETE = new Set<Etapa>(["cpf", "nome", "nascimento", "extrato", "numero_contrato", "coleta"]);
+const ETAPAS_LEMBRETE = new Set<Etapa>(["cpf", "nome", "nascimento", "margem", "extrato", "numero_contrato", "coleta"]);
 export function verificarSilencio(estado: EstadoMaisa, agora: Date): Passo {
   const parado: Passo = { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
   if (!ETAPAS_LEMBRETE.has(estado.etapa) || estado.lembreteEnviado || !estado.ultimaMensagemEm) return parado;
@@ -2282,7 +2337,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   // Na etapa do extrato, PDF ou foto é o que ela pediu. Fora dela, arquivo vai para a equipe.
   if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps);
   // Extrato antes da hora (INSS ou SIAPE, ainda no CPF, nome ou data): guarda e pede o que falta.
-  if (entrada.documento && entrada.documentoId && porExtrato(estado.produto) && ["cpf", "nome", "nascimento"].includes(estado.etapa)) {
+  if (entrada.documento && entrada.documentoId && porExtrato(estado.produto) && ["cpf", "nome", "nascimento", "margem"].includes(estado.etapa)) {
     // Segundo arquivo seguido: guarda sem repetir o "Recebi o seu documento".
     const jaTinha = pendentes(estado).length > 0;
     return {
@@ -2345,7 +2400,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   }
 
   // "Na verdade sou do INSS": troca o produto antes de seguir.
-  if (estado.etapa === "cpf" || estado.etapa === "nascimento" || estado.etapa === "extrato") {
+  if (estado.etapa === "cpf" || estado.etapa === "nascimento" || estado.etapa === "margem" || estado.etapa === "extrato") {
     const troca = await trocaDeProduto(estado, texto, deps);
     if (troca) {
       let p: Passo | null = null;
@@ -2413,6 +2468,7 @@ function dadoDireto(estado: EstadoMaisa, texto: string, agora: Date): boolean {
   if (estado.etapa === "cpf") return Boolean(extrairCpf(texto) || cpfComTamanhoErrado(texto));
   // Coleta esperando o endereço: CEP, número ou complemento lidos pelas regras.
   if (estado.etapa === "coleta") return leituraDeEndereco(estado, texto) !== null;
+  if (estado.etapa === "margem") return lerMargem(texto) !== null;
   // No extrato, a correção da data ("errei, é 12/12/1966") também é dado certo.
   if (estado.etapa === "extrato") return lerDataNascimento(texto, agora) !== null;
   // Data sugerida esperando o "sim": a confirmação é do motor, não vira "vou conseguir".
@@ -2469,6 +2525,8 @@ export function descreverPendencia(estado: EstadoMaisa): Pendencia {
     case "oferta_port":
     case "confirmacao":
       return { ...base, chave: etapa, tipo: "confirmacao", topico: null, pergunta: estado.contrato?.pergunta ?? PERGUNTA_DA_ETAPA[etapa] ?? "", dadoPedido: "a sua confirmação" };
+    case "margem":
+      return { ...base, chave: "margem", tipo: "dado", topico: null, pergunta: TEXTOS.lembraMargem, dadoPedido: "a margem disponível no aplicativo" };
     case "extrato":
       return { ...base, chave: "extrato", tipo: "arquivo", topico: estado.produto === "inss" ? "extrato_inss" : "extrato_siape", pergunta: estado.extratoSiapePendente ? TEXTOS.pedeContracheque : TEXTOS.lembraExtrato, dadoPedido: estado.extratoSiapePendente ? "o último contracheque" : "o extrato" };
     case "cpf":
@@ -2511,6 +2569,8 @@ async function despachar(estado: EstadoMaisa, entrada: EntradaTexto, texto: stri
       return etapaAguardando(estado, texto, deps);
     case "nascimento":
       return etapaNascimento(estado, texto, deps);
+    case "margem":
+      return etapaMargem(estado, texto, deps);
     case "extrato":
       return etapaExtrato(estado, { texto }, deps);
     case "oferta":

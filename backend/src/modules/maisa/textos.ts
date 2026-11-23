@@ -73,6 +73,17 @@ export const TEXTOS = {
   confirmaData: (data: string) => `Acho que o ano saiu trocado. Você quis dizer ${data}? Se for isso, é só me responder SIM.`,
   confirmaDataTrocada: (data: string) => `Só para confirmar: a sua data de nascimento é ${data}, com o dia antes do mês? Se for isso, é só me responder SIM.`,
   nascimentoInvalido: "Não consegui validar essa data. Pode conferir o dia, o mês e o ano e me mandar assim: 15/03/1958?",
+  pedeMargem: (produto: "inss" | "siape") =>
+    `Antes de seguir, preciso conferir a sua margem. No aplicativo ${produto === "inss" ? "Meu INSS" : "SouGov.br"}, veja o valor da margem disponível para empréstimo consignado e me diga qual é.\n\n` +
+    "Pode mandar só o valor, por exemplo: 350,00. Se ela estiver negativa, é só me dizer \"negativa\".",
+  lembraMargem: "Qual é a margem disponível que aparece no aplicativo? Pode mandar só o valor, ou me dizer se está negativa.",
+  comoVerMargem: (produto: "inss" | "siape") =>
+    `Para ver a margem: abra o aplicativo ${produto === "inss" ? "Meu INSS" : "SouGov.br"}, entre com a sua conta gov.br e procure a margem disponível para empréstimo consignado.\n\n` +
+    "Me manda aqui só o valor, por exemplo: 350,00. Se estiver negativa, é só me dizer \"negativa\". Se preferir, é só pedir que eu chamo um atendente.",
+  margemMaisDeUmValor: "Vi mais de um valor na sua mensagem. Pode me mandar só a margem disponível para empréstimo consignado?",
+  margemAnotada: "Anotado, obrigada!",
+  margemNegativaFim:
+    "Obrigada por conferir! Com a margem negativa, não consigo seguir com a sua simulação agora. Se a sua margem voltar a ficar positiva, é só me chamar de novo. Obrigada pelo contato!",
   pedeExtrato: (produto: "inss" | "siape") =>
     produto === "inss"
       ? "Agora preciso do seu extrato de empréstimos do INSS. É ele que mostra quanto ainda sobra de margem no seu benefício.\n\n" +

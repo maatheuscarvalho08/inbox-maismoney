@@ -997,7 +997,10 @@ await caso("Dois arquivos antes da hora: guarda os dois, avisa uma vez e lÃª atÃ
   const p2 = await avancar(p1.estado, { texto: null, temMidia: true, documento: true, documentoId: "pdf-2" }, deps);
   assert.equal(p2.respostas.length, 0);
   assert.deepEqual(p2.estado.extratosPendentes, ["pdf-1", "pdf-2"]);
-  const p3 = await avancar({ ...p2.estado, etapa: "nascimento", nome: "Afonso" }, { texto: "14/07/1952", temMidia: false }, deps);
+  const p3a = await avancar({ ...p2.estado, etapa: "nascimento", nome: "Afonso" }, { texto: "14/07/1952", temMidia: false }, deps);
+  assert.equal(p3a.estado.etapa, "margem");
+  assert.deepEqual(p3a.estado.extratosPendentes, ["pdf-1", "pdf-2"]);
+  const p3 = await avancar(p3a.estado, { texto: "350,00", temMidia: false }, deps);
   assert.deepEqual(lidos, ["pdf-2", "pdf-1"]);
   assert.equal(p3.estado.saida, "sem_saldo");
   assert.equal(p3.estado.extratosPendentes, undefined);
@@ -1119,7 +1122,8 @@ await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS 
     docs.ext = { documento: "extrato_consignacoes", vinculo: null };
     docs.cc = { documento: "contracheque", vinculo: "pensao_temporaria" };
     const ini: EstadoMaisa = { etapa: "nascimento", tentativas: 0, produto: "siape", nome: "Ana Souza", extratosPendentes: ["cc", "ext"] };
-    const p = await avancar(ini, { texto: "10/12/1966", temMidia: false }, depsSiape());
+    const pm = await avancar(ini, { texto: "10/12/1966", temMidia: false }, depsSiape());
+    const p = await avancar(pm.estado, { texto: "350,00", temMidia: false }, depsSiape());
     assert.equal(p.estado.saida, "vinculo_siape");
   });
 
