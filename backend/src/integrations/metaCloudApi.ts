@@ -1,6 +1,12 @@
 import fs from "fs";
+import os from "os";
+import path from "path";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import axios from "axios";
 import { env } from "../config/env.js";
+
+const execFileAsync = promisify(execFile);
 
 // axios.isAxiosError não é suficiente sozinho pra extrair a mensagem real — por padrão
 // o console trunca err.response.data como [Object], escondendo o motivo de verdade
@@ -61,22 +67,44 @@ export async function enviarTemplateMeta(
   return data.messages?.[0]?.id;
 }
 
+// A Meta Cloud API aceita áudio apenas em AAC para envio — OGG/Opus é suportado
+// só no recebimento. Converte qualquer áudio para AAC/m4a antes do upload.
+async function converterParaAac(inputPath: string): Promise<{ filePath: string; cleanup: () => void }> {
+  const outputPath = path.join(os.tmpdir(), `meta_audio_${Date.now()}.m4a`);
+  await execFileAsync("ffmpeg", ["-y", "-i", inputPath, "-c:a", "aac", "-b:a", "64k", outputPath]);
+  return { filePath: outputPath, cleanup: () => { try { fs.unlinkSync(outputPath); } catch { /* noop */ } } };
+}
+
 // Faz upload do arquivo local para a Media API da Meta e retorna o media_id.
-// A Meta rejeita áudio OGG (e outros formatos) quando enviados via link URL —
-// o upload direto é o único caminho confiável para mídia enviada pelo operador.
 async function uploadMidiaMeta(phoneNumberId: string, filePath: string, mimetype: string): Promise<string> {
-  const fileBuffer = fs.readFileSync(filePath);
-  const blob = new Blob([fileBuffer], { type: mimetype });
-  const form = new globalThis.FormData();
-  form.append("file", blob, "media");
-  form.append("type", mimetype);
-  form.append("messaging_product", "whatsapp");
-  const { data } = await axios.post<{ id: string }>(
-    `https://graph.facebook.com/${env.META_API_VERSION}/${phoneNumberId}/media`,
-    form,
-    { headers: { Authorization: `Bearer ${env.META_ACCESS_TOKEN}` }, timeout: 30_000 },
-  );
-  return data.id;
+  let uploadPath = filePath;
+  let uploadMimetype = mimetype;
+  let cleanup: (() => void) | undefined;
+
+  // Converte áudio OGG/Opus para AAC antes de enviar — a Meta rejeita OGG no envio.
+  if (mimetype.startsWith("audio/")) {
+    const conv = await converterParaAac(filePath);
+    uploadPath = conv.filePath;
+    uploadMimetype = "audio/mp4";
+    cleanup = conv.cleanup;
+  }
+
+  try {
+    const fileBuffer = fs.readFileSync(uploadPath);
+    const blob = new Blob([fileBuffer], { type: uploadMimetype });
+    const form = new globalThis.FormData();
+    form.append("file", blob, "media");
+    form.append("type", uploadMimetype);
+    form.append("messaging_product", "whatsapp");
+    const { data } = await axios.post<{ id: string }>(
+      `https://graph.facebook.com/${env.META_API_VERSION}/${phoneNumberId}/media`,
+      form,
+      { headers: { Authorization: `Bearer ${env.META_ACCESS_TOKEN}` }, timeout: 30_000 },
+    );
+    return data.id;
+  } finally {
+    cleanup?.();
+  }
 }
 
 export async function enviarMidiaMeta(
