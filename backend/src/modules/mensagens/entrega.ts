@@ -54,11 +54,14 @@ export async function entregarMensagem(
         idEnvio = await enviarMidiaEvolution(instancia.evolutionInstanceId, contato.numeroWhatsapp, link, tipo, texto, citacaoEvolution);
         entregue = true;
       } else if (instancia.tipoConexao === "meta_cloud" && instancia.metaPhoneNumberId) {
-        idEnvio = await enviarMidiaMeta(instancia.metaPhoneNumberId, contato.numeroWhatsapp, tipo, link, {
+        const absPath = path.resolve(process.cwd(), mensagem.midiaPath);
+        idEnvio = await enviarMidiaMeta(instancia.metaPhoneNumberId, contato.numeroWhatsapp, tipo, absPath, {
           caption: texto,
           filename: opts.filename ?? path.basename(mensagem.midiaPath),
           voiceNote: opts.voiceNote,
           contextMessageId: citacaoMetaId,
+          mimetype: mensagem.tipoMidia ?? undefined,
+          isFilePath: true,
         });
         entregue = true;
       }

@@ -1,3 +1,4 @@
+import fs from "fs";
 import axios from "axios";
 import { env } from "../config/env.js";
 
@@ -60,14 +61,40 @@ export async function enviarTemplateMeta(
   return data.messages?.[0]?.id;
 }
 
+// Faz upload do arquivo local para a Media API da Meta e retorna o media_id.
+// A Meta rejeita áudio OGG (e outros formatos) quando enviados via link URL —
+// o upload direto é o único caminho confiável para mídia enviada pelo operador.
+async function uploadMidiaMeta(phoneNumberId: string, filePath: string, mimetype: string): Promise<string> {
+  const fileBuffer = fs.readFileSync(filePath);
+  const blob = new Blob([fileBuffer], { type: mimetype });
+  const form = new globalThis.FormData();
+  form.append("file", blob, "media");
+  form.append("type", mimetype);
+  form.append("messaging_product", "whatsapp");
+  const { data } = await axios.post<{ id: string }>(
+    `https://graph.facebook.com/${env.META_API_VERSION}/${phoneNumberId}/media`,
+    form,
+    { headers: { Authorization: `Bearer ${env.META_ACCESS_TOKEN}` }, timeout: 30_000 },
+  );
+  return data.id;
+}
+
 export async function enviarMidiaMeta(
   phoneNumberId: string,
   numero: string,
   tipo: "image" | "audio" | "video" | "document",
-  link: string,
-  opts: { caption?: string; filename?: string; voiceNote?: boolean; contextMessageId?: string } = {},
+  linkOuFilePath: string,
+  opts: { caption?: string; filename?: string; voiceNote?: boolean; contextMessageId?: string; mimetype?: string; isFilePath?: boolean } = {},
 ) {
-  const media: Record<string, unknown> = { link };
+  let media: Record<string, unknown>;
+
+  if (opts.isFilePath && opts.mimetype) {
+    const mediaId = await uploadMidiaMeta(phoneNumberId, linkOuFilePath, opts.mimetype);
+    media = { id: mediaId };
+  } else {
+    media = { link: linkOuFilePath };
+  }
+
   // Legenda só é aceita pela Meta em image/video/document — áudio não suporta caption.
   if (opts.caption && tipo !== "audio") media.caption = opts.caption;
   if (opts.filename && tipo === "document") media.filename = opts.filename;
