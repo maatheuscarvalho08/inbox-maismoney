@@ -253,6 +253,18 @@ export function Composer({
                   (e.currentTarget.form as HTMLFormElement | null)?.requestSubmit();
                 }
               }}
+              onPaste={(e) => {
+                const items = Array.from(e.clipboardData.items);
+                const fileItem = items.find((i) => i.kind === "file");
+                if (fileItem) {
+                  const file = fileItem.getAsFile();
+                  if (file) {
+                    e.preventDefault();
+                    setAudioGravado(false);
+                    setArquivo(file);
+                  }
+                }
+              }}
               placeholder="Digite uma mensagem..."
               className="max-h-[120px] flex-1 resize-none rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
