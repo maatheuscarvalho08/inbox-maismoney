@@ -1006,6 +1006,20 @@ await caso("Dois arquivos antes da hora: guarda os dois, avisa uma vez e lê at�
   assert.equal(p3.estado.extratosPendentes, undefined);
 });
 
+await caso("Print da margem negativa encerra; com valor segue; sem leitura guarda como extrato", async () => {
+  const ini: EstadoMaisa = { etapa: "margem", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" };
+  const doc = { texto: null, temMidia: true, documento: true, documentoId: "print-1" };
+  const neg = await avancar(ini, doc, depsBase(roteiro([]), { lerMargemDoArquivo: async () => ({ legivel: true, negativa: true, valor: -80 }) }, []));
+  assert.equal(neg.estado.saida, "margem_negativa");
+  assert.ok(neg.efeitos.some((e) => e.tipo === "encerrar"));
+  const ok = await avancar(ini, doc, depsBase(roteiro([]), { lerMargemDoArquivo: async () => ({ legivel: true, negativa: false, valor: 420 }) }, []));
+  assert.equal(ok.estado.etapa, "extrato");
+  assert.equal(ok.estado.margemInformada, 420);
+  const nada = await avancar(ini, doc, depsBase(roteiro([]), { lerMargemDoArquivo: async () => ({ legivel: true, negativa: false, valor: null }) }, []));
+  assert.equal(nada.estado.etapa, "margem");
+  assert.deepEqual(nada.estado.extratosPendentes, ["print-1"]);
+});
+
 await caso("Órgão emissor por extenso no cabeçalho do RG vira a sigla da Facta", async () => {
   const { orgaoNaFacta } = await import("../modules/maisa/coleta.js");
   const o = { SSP: "x", IFP: "x", DETRAN: "x", DIC: "x", SDS: "x", IGP: "x", IPF: "x" };

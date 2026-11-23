@@ -29,6 +29,7 @@ import { instanteEnvio, invalidaConfirmacao, mandadaDepoisOuJunto } from "./orde
 export { portasMaisa, tempoDigitando } from "./portasMaisa.js";
 export { aguardarDespachos, despachar, recuperarSaidas } from "./saidaMaisa.js";
 import { INTERVALO_AVISO_ACEITE_MS, ehAceiteTardio } from "./aceiteTardio.js";
+import { lerMargemDoArquivo } from "./conversa/documento.js";
 import { conversaAtiva, dadosDoRegistro, limparConversa, modoConversa, rodarSombra } from "./conversa/montagem.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
@@ -458,6 +459,12 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       const vinculo = vinculoConferido(lido);
       console.log(`Maisa leu o vínculo SIAPE da conversa ${conversa.id}: ${lido.documento_siape ?? "?"} ${lido.vinculo_siape ?? "?"}${vinculo !== lido.vinculo_siape ? ` (sem prova no trecho: ${vinculo})` : ""}`);
       return { documento: lido.documento_siape ?? null, vinculo, renda: lido.renda_bruta ?? null };
+    },
+    lerMargemDoArquivo: async () => {
+      if (!arquivo) return null;
+      const { lida, meta } = await lerMargemDoArquivo(await lerArquivo(arquivo.midiaPath), arquivo.tipo);
+      console.log(`Maisa leu a margem no print da conversa ${conversa.id}: legível=${lida.legivel} negativa=${lida.negativa} ${meta.latenciaMs}ms`);
+      return lida;
     },
     digitacaoAtiva: env.MAISA_DIGITA_PROPOSTA && (banco === bancoSimulado || (banco === bancoFacta && digitacaoConfigurada())),
     // Trava própria, independente do código master. Desligada por padrão.

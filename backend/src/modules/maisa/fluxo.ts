@@ -252,6 +252,8 @@ export interface Dependencias {
   simularPorExtrato(produto: ProdutoExtrato, dataNascimento: string, documentoId?: string): Promise<ResultadoExtrato & { siape?: InfoSiape }>;
   // SIAPE: lê só o documento (sem banco) para saber se é contracheque e qual o vínculo.
   lerVinculoSiape?(documentoId?: string): Promise<InfoSiape>;
+  // Lê o print da margem que o cliente mandou na etapa da margem. null: não deu para ler.
+  lerMargemDoArquivo?(): Promise<{ legivel: boolean; negativa: boolean; valor: number | null } | null>;
   // Digitação na Facta (INSS e SIAPE). Desligada, o "sim" vai para a equipe.
   digitacaoAtiva: boolean;
   extrairDados(pergunta: string, entrada: { texto: string | null; documento?: boolean }, faltando: CampoContrato[]): Promise<DadosContrato>;
@@ -843,6 +845,21 @@ export function lerMargem(texto: string): LeituraMargem | null {
 // Pede a margem do aplicativo antes do extrato.
 function seguirParaMargem(estado: EstadoMaisa, data: string): Passo {
   return ir(estado, "margem", [TEXTOS.pedeMargem(produtoExtrato(estado))], "nascimento_valido", [], { dataNascimento: data, dataSugerida: undefined });
+}
+
+// Print da margem: negativa encerra, valor segue. Se não for tela de margem (um extrato mandado
+// aqui, por exemplo), devolve null e o arquivo é guardado como extrato antecipado.
+async function margemPorPrint(estado: EstadoMaisa, deps: Dependencias): Promise<Passo | null> {
+  if (!deps.lerMargemDoArquivo) return null;
+  const lida = await deps.lerMargemDoArquivo().catch(() => null);
+  if (!lida?.legivel) return null;
+  if (lida.negativa) {
+    return encerrar(estado, "margem negativa no print enviado pelo cliente", TEXTOS.margemNegativaFim, "margem_negativa", [], "margem_negativa");
+  }
+  if (lida.valor === null) return null;
+  const comMargem: EstadoMaisa = { ...estado, margemInformada: lida.valor > 0 ? lida.valor : undefined };
+  const p = await seguirParaExtrato(comMargem, estado.dataNascimento ?? "", deps);
+  return { ...p, respostas: [TEXTOS.margemAnotada, ...p.respostas], rotulo: "margem_por_print" };
 }
 
 // Margem negativa encerra. Zero ou positiva segue para o extrato, onde ainda pode haver port ou refin.
@@ -2336,6 +2353,10 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 
   // Na etapa do extrato, PDF ou foto é o que ela pediu. Fora dela, arquivo vai para a equipe.
   if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps);
+  if (estado.etapa === "margem" && entrada.documento) {
+    const p = await margemPorPrint(estado, deps);
+    if (p) return p;
+  }
   // Extrato antes da hora (INSS ou SIAPE, ainda no CPF, nome ou data): guarda e pede o que falta.
   if (entrada.documento && entrada.documentoId && porExtrato(estado.produto) && ["cpf", "nome", "nascimento", "margem"].includes(estado.etapa)) {
     // Segundo arquivo seguido: guarda sem repetir o "Recebi o seu documento".

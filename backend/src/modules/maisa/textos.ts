@@ -75,11 +75,11 @@ export const TEXTOS = {
   nascimentoInvalido: "Não consegui validar essa data. Pode conferir o dia, o mês e o ano e me mandar assim: 15/03/1958?",
   pedeMargem: (produto: "inss" | "siape") =>
     `Antes de seguir, preciso conferir a sua margem. No aplicativo ${produto === "inss" ? "Meu INSS" : "SouGov.br"}, veja o valor da margem disponível para empréstimo consignado e me diga qual é.\n\n` +
-    "Pode mandar só o valor, por exemplo: 350,00. Se ela estiver negativa, é só me dizer \"negativa\".",
-  lembraMargem: "Qual é a margem disponível que aparece no aplicativo? Pode mandar só o valor, ou me dizer se está negativa.",
+    "Pode mandar só o valor, por exemplo: 350,00, ou pode me mandar um print.",
+  lembraMargem: "Qual é a margem disponível que aparece no aplicativo? Pode mandar só o valor ou um print da tela.",
   comoVerMargem: (produto: "inss" | "siape") =>
     `Para ver a margem: abra o aplicativo ${produto === "inss" ? "Meu INSS" : "SouGov.br"}, entre com a sua conta gov.br e procure a margem disponível para empréstimo consignado.\n\n` +
-    "Me manda aqui só o valor, por exemplo: 350,00. Se estiver negativa, é só me dizer \"negativa\". Se preferir, é só pedir que eu chamo um atendente.",
+    "Me manda aqui só o valor, por exemplo: 350,00, ou pode me mandar um print. Se preferir, é só pedir que eu chamo um atendente.",
   margemMaisDeUmValor: "Vi mais de um valor na sua mensagem. Pode me mandar só a margem disponível para empréstimo consignado?",
   margemAnotada: "Anotado, obrigada!",
   margemNegativaFim:
