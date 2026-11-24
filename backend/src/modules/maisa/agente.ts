@@ -184,7 +184,12 @@ export interface PassoAgente {
 }
 
 // O roteiro manda neste passo? (dinheiro, consentimento, digitação agendada ou com erro)
+// O cliente mandou o dado pedido e o roteiro aceitou: o agente não troca a próxima pergunta. A data
+// chega mascarada para ele, e sem isso ele pedia a data de novo com o cadastro já adiantado.
+const DADO_ACEITO = new Set(["nascimento_valido", "cpf_valido", "margem_informada", "margem_por_print"]);
+
 export function roteiroManda(antes: PassoAgente["estado"] | null, passo: PassoAgente): boolean {
+  if (DADO_ACEITO.has(passo.rotulo)) return true;
   if (passo.efeitos.some((e) => EFEITOS_DO_ROTEIRO.has(e.tipo))) return true;
   if (antes?.confirmacaoPendente || passo.estado.confirmacaoPendente) return true;
   if (antes?.digitacaoErro || passo.estado.digitacaoErro) return true;

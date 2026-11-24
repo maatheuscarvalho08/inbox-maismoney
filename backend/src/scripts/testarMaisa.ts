@@ -321,6 +321,18 @@ const CASOS: Caso[] = [
     etapaFinal: "extrato",
   },
   {
+    nome: "Data de nascimento repetida na etapa da margem não vira valor de margem",
+    acoes: ["oi", "1", CPF_SALDO, "15/03/1958", "15/03/1958"],
+    etapaFinal: "margem",
+    respostaContem: "já está anotada",
+  },
+  {
+    nome: "Data por extenso na etapa da margem também não vira valor",
+    acoes: ["oi", "1", CPF_SALDO, "15/03/1958", "Dia 15 ano 1958"],
+    etapaFinal: "margem",
+    respostaContem: "margem disponível",
+  },
+  {
     nome: "Não sabe ver a margem: explica onde olhar",
     acoes: ["oi", "1", CPF_SALDO, "15/03/1958", "não sei ver isso"],
     etapaFinal: "margem",

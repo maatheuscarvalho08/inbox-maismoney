@@ -865,6 +865,15 @@ async function margemPorPrint(estado: EstadoMaisa, deps: Dependencias): Promise<
 // Margem negativa encerra. Zero ou positiva segue para o extrato, onde ainda pode haver port ou refin.
 async function etapaMargem(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const t = normalizar(texto);
+  // A data chega de novo (o cliente não viu que ela foi aceita): não é margem.
+  const data = lerDataNascimento(texto, deps.agora());
+  const falaDeData = /(dia|ano|nasci|nascimento|mes)|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/.test(t);
+  if (!/r\$|reais|margem/.test(t) && (data || falaDeData)) {
+    if (data && data !== estado.dataNascimento) {
+      return { estado: { ...estado, dataNascimento: data }, respostas: [TEXTOS.dataCorrigida(dataBr(data)), TEXTOS.lembraMargem], efeitos: [], rotulo: "data_corrigida" };
+    }
+    return { estado, respostas: [TEXTOS.dataJaAnotada, TEXTOS.lembraMargem], efeitos: [], rotulo: "data_repetida" };
+  }
   const leitura = lerMargem(texto);
   if (leitura?.tipo === "negativa") {
     return encerrar(estado, "margem negativa informada pelo cliente no aplicativo", TEXTOS.margemNegativaFim, "margem_negativa", [], "margem_negativa");
