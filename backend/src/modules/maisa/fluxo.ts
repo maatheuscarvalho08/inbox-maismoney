@@ -95,7 +95,10 @@ export interface EstadoMaisa {
   ofertaEm?: string;
   ultimoContatoCliente?: string;
   followupEnviado?: boolean;
-  lembreteEnviado?: boolean; // lembrete único quando o cliente some no meio dos dados
+  lembreteEnviado?: boolean; // lembrete quando o cliente some no meio dos dados
+  // Quantos follow-ups ela já mandou desde a última fala do cliente (no máximo 2) e quando saiu o último.
+  followups?: number;
+  followupEm?: string;
   // Proposta digitada: lembrete único de assinatura, 10 min depois do link, se o cliente não falou.
   lembreteAssinaturaEm?: string;
   oferta?: {
@@ -193,13 +196,16 @@ export interface ConversaDeps {
 // MAISA_CONVERSA_MODO=ativo. Desligado ou em sombra, o fluxo é o de antes da fase 7.
 // siapeOutrosBancos: SIAPE com tabela aberta na Facta vai para a equipe tentar outro banco
 // (comissão da Facta baixa). Ligado pelo MAISA_SIAPE_OUTROS_BANCOS.
-export interface InfoSiape { documento: string | null; vinculo: string | null; renda?: number | null; orgao?: string | null }
+export interface InfoSiape { documento: string | null; vinculo: string | null; renda?: number | null; orgao?: string | null; contaSalario?: { bancoConta: string; agencia: string; conta: string } | null }
 
 // A simulação veio do extrato (sem renda) e o contracheque tem o bruto: o cadastro não pergunta.
-function comRendaDoContracheque<T extends ResultadoExtrato>(r: T, renda: number | null | undefined): T {
-  if (!renda || renda <= 0) return r;
-  if ((r.tipo === "alternativa" || r.tipo === "com_saldo") && !r.renda) return { ...r, renda };
-  return r;
+export function comRendaDoContracheque<T extends ResultadoExtrato>(r: T, renda: number | null | undefined, contaSalario?: InfoSiape["contaSalario"]): T {
+  if (r.tipo !== "alternativa" && r.tipo !== "com_saldo") return r;
+  let saida = r as Extract<ResultadoExtrato, { tipo: "alternativa" | "com_saldo" }>;
+  // A conta de recebimento só aparece no contracheque: entra no cadastro e o cliente não precisa digitar.
+  if (contaSalario && !saida.contaSalario) saida = { ...saida, contaSalario };
+  if (renda && renda > 0 && !saida.renda) saida = { ...saida, renda };
+  return saida as unknown as T;
 }
 
 // SIAPE: resultado que leva a oferta ou à equipe precisa do vínculo do contracheque antes.
@@ -256,6 +262,8 @@ export interface Dependencias {
   lerMargemDoArquivo?(): Promise<{ legivel: boolean; negativa: boolean; valor: number | null } | null>;
   // Descreve o arquivo que chegou (tipo e se dá para ler), para a Maisa não chamar a equipe sem saber o que é.
   descreverArquivo?(): Promise<{ tipo: string; rotulo: string; legivel: boolean } | null>;
+  // Escreve o follow-up para o cliente que parou de responder. Null: vale o texto fixo.
+  redigirFollowup?(p: { estado: EstadoMaisa; tentativa: number; pergunta: string }): Promise<string | null>;
   // Digitação na Facta (INSS e SIAPE). Desligada, o "sim" vai para a equipe.
   digitacaoAtiva: boolean;
   extrairDados(pergunta: string, entrada: { texto: string | null; documento?: boolean }, faltando: CampoContrato[]): Promise<DadosContrato>;
@@ -993,7 +1001,7 @@ async function etapaExtrato(
     if (VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
       return transferir({ ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined }, `vínculo lido no contracheque: ${vinculo.replace(/_/g, " ")}. Conferir no contracheque: se for mesmo esse vínculo, não há consignado; se a leitura errou, seguir o atendimento`, TEXTOS.vinculoConferir, "vinculo_siape", [], "vinculo_siape");
     }
-    resultado = comRendaDoContracheque(estado.extratoSiapePendente, info.renda);
+    resultado = comRendaDoContracheque(estado.extratoSiapePendente, info.renda, info.contaSalario);
     estado = { ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined };
   }
 
@@ -1023,7 +1031,7 @@ async function etapaExtrato(
       const info = await deps.lerVinculoSiape(id).catch(() => null);
       if (info?.documento === "contracheque") {
         vinculo = info.vinculo ?? "nao_informado";
-        resultado = comRendaDoContracheque(resultado, info.renda);
+        resultado = comRendaDoContracheque(resultado, info.renda, info.contaSalario);
       }
     }
     if (vinculo && VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
@@ -2283,45 +2291,60 @@ async function trocaDeProduto(estado: EstadoMaisa, texto: string, deps: Dependen
   return { estado: { ...estado, produto: c, tentativas: 0 }, aviso: `Certo, então é ${{ inss: "INSS", siape: "SIAPE", clt: "CLT" }[c as "inss" | "siape" | "clt"]}.`, efeito: { tipo: "convenio", convenio: c } };
 }
 
-const FOLLOWUP_MS = 10 * 60_000;
-const CARRINHO_MS = 24 * 60 * 60_000;
-
-// Oferta sem resposta. 10 minutos: uma mensagem só, para retomar. 24 horas: sai da
-// Maisa e entra no Carrinho, para alguém da equipe ligar. O relógio conta a partir da
+// Follow-up e Carrinho. O cliente parou de responder: aos 20 minutos a Maisa retoma, de novo 3 horas
+// depois do primeiro (no máximo 2, sempre dentro de 22 horas da última fala dele, por causa da janela
+// de 24h da Meta) e nunca de madrugada (21h às 8h, horário de Brasília). Cliente que recebeu oferta e
+// não respondeu em 8 horas vai para o Carrinho, para alguém da equipe ligar. O relógio conta a partir da
 // última mensagem do cliente, ou da oferta se ele não escreveu nada depois.
-// Oferta de portabilidade: o mesmo, com MAISA_FOLLOWUP_PORT ligado. Conversa de antes
-// desta versão, sem a hora da oferta, começa a contar agora (o contexto fica igual).
-function verificarOferta(estado: EstadoMaisa, agora: Date, followupPort = false): Passo {
-  const parado: Passo = { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
-  const port = estado.etapa === "oferta_port";
-  if (port && !followupPort) return parado;
-  if (estado.etapa !== "oferta" && !port) return parado;
-  if (!estado.ofertaEm) {
-    return port ? { estado: { ...estado, ofertaEm: agora.toISOString(), followupEnviado: false }, respostas: [], efeitos: [], rotulo: "relogio_oferta_iniciado" } : parado;
-  }
-  const desde = Math.max(new Date(estado.ofertaEm).getTime(), estado.ultimoContatoCliente ? new Date(estado.ultimoContatoCliente).getTime() : 0);
-  const passou = agora.getTime() - desde;
-  if (passou >= CARRINHO_MS) {
-    return transferir(estado, port ? "não respondeu a oferta de portabilidade em 24 horas" : "não respondeu a oferta em 24 horas", null, "carrinho", [], "carrinho");
-  }
-  if (passou >= FOLLOWUP_MS && !estado.followupEnviado) {
-    return { estado: { ...estado, followupEnviado: true }, respostas: [port ? TEXTOS.followupOfertaPort : TEXTOS.followupOferta], efeitos: [], rotulo: "followup_oferta" };
-  }
-  return parado;
-}
-
-// Cliente sumiu no meio dos dados: um lembrete só, 30 minutos depois da última mensagem
-// dele. Depois de 22 horas não manda: a janela de 24h da Meta pode fechar.
-const LEMBRETE_MS = 30 * 60_000;
-const LEMBRETE_LIMITE_MS = 22 * 60 * 60_000;
+const FOLLOWUP1_MS = 20 * 60_000;
+const FOLLOWUP2_APOS_MS = 3 * 60 * 60_000;
+const JANELA_FOLLOWUP_MS = 22 * 60 * 60_000;
+const CARRINHO_MS = 8 * 60 * 60_000;
 const ETAPAS_LEMBRETE = new Set<Etapa>(["cpf", "nome", "nascimento", "margem", "extrato", "numero_contrato", "coleta"]);
-export function verificarSilencio(estado: EstadoMaisa, agora: Date): Passo {
+const ETAPAS_FOLLOWUP = new Set<Etapa>([...ETAPAS_LEMBRETE, "oferta", "oferta_port"]);
+const horaPermitida = (agora: Date) => {
+  const h = (agora.getUTCHours() + 21) % 24; // Brasília, UTC-3
+  return h >= 8 && h < 21;
+};
+
+export async function verificarFollowup(estado: EstadoMaisa, agora: Date, deps: Dependencias): Promise<Passo> {
   const parado: Passo = { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
-  if (!ETAPAS_LEMBRETE.has(estado.etapa) || estado.lembreteEnviado || !estado.ultimaMensagemEm) return parado;
-  const passou = agora.getTime() - new Date(estado.ultimaMensagemEm).getTime();
-  if (passou < LEMBRETE_MS || passou > LEMBRETE_LIMITE_MS) return parado;
+  if (!ETAPAS_FOLLOWUP.has(estado.etapa)) return parado;
+  const oferta = estado.etapa === "oferta" || estado.etapa === "oferta_port";
+  // Conversa de antes desta versão, sem a hora da oferta, começa a contar agora.
+  if (oferta && !estado.ofertaEm) return { estado: { ...estado, ofertaEm: agora.toISOString(), followupEnviado: false }, respostas: [], efeitos: [], rotulo: "relogio_oferta_iniciado" };
+  const base = oferta
+    ? Math.max(Date.parse(estado.ofertaEm!), estado.ultimoContatoCliente ? Date.parse(estado.ultimoContatoCliente) : 0)
+    : estado.ultimaMensagemEm
+      ? Date.parse(estado.ultimaMensagemEm)
+      : null;
+  if (base === null) return parado;
+  const passou = agora.getTime() - base;
+  if (oferta && passou >= CARRINHO_MS) {
+    return transferir(estado, "não respondeu a oferta nem aos follow-ups em 8 horas", null, "carrinho", [], "carrinho");
+  }
+  const n = estado.followups ?? (estado.followupEnviado ? 1 : 0);
+  if (n >= 2 || passou > JANELA_FOLLOWUP_MS || !horaPermitida(agora)) return parado;
+  if (n === 0 && passou < FOLLOWUP1_MS) return parado;
+  if (n === 1 && agora.getTime() - (estado.followupEm ? Date.parse(estado.followupEm) : base) < FOLLOWUP2_APOS_MS) return parado;
+
   const pergunta = estado.etapa === "coleta" ? estado.contrato?.pergunta ?? PERGUNTA_DA_ETAPA.coleta : RETOMA_ETAPA[estado.etapa] ?? PERGUNTA_DA_ETAPA[estado.etapa];
-  return { estado: { ...estado, lembreteEnviado: true }, respostas: [`${TEXTOS.lembreteSilencio} ${pergunta}`], efeitos: [], rotulo: "lembrete_silencio" };
+  const escrita = deps.redigirFollowup ? await deps.redigirFollowup({ estado, tentativa: n + 1, pergunta }).catch(() => null) : null;
+  const texto =
+    escrita ??
+    (oferta
+      ? n === 0
+        ? estado.etapa === "oferta_port" ? TEXTOS.followupOfertaPort : TEXTOS.followupOferta
+        : TEXTOS.followupOfertaSegundo
+      : n === 0
+        ? `${TEXTOS.lembreteSilencio} ${pergunta}`
+        : `${TEXTOS.followupSegundo} ${pergunta}`);
+  return {
+    estado: { ...estado, followups: n + 1, followupEm: agora.toISOString(), followupEnviado: true, lembreteEnviado: true },
+    respostas: [texto],
+    efeitos: [],
+    rotulo: oferta ? "followup_oferta" : "lembrete_silencio",
+  };
 }
 
 export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps: Dependencias): Promise<Passo> {
@@ -2330,15 +2353,15 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 
   // Checagens automáticas do relógio.
   if ("evento" in entrada) {
-    if (entrada.evento === "verificar_oferta") return verificarOferta(estado, deps.agora(), deps.followupPort === true);
+    if (entrada.evento === "verificar_oferta") return verificarFollowup(estado, deps.agora(), deps);
     if (entrada.evento === "executar_digitacao") return executarDigitacao(estado, deps);
-    if (entrada.evento === "verificar_silencio") return verificarSilencio(estado, deps.agora());
+    if (entrada.evento === "verificar_silencio") return verificarFollowup(estado, deps.agora(), deps);
     if (estado.etapa !== "aguardando") return { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
     return consultarAgora(estado, deps, "verificacao_automatica", false);
   }
 
   // O cliente respondeu: um novo sumiço pode ganhar outro lembrete.
-  if (estado.lembreteEnviado) estado = { ...estado, lembreteEnviado: undefined };
+  if (estado.lembreteEnviado || estado.followups) estado = { ...estado, lembreteEnviado: undefined, followups: undefined, followupEm: undefined };
   if (!entrada.temMidia && entrada.texto && REACAO.test(entrada.texto)) return { estado, respostas: [], efeitos: [], rotulo: "reacao_ignorada" };
   if (estado.etapa === "inicio" && !estado.produto && !estado.convenioMarcado && deps.propostaRecente && !entrada.temMidia) {
     const p = await deps.propostaRecente().catch(() => null);

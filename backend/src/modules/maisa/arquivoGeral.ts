@@ -138,7 +138,10 @@ export function resumoDoArquivo(l: ArquivoLido): string {
     partes.push(`${l.contratos.length} contrato(s): ${lista.join("; ")}${l.contratos.length > 4 ? "…" : ""}`);
   }
   if (!l.legivel) partes.push("pouco legível");
-  else if (l.problemas.length) partes.push(`conferir: ${l.problemas.slice(0, 2).join(", ")}`);
+  else {
+    const duvidas = l.problemas.filter((x) => /ileg|cort|duvid|borrad|incomplet/i.test(x));
+    if (duvidas.length) partes.push(`conferir: ${duvidas.slice(0, 2).join(", ")}`);
+  }
   if (!partes.length && l.observacao) partes.push(l.observacao);
   return `Arquivo: ${ROTULO[l.tipo]}${partes.length ? ` · ${partes.join(" · ")}` : ""}`;
 }

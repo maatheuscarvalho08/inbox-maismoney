@@ -31,6 +31,7 @@ export { aguardarDespachos, despachar, recuperarSaidas } from "./saidaMaisa.js";
 import { INTERVALO_AVISO_ACEITE_MS, ehAceiteTardio } from "./aceiteTardio.js";
 import { lerMargemDoArquivo } from "./conversa/documento.js";
 import { lerArquivoGeral, rotuloDoArquivo } from "./arquivoGeral.js";
+import { redigirFollowupComModelo } from "./followup.js";
 import { conversaAtiva, dadosDoRegistro, limparConversa, modoConversa, rodarSombra } from "./conversa/montagem.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
@@ -81,6 +82,16 @@ async function propostaRecente(contatoId: string): Promise<PropostaRecente | nul
 }
 
 // Últimas mensagens da conversa, para a resposta livre ver o que já foi dito. Números longos mascarados.
+// O empréstimo vai para a "conta para outras operações" do contracheque, quando ela existe. Senão, a conta salário.
+function contaDoContracheque(lido: ExtratoLido): { bancoConta: string; agencia: string; conta: string } | null {
+  const outras = Boolean(lido.conta_outras_banco && lido.conta_outras_agencia && lido.conta_outras_numero);
+  const banco = outras ? lido.conta_outras_banco : lido.conta_banco;
+  const codigo = banco ? codigoBancoPorNome(banco) : null;
+  const agencia = agenciaSemDigito(outras ? lido.conta_outras_agencia : lido.conta_agencia) ?? "";
+  const conta = ((outras ? lido.conta_outras_numero : lido.conta_numero) ?? "").replace(/\D/g, "");
+  return codigo && agencia.length >= 3 && conta.length >= 4 ? { bancoConta: codigo, agencia, conta } : null;
+}
+
 async function historicoCurto(conversaId: string, ate?: Date): Promise<string> {
   const ms = await prisma.mensagem.findMany({
     where: { conversaId, remetenteTipo: { in: ["cliente", "maisa", "operador"] }, ...(ate ? { createdAt: { lt: ate } } : {}) },
@@ -428,13 +439,7 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       // SIAPE: qual documento chegou e o vínculo (o contracheque mostra). O fluxo decide.
       const siape = convenio === "siape" ? { documento: lido.documento_siape ?? null, vinculo: vinculoConferido(lido), orgao: lido.orgao ?? null } : undefined;
       const com = <T extends object>(r: T) => (siape ? { ...r, siape } : r);
-      // O empréstimo vai para a "conta para outras operações" do contracheque, quando ela existe.
-      // Senão, a conta salário.
-      const outras = lido.conta_outras_banco && lido.conta_outras_agencia && lido.conta_outras_numero;
-      const bancoSal = (outras ? lido.conta_outras_banco : lido.conta_banco) ? codigoBancoPorNome((outras ? lido.conta_outras_banco : lido.conta_banco)!) : null;
-      const agenciaSal = agenciaSemDigito(outras ? lido.conta_outras_agencia : lido.conta_agencia) ?? "";
-      const contaSal = ((outras ? lido.conta_outras_numero : lido.conta_numero) ?? "").replace(/\D/g, "");
-      const contaSalario = bancoSal && agenciaSal.length >= 3 && contaSal.length >= 4 ? { bancoConta: bancoSal, agencia: agenciaSal, conta: contaSal } : null;
+      const contaSalario = contaDoContracheque(lido);
       const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula, contaSalario };
       const alternativa = async () => {
         const codigosPort = banco === bancoFacta ? await codigosBancoPortabilidade().catch(() => undefined) : undefined;
@@ -462,8 +467,13 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       const lido = registro.leitura as ExtratoLido;
       const vinculo = vinculoConferido(lido);
       console.log(`Maisa leu o vínculo SIAPE da conversa ${conversa.id}: ${lido.documento_siape ?? "?"} ${lido.vinculo_siape ?? "?"}${vinculo !== lido.vinculo_siape ? ` (sem prova no trecho: ${vinculo})` : ""}`);
-      return { documento: lido.documento_siape ?? null, vinculo, renda: lido.renda_bruta ?? null, orgao: lido.orgao ?? null };
+      return { documento: lido.documento_siape ?? null, vinculo, renda: lido.renda_bruta ?? null, orgao: lido.orgao ?? null, contaSalario: contaDoContracheque(lido) };
     },
+    redigirFollowup: async ({ estado, tentativa, pergunta }) =>
+      redigirFollowupComModelo({
+        etapa: estado.etapa, produto: estado.produto, pergunta, ficha: fichaCliente(estado),
+        historico: await historicoCurto(conversa.id), tentativa,
+      }),
     descreverArquivo: async () => {
       if (!arquivo) return null;
       const lido = await lerArquivoGeral(await lerArquivo(arquivo.midiaPath), arquivo.tipo);
@@ -872,7 +882,7 @@ export async function verificarAutorizacoesPendentes() {
 // Ofertas ainda sem resposta: o fluxo decide se é hora do follow-up ou do carrinho.
 // A de portabilidade só com MAISA_FOLLOWUP_PORT ligado.
 export async function verificarOfertasPendentes() {
-  const etapas = env.MAISA_FOLLOWUP_PORT ? ["oferta", "oferta_port"] : ["oferta"];
+  const etapas = ["oferta", "oferta_port"];
   const ofertadas = await prisma.conversa.findMany({
     where: { comMaisa: true, status: { not: "encerrada" }, OR: etapas.map((e) => ({ maisaEstado: { path: ["etapa"], equals: e } })) },
     select: { id: true },
@@ -881,18 +891,23 @@ export async function verificarOfertasPendentes() {
   return ofertadas.length;
 }
 
-// Cliente parado nas etapas de dados: o fluxo decide se cabe o lembrete único.
+// Cliente parado nas etapas de dados: o fluxo decide se cabe o follow-up (20 min, e de novo 3h depois,
+// no máximo 2, nunca de madrugada). Um lote por minuto, para não mandar tudo de uma vez.
+// Atenção: não filtrar por "followups" no banco. Um NOT em campo JSON que não existe devolve NULL e a
+// consulta nunca achava ninguém (o lembrete de silêncio nunca disparou por isso).
+const LOTE_FOLLOWUP = 8;
 export async function verificarSilencios() {
   const etapas = ["cpf", "nome", "nascimento", "margem", "extrato", "numero_contrato", "coleta"];
-  const paradas = await prisma.conversa.findMany({
+  const candidatas = await prisma.conversa.findMany({
     where: {
       comMaisa: true, status: { not: "encerrada" }, instancia: { maisaAtiva: true },
-      lastMessageAt: { gte: new Date(Date.now() - 23 * 60 * 60_000), lte: new Date(Date.now() - 30 * 60_000) },
+      lastMessageAt: { gte: new Date(Date.now() - 23 * 60 * 60_000), lte: new Date(Date.now() - 20 * 60_000) },
       OR: etapas.map((e) => ({ maisaEstado: { path: ["etapa"], equals: e } })),
-      NOT: { maisaEstado: { path: ["lembreteEnviado"], equals: true } },
     },
-    select: { id: true },
+    orderBy: { lastMessageAt: "asc" },
+    select: { id: true, maisaEstado: true },
   });
+  const paradas = candidatas.filter((c) => ((c.maisaEstado as EstadoMaisa | null)?.followups ?? 0) < 2).slice(0, LOTE_FOLLOWUP);
   for (const c of paradas) await enfileirar(c.id, { evento: "verificar_silencio" });
   return paradas.length;
 }

@@ -970,17 +970,54 @@ await caso("Pergunta de idade fora da etapa é respondida direto, sem repetir s�
   assert.match(p.respostas.join(" "), /74 anos/);
 });
 
-await caso("Lembrete: cliente some no extrato ganha um lembrete só, entre 30 min e 22 h", async () => {
-  const { verificarSilencio } = await import("../modules/maisa/fluxo.js");
-  const base = new Date("2026-11-18T12:00:00Z");
+await caso("Follow-up: aos 20 min, de novo 3h depois, no máximo 2, nunca de madrugada, nem depois de 22h", async () => {
+  const { verificarFollowup } = await import("../modules/maisa/fluxo.js");
+  const base = new Date("2026-11-18T12:00:00Z"); // 9h em Brasília
   const e: EstadoMaisa = { etapa: "extrato", tentativas: 0, produto: "siape", ultimaMensagemEm: base.toISOString() };
-  assert.equal(verificarSilencio(e, new Date(base.getTime() + 10 * 60_000)).respostas.length, 0);
-  const p = verificarSilencio(e, new Date(base.getTime() + 40 * 60_000));
-  assert.match(p.respostas[0], /Ainda estou por aqui.*extrato/);
-  assert.equal(p.estado.lembreteEnviado, true);
-  assert.equal(verificarSilencio(p.estado, new Date(base.getTime() + 60 * 60_000)).respostas.length, 0);
-  assert.equal(verificarSilencio(e, new Date(base.getTime() + 23 * 60 * 60_000)).respostas.length, 0);
-  assert.equal(verificarSilencio({ ...e, etapa: "consentimento" }, new Date(base.getTime() + 40 * 60_000)).respostas.length, 0);
+  const deps = depsBase(roteiro([]), {}, []);
+  const em = (min: number) => new Date(base.getTime() + min * 60_000);
+  assert.equal((await verificarFollowup(e, em(10), deps)).respostas.length, 0);
+  const p1 = await verificarFollowup(e, em(21), deps);
+  assert.match(p1.respostas[0], /Ainda estou por aqui.*extrato/);
+  assert.equal(p1.estado.followups, 1);
+  assert.equal((await verificarFollowup(p1.estado, em(60), deps)).respostas.length, 0, "ainda não passou 3h");
+  const p2 = await verificarFollowup(p1.estado, em(21 + 181), deps);
+  assert.equal(p2.estado.followups, 2);
+  assert.match(p2.respostas[0], /sem compromisso/);
+  assert.equal((await verificarFollowup(p2.estado, em(21 + 181 + 400), deps)).respostas.length, 0, "no máximo 2");
+  assert.equal((await verificarFollowup(e, em(23 * 60), deps)).respostas.length, 0, "depois de 22h não manda");
+  // 23h em Brasília (2h UTC): madrugada, não manda.
+  const noite: EstadoMaisa = { ...e, ultimaMensagemEm: new Date("2026-11-18T01:00:00Z").toISOString() };
+  assert.equal((await verificarFollowup(noite, new Date("2026-11-18T02:30:00Z"), deps)).respostas.length, 0);
+  assert.equal((await verificarFollowup({ ...e, etapa: "consentimento" }, em(40), deps)).respostas.length, 0);
+  // O texto escrito pela IA vale quando existe.
+  const comIa = depsBase(roteiro([]), { redigirFollowup: async () => "Texto escrito pela Maisa." }, []);
+  assert.equal((await verificarFollowup(e, em(21), comIa)).respostas[0], "Texto escrito pela Maisa.");
+});
+
+await caso("Follow-up escrito pela IA: valor fora da ficha, senha e texto longo não passam", async () => {
+  const { validarFollowup } = await import("../modules/maisa/followup.js");
+  const p = { pergunta: "Pode me mandar o extrato?", ficha: "Oferta: R$ 15.261,76 em 120 parcelas", historico: "" };
+  assert.equal(validarFollowup("Oi! Consegue me mandar o extrato? É rápido.", p), "Oi! Consegue me mandar o extrato? É rápido.");
+  assert.equal(validarFollowup("Posso liberar R$ 20.000 para você.", p), null, "número que não está na ficha");
+  assert.ok(validarFollowup("A oferta de R$ 15.261,76 em 120 parcelas segue de pé. Quer seguir?", p));
+  assert.equal(validarFollowup("Me passe a senha do SouGov para eu ver.", p), null);
+  assert.equal(validarFollowup("a".repeat(500), p), null);
+  assert.equal(validarFollowup("", p), null);
+});
+
+await caso("Carrinho: oferta sem resposta por 8h vai para o carrinho; sem oferta não vai", async () => {
+  const { verificarFollowup } = await import("../modules/maisa/fluxo.js");
+  const base = new Date("2026-11-18T12:00:00Z");
+  const deps = depsBase(roteiro([]), {}, []);
+  const oferta: EstadoMaisa = { etapa: "oferta", tentativas: 0, produto: "siape", ofertaEm: base.toISOString() };
+  const p = await verificarFollowup(oferta, new Date(base.getTime() + 21 * 60_000), deps);
+  assert.equal(p.rotulo, "followup_oferta");
+  const c = await verificarFollowup(p.estado, new Date(base.getTime() + 8 * 60 * 60_000), deps);
+  assert.equal(c.estado.saida, "carrinho");
+  const parado: EstadoMaisa = { etapa: "extrato", tentativas: 0, produto: "siape", ultimaMensagemEm: base.toISOString() };
+  const x = await verificarFollowup({ ...parado, followups: 2 }, new Date(base.getTime() + 9 * 60 * 60_000), deps);
+  assert.notEqual(x.estado.saida, "carrinho");
 });
 
 await caso("Dois arquivos antes da hora: guarda os dois, avisa uma vez e lê até achar o extrato", async () => {
@@ -1004,6 +1041,20 @@ await caso("Dois arquivos antes da hora: guarda os dois, avisa uma vez e lê at�
   assert.deepEqual(lidos, ["pdf-2", "pdf-1"]);
   assert.equal(p3.estado.saida, "sem_saldo");
   assert.equal(p3.estado.extratosPendentes, undefined);
+});
+
+await caso("Contracheque em arquivo separado completa a conta de recebimento e a renda da simulação", async () => {
+  const { comRendaDoContracheque } = await import("../modules/maisa/fluxo.js");
+  const alt = { tipo: "alternativa", operacao: "port_refin", trocoCentavos: 1000, motivo: "x", simulada: true } as unknown as Parameters<typeof comRendaDoContracheque>[0];
+  const conta = { bancoConta: "001", agencia: "1609", conta: "476927" };
+  const r = comRendaDoContracheque(alt, 4725.77, conta) as unknown as { contaSalario?: unknown; renda?: number };
+  assert.deepEqual(r.contaSalario, conta);
+  assert.equal(r.renda, 4725.77);
+  const ja = comRendaDoContracheque({ ...alt, contaSalario: { bancoConta: "104", agencia: "1", conta: "2" }, renda: 100 } as never, 5000, conta) as unknown as { contaSalario: { bancoConta: string }; renda: number };
+  assert.equal(ja.contaSalario.bancoConta, "104", "não sobrescreve o que o extrato já trouxe");
+  assert.equal(ja.renda, 100);
+  const sem = { tipo: "sem_saldo", banco: "extrato", motivo: "x" } as Parameters<typeof comRendaDoContracheque>[0];
+  assert.equal(comRendaDoContracheque(sem, 1000, conta), sem);
 });
 
 await caso("Arquivo conhecido fora de hora fica guardado e a conversa segue; desconhecido pergunta antes de chamar a equipe", async () => {

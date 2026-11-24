@@ -289,6 +289,8 @@ export const TEXTOS = {
   siapeOutrosBancos:
     "Boa notícia: encontrei condições para você! Vou te passar para um especialista da nossa equipe, que vai comparar os bancos parceiros e te mostrar a melhor opção. Já já ele fala com você por aqui.",
   lembreteSilencio: "Oi! Ainda estou por aqui para seguir com a sua simulação.",
+  followupSegundo: "Passando para ver se posso te ajudar. É rápido e sem compromisso.",
+  followupOfertaSegundo: "Se ficou alguma dúvida sobre a condição, me conta que eu explico. Quer que eu siga com a sua proposta?",
   followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",
   inicioContrato: "Que bom! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta.",
   continuarCadastro: "Vamos continuar o seu cadastro.",
