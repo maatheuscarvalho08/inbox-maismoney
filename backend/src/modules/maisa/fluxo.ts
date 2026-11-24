@@ -260,7 +260,8 @@ export interface Dependencias {
   statusProposta(): Promise<{ banco: string; status: string } | null>;
   // Lê o extrato que acabou de chegar e simula com a margem dele.
   // documentoId: extrato que o cliente mandou antes da hora. Sem ele, o da mensagem atual.
-  simularPorExtrato(produto: ProdutoExtrato, dataNascimento: string, documentoId?: string): Promise<ResultadoExtrato & { siape?: InfoSiape }>;
+  // produtoLido: o arquivo era do outro produto (INSS no lugar de SIAPE, ou o contrário) e foi lido por ele.
+  simularPorExtrato(produto: ProdutoExtrato, dataNascimento: string, documentoId?: string): Promise<ResultadoExtrato & { siape?: InfoSiape; produtoLido?: ProdutoExtrato }>;
   // SIAPE: lê só o documento (sem banco) para saber se é contracheque e qual o vínculo.
   lerVinculoSiape?(documentoId?: string): Promise<InfoSiape>;
   // Lê o print da margem que o cliente mandou na etapa da margem. null: não deu para ler.
@@ -965,6 +966,21 @@ async function etapaExtrato(
   deps: Dependencias,
   documentoIds?: string | string[],
 ): Promise<Passo> {
+  const troca: { produto?: ProdutoExtrato } = {};
+  const p = await etapaExtratoInterna(estado, entrada, deps, documentoIds, troca);
+  if (!troca.produto) return p;
+  // O documento mostrou o produto certo: o resto do atendimento já foi feito por ele. A conversa passa a ser dele.
+  const nome = troca.produto === "inss" ? "INSS" : "SIAPE";
+  return { ...p, respostas: [`Vi que o seu documento é do ${nome}, então vamos por ele.`, ...p.respostas], efeitos: [{ tipo: "convenio", convenio: troca.produto }, ...p.efeitos], rotulo: `${p.rotulo}_produto_${troca.produto}` };
+}
+
+async function etapaExtratoInterna(
+  estado: EstadoMaisa,
+  entrada: { texto: string | null; documento?: boolean },
+  deps: Dependencias,
+  documentoIds: string | string[] | undefined,
+  troca: { produto?: ProdutoExtrato },
+): Promise<Passo> {
   if (!entrada.documento) {
     const texto = entrada.texto?.trim() ?? "";
     const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -1003,7 +1019,7 @@ async function etapaExtrato(
   // leitura conclusiva. Inválido, erro ou margem zerada com dúvida: tenta o próximo.
   const ids = documentoIds === undefined ? [undefined] : Array.isArray(documentoIds) ? [...documentoIds].reverse() : [documentoIds];
   const peso = (r: ResultadoExtrato) => (r.tipo === "extrato_invalido" ? 0 : r.tipo === "erro" ? 1 : r.tipo === "sem_saldo" && r.revisar ? 2 : 3);
-  let resultado: (ResultadoExtrato & { siape?: InfoSiape }) | null = null;
+  let resultado: (ResultadoExtrato & { siape?: InfoSiape; produtoLido?: ProdutoExtrato }) | null = null;
   let idUsado: string | undefined;
 
   // SIAPE com a simulação do extrato guardada: este arquivo deve ser o contracheque.
@@ -1033,6 +1049,10 @@ async function etapaExtrato(
     if (peso(r) === 3) break;
   }
   if (!resultado) resultado = { tipo: "erro", banco: "desconhecido", motivo: "nenhum arquivo para ler" };
+  if (resultado.produtoLido && resultado.produtoLido !== estado.produto) {
+    estado = { ...estado, produto: resultado.produtoLido, extratoSiapePendente: undefined, vinculoSiape: undefined };
+    troca.produto = resultado.produtoLido;
+  }
 
   if (ehMarinha(resultado.siape?.orgao)) return marinhaParaEquipe(estado);
   // SIAPE: antes de ofertar ou passar para a equipe, confere o vínculo no contracheque.

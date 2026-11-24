@@ -1089,6 +1089,16 @@ await caso("E5: o mesmo texto da Maisa não sai duas vezes em 10 segundos", asyn
   assert.equal(criadas.length, 2, "o texto repetido da segunda chamada também some");
 });
 
+await caso("Extrato do INSS no atendimento de SIAPE: a Maisa lê pelo produto certo e troca, sem dizer que não leu", async () => {
+  const deps = depsBase(roteiro([]), { simularPorExtrato: async () => ({ tipo: "sem_saldo", banco: "extrato", motivo: "sem margem", produtoLido: "inss" }) }, []);
+  const e: EstadoMaisa = { etapa: "extrato", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" };
+  const p = await avancar(e, { texto: null, temMidia: true, documento: true, documentoId: "d1" }, deps);
+  assert.equal(p.estado.produto, "inss");
+  assert.ok(p.efeitos.some((x) => x.tipo === "convenio" && x.convenio === "inss"));
+  assert.match(p.respostas[0], /documento é do INSS/);
+  assert.ok(!p.respostas.join(" ").includes("Não consegui ler"));
+});
+
 await caso("Follow-up: aos 20 min, de novo 3h depois, no máximo 2, nunca de madrugada, nem depois de 22h", async () => {
   const { verificarFollowup } = await import("../modules/maisa/fluxo.js");
   const base = new Date("2026-11-18T12:00:00Z"); // 9h em Brasília

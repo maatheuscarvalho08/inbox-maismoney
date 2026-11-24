@@ -10,7 +10,7 @@ import { bancoFacta, bancoSimulado, mesmoGrupo, refinFlex, type BancoClt } from 
 import { codigoBancoPorNome, codigosBancoPortabilidade, contratar, contratarPortRefin, simularPortRefinSiape, digitacaoConfigurada, factaConfigurada, type ResultadoContratacao } from "./facta.js";
 import { buscarCep, extrairDados } from "./coleta.js";
 import type { DadosContrato } from "./contrato.js";
-import { avancar, fichaCliente, transferirPeloAgente, type Efeito, type Entrada, type EstadoMaisa, type Passo, type PropostaRecente, type ResultadoDigitacao } from "./fluxo.js";
+import { avancar, fichaCliente, transferirPeloAgente, type Dependencias, type Efeito, type Entrada, type EstadoMaisa, type Passo, type PropostaRecente, type ResultadoDigitacao } from "./fluxo.js";
 import { mascararNumeros } from "./conversa/contexto.js";
 import { agenciaSemDigito } from "./agencia.js";
 import { aplicarDecisao, decidirAgente, memoriaDoCliente, recomecou, registrarAgente, rodarAgenteSombra, roteiroManda } from "./agente.js";
@@ -412,6 +412,51 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
 
   const banco = bancoDaConversa(conversa);
   const semBanco = () => Promise.reject(new Error("Nenhum banco configurado para a Maisa"));
+  const simularComConvenio = async (convenio: "inss" | "siape", dataNascimento: string, documentoId?: string): Promise<Awaited<ReturnType<Dependencias["simularPorExtrato"]>>> => {
+    if (!banco) return semBanco();
+    // Extrato que chegou antes da hora: lê o arquivo daquela mensagem.
+    let doc = arquivo;
+    let docId = "mensagemId" in gatilho ? gatilho.mensagemId : null;
+    if (documentoId) {
+      const m = await prisma.mensagem.findUnique({ where: { id: documentoId } });
+      const tipo = m?.tipoMidia?.split(";")[0].trim();
+      doc = m?.midiaPath && tipo && !m.midiaDeleted ? { midiaPath: m.midiaPath, tipo } : null;
+      docId = documentoId;
+    }
+    if (!doc) return { tipo: "extrato_invalido", motivo: "arquivo não encontrado" };
+    const inicio = Date.now();
+    const { resultado: leitura, registro } = await parcelaPeloExtrato(await lerArquivo(doc.midiaPath), doc.tipo, convenio);
+    // A equipe vê no balão do arquivo o que ela leu e por que não passou.
+    if (docId) {
+      await guardarAnalise(docId, registro).catch((err) =>
+        console.error(`Não foi possível guardar a análise do extrato da conversa ${conversa.id}:`, err),
+      );
+    }
+    // Registro de acesso a documento sensível, sem dado pessoal.
+    console.log(`Maisa leu extrato ${convenio} da conversa ${conversa.id}: ${leitura.tipo} ${Date.now() - inicio}ms`);
+    const cpf = await cpfDoContato(conversa.contatoId);
+    // Sem empréstimo novo: antes de desistir, vê se dá para portar ou refinanciar.
+    // Renda e matrícula do documento vão junto: o contrato não pergunta de novo.
+    const lido = registro.leitura as ExtratoLido;
+    // SIAPE: qual documento chegou e o vínculo (o contracheque mostra). O fluxo decide.
+    const siape = convenio === "siape" ? { documento: lido.documento_siape ?? null, vinculo: vinculoConferido(lido), orgao: lido.orgao ?? null } : undefined;
+    const com = <T extends object>(r: T) => (siape ? { ...r, siape } : r);
+    const contaSalario = contaDoContracheque(lido);
+    const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula, contaSalario };
+    const alternativa = async () => {
+      const codigosPort = banco === bancoFacta ? await codigosBancoPortabilidade().catch(() => undefined) : undefined;
+      const alt = await buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento, codigosPort });
+      return alt ? { ...alt, ...lidos } : null;
+    };
+    // Mesmo com leitura em dúvida: se a Facta abrir tabela, ela oferta. Se não abrir e
+    // houver dúvida, a equipe confere (o fluxo trata "revisar").
+    if (leitura.tipo === "sem_saldo") return com((await alternativa()) ?? leitura);
+    if (leitura.tipo !== "ok") return com(leitura);
+    const resultado = await banco.simularConsignado({ convenio, cpf, dataNascimento, parcelaMaxima: leitura.parcelaMaxima });
+    if (resultado.tipo === "sem_saldo") return com((await alternativa()) ?? resultado);
+    return com(resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie, matricula: leitura.matricula, contaSalario } : resultado);
+  };
+
   let passo: Passo = await avancar(estadoAntes, entrada, {
     classificador: comModelo(classificadorRegras),
     responderLivre: async (texto, etapa, produto, pergunta, ficha) => responderLivre(texto, etapa, produto, pergunta, ficha ?? "", await historicoCurto(conversa.id)),
@@ -425,49 +470,14 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
         : semBanco(),
     consultar: async () => (banco ? banco.consultar(await cpfDoContato(conversa.contatoId)) : semBanco()),
     statusProposta: () => ultimaProposta(conversa.contatoId),
+    // O arquivo pode ser do outro produto (extrato do INSS no atendimento de SIAPE, ou o contrário): lê pelo
+    // produto certo e avisa o fluxo, em vez de dizer que não conseguiu ler.
     simularPorExtrato: async (convenio, dataNascimento, documentoId) => {
-      if (!banco) return semBanco();
-      // Extrato que chegou antes da hora: lê o arquivo daquela mensagem.
-      let doc = arquivo;
-      let docId = "mensagemId" in gatilho ? gatilho.mensagemId : null;
-      if (documentoId) {
-        const m = await prisma.mensagem.findUnique({ where: { id: documentoId } });
-        const tipo = m?.tipoMidia?.split(";")[0].trim();
-        doc = m?.midiaPath && tipo && !m.midiaDeleted ? { midiaPath: m.midiaPath, tipo } : null;
-        docId = documentoId;
-      }
-      if (!doc) return { tipo: "extrato_invalido", motivo: "arquivo não encontrado" };
-      const inicio = Date.now();
-      const { resultado: leitura, registro } = await parcelaPeloExtrato(await lerArquivo(doc.midiaPath), doc.tipo, convenio);
-      // A equipe vê no balão do arquivo o que ela leu e por que não passou.
-      if (docId) {
-        await guardarAnalise(docId, registro).catch((err) =>
-          console.error(`Não foi possível guardar a análise do extrato da conversa ${conversa.id}:`, err),
-        );
-      }
-      // Registro de acesso a documento sensível, sem dado pessoal.
-      console.log(`Maisa leu extrato ${convenio} da conversa ${conversa.id}: ${leitura.tipo} ${Date.now() - inicio}ms`);
-      const cpf = await cpfDoContato(conversa.contatoId);
-      // Sem empréstimo novo: antes de desistir, vê se dá para portar ou refinanciar.
-      // Renda e matrícula do documento vão junto: o contrato não pergunta de novo.
-      const lido = registro.leitura as ExtratoLido;
-      // SIAPE: qual documento chegou e o vínculo (o contracheque mostra). O fluxo decide.
-      const siape = convenio === "siape" ? { documento: lido.documento_siape ?? null, vinculo: vinculoConferido(lido), orgao: lido.orgao ?? null } : undefined;
-      const com = <T extends object>(r: T) => (siape ? { ...r, siape } : r);
-      const contaSalario = contaDoContracheque(lido);
-      const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula, contaSalario };
-      const alternativa = async () => {
-        const codigosPort = banco === bancoFacta ? await codigosBancoPortabilidade().catch(() => undefined) : undefined;
-        const alt = await buscarAlternativa({ convenio, analise: registro.analise, banco, cpf, dataNascimento, codigosPort });
-        return alt ? { ...alt, ...lidos } : null;
-      };
-      // Mesmo com leitura em dúvida: se a Facta abrir tabela, ela oferta. Se não abrir e
-      // houver dúvida, a equipe confere (o fluxo trata "revisar").
-      if (leitura.tipo === "sem_saldo") return com((await alternativa()) ?? leitura);
-      if (leitura.tipo !== "ok") return com(leitura);
-      const resultado = await banco.simularConsignado({ convenio, cpf, dataNascimento, parcelaMaxima: leitura.parcelaMaxima });
-      if (resultado.tipo === "sem_saldo") return com((await alternativa()) ?? resultado);
-      return com(resultado.tipo === "com_saldo" ? { ...resultado, renda: leitura.renda, especie: leitura.especie, matricula: leitura.matricula, contaSalario } : resultado);
+      const r = await simularComConvenio(convenio, dataNascimento, documentoId);
+      if (r.tipo !== "extrato_invalido" || !/^não é /.test(r.motivo)) return r;
+      const outro = convenio === "siape" ? "inss" : "siape";
+      const r2 = await simularComConvenio(outro, dataNascimento, documentoId);
+      return r2.tipo === "extrato_invalido" ? r : { ...r2, produtoLido: outro };
     },
     // Só lê o documento (sem banco): o contracheque do SIAPE, para conferir o vínculo.
     lerVinculoSiape: async (documentoId) => {
