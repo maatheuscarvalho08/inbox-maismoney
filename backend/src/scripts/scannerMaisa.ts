@@ -2,7 +2,7 @@
 // exatos e as conversas completas, com CPF, contas e outros números mascarados, para uma
 // pessoa ou o Claude classificar o que melhorar. Não envia nada e não altera nada.
 //
-// Uso: node dist/scripts/scannerMaisa.js --desde 2026-11-20T14:00:00-03:00 --ate 2026-11-24T13:00:00-03:00 [--saida /tmp/scanner]
+// Uso: node dist/scripts/scannerMaisa.js --desde 2026-11-20T14:00:00-03:00 --ate 2026-11-24T13:00:00-03:00 [--saida /tmp/scanner] [--contexto 6]
 import { mkdirSync, writeFileSync } from "node:fs";
 import { prisma } from "../db/prisma.js";
 import { mascararNumeros } from "../modules/maisa/conversa/contexto.js";
@@ -17,6 +17,8 @@ if (Number.isNaN(desde.getTime()) || Number.isNaN(ate.getTime())) {
 }
 const saida = arg("--saida") ?? "/tmp/scanner";
 const POR_LOTE = 20;
+// Mensagens de antes do período mostradas como contexto. O resto do histórico é resumido numa linha.
+const CONTEXTO_ANTES = Number(arg("--contexto") ?? 6);
 const MAX_MSG = 700;
 
 const fmtData = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
@@ -119,21 +121,25 @@ const blocos = conversas.map((c, i) => {
   indice[cod] = c.id;
   const e = estadoDe(c);
   const linhas: { t: Date; s: string }[] = [];
-  for (const m of c.mensagens) {
+  const antes = c.mensagens.filter((m) => m.createdAt < desde);
+  const omitidas = Math.max(0, antes.length - CONTEXTO_ANTES);
+  const mostradas = c.mensagens.filter((m) => m.createdAt >= desde || antes.indexOf(m) >= omitidas);
+  for (const m of mostradas) {
     const quem = m.remetenteTipo === "cliente" ? "CLIENTE" : m.remetenteTipo === "maisa" ? "MAISA" : m.remetenteTipo === "operador" ? `EQUIPE${m.operador?.nome ? `(${m.operador.nome})` : ""}` : "NOTA-MAISA";
     const corpo = m.conteudoTexto ? limpo(m.conteudoTexto, m.remetenteTipo === "nota" ? 900 : MAX_MSG) : "";
     const midia = m.tipoMidia ? `[${m.tipoMidia.split(";")[0]}${m.analiseResumo ? `: ${limpo(m.analiseResumo, 200)}` : ""}]` : "";
     const falha = m.statusEntrega === "falhou" ? ` [NÃO ENTREGUE${m.erroEntrega ? `: ${curto(m.erroEntrega, 80)}` : ""}]` : "";
     linhas.push({ t: m.createdAt, s: `${quem}: ${[midia, corpo].filter(Boolean).join(" ")}${falha}` });
   }
-  for (const ev of eventosPor.get(c.id) ?? []) linhas.push({ t: ev.createdAt, s: `  >> fluxo ${ev.etapaAntes ?? "-"} -> ${ev.etapaDepois}${ev.rotulo ? ` [${ev.rotulo}]` : ""}${ev.motivo ? ` motivo: ${limpo(ev.motivo, 160)}` : ""}` });
+  for (const ev of (eventosPor.get(c.id) ?? []).filter((x) => x.createdAt >= desde)) linhas.push({ t: ev.createdAt, s: `  >> fluxo ${ev.etapaAntes ?? "-"} -> ${ev.etapaDepois}${ev.rotulo ? ` [${ev.rotulo}]` : ""}${ev.motivo ? ` motivo: ${limpo(ev.motivo, 160)}` : ""}` });
   linhas.sort((a, b) => a.t.getTime() - b.t.getTime());
   const cab = [
     `=== ${cod} | ${c.convenio ?? "sem convênio"} | ${c.instancia.nome} (${c.instancia.tipoConexao}) | status ${c.status} | ${c.comMaisa ? "com Maisa" : c.operadorId ? `atribuída a ${c.operador?.nome ?? "?"}` : "na fila"} | ${c.origemDisparo ? "veio de disparo" : "receptivo"}`,
     `    etapa ${e.etapa ?? "-"} | parou em ${e.paradaEm ?? "-"} | saída ${e.saida ?? "-"}${e.motivoTransferencia ? ` | motivo: ${limpo(e.motivoTransferencia, 200)}` : ""}`,
     `    etiquetas: ${c.etiquetas.map((x) => x.etiqueta.nome).join(", ") || "-"} | criada ${brt(c.createdAt)}`,
   ];
-  return `${cab.join("\n")}\n${linhas.map((l) => `[${brt(l.t)}] ${l.s}`).join("\n")}\n`;
+  const aviso = omitidas ? `(... ${omitidas} mensagem(ns) anteriores ao período omitidas)\n` : "";
+  return `${cab.join("\n")}\n${aviso}${linhas.map((l) => `[${brt(l.t)}] ${l.s}`).join("\n")}\n`;
 });
 for (let i = 0; i < blocos.length; i += POR_LOTE) {
   writeFileSync(`${saida}/lote-${String(i / POR_LOTE + 1).padStart(2, "0")}.txt`, blocos.slice(i, i + POR_LOTE).join("\n"));
