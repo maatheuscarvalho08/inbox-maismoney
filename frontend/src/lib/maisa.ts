@@ -86,6 +86,10 @@ interface Saida {
   proximoPasso: string;
   // Cliente pronto para fechar: merece atenção primeiro.
   quente?: boolean;
+  // Quase sempre acaba em "não fazemos": pode esperar.
+  baixa?: boolean;
+  // Texto curto do selo na fila.
+  selo?: string;
 }
 
 // Por que ela passou a conversa e o que o atendente faz agora.
@@ -117,7 +121,82 @@ export const SAIDAS_MAISA: Record<string, Saida> = {
   servidor_outro: { titulo: "Servidor estadual ou municipal", proximoPasso: "Atender pelo convênio do estado ou da prefeitura." },
   extrato_invalido: { titulo: "Extrato não deu para ler", proximoPasso: "Pedir o PDF do documento e analisar o extrato." },
   sem_extrato: { titulo: "Não mandou o extrato", proximoPasso: "Ajudar o cliente a tirar o extrato ou o contracheque." },
+  vinculo_siape: {
+    titulo: "Vínculo sem consignado",
+    selo: "Pensão temporária ou vínculo",
+    baixa: true,
+    proximoPasso: "Conferir o vínculo no contracheque. Se for pensão temporária ou CLT, avisar que não fazemos e encerrar.",
+  },
+  siape_outros_bancos: { titulo: "SIAPE: tentar outro banco", selo: "SIAPE, outros bancos", proximoPasso: "A Facta abriu tabela, mas a comissão é baixa: simular em outros bancos.", quente: true },
+  agente_equipe: { titulo: "Agente chamou a equipe", selo: "Agente chamou a equipe", proximoPasso: "Ler o motivo da nota e continuar o atendimento." },
+  port_pura: { titulo: "Sem margem, encerrada", selo: "Sem margem, encerrada", baixa: true, proximoPasso: "Nada a fazer: só portabilidade sem troco." },
+  margem_negativa: { titulo: "Margem negativa, encerrada", selo: "Margem negativa", baixa: true, proximoPasso: "Nada a fazer: o cliente informou margem negativa." },
 };
+
+// Textos curtos para a fila, quando o título completo não cabe.
+const SELOS: Record<string, string> = {
+  aceitou: "Aceitou a oferta",
+  recusou: "Recusou a oferta",
+  sem_saldo_outros_bancos: "CLT sem saldo na Facta",
+  sem_saldo: "Sem margem",
+  objecao: "Objeção na oferta",
+  alternativa: "Port ou refin possível",
+  revisar_extrato: "Margem zero, conferir",
+  erro_banco: "Banco não respondeu",
+  convenio: "Convênio da equipe",
+  servidor: "Servidor público",
+  outro: "Vínculo fora da lista",
+  humano: "Pediu atendente",
+  duvida: "Dúvida sem resposta",
+  acompanhar_proposta: "Quer saber da proposta",
+  nao_entendeu: "Maisa não entendeu",
+  midia: "Mandou arquivo",
+  recusou_cpf: "Não quis dar CPF",
+  nao_autorizou: "Não autorizou",
+  link_nao_autorizado: "Não abriu o link",
+  carrinho: "Oferta sem resposta",
+  telefone_outro_cpf: "Celular de outro CPF",
+  contrato_enviado: "Contrato feito na Facta",
+  erro_digitacao: "Contrato não entrou",
+  dados_contrato: "Parou no cadastro",
+  servidor_outro: "Estadual ou municipal",
+  extrato_invalido: "Documento ilegível",
+  sem_extrato: "Sem extrato",
+};
+
+export interface Selo {
+  texto: string;
+  tom: "quente" | "normal" | "baixa";
+}
+
+const brl = (centavos: number) => (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+// Selo curto do motivo da fila e valor simulado, para o atendente não precisar abrir a conversa.
+export function seloDaConversa(conversa: Pick<Conversa, "comMaisa" | "maisaEstado">): (Selo & { valor: string | null; parou: string | null }) | null {
+  const saida = saidaDaConversa(conversa);
+  if (!saida) return null;
+  const estado = conversa.maisaEstado;
+  const chave = estado?.saida ?? "";
+  let texto = saida.selo ?? SELOS[chave];
+  if (!texto) {
+    const motivo = (estado?.motivoTransferencia ?? saida.titulo).replace(/^o agente chamou a equipe:\s*/i, "");
+    texto = motivo.length > 36 ? `${motivo.slice(0, 35)}…` : motivo;
+  }
+  const valor = estado?.oferta?.valorCentavos
+    ? brl(estado.oferta.valorCentavos)
+    : estado?.alternativa?.trocoCentavos
+      ? `troco ${brl(estado.alternativa.trocoCentavos)}`
+      : null;
+  const parou = estado?.paradaEm ? nomeEtapa(estado.paradaEm) : null;
+  return { texto, tom: saida.quente ? "quente" : saida.baixa ? "baixa" : "normal", valor, parou };
+}
+
+// Quanto mais alto, mais cedo na fila: quem está pronto para fechar vem primeiro.
+export function prioridadeDaFila(conversa: Pick<Conversa, "comMaisa" | "maisaEstado">): number {
+  const selo = seloDaConversa(conversa);
+  if (!selo) return 1;
+  return selo.tom === "quente" ? 3 : selo.tom === "baixa" ? 0 : 2;
+}
 
 // Ordem em que as saídas aparecem no guia.
 export const SAIDAS_NO_GUIA = [

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { Bot, CircleDot, Filter, Info, Plus, Search, Smartphone, User } from "../components/icones";
 import { api, ApiError } from "../lib/api";
-import { ETAPAS_FLUXO, indiceEtapa, saidaDaConversa, useMaisaConfig } from "../lib/maisa";
+import { ETAPAS_FLUXO, indiceEtapa, prioridadeDaFila, seloDaConversa, useMaisaConfig } from "../lib/maisa";
 import { MaisaFluxoModal } from "../components/maisa/MaisaFluxoModal";
 import { useAuth } from "../lib/auth";
 import { tempoRelativo } from "../lib/tempoRelativo";
@@ -121,8 +121,15 @@ export function ConversasSplitLayout() {
         (c) => c.contato.nome?.toLowerCase().includes(termo) || c.contato.numeroWhatsapp.includes(termo),
       );
     }
+    // Na fila, quem está pronto para fechar vem primeiro. Dentro de cada grupo vale a ordem de antes.
+    if (aba === "sem_atendente") {
+      lista = lista
+        .map((c, i) => ({ c, i, p: prioridadeDaFila(c) }))
+        .sort((a, b) => b.p - a.p || a.i - b.i)
+        .map((x) => x.c);
+    }
     return lista;
-  }, [conversas, filtroStatus, etiquetaFiltro, instanciaFiltro, vendedorFiltro, busca]);
+  }, [conversas, aba, filtroStatus, etiquetaFiltro, instanciaFiltro, vendedorFiltro, busca]);
 
   const maisaConfig = useMaisaConfig();
   const [erroTeste, setErroTeste] = useState<string | null>(null);
@@ -306,7 +313,7 @@ export function ConversasSplitLayout() {
             const naoRespondida = c.status !== "encerrada" && c.mensagens?.[0]?.remetenteTipo === "cliente" && !euJaVi;
             // Na aba Maisa, em que etapa ela está. Na fila, por que ela passou a conversa.
             const etapaMaisa = aba === "maisa" && c.comMaisa ? indiceEtapa(c.maisaEstado?.etapa) : null;
-            const saidaMaisa = aba === "sem_atendente" && c.status !== "encerrada" ? saidaDaConversa(c) : null;
+            const selo = c.status !== "encerrada" ? seloDaConversa(c) : null;
             return (
             <button
               key={c.id}
@@ -327,14 +334,26 @@ export function ConversasSplitLayout() {
                     <span title="Cliente respondeu, aguardando retorno" className="size-2 shrink-0 rounded-full bg-primary" />
                   )}
                 </div>
+                {selo && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                        selo.tom === "quente"
+                          ? "bg-primary/15 text-accent"
+                          : selo.tom === "baixa"
+                            ? "bg-border text-muted"
+                            : "bg-indigo-claro/15 text-indigo-claro"
+                      }`}
+                    >
+                      {selo.texto}
+                    </span>
+                    {selo.valor && <span className="rounded bg-ink/10 px-1.5 py-0.5 text-[10px] font-semibold text-ink">{selo.valor}</span>}
+                    {selo.parou && <span className="text-[10px] text-muted">parou em {selo.parou.toLowerCase()}</span>}
+                  </div>
+                )}
                 <p className="mt-1 truncate text-[11px] text-muted">
                   {etapaMaisa !== null && (
                     <span className="font-semibold text-indigo-claro">Etapa: {ETAPAS_FLUXO[etapaMaisa].nome} · </span>
-                  )}
-                  {saidaMaisa && (
-                    <span className={`font-semibold ${saidaMaisa.quente ? "text-accent" : "text-indigo-claro"}`}>
-                      {saidaMaisa.titulo} ·{" "}
-                    </span>
                   )}
                   {c.convenio &&<span className="font-semibold text-indigo-claro">{LABEL_CONVENIO[c.convenio]} · </span>}
                   {c.origemDisparo && <span className="font-semibold text-indigo-claro">Disparo · </span>}

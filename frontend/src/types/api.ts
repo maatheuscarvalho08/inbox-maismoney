@@ -133,6 +133,7 @@ export interface Conversa {
     paradaEm?: string;
     saida?: string;
     oferta?: { banco: string; valorCentavos: number; parcelaCentavos: number; prazoMeses: number };
+    alternativa?: { trocoCentavos?: number | null };
     ofertaEm?: string;
   } | null;
   // Ofertada e sem resposta por 24h: está no Carrinho.
