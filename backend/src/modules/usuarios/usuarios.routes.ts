@@ -33,6 +33,7 @@ const SELECT_PUBLICO = {
   role: true,
   ativo: true,
   fotoPath: true,
+  somenteAtribuidas: true,
   createdAt: true,
 } as const;
 
@@ -111,6 +112,7 @@ const criarSchema = z.object({
   email: z.string().email(),
   senha: z.string().min(8, "Senha deve ter ao menos 8 caracteres"),
   role: z.enum(["admin", "operador"]),
+  somenteAtribuidas: z.boolean().optional(),
 });
 
 router.post(
@@ -128,7 +130,7 @@ router.post(
 
     const senhaHash = await bcrypt.hash(parsed.data.senha, 10);
     const usuario = await prisma.usuario.create({
-      data: { nome: parsed.data.nome, email: parsed.data.email, senhaHash, role: parsed.data.role },
+      data: { nome: parsed.data.nome, email: parsed.data.email, senhaHash, role: parsed.data.role, somenteAtribuidas: parsed.data.somenteAtribuidas ?? false },
       select: SELECT_PUBLICO,
     });
 
@@ -142,6 +144,7 @@ const atualizarSchema = z.object({
   role: z.enum(["admin", "operador"]).optional(),
   ativo: z.boolean().optional(),
   senha: z.string().min(8).optional(),
+  somenteAtribuidas: z.boolean().optional(),
 });
 
 router.patch(
@@ -167,7 +170,8 @@ router.patch(
     const data = senha ? { ...resto, senhaHash: await bcrypt.hash(senha, 10) } : resto;
 
     const usuario = await prisma.usuario.update({ where: { id: req.params.id }, data, select: SELECT_PUBLICO });
-    if (!usuario.ativo) desconectarUsuario(usuario.id);
+    // Mudou o acesso: derruba as conexões para entrarem de novo já com a regra nova.
+    if (!usuario.ativo || parsed.data.somenteAtribuidas !== undefined) desconectarUsuario(usuario.id);
     res.json({ usuario });
   }),
 );

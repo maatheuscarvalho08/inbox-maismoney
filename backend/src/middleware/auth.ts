@@ -34,11 +34,26 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       nome: usuario.nome,
       email: usuario.email,
       fotoPath: usuario.fotoPath,
+      somenteAtribuidas: usuario.somenteAtribuidas && usuario.role !== "admin",
     };
     next();
   } catch {
     return res.status(401).json({ error: "Token inválido ou expirado" });
   }
+}
+
+// Telas e dados da equipe toda (métricas, funil, propostas, disparos...): quem só vê as conversas atribuídas
+// a ele não entra.
+export function bloquearRestritos(req: Request, res: Response, next: NextFunction) {
+  if (req.user?.somenteAtribuidas) return res.status(403).json({ error: "Acesso negado" });
+  next();
+}
+
+// Conversa que este usuário pode abrir: qualquer uma, ou só as atribuídas a ele.
+export async function podeVerConversa(user: NonNullable<Request["user"]>, conversaId: string): Promise<boolean> {
+  if (!user.somenteAtribuidas) return true;
+  const c = await prisma.conversa.findUnique({ where: { id: conversaId }, select: { operadorId: true } });
+  return c?.operadorId === user.id;
 }
 
 export function requireRole(...roles: Role[]) {

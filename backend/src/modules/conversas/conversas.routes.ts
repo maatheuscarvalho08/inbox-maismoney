@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate, requireRole } from "../../middleware/auth.js";
+import { authenticate, podeVerConversa, requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { prisma } from "../../db/prisma.js";
 import { findOrCreateContato } from "../contatos/contatos.service.js";
@@ -19,6 +19,8 @@ import {
 import { emitConversaAtualizada } from "../../ws/events.js";
 import { definirEtapa } from "../funil/funil.service.js";
 import { retomarComMaisa } from "../maisa/maisa.service.js";
+import { entregarMensagem } from "../mensagens/entrega.js";
+import { emitNovaMensagem } from "../../ws/events.js";
 
 const router = Router();
 router.use(authenticate);
@@ -99,7 +101,7 @@ router.get(
   "/:id",
   asyncHandler(async (req, res) => {
     const conversa = await getConversaById(req.params.id);
-    if (!conversa) {
+    if (!conversa || !(await podeVerConversa(req.user!, req.params.id))) {
       return res.status(404).json({ error: "Conversa não encontrada" });
     }
 
@@ -141,6 +143,8 @@ router.post(
     // Reaproveita se já existir uma conversa aberta com esse contato nessa instância —
     // "chamar um número novo" não deve duplicar uma conversa em andamento.
     const conversa = await findOrCreateConversaAberta(instancia.id, contato.id);
+    // Quem só vê as atribuídas a ele precisa ficar com a conversa que abriu.
+    if (req.user!.somenteAtribuidas) await prisma.conversa.update({ where: { id: conversa.id }, data: { operadorId: req.user!.id, comMaisa: false } });
     const conversaCompleta = await getConversaById(conversa.id);
     emitConversaAtualizada(conversaCompleta);
 
@@ -171,6 +175,7 @@ router.patch(
       return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
     }
 
+    if (!(await podeVerConversa(req.user!, req.params.id))) return res.status(404).json({ error: "Conversa não encontrada" });
     const { etapaFunil, carrinho, ...campos } = parsed.data;
     const data: Parameters<typeof atualizarConversa>[1] = campos;
     // Tirar do Carrinho, ou encerrar a conversa, limpa a marca.
@@ -200,6 +205,55 @@ router.patch(
   }),
 );
 
+const chamarSchema = z.object({
+  instanciaId: z.string().uuid(),
+  texto: z.string().trim().min(1).max(1500),
+  deixarComMaisa: z.boolean().default(false),
+});
+
+// Cliente fora da janela de 24h da Meta: chama por um número de atendimento (Evolution), que manda texto
+// livre. A conversa nova fica com quem chamou, ou com a Maisa, que segue de onde parou. A antiga fecha.
+router.post(
+  "/:id/chamar-por-atendimento",
+  asyncHandler(async (req, res) => {
+    const parsed = chamarSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
+    if (!(await podeVerConversa(req.user!, req.params.id))) return res.status(404).json({ error: "Conversa não encontrada" });
+    const [origem, destino] = await Promise.all([
+      prisma.conversa.findUnique({ where: { id: req.params.id } }),
+      prisma.instancia.findUnique({ where: { id: parsed.data.instanciaId } }),
+    ]);
+    if (!origem) return res.status(404).json({ error: "Conversa não encontrada" });
+    if (!destino || destino.tipoConexao !== "evolution") return res.status(400).json({ error: "Escolha um número de atendimento (Evolution API)" });
+    if (destino.id === origem.instanciaId) return res.status(400).json({ error: "A conversa já está neste número" });
+    const comMaisa = parsed.data.deixarComMaisa && destino.maisaAtiva;
+    const existente = await prisma.conversa.findFirst({ where: { instanciaId: destino.id, contatoId: origem.contatoId } });
+    const dados = {
+      status: "aberta" as const,
+      comMaisa,
+      operadorId: comMaisa ? null : req.user!.id,
+      convenio: origem.convenio,
+      lastMessageAt: new Date(),
+      ...(comMaisa ? { maisaEstado: estadoLimpoPreservandoCadastro(origem.maisaEstado) } : {}),
+    };
+    const include = { instancia: true, contato: true } as const;
+    const nova = existente
+      ? await prisma.conversa.update({ where: { id: existente.id }, data: dados, include })
+      : await prisma.conversa.create({ data: { ...dados, instanciaId: destino.id, contatoId: origem.contatoId }, include });
+    const mensagem = await prisma.mensagem.create({
+      data: { conversaId: nova.id, remetenteTipo: comMaisa ? "maisa" : "operador", operadorId: comMaisa ? null : req.user!.id, conteudoTexto: parsed.data.texto, timestamp: new Date() },
+    });
+    await entregarMensagem(mensagem, nova, null);
+    await prisma.conversa.update({ where: { id: origem.id }, data: { status: "encerrada", comMaisa: false, carrinhoEm: null } });
+    const completa = await getConversaById(nova.id);
+    const enviada = await prisma.mensagem.findUnique({ where: { id: mensagem.id }, include: { operador: { select: { id: true, nome: true, fotoPath: true } } } });
+    if (enviada) emitNovaMensagem(enviada);
+    emitConversaAtualizada(completa);
+    emitConversaAtualizada(await getConversaById(origem.id));
+    res.status(201).json({ conversa: completa, entregue: enviada?.statusEntrega !== "falhou" });
+  }),
+);
+
 router.post(
   "/:id/etiquetas",
   asyncHandler(async (req, res) => {
@@ -208,6 +262,7 @@ router.post(
       return res.status(400).json({ error: "Dados inválidos", detalhes: parsed.error.flatten() });
     }
 
+    if (!(await podeVerConversa(req.user!, req.params.id))) return res.status(404).json({ error: "Conversa não encontrada" });
     const conversa = await adicionarEtiqueta(req.params.id, parsed.data.etiquetaId);
     emitConversaAtualizada(conversa);
     res.status(201).json({ conversa });
@@ -217,6 +272,7 @@ router.post(
 router.delete(
   "/:id/etiquetas/:etiquetaId",
   asyncHandler(async (req, res) => {
+    if (!(await podeVerConversa(req.user!, req.params.id))) return res.status(404).json({ error: "Conversa não encontrada" });
     const conversa = await removerEtiqueta(req.params.id, req.params.etiquetaId);
     emitConversaAtualizada(conversa);
     res.json({ conversa });

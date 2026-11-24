@@ -57,6 +57,15 @@ export function UsuariosPage() {
     }
   }
 
+  async function alternarSomenteAtribuidas(u: Usuario) {
+    try {
+      await api.patch(`/usuarios/${u.id}`, { somenteAtribuidas: !u.somenteAtribuidas });
+      carregar();
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Não foi possível atualizar o acesso do usuário");
+    }
+  }
+
   async function alterarRole(u: Usuario, novoRole: Role) {
     try {
       await api.patch(`/usuarios/${u.id}`, { role: novoRole });
@@ -218,6 +227,12 @@ export function UsuariosPage() {
                       >
                         {u.ativo ? "Ativo" : "Inativo"}
                       </span>
+                      {u.role !== "admin" && (
+                        <label className="mt-1.5 flex cursor-pointer items-center gap-1.5 text-xs text-muted" title="Só vê e atende as conversas atribuídas a ele">
+                          <input type="checkbox" checked={Boolean(u.somenteAtribuidas)} onChange={() => alternarSomenteAtribuidas(u)} />
+                          Só as atribuídas a ele
+                        </label>
+                      )}
                     </td>
                     <td className="px-5 py-3 text-right">
                       {u.id !== usuarioLogado?.id && (

@@ -29,6 +29,9 @@ export function initSocket(httpServer: HttpServer) {
         return next(new Error("Token inválido"));
       }
       socket.join(salaDoUsuario(usuario.id));
+      socket.data.usuarioId = usuario.id;
+      // Quem só vê as conversas atribuídas a ele não recebe as outras em tempo real.
+      socket.data.restrito = usuario.somenteAtribuidas && usuario.role !== "admin";
       next();
     } catch {
       next(new Error("Token inválido"));

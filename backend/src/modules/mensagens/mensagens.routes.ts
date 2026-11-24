@@ -1,7 +1,7 @@
 import path from "path";
 import { Router } from "express";
 import { z } from "zod";
-import { authenticate } from "../../middleware/auth.js";
+import { authenticate, podeVerConversa } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { upload } from "../../middleware/upload.js";
 import { prisma } from "../../db/prisma.js";
@@ -21,6 +21,7 @@ router.get(
     if (typeof conversaId !== "string") {
       return res.status(400).json({ error: "conversaId é obrigatório" });
     }
+    if (!(await podeVerConversa(req.user!, conversaId))) return res.status(404).json({ error: "Conversa não encontrada" });
     const mensagens = await listMensagensPorConversa(conversaId);
     res.json({ mensagens });
   }),
@@ -49,6 +50,7 @@ router.post(
     }
 
     const { conversaId, conteudoTexto, audioGravado, respondeAId } = parsed.data;
+    if (!(await podeVerConversa(req.user!, conversaId))) return res.status(404).json({ error: "Conversa não encontrada" });
 
     const conversa = await prisma.conversa.findUnique({
       where: { id: conversaId },
@@ -135,7 +137,7 @@ router.post(
         respondeA: { select: { id: true, conteudoTexto: true, tipoMidia: true, remetenteTipo: true } },
       },
     });
-    if (!mensagem) {
+    if (!mensagem || !(await podeVerConversa(req.user!, mensagem.conversaId))) {
       return res.status(404).json({ error: "Mensagem não encontrada" });
     }
     if (mensagem.remetenteTipo === "cliente" || mensagem.statusEntrega !== "falhou") {

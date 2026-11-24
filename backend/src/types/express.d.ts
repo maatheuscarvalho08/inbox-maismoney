@@ -9,6 +9,8 @@ declare global {
         nome: string;
         email: string;
         fotoPath: string | null;
+        // Só vê as conversas atribuídas a ele.
+        somenteAtribuidas: boolean;
       };
       rawBody?: Buffer;
     }

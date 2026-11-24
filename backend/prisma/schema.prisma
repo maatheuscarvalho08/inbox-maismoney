@@ -107,6 +107,8 @@ model Usuario {
   // Caminho local do avatar (upload próprio) — aparece na bolha de mensagem e no
   // topo da conversa, pra ficar mais "vivo" em vez de só a inicial do nome.
   fotoPath  String?  @map("foto_path")
+  // Só vê e atende as conversas atribuídas a ele (admin nunca é restrito).
+  somenteAtribuidas Boolean @default(false) @map("somente_atribuidas")
   createdAt DateTime @default(now()) @map("created_at")
 
   conversas     Conversa[]             @relation("OperadorConversas")

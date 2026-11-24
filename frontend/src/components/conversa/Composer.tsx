@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Modal } from "../Modal";
 import { Mic, Paperclip, Send, Square, X } from "../icones";
 import { api, ApiError } from "../../lib/api";
 import { previewDaMensagem } from "./MensagemBubble";
-import type { Mensagem, TipoConexao } from "../../types/api";
+import type { Conversa, Instancia, Mensagem, TipoConexao } from "../../types/api";
 
 function formatarTempo(segundos: number) {
   const m = Math.floor(segundos / 60);
@@ -22,6 +23,85 @@ interface ComposerProps {
   onCancelarResposta: () => void;
 }
 
+const TEXTO_CHAMADA = "Olá! Aqui é da Mais Money. Passando para continuar o seu atendimento por este número. Pode me responder por aqui?";
+
+// Fora da janela de 24h: a conversa continua por um número de atendimento (Evolution), que manda texto livre.
+function ChamarPorAtendimento({ conversaId, onFechar }: { conversaId: string; onFechar: () => void }) {
+  const navigate = useNavigate();
+  const [instancias, setInstancias] = useState<Instancia[]>([]);
+  const [instanciaId, setInstanciaId] = useState("");
+  const [texto, setTexto] = useState(TEXTO_CHAMADA);
+  const [comMaisa, setComMaisa] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.get<{ instancias: Instancia[] }>("/instancias").then((r) => {
+      const evo = r.instancias.filter((i) => i.tipoConexao === "evolution");
+      setInstancias(evo);
+      setInstanciaId((evo.find((i) => /principal/i.test(i.nome)) ?? evo[0])?.id ?? "");
+    });
+  }, []);
+
+  const escolhida = instancias.find((i) => i.id === instanciaId);
+
+  async function chamar() {
+    setEnviando(true);
+    setErro(null);
+    try {
+      const r = await api.post<{ conversa: Conversa; entregue: boolean }>(`/conversas/${conversaId}/chamar-por-atendimento`, { instanciaId, texto, deixarComMaisa: comMaisa });
+      onFechar();
+      navigate(`/conversas/${r.conversa.id}`);
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.message : "Não foi possível chamar pelo número de atendimento");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <Modal onClose={onFechar}>
+      <div className="space-y-3 p-5 text-left">
+        <h2 className="text-base font-semibold text-ink">Chamar pelo número de atendimento</h2>
+        <p className="text-xs text-muted">A conversa continua pelo número escolhido. A conversa antiga, no número oficial, é encerrada.</p>
+        <label className="block text-xs font-medium text-muted">
+          Número
+          <select value={instanciaId} onChange={(e) => setInstanciaId(e.target.value)} className="mt-1 w-full rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent">
+            {instancias.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.nome} · {i.numero}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-xs font-medium text-muted">
+          Mensagem
+          <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={4} className="mt-1 w-full resize-none rounded-md border border-border bg-bg/60 px-3 py-2 text-sm text-ink outline-none focus:border-accent" />
+        </label>
+        {escolhida?.maisaAtiva && (
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-ink">
+            <input type="checkbox" checked={comMaisa} onChange={(e) => setComMaisa(e.target.checked)} />
+            Deixar a Maisa conduzir de onde parou
+          </label>
+        )}
+        {erro && <p className="text-xs text-accent">{erro}</p>}
+        <div className="flex justify-end gap-2 pt-1">
+          <button onClick={onFechar} className="rounded-md border border-border px-4 py-2 text-sm text-muted hover:text-ink">
+            Cancelar
+          </button>
+          <button
+            onClick={chamar}
+            disabled={enviando || !instanciaId || !texto.trim()}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-marca-indigo hover:opacity-90 disabled:opacity-50"
+          >
+            {enviando ? "Enviando..." : "Enviar"}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 export function Composer({
   conversaId,
   tipoConexao,
@@ -34,6 +114,7 @@ export function Composer({
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [audioGravado, setAudioGravado] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const [chamando, setChamando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const inputArquivoRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -146,8 +227,17 @@ export function Composer({
         template aprovado. Use a tela de{" "}
         <Link to="/disparos" className="text-accent hover:underline">
           Disparos
-        </Link>
-        .
+        </Link>{" "}
+        ou chame pelo número de atendimento.
+        <div className="mt-3">
+          <button
+            onClick={() => setChamando(true)}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-marca-indigo hover:opacity-90"
+          >
+            Chamar pelo número de atendimento
+          </button>
+        </div>
+        {chamando && <ChamarPorAtendimento conversaId={conversaId} onFechar={() => setChamando(false)} />}
       </div>
     );
   }

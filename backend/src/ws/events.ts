@@ -1,29 +1,51 @@
+import { prisma } from "../db/prisma.js";
 import { getIo } from "./socket.js";
 
+// Quem só vê as conversas atribuídas a ele recebe o evento apenas das conversas dele. Os demais recebem tudo.
+// Sem conversa no evento (instância, campanha, Carrinho), o restrito não recebe.
+function emitirFiltrado(evento: string, payload: unknown, conversaId?: string | null) {
+  const io = getIo();
+  const restritos = [...io.sockets.sockets.values()].filter((s) => s.data.restrito);
+  if (!restritos.length) {
+    io.emit(evento, payload);
+    return;
+  }
+  io.except(restritos.map((s) => s.id)).emit(evento, payload);
+  if (!conversaId) return;
+  void prisma.conversa
+    .findUnique({ where: { id: conversaId }, select: { operadorId: true } })
+    .then((c) => {
+      for (const s of restritos) if (c?.operadorId && s.data.usuarioId === c.operadorId) s.emit(evento, payload);
+    })
+    .catch(() => undefined);
+}
+
+const idDe = (v: unknown, campo: string) => ((v as Record<string, unknown> | null)?.[campo] as string | undefined) ?? null;
+
 export function emitNovaMensagem(mensagem: unknown) {
-  getIo().emit("mensagem:nova", mensagem);
+  emitirFiltrado("mensagem:nova", mensagem, idDe(mensagem, "conversaId"));
 }
 
 export function emitConversaAtualizada(conversa: unknown) {
-  getIo().emit("conversa:atualizada", conversa);
+  emitirFiltrado("conversa:atualizada", conversa, idDe(conversa, "id"));
 }
 
 export function emitInstanciaAtualizada(instancia: unknown) {
-  getIo().emit("instancia:atualizada", instancia);
+  emitirFiltrado("instancia:atualizada", instancia);
 }
 
 export function emitCampanhaAtualizada(payload: unknown) {
-  getIo().emit("campanha:atualizada", payload);
+  emitirFiltrado("campanha:atualizada", payload);
 }
 
 // Cliente ofertado que não respondeu em 24h: a tela avisa a equipe no topo.
 export function emitCarrinhoNovo(conversa: unknown) {
-  getIo().emit("carrinho:novo", conversa);
+  emitirFiltrado("carrinho:novo", conversa, idDe(conversa, "id"));
 }
 
 // Aviso da Maisa para a equipe, no topo da tela: aceite depois de a conversa sair dela,
 // mensagem que ela não conseguiu entregar, digitação com resultado incerto.
 export type TipoAvisoMaisa = "aceite_apos_transferencia" | "entrega_falhou" | "digitacao_incerta" | "mensagem_apos_digitacao" | "digitacao_bloqueada";
 export function emitAvisoMaisa(aviso: { tipo: TipoAvisoMaisa; conversaId: string; nome: string | null; detalhe?: string }) {
-  getIo().emit("maisa:aviso", aviso);
+  emitirFiltrado("maisa:aviso", aviso, aviso.conversaId);
 }

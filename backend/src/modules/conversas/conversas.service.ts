@@ -25,7 +25,11 @@ const JA_EM_ATENDIMENTO = { OR: [{ origemDisparo: false }, { respondida: true }]
 export interface Leitor {
   id: string;
   role: string;
+  somenteAtribuidas?: boolean;
 }
+
+// Quem só vê as atribuídas a ele nunca enxerga as outras, em nenhuma aba.
+const soDele = (leitor: Leitor) => (leitor.somenteAtribuidas ? { operadorId: leitor.id } : {});
 
 function filtroDaAba(aba: AbaConversas, leitor: Leitor) {
   switch (aba) {
@@ -50,7 +54,7 @@ function filtroDaAba(aba: AbaConversas, leitor: Leitor) {
 // Contagem das conversas ainda ativas em cada aba, mostrada no topo da lista.
 export async function contarAbas(leitor: Leitor) {
   const contar = (aba: AbaConversas) =>
-    prisma.conversa.count({ where: { ...filtroDaAba(aba, leitor), status: { not: "encerrada" } } });
+    prisma.conversa.count({ where: { AND: [filtroDaAba(aba, leitor), soDele(leitor)], status: { not: "encerrada" } } });
   const [maisa, sem_atendente, atribuidas, disparos, carrinho] = await Promise.all([
     contar("maisa"),
     contar("sem_atendente"),
@@ -62,11 +66,11 @@ export async function contarAbas(leitor: Leitor) {
 }
 
 export async function listConversas(leitor: Leitor, status?: StatusConversa, aba?: AbaConversas, limite?: number) {
-  return prisma.conversa.findMany({
+  const lista = await prisma.conversa.findMany({
     where: {
       // Sem filtro de status, a lista não mostra encerradas: nem manda.
       ...(status ? { status } : { status: { not: "encerrada" as const } }),
-      ...(aba ? filtroDaAba(aba, leitor) : {}),
+      AND: [aba ? filtroDaAba(aba, leitor) : {}, soDele(leitor)],
     },
     orderBy: { lastMessageAt: "desc" },
     ...(limite ? { take: limite } : {}),
@@ -82,6 +86,10 @@ export async function listConversas(leitor: Leitor, status?: StatusConversa, aba
       },
     },
   });
+  // Quando o cliente falou pela última vez: a lista mostra "janela de 24h fechada" no número oficial.
+  const ultimas = await prisma.mensagem.groupBy({ by: ["conversaId"], where: { conversaId: { in: lista.map((c) => c.id) }, remetenteTipo: "cliente" }, _max: { timestamp: true } });
+  const por = new Map(ultimas.map((u) => [u.conversaId, u._max.timestamp]));
+  return lista.map((c) => ({ ...c, ultimaMensagemClienteEm: por.get(c.id) ?? null }));
 }
 
 export async function getConversaById(id: string) {

@@ -20,6 +20,8 @@ router.get(
     const viaAssinatura =
       typeof exp === "string" && typeof sig === "string" && validarAssinaturaMidia(mensagemId, Number(exp), sig);
     let autorizado = viaAssinatura;
+    // Quem só vê as conversas atribuídas a ele também só abre a mídia delas.
+    let restritoId: string | null = null;
 
     if (!autorizado) {
       const header = req.headers.authorization;
@@ -31,6 +33,7 @@ router.get(
           // na hora, não só quando o token expirar.
           const usuario = payload.sub ? await prisma.usuario.findUnique({ where: { id: payload.sub } }) : null;
           autorizado = Boolean(usuario?.ativo);
+          if (usuario?.ativo && usuario.somenteAtribuidas && usuario.role !== "admin") restritoId = usuario.id;
         } catch {
           autorizado = false;
         }
@@ -44,6 +47,10 @@ router.get(
     const mensagem = await prisma.mensagem.findUnique({ where: { id: mensagemId } });
     if (!mensagem || !mensagem.midiaPath || mensagem.midiaDeleted) {
       return res.status(404).json({ error: "Mídia não disponível" });
+    }
+    if (restritoId) {
+      const dona = await prisma.conversa.findUnique({ where: { id: mensagem.conversaId }, select: { operadorId: true } });
+      if (dona?.operadorId !== restritoId) return res.status(404).json({ error: "Mídia não disponível" });
     }
 
     const absPath = path.resolve(process.cwd(), mensagem.midiaPath);

@@ -63,9 +63,12 @@ export function ConversasSplitLayout() {
   const navigate = useNavigate();
   const { id: idAtivo } = useParams<{ id: string }>();
   const { usuario } = useAuth();
+  // Quem só vê as conversas atribuídas a ele tem uma aba só.
+  const restrito = Boolean(usuario?.somenteAtribuidas);
+  const abasVisiveis = restrito ? ABAS.filter((a) => a.id === "atribuidas") : ABAS;
 
   const [busca, setBusca] = useState("");
-  const [aba, setAba] = useState<Aba>("sem_atendente");
+  const [aba, setAba] = useState<Aba>(restrito ? "atribuidas" : "sem_atendente");
   const [contagens, setContagens] = useState<Partial<Record<Aba, number>>>({});
   const [filtroStatus, setFiltroStatus] = useState<StatusConversa | undefined>(undefined);
   const [etiquetas, setEtiquetas] = useState<Etiqueta[]>([]);
@@ -253,8 +256,8 @@ export function ConversasSplitLayout() {
             </div>
           )}
 
-          <div role="tablist" aria-label="Seções de conversas" className="relative mt-3 grid grid-cols-4 px-2">
-            {ABAS.map((a) => {
+          <div role="tablist" aria-label="Seções de conversas" className={`relative mt-3 grid px-2 ${restrito ? "grid-cols-1" : "grid-cols-4"}`}>
+            {abasVisiveis.map((a) => {
               const ativa = aba === a.id;
               return (
                 <button
@@ -274,14 +277,14 @@ export function ConversasSplitLayout() {
             })}
             <span
               aria-hidden="true"
-              className="aba-pilula absolute bottom-0 left-2 h-0.5 w-[calc((100%-16px)/4)] rounded-full bg-primary"
-              style={{ transform: `translateX(${ABAS.findIndex((a) => a.id === aba) * 100}%)` }}
+              className={`aba-pilula absolute bottom-0 left-2 h-0.5 rounded-full bg-primary ${restrito ? "w-[calc(100%-16px)]" : "w-[calc((100%-16px)/4)]"}`}
+              style={{ transform: `translateX(${Math.max(0, abasVisiveis.findIndex((a) => a.id === aba)) * 100}%)` }}
             />
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {(aba === "maisa" || aba === "sem_atendente") && (
+          {!restrito && (aba === "maisa" || aba === "sem_atendente") && (
             <button
               onClick={() => setGuiaMaisaAberto(true)}
               className="flex w-full items-center gap-1.5 border-b border-border px-4 py-2 text-left text-xs font-medium text-muted hover:text-ink"
@@ -317,6 +320,8 @@ export function ConversasSplitLayout() {
             // Cliente esperando resposta há mais de 30 minutos: a fila mostra há quanto tempo.
             const ultimaFala = c.mensagens?.[0];
             const minutosParado = naoRespondida && ultimaFala ? Math.floor((Date.now() - new Date(ultimaFala.timestamp).getTime()) / 60_000) : 0;
+            // Número oficial (Meta): passou de 24h da última fala do cliente, só dá para chamar por template ou pelo número de atendimento.
+            const janelaFechada = c.instancia.tipoConexao === "meta_cloud" && c.status !== "encerrada" && !!c.ultimaMensagemClienteEm && Date.now() - new Date(c.ultimaMensagemClienteEm).getTime() > 24 * 60 * 60_000;
             const semResposta = minutosParado >= 30 ? (minutosParado < 120 ? `${minutosParado} min` : minutosParado < 2880 ? `${Math.floor(minutosParado / 60)} h` : `${Math.floor(minutosParado / 1440)} dias`) : null;
             return (
             <button
@@ -338,6 +343,11 @@ export function ConversasSplitLayout() {
                     <span title="Cliente respondeu, aguardando retorno" className="size-2 shrink-0 rounded-full bg-primary" />
                   )}
                 </div>
+                {janelaFechada && (
+                  <span className="mt-1.5 mr-1 inline-block rounded bg-border px-1.5 py-0.5 text-[10px] font-semibold text-muted" title="Fora da janela de 24h da Meta: abra a conversa e chame pelo número de atendimento">
+                    Janela de 24h fechada
+                  </span>
+                )}
                 {semResposta && (
                   <span className="mt-1.5 inline-block rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
                     Sem resposta há {semResposta}

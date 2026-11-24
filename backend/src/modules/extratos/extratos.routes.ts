@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import multer from "multer";
 import { Router } from "express";
-import { authenticate } from "../../middleware/auth.js";
+import { authenticate, podeVerConversa } from "../../middleware/auth.js";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { uploadsRoot } from "../../middleware/upload.js";
 import { prisma } from "../../db/prisma.js";
@@ -64,6 +64,7 @@ router.post(
 
     const mensagem = await prisma.mensagem.findUnique({ where: { id: req.params.id } });
     if (!mensagem?.midiaPath || !mensagem.tipoMidia) return res.status(404).json({ error: "Arquivo não encontrado" });
+    if (!(await podeVerConversa(req.user!, mensagem.conversaId))) return res.status(404).json({ error: "Arquivo não encontrado" });
     if (mensagem.midiaDeleted) return res.status(410).json({ error: "O arquivo já foi apagado pela regra dos 4 dias" });
     if (!FORMATOS.includes(mensagem.tipoMidia)) return res.status(400).json({ error: "Só dá para ler PDF ou imagem" });
 

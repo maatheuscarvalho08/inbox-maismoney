@@ -16,6 +16,8 @@ export interface Usuario {
   role: Role;
   ativo: boolean;
   fotoPath: string | null;
+  // Só vê as conversas atribuídas a ele.
+  somenteAtribuidas?: boolean;
   createdAt: string;
 }
 
@@ -136,6 +138,8 @@ export interface Conversa {
     alternativa?: { trocoCentavos?: number | null };
     ofertaEm?: string;
   } | null;
+  // Quando o cliente falou pela última vez (a lista usa para a janela de 24h da Meta).
+  ultimaMensagemClienteEm?: string | null;
   // Ofertada e sem resposta por 24h: está no Carrinho.
   carrinhoEm?: string | null;
   contato: Contato;
