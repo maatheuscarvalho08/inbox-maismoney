@@ -27,7 +27,7 @@ router.use(authenticate);
 
 const statusEnum = z.enum(["aberta", "em_atendimento", "aguardando", "encerrada"]);
 
-const abaEnum = z.enum(["maisa", "sem_atendente", "atribuidas", "disparos", "carrinho"]);
+const abaEnum = z.enum(["maisa", "sem_atendente", "atribuidas", "disparos", "carrinho", "retornos"]);
 
 router.get(
   "/",
@@ -165,6 +165,8 @@ const updateSchema = z.object({
     .optional(),
   // false = a equipe já tratou: tira do Carrinho.
   carrinho: z.literal(false).optional(),
+  // Dia para a equipe chamar o cliente de novo (ISO). null = já foi feito ou cancelado.
+  retornoEm: z.string().datetime().nullable().optional(),
 });
 
 router.patch(
@@ -176,8 +178,9 @@ router.patch(
     }
 
     if (!(await podeVerConversa(req.user!, req.params.id))) return res.status(404).json({ error: "Conversa não encontrada" });
-    const { etapaFunil, carrinho, ...campos } = parsed.data;
+    const { etapaFunil, carrinho, retornoEm, ...campos } = parsed.data;
     const data: Parameters<typeof atualizarConversa>[1] = campos;
+    if (retornoEm !== undefined) Object.assign(data, { retornoEm: retornoEm ? new Date(retornoEm) : null, retornoAvisadoEm: null });
     // Tirar do Carrinho, ou encerrar a conversa, limpa a marca.
     if (carrinho === false || campos.status === "encerrada") data.carrinhoEm = null;
     if (etapaFunil) await definirEtapa(req.params.id, etapaFunil);

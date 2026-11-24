@@ -43,6 +43,11 @@ export function emitCarrinhoNovo(conversa: unknown) {
   emitirFiltrado("carrinho:novo", conversa, idDe(conversa, "id"));
 }
 
+// Chegou o dia combinado para chamar o cliente de novo: a tela avisa no topo.
+export function emitRetornoVencido(conversa: unknown) {
+  emitirFiltrado("retorno:vencido", conversa, idDe(conversa, "id"));
+}
+
 // Aviso da Maisa para a equipe, no topo da tela: aceite depois de a conversa sair dela,
 // mensagem que ela não conseguiu entregar, digitação com resultado incerto.
 export type TipoAvisoMaisa = "aceite_apos_transferencia" | "entrega_falhou" | "digitacao_incerta" | "mensagem_apos_digitacao" | "digitacao_bloqueada";

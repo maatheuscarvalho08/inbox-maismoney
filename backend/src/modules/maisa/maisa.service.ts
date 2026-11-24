@@ -2,7 +2,7 @@ import cron from "node-cron";
 import type { Convenio, Prisma, StatusProposta } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 import { env } from "../../config/env.js";
-import { emitAvisoMaisa, emitCarrinhoNovo, emitConversaAtualizada, emitNovaMensagem } from "../../ws/events.js";
+import { emitAvisoMaisa, emitCarrinhoNovo, emitConversaAtualizada, emitNovaMensagem, emitRetornoVencido } from "../../ws/events.js";
 import { getConversaById } from "../conversas/conversas.service.js";
 import { avancarEtapa } from "../funil/funil.service.js";
 import { classificadorRegras } from "./classificador.js";
@@ -117,6 +117,9 @@ async function ultimaProposta(contatoId: string) {
 async function aplicarEfeito(tx: Prisma.TransactionClient, conversa: ConversaMaisa, efeito: Efeito) {
   const etapaAtual = async () => (await tx.conversa.findUnique({ where: { id: conversa.id }, select: { etapaFunil: true } }))?.etapaFunil ?? null;
   switch (efeito.tipo) {
+    case "retorno":
+      await tx.conversa.update({ where: { id: conversa.id }, data: { retornoEm: new Date(efeito.em), retornoAvisadoEm: null } });
+      return;
     case "convenio":
       // Convênio definido por uma pessoa da equipe vale mais que o da Maisa.
       if (conversa.convenioOrigem !== "operador") {
@@ -996,6 +999,22 @@ export async function verificarSilencios() {
   return paradas.length;
 }
 
+// Chegou o dia combinado com o cliente: avisa a equipe no inbox (uma vez) e a conversa volta a ficar aberta.
+export async function verificarRetornos() {
+  const vencidas = await prisma.conversa.findMany({
+    where: { retornoEm: { lte: new Date() }, retornoAvisadoEm: null },
+    take: 50,
+    select: { id: true },
+  });
+  for (const v of vencidas) {
+    const r = await prisma.conversa.updateMany({ where: { id: v.id, retornoAvisadoEm: null }, data: { retornoAvisadoEm: new Date(), status: "aberta" } });
+    if (!r.count) continue;
+    const conversa = await getConversaById(v.id);
+    if (conversa) emitirSemFalhar(() => emitRetornoVencido(conversa));
+  }
+  return vencidas.length;
+}
+
 // Extrato guardado porque a Facta estava sem tabela: de hora em hora o fluxo tenta de novo.
 export async function verificarBancosIndisponiveis() {
   const candidatas = await prisma.conversa.findMany({
@@ -1137,6 +1156,7 @@ export function startMaisaJobs() {
       await verificarAutorizacoesPendentes();
       await verificarOfertasPendentes();
       await verificarSilencios();
+      await verificarRetornos();
       await verificarBancosIndisponiveis();
       await verificarAssinaturas();
     } catch (err) {

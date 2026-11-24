@@ -225,6 +225,11 @@ export const TEXTOS = {
     return corpo + "\n\nSe fizer sentido para você, eu mesma cuido de tudo. Ficou alguma dúvida? Pode me perguntar.";
   },
   semPressa: "Claro, sem pressa! Quando decidir, é só me responder por aqui.",
+  // Cliente que quer deixar para depois: a Maisa pede o dia e a equipe chama quando chegar.
+  pedeDataRetorno: "Sem problema! Qual dia fica bom para a gente te chamar? Pode me dizer a data, por exemplo 10/01, ou só o mês.",
+  pedeDataRetornoDeNovo: "Não consegui entender a data. Pode me dizer o dia e o mês, por exemplo 10/01?",
+  retornoAgendado: (data: string) => `Combinado! Anotei aqui e a nossa equipe te chama no dia ${data}. Se precisar de algo antes, é só me chamar por aqui.`,
+  retornoSemData: "Tudo bem! Deixei anotado e a nossa equipe combina a data com você.",
   contornoConfianca:
     "Entendo a preocupação, é importante ter segurança. Funciona assim: o contrato só é assinado por você, pelo link da Facta, e só se você concordar. O dinheiro cai depois que a portabilidade é aprovada.\n\n" +
     "Se quiser conferir, o SAC da Facta Financeira é 0800 942 0462, que também atende pelo WhatsApp. E a Mais Money, que cuida da sua proposta, tem CNPJ 45.027.472/0001-76 e Instagram @maismoneyrj.",

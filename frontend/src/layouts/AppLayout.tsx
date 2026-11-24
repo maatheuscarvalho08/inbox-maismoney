@@ -14,6 +14,7 @@ import {
   Settings,
   ShoppingCart,
   Bell,
+  CalendarCheck,
   CircleAlert,
   Inbox,
   Megaphone,
@@ -23,6 +24,7 @@ import {
 } from "../components/icones";
 import { useAuth } from "../lib/auth";
 import { useCarrinho } from "../lib/carrinho";
+import { useRetornos } from "../lib/retornos";
 import { TEXTO_AVISO, useAvisosMaisa } from "../lib/avisosMaisa";
 import { LogoMaisMoney } from "../components/LogoMaisMoney";
 
@@ -60,6 +62,7 @@ const SECOES: Secao[] = [
       { to: "/simulacoes", label: "Simulações", icon: Calculator },
       { to: "/propostas", label: "Propostas", icon: FileText },
       { to: "/carrinho", label: "Carrinho", icon: ShoppingCart },
+      { to: "/retornos", label: "Retornos", icon: CalendarCheck },
     ],
   },
   {
@@ -108,12 +111,12 @@ export function AppLayout() {
   const restrito = Boolean(usuario?.somenteAtribuidas);
   const secoes = SECOES.filter((s) => (!s.adminOnly || admin) && (!restrito || s.id === "inbox" || s.id === "config")).map((s) => ({
     ...s,
-    itens: s.itens.filter((i) => (!i.adminOnly || admin) && (!restrito || i.to === "/conversas" || i.to === "/configuracoes")),
+    itens: s.itens.filter((i) => (!i.adminOnly || admin) && (!restrito || i.to === "/conversas" || i.to === "/configuracoes" || i.to === "/retornos")),
   }));
   const { pathname } = useLocation();
   const navigate = useNavigate();
   useEffect(() => {
-    if (restrito && !pathname.startsWith("/conversas") && !pathname.startsWith("/configuracoes")) navigate("/conversas", { replace: true });
+    if (restrito && !pathname.startsWith("/conversas") && !pathname.startsWith("/configuracoes") && !pathname.startsWith("/retornos")) navigate("/conversas", { replace: true });
   }, [restrito, pathname, navigate]);
   const ativa = secoes.find((s) => s.itens.some((i) => pathname.startsWith(i.to))) ?? secoes[0];
 
@@ -136,6 +139,11 @@ export function AppLayout() {
   }, [pathname, usuario?.role, painelFechado]);
 
   const carrinho = useCarrinho();
+  const retornos = useRetornos();
+  const [retornoFechado, setRetornoFechado] = useState(false);
+  useEffect(() => {
+    if (retornos.ultimo) setRetornoFechado(false);
+  }, [retornos.ultimo]);
   const avisosMaisa = useAvisosMaisa();
   const avisoMaisa = avisosMaisa.avisos[0];
   // O aviso volta a aparecer sempre que um cliente novo cai no carrinho.
@@ -239,6 +247,11 @@ export function AppLayout() {
                         <Icon size={15} weight={isActive ? "fill" : "duotone"} />
                       </span>
                       {item.label}
+                      {item.to === "/retornos" && retornos.total > 0 && (
+                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-marca-indigo tabular-nums">
+                          {retornos.total}
+                        </span>
+                      )}
                       {item.to === "/carrinho" && carrinho.total > 0 && (
                         <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-marca-indigo tabular-nums">
                           {carrinho.total}
@@ -279,6 +292,39 @@ export function AppLayout() {
               Abrir conversa
             </Link>
             <button onClick={() => avisosMaisa.dispensar(avisoMaisa)} aria-label="Fechar aviso" className="shrink-0 text-muted hover:text-ink">
+              <X size={14} />
+            </button>
+          </div>
+        )}
+        {retornos.total > 0 && !retornoFechado && pathname !== "/retornos" && (
+          <div role="status" className="flex items-center gap-3 border-b border-primary/30 bg-primary/15 px-6 py-2 text-sm">
+            <CalendarCheck size={16} className="shrink-0 text-accent" aria-hidden="true" />
+            <p className="min-w-0 flex-1 truncate text-ink">
+              {retornos.ultimo ? (
+                <>
+                  Chegou o dia de chamar <span className="font-semibold">{retornos.ultimo.contato.nome ?? "um cliente"}</span>.
+                </>
+              ) : (
+                <>
+                  <span className="font-semibold">{retornos.total}</span> {retornos.total === 1 ? "cliente pediu" : "clientes pediram"} para ser {retornos.total === 1 ? "chamado" : "chamados"} e o dia chegou.
+                </>
+              )}
+            </p>
+            <Link
+              to="/retornos"
+              onClick={() => retornos.limparUltimo()}
+              className="shrink-0 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-marca-indigo hover:opacity-90"
+            >
+              Ver retornos
+            </Link>
+            <button
+              onClick={() => {
+                setRetornoFechado(true);
+                retornos.limparUltimo();
+              }}
+              aria-label="Fechar aviso"
+              className="shrink-0 text-muted hover:text-ink"
+            >
               <X size={14} />
             </button>
           </div>

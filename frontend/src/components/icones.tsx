@@ -24,6 +24,7 @@ export const ArrowRight = criar(P.ArrowRight, true);
 export const ArrowUp = criar(P.ArrowUp, true);
 export const BarChart2 = criar(P.ChartBar);
 export const Bell = criar(P.BellRinging);
+export const CalendarCheck = criar(P.CalendarCheck);
 export const Bot = criar(P.Robot);
 export const Calculator = criar(P.Calculator);
 export const Camera = criar(P.Camera);

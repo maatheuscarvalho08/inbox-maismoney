@@ -16,6 +16,7 @@ import { MaisaProgresso } from "../components/maisa/MaisaProgresso";
 import { MaisaFluxoModal } from "../components/maisa/MaisaFluxoModal";
 import { AnaliseExtratoModal } from "../components/conversa/AnaliseExtratoModal";
 import { NotaMaisa } from "../components/conversa/NotaMaisa";
+import { AgendarRetorno } from "../components/conversa/AgendarRetorno";
 import type { Contato, Conversa, Mensagem, StatusConversa, Usuario } from "../types/api";
 
 const STATUS_OPCOES: StatusConversa[] = ["aberta", "em_atendimento", "aguardando", "encerrada"];
@@ -265,6 +266,8 @@ export function ConversaDetalhePage() {
               onChange={(v) => atualizarStatus(v as StatusConversa)}
               options={STATUS_OPCOES.map((s) => ({ value: s, label: s.replace("_", " ") }))}
             />
+
+            <AgendarRetorno conversa={conversa} onSalvo={setConversa} />
 
             <button
               onClick={() => setPainelAberto((v) => !v)}

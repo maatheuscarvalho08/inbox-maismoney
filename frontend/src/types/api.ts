@@ -142,6 +142,8 @@ export interface Conversa {
   ultimaMensagemClienteEm?: string | null;
   // Ofertada e sem resposta por 24h: está no Carrinho.
   carrinhoEm?: string | null;
+  // Dia combinado para a equipe chamar o cliente de novo.
+  retornoEm?: string | null;
   contato: Contato;
   instancia: Pick<Instancia, "id" | "nome" | "numero" | "tipoConexao" | "status" | "maisaAtiva">;
   operador: { id: string; nome: string; fotoPath: string | null } | null;

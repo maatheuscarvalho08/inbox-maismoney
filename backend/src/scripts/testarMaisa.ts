@@ -107,6 +107,27 @@ const CASOS: Caso[] = [
     ultimaResposta: "nenhuma",
   },
   {
+    nome: "Retorno: 'vou deixar para janeiro' agenda o dia 5 e passa para a equipe",
+    acoes: [...ATE_AUTORIZAR(CPF_JA_AUTORIZADO), "Vou deixar para Janeiro"],
+    etapaFinal: "finalizada",
+    saida: "retorno",
+    respostaContem: "05/01/2027",
+  },
+  {
+    nome: "Retorno: 'quando eu tiver margem' pede o dia e agenda a data informada",
+    acoes: [...ATE_AUTORIZAR(CPF_JA_AUTORIZADO), "Quando eu tiver margem", "dia 15 de dezembro"],
+    etapaFinal: "finalizada",
+    saida: "retorno",
+    respostaContem: "15/12/2026",
+  },
+  {
+    nome: "Retorno: sem data duas vezes, a equipe combina",
+    acoes: [...ATE_AUTORIZAR(CPF_JA_AUTORIZADO), "Quando eu tiver margem", "sei la", "nao sei"],
+    etapaFinal: "finalizada",
+    saida: "retorno",
+    respostaContem: "combina a data",
+  },
+  {
     nome: "8 horas sem responder a oferta vai para o carrinho, sem mensagem",
     acoes: [...ATE_AUTORIZAR(CPF_JA_AUTORIZADO), { minutos: 21 }, { verificaOferta: true }, { horas: 8 }, { verificaOferta: true }],
     etapaFinal: "finalizada",

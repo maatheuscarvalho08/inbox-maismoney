@@ -3,6 +3,7 @@ import type { Classificador, ConvenioEntendido, LeituraOferta } from "./classifi
 import type { DigitacaoPort, ReducaoParcela, TabelaDigitacao, ResultadoAutorizacao, ResultadoBanco, ResultadoConsulta, ResultadoExtrato } from "./bancos.js";
 import { cpfComTamanhoErrado, cpfValido, extrairCpf, normalizarCpf, trechoDoCpf } from "./cpf.js";
 import { buscarFaq } from "./faq.js";
+import { dataCurta, lerDataRetorno, querAdiar } from "./retorno.js";
 import { PRODUTOS_COM_SIMULACAO, ROTULO_CONVENIO, TEXTOS, formatarReais } from "./textos.js";
 import { sexoPeloNome } from "./sexoPeloNome.js";
 import { grupoPendente } from "./contrato.js";
@@ -95,6 +96,9 @@ export interface EstadoMaisa {
   ofertaEm?: string;
   ultimoContatoCliente?: string;
   followupEnviado?: boolean;
+  // Cliente quer deixar para depois: a Maisa pediu o dia e espera a resposta (no máximo 2 tentativas).
+  retornoPergunta?: boolean;
+  retornoTentativas?: number;
   lembreteEnviado?: boolean; // lembrete quando o cliente some no meio dos dados
   // Quantos follow-ups ela já mandou desde a última fala do cliente (no máximo 2) e quando saiu o último.
   followups?: number;
@@ -316,7 +320,9 @@ export type Efeito =
   | { tipo: "proposta"; codigoAf: string }
   // REDE: a digitação não passou. Não vai para a equipe: vira nota e alerta no log, o cliente
   // ouve que o contrato está sendo digitado e a conversa fica parada com a Maisa.
-  | { tipo: "rede"; nota: string };
+  | { tipo: "rede"; nota: string }
+  // Dia combinado com o cliente para a equipe chamar de novo (ISO).
+  | { tipo: "retorno"; em: string };
 
 export interface Passo {
   estado: EstadoMaisa;
@@ -2443,6 +2449,22 @@ export async function verificarFollowup(estado: EstadoMaisa, agora: Date, deps: 
   };
 }
 
+const ETAPAS_RETORNO = new Set<Etapa>(["oferta", "oferta_port", "margem", "extrato"]);
+
+function agendarRetorno(estado: EstadoMaisa, data: Date): Passo {
+  const quando = dataCurta(data);
+  return transferir({ ...estado, retornoPergunta: undefined, retornoTentativas: undefined }, `pediu para ser chamado em ${quando}`, TEXTOS.retornoAgendado(quando), "retorno", [{ tipo: "retorno", em: data.toISOString() }], "retorno");
+}
+
+function tratarRetorno(estado: EstadoMaisa, texto: string, deps: Dependencias): Passo {
+  const data = lerDataRetorno(texto, deps.agora());
+  if (data) return agendarRetorno(estado, data);
+  const n = (estado.retornoTentativas ?? 0) + 1;
+  // Desistiu de adiar ou não deu a data duas vezes: segue o fluxo normal / equipe combina.
+  if (n >= 2) return transferir({ ...estado, retornoPergunta: undefined, retornoTentativas: undefined }, "pediu para deixar para depois e não informou a data", TEXTOS.retornoSemData, "retorno_sem_data", [], "retorno");
+  return { estado: { ...estado, retornoTentativas: n }, respostas: [TEXTOS.pedeDataRetornoDeNovo], efeitos: [], rotulo: "pede_data_retorno_de_novo" };
+}
+
 export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps: Dependencias): Promise<Passo> {
   let estado: EstadoMaisa = atual ?? { etapa: "inicio", tentativas: 0 };
   if (estado.etapa === "finalizada") return { estado, respostas: [], efeitos: [], rotulo: "ja_finalizada" };
@@ -2488,6 +2510,16 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
       return { estado, respostas: antes ? [antes] : [], efeitos: [], rotulo: "confirmacao_mantida" };
     }
     estado = { ...estado, confirmacaoPendente: undefined };
+  }
+
+  // "Vou deixar para janeiro", "quando eu tiver margem": ela pede o dia e a equipe chama quando chegar.
+  if (entrada.texto && !entrada.temMidia && !entrada.documento) {
+    if (estado.retornoPergunta) return tratarRetorno(estado, entrada.texto, deps);
+    if (ETAPAS_RETORNO.has(estado.etapa) && querAdiar(entrada.texto)) {
+      const data = lerDataRetorno(entrada.texto, deps.agora());
+      if (data) return agendarRetorno(estado, data);
+      return { estado: { ...estado, retornoPergunta: true, retornoTentativas: 0 }, respostas: [TEXTOS.pedeDataRetorno], efeitos: [], rotulo: "pede_data_retorno" };
+    }
   }
 
   // Na etapa do extrato, PDF ou foto é o que ela pediu. Fora dela, arquivo vai para a equipe.

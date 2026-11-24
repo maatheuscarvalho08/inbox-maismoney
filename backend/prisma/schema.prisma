@@ -202,6 +202,10 @@ model Conversa {
   // Ofertada pela Maisa e sem resposta do cliente por 24h: aparece no Carrinho para a
   // equipe tentar converter. Sai quando o cliente responde ou alguém tira de lá.
   carrinhoEm     DateTime?      @map("carrinho_em")
+  // Dia combinado com o cliente para a equipe chamar de novo (pedido de "deixar para depois"). Quando chega,
+  // aparece em Retornos e no aviso do topo. retornoAvisadoEm marca que o aviso já saiu.
+  retornoEm        DateTime?      @map("retorno_em")
+  retornoAvisadoEm DateTime?      @map("retorno_avisado_em")
   // Versão do maisaEstado. Toda gravação da Maisa confere a versão lida: duas
   // execuções ao mesmo tempo na mesma conversa não sobrescrevem uma à outra.
   maisaVersao    Int            @default(0) @map("maisa_versao")

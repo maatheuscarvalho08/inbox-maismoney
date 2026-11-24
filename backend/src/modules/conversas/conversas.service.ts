@@ -14,7 +14,7 @@ const INCLUDE_PADRAO = {
   visualizacoes: { select: { usuarioId: true } },
 } as const;
 
-export type AbaConversas = "maisa" | "sem_atendente" | "atribuidas" | "disparos" | "carrinho";
+export type AbaConversas = "maisa" | "sem_atendente" | "atribuidas" | "disparos" | "carrinho" | "retornos";
 
 // "disparos" = nasceu de um disparo e o lead ainda não respondeu — some dessa aba
 // assim que chega a primeira resposta (ver evolutionWebhook/metaWebhook marcando
@@ -48,6 +48,9 @@ function filtroDaAba(aba: AbaConversas, leitor: Leitor) {
     // Ofertados que não responderam em 24h. Também aparecem na Fila ou em Atribuídas.
     case "carrinho":
       return { carrinhoEm: { not: null } };
+    // Clientes com dia combinado para a equipe chamar de novo (a lista traz todos, o contador só os que já venceram).
+    case "retornos":
+      return { retornoEm: { not: null } };
   }
 }
 
@@ -55,14 +58,16 @@ function filtroDaAba(aba: AbaConversas, leitor: Leitor) {
 export async function contarAbas(leitor: Leitor) {
   const contar = (aba: AbaConversas) =>
     prisma.conversa.count({ where: { AND: [filtroDaAba(aba, leitor), soDele(leitor)], status: { not: "encerrada" } } });
-  const [maisa, sem_atendente, atribuidas, disparos, carrinho] = await Promise.all([
+  const vencidos = prisma.conversa.count({ where: { AND: [filtroDaAba("retornos", leitor), soDele(leitor)], retornoEm: { lte: new Date() } } });
+  const [maisa, sem_atendente, atribuidas, disparos, carrinho, retornos] = await Promise.all([
     contar("maisa"),
     contar("sem_atendente"),
     contar("atribuidas"),
     contar("disparos"),
     contar("carrinho"),
+    vencidos,
   ]);
-  return { maisa, sem_atendente, atribuidas, disparos, carrinho };
+  return { maisa, sem_atendente, atribuidas, disparos, carrinho, retornos };
 }
 
 export async function listConversas(leitor: Leitor, status?: StatusConversa, aba?: AbaConversas, limite?: number) {
@@ -108,6 +113,8 @@ export async function atualizarConversa(
     convenio?: Convenio | null;
     convenioOrigem?: string;
     carrinhoEm?: null;
+    retornoEm?: Date | null;
+    retornoAvisadoEm?: null;
   },
 ) {
   return prisma.conversa.update({
