@@ -297,7 +297,7 @@ async function soltarLease(conversaId: string) {
 
 // O que fez a Maisa andar: uma mensagem do cliente ou uma checagem do relógio.
 // reler: a equipe mandou a Maisa ler de novo um arquivo antigo (o extrato).
-type Gatilho = { mensagemId: string; reler?: boolean } | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" | "verificar_silencio" };
+type Gatilho = { mensagemId: string; reler?: boolean } | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" | "verificar_silencio" | "verificar_banco" };
 
 // Outra gravação mudou o estado no meio (operador devolveu a conversa, outro processo).
 class ConflitoEstado extends Error {}
@@ -359,7 +359,10 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
   if (!conversa || conversa.status === "encerrada") return;
   // Fora da Maisa: ela não responde. Se o cliente disser que quer seguir, avisa a equipe.
   if (!conversa.comMaisa || !conversa.instancia.maisaAtiva) {
-    if ("mensagemId" in gatilho && !conversa.comMaisa) await avisarAceiteTardio(conversa, gatilho.mensagemId);
+    if ("mensagemId" in gatilho && !conversa.comMaisa) {
+      await avisarAceiteTardio(conversa, gatilho.mensagemId);
+      await avisarMensagemAposContrato(conversa, gatilho.mensagemId);
+    }
     return;
   }
   const versaoLida = conversa.maisaVersao;
@@ -380,7 +383,19 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     const tipo = mensagem.tipoMidia?.split(";")[0].trim() ?? null;
     if (tipo && mensagem.midiaPath && !mensagem.midiaDeleted) arquivo = { midiaPath: mensagem.midiaPath, tipo };
     const documento = Boolean(arquivo && FORMATOS_EXTRATO.includes(arquivo.tipo));
-    entrada = { texto: mensagem.conteudoTexto, temMidia: Boolean(tipo), documento, mensagemId: mensagem.id, ...(documento ? { documentoId: mensagem.id } : {}) };
+    // Arquivos que chegaram juntos (até 60 segundos antes) e ainda não foram lidos: vão todos nesta leitura.
+    let documentoIds: string[] | undefined;
+    if (documento && !gatilho.reler) {
+      const piso = Math.max(mensagem.createdAt.getTime() - 60_000, estadoAntes?.ultimaMensagemEm ? Date.parse(estadoAntes.ultimaMensagemEm) : 0);
+      const antes = await prisma.mensagem.findMany({
+        where: { conversaId: conversa.id, remetenteTipo: "cliente", tipoMidia: { not: null }, midiaDeleted: false, createdAt: { gt: new Date(piso), lt: mensagem.createdAt } },
+        orderBy: { createdAt: "asc" },
+        select: { id: true, tipoMidia: true },
+      });
+      const docs = antes.filter((x) => FORMATOS_EXTRATO.includes(x.tipoMidia?.split(";")[0].trim() ?? ""));
+      if (docs.length) documentoIds = [...docs.map((x) => x.id), mensagem.id];
+    }
+    entrada = { texto: mensagem.conteudoTexto, temMidia: Boolean(tipo), documento, mensagemId: mensagem.id, ...(documento ? { documentoId: mensagem.id, ...(documentoIds ? { documentoIds } : {}) } : {}) };
     // Áudio: ela escuta e segue como se o cliente tivesse escrito. Se falhar, vai para a equipe.
     if (arquivo?.tipo.startsWith("audio/") && env.OPENAI_API_KEY) {
       try {
@@ -468,6 +483,16 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       const vinculo = vinculoConferido(lido);
       console.log(`Maisa leu o vínculo SIAPE da conversa ${conversa.id}: ${lido.documento_siape ?? "?"} ${lido.vinculo_siape ?? "?"}${vinculo !== lido.vinculo_siape ? ` (sem prova no trecho: ${vinculo})` : ""}`);
       return { documento: lido.documento_siape ?? null, vinculo, renda: lido.renda_bruta ?? null, orgao: lido.orgao ?? null, contaSalario: contaDoContracheque(lido) };
+    },
+    produtoSugerido: async () => {
+      const ms = await prisma.mensagem.findMany({ where: { conversaId: conversa.id, remetenteTipo: "maisa" }, orderBy: { createdAt: "desc" }, take: 3, select: { conteudoTexto: true } });
+      for (const m of ms) {
+        const t = (m.conteudoTexto ?? "").toLowerCase();
+        if (/carteira assinada|\bclt\b/.test(t)) return "clt";
+        if (/\bsiape\b|servidor federal/.test(t)) return "siape";
+        if (/\binss\b|aposentad|pensionista/.test(t)) return "inss";
+      }
+      return null;
     },
     redigirFollowup: async ({ estado, tentativa, pergunta }) =>
       redigirFollowupComModelo({
@@ -703,6 +728,33 @@ async function digitarComSeguranca(conversa: ConversaMaisa, estado: EstadoMaisa 
 
 // Cliente diz que quer seguir numa conversa que já saiu da Maisa depois de uma oferta.
 // Só avisa: nada é executado. Não avisa se a equipe já está conversando com ele.
+// O cliente escreveu depois que a Maisa fez o contrato e ninguém respondeu: ela confirma o recebimento (uma vez
+// a cada 2h) e a equipe recebe o aviso. A fila mostra "Escreveu depois do contrato" no topo.
+async function avisarMensagemAposContrato(conversa: ConversaMaisa, mensagemId: string) {
+  const estado = (conversa.maisaEstado as EstadoMaisa | null) ?? null;
+  if (!estado || estado.saida !== "contrato_enviado") return;
+  const mensagem = await prisma.mensagem.findUnique({ where: { id: mensagemId } });
+  if (!mensagem || mensagem.remetenteTipo !== "cliente") return;
+  const agora = portasMaisa.agora();
+  if (estado.ackPosContratoEm && agora.getTime() - Date.parse(estado.ackPosContratoEm) < 2 * 60 * 60_000) return;
+  const [ultimaEquipe, ultimaMaisa] = await Promise.all([
+    prisma.mensagem.findFirst({ where: { conversaId: conversa.id, remetenteTipo: "operador" }, orderBy: { createdAt: "desc" }, select: { createdAt: true } }),
+    prisma.mensagem.findFirst({ where: { conversaId: conversa.id, remetenteTipo: "maisa" }, orderBy: { createdAt: "desc" }, select: { createdAt: true } }),
+  ]);
+  if (ultimaEquipe && (!ultimaMaisa || ultimaEquipe.createdAt > ultimaMaisa.createdAt)) return;
+  const criada = await prisma.$transaction(async (tx) => {
+    const r = await tx.conversa.updateMany({
+      where: { id: conversa.id, maisaVersao: conversa.maisaVersao },
+      data: { maisaEstado: { ...estado, ackPosContratoEm: agora.toISOString() } as unknown as Prisma.InputJsonValue, maisaVersao: { increment: 1 } },
+    });
+    if (!r.count) return null;
+    return registrarSaidas(tx, conversa.id, [TEXTOS.posContrato], true);
+  });
+  if (!criada) return;
+  void despachar(conversa.id);
+  avisar({ tipo: "mensagem_apos_digitacao", conversaId: conversa.id, nome: conversa.contato.nome });
+}
+
 async function avisarAceiteTardio(conversa: ConversaMaisa, mensagemId: string) {
   const estado = (conversa.maisaEstado as EstadoMaisa | null) ?? null;
   if (!estado || estado.etapa !== "finalizada" || !SAIDAS_COM_OFERTA(estado)) return;
@@ -817,7 +869,7 @@ async function retomar(conversaId: string) {
   const emAndamento = anterior && anterior.etapa !== "finalizada" && anterior.etapa !== "inicio";
   const salvo = env.MAISA_CONVERSA_MODO === "ativo" ? anterior?.contratoSalvo : undefined;
   const estado: EstadoMaisa = emAndamento
-    ? { ...anterior, tentativas: 0, confirmacaoPendente: undefined, saida: undefined, motivoTransferencia: undefined, ...marca }
+    ? { ...anterior, tentativas: 0, confirmacaoPendente: undefined, saida: undefined, motivoTransferencia: undefined, ofertaEm: undefined, followups: undefined, followupEm: undefined, bancoProximaEm: undefined, ...marca }
     : { etapa: "inicio", tentativas: 0, ...(salvo ? { contratoSalvo: salvo } : {}), ...marca };
   await prisma.conversa.update({ where: { id: conversaId }, data: { maisaEstado: estado as unknown as Prisma.InputJsonValue, maisaVersao: { increment: 1 } } });
 }
@@ -834,7 +886,19 @@ export function retomarComMaisa(conversaId: string): Promise<void> {
   return atual;
 }
 
-export function processarComMaisa(conversaId: string, mensagemId: string): Promise<void> {
+// Arquivos que chegam em sequência (extrato e contracheque de uma vez): espera a rajada acabar e só o último
+// dispara a leitura, que junta todos. Antes cada um respondia separado e as respostas se contradiziam.
+const JANELA_ARQUIVOS_MS = 12_000;
+export async function processarComMaisa(conversaId: string, mensagemId: string): Promise<void> {
+  const m = await prisma.mensagem.findUnique({ where: { id: mensagemId }, select: { remetenteTipo: true, tipoMidia: true, createdAt: true } });
+  if (m?.remetenteTipo === "cliente" && /^(application\/pdf|image\/)/.test(m.tipoMidia ?? "")) {
+    await new Promise((r) => setTimeout(r, JANELA_ARQUIVOS_MS));
+    const depois = await prisma.mensagem.findFirst({
+      where: { conversaId, remetenteTipo: "cliente", tipoMidia: { not: null }, createdAt: { gt: m.createdAt, lte: new Date(m.createdAt.getTime() + JANELA_ARQUIVOS_MS * 2) } },
+      select: { id: true },
+    });
+    if (depois) return;
+  }
   return enfileirar(conversaId, { mensagemId });
 }
 
@@ -910,6 +974,22 @@ export async function verificarSilencios() {
   const paradas = candidatas.filter((c) => ((c.maisaEstado as EstadoMaisa | null)?.followups ?? 0) < 2).slice(0, LOTE_FOLLOWUP);
   for (const c of paradas) await enfileirar(c.id, { evento: "verificar_silencio" });
   return paradas.length;
+}
+
+// Extrato guardado porque a Facta estava sem tabela: de hora em hora o fluxo tenta de novo.
+export async function verificarBancosIndisponiveis() {
+  const candidatas = await prisma.conversa.findMany({
+    where: { comMaisa: true, status: { not: "encerrada" }, instancia: { maisaAtiva: true }, maisaEstado: { path: ["etapa"], equals: "extrato" } },
+    select: { id: true, maisaEstado: true },
+  });
+  const prontas = candidatas
+    .filter((c) => {
+      const e = c.maisaEstado as EstadoMaisa | null;
+      return Boolean(e?.bancoProximaEm && Date.parse(e.bancoProximaEm) <= Date.now());
+    })
+    .slice(0, LOTE_FOLLOWUP);
+  for (const c of prontas) await enfileirar(c.id, { evento: "verificar_banco" });
+  return prontas.length;
 }
 
 // Proposta digitada pela Maisa há 10 min, cliente calado desde o link: pergunta uma vez se
@@ -1037,6 +1117,7 @@ export function startMaisaJobs() {
       await verificarAutorizacoesPendentes();
       await verificarOfertasPendentes();
       await verificarSilencios();
+      await verificarBancosIndisponiveis();
       await verificarAssinaturas();
     } catch (err) {
       console.error("Erro nas checagens de tempo da Maisa:", err);

@@ -172,9 +172,13 @@ export interface Selo {
 const brl = (centavos: number) => (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 // Selo curto do motivo da fila e valor simulado, para o atendente não precisar abrir a conversa.
-export function seloDaConversa(conversa: Pick<Conversa, "comMaisa" | "maisaEstado">): (Selo & { valor: string | null; parou: string | null }) | null {
+export function seloDaConversa(conversa: Pick<Conversa, "comMaisa" | "maisaEstado"> & { mensagens?: Conversa["mensagens"] }): (Selo & { valor: string | null; parou: string | null }) | null {
   const saida = saidaDaConversa(conversa);
   if (!saida) return null;
+  // O cliente escreveu depois que a Maisa fez o contrato e ninguém respondeu: vai para o topo da fila.
+  if (conversa.maisaEstado?.saida === "contrato_enviado" && conversa.mensagens?.[0]?.remetenteTipo === "cliente") {
+    return { texto: "Escreveu depois do contrato", tom: "quente", valor: null, parou: null };
+  }
   const estado = conversa.maisaEstado;
   const chave = estado?.saida ?? "";
   let texto = saida.selo ?? SELOS[chave];
@@ -192,9 +196,10 @@ export function seloDaConversa(conversa: Pick<Conversa, "comMaisa" | "maisaEstad
 }
 
 // Quanto mais alto, mais cedo na fila: quem está pronto para fechar vem primeiro.
-export function prioridadeDaFila(conversa: Pick<Conversa, "comMaisa" | "maisaEstado">): number {
+export function prioridadeDaFila(conversa: Pick<Conversa, "comMaisa" | "maisaEstado"> & { mensagens?: Conversa["mensagens"] }): number {
   const selo = seloDaConversa(conversa);
   if (!selo) return 1;
+  if (selo.texto === "Escreveu depois do contrato") return 4;
   return selo.tom === "quente" ? 3 : selo.tom === "baixa" ? 0 : 2;
 }
 

@@ -99,6 +99,11 @@ export interface EstadoMaisa {
   // Quantos follow-ups ela já mandou desde a última fala do cliente (no máximo 2) e quando saiu o último.
   followups?: number;
   followupEm?: string;
+  // Facta sem tabela para um extrato com margem: guarda o extrato e tenta de novo de hora em hora.
+  // Cliente que escreveu depois do contrato: a Maisa avisa uma vez a cada 2h.
+  ackPosContratoEm?: string;
+  bancoTentativas?: number;
+  bancoProximaEm?: string;
   // Proposta digitada: lembrete único de assinatura, 10 min depois do link, se o cliente não falou.
   lembreteAssinaturaEm?: string;
   oferta?: {
@@ -177,8 +182,8 @@ export interface EstadoMaisa {
 // Mensagem do cliente, ou uma checagem automática do relógio (sem texto).
 // documento = PDF ou imagem, que pode ser o extrato. Áudio chega já transcrito em texto.
 export type Entrada =
-  | { texto: string | null; temMidia: boolean; documento?: boolean; documentoId?: string; mensagemId?: string; viaAudio?: boolean }
-  | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" | "verificar_silencio" };
+  | { texto: string | null; temMidia: boolean; documento?: boolean; documentoId?: string; documentoIds?: string[]; mensagemId?: string; viaAudio?: boolean }
+  | { evento: "verificar_autorizacao" | "verificar_oferta" | "executar_digitacao" | "verificar_silencio" | "verificar_banco" };
 type EntradaTexto = Exclude<Entrada, { evento: string }>;
 
 // Camada conversacional (fase 7). Ausente ou desligada: tudo funciona como antes.
@@ -262,6 +267,8 @@ export interface Dependencias {
   lerMargemDoArquivo?(): Promise<{ legivel: boolean; negativa: boolean; valor: number | null } | null>;
   // Descreve o arquivo que chegou (tipo e se dá para ler), para a Maisa não chamar a equipe sem saber o que é.
   descreverArquivo?(): Promise<{ tipo: string; rotulo: string; legivel: boolean } | null>;
+  // O produto de que a Maisa vinha falando (olhando as últimas mensagens dela), para entender um "ok" ou "sim".
+  produtoSugerido?(): Promise<ConvenioEntendido | null>;
   // Escreve o follow-up para o cliente que parou de responder. Null: vale o texto fixo.
   redigirFollowup?(p: { estado: EstadoMaisa; tentativa: number; pergunta: string }): Promise<string | null>;
   // Digitação na Facta (INSS e SIAPE). Desligada, o "sim" vai para a equipe.
@@ -637,7 +644,7 @@ function decidirConvenio(estado: EstadoMaisa, convenio: ConvenioEntendido, prefi
   // Só segue com a Maisa o produto que tem simulação por API (CLT, INSS e SIAPE, na Facta).
   // Os demais vão para a equipe abaixo.
   if ((convenio === "clt" || porExtrato(convenio)) && PRODUTOS_COM_SIMULACAO.includes(convenio)) {
-    return comPrefixo(ir(estado, "cpf", [TEXTOS.pedeCpf], convenio, [{ tipo: "convenio", convenio }], { produto: convenio }));
+    return comPrefixo(ir(estado, "cpf", [convenio === "siape" ? TEXTOS.pedeCpfSiape : TEXTOS.pedeCpf], convenio, [{ tipo: "convenio", convenio }], { produto: convenio }));
   }
   if (convenio === "servidor") {
     return comPrefixo(transferir(estado, "servidor público", TEXTOS.servidorComEquipe, "servidor"));
@@ -745,7 +752,14 @@ async function etapaInicio(estado: EstadoMaisa, texto: string, deps: Dependencia
 
 async function etapaConvenio(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const convenio = await deps.classificador.convenio(texto);
-  return convenio ? decidirEContinuar(estado, convenio, texto, deps) : ouvirCliente(estado, texto, deps);
+  if (convenio) return decidirEContinuar(estado, convenio, texto, deps);
+  // "Ok" ou "sim" a uma pergunta dela sobre o produto ("quer seguir com a simulação CLT?"): vale como aceite
+  // do produto de que ela vinha falando, em vez de "não entendi".
+  if (mensagemSocial(texto) === "confirmacao_curta" || (await deps.classificador.simNao(texto)) === "sim") {
+    const sugerido = await deps.produtoSugerido?.().catch(() => null);
+    if (sugerido) return decidirEContinuar(estado, sugerido, texto, deps, [`Certo, então vamos com o ${sugerido === "clt" ? "CLT" : sugerido === "inss" ? "INSS" : sugerido === "siape" ? "SIAPE" : "seu convênio"}.`]);
+  }
+  return ouvirCliente(estado, texto, deps);
 }
 
 // "sou siape, meu cpf é ...": decide o produto e já usa o CPF (e a data) da mesma mensagem,
@@ -999,7 +1013,7 @@ async function etapaExtrato(
     if (ehMarinha(info.orgao)) return marinhaParaEquipe(estado);
     const vinculo = info.vinculo ?? "nao_informado";
     if (VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
-      return transferir({ ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined }, `vínculo lido no contracheque: ${vinculo.replace(/_/g, " ")}. Conferir no contracheque: se for mesmo esse vínculo, não há consignado; se a leitura errou, seguir o atendimento`, TEXTOS.vinculoConferir, "vinculo_siape", [], "vinculo_siape");
+      return encerrar({ ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined }, `vínculo lido no contracheque: ${vinculo.replace(/_/g, " ")}: sem consignado SIAPE`, TEXTOS.vinculoSemConsignadoMotivo(vinculo), "vinculo_siape", [], "vinculo_siape");
     }
     resultado = comRendaDoContracheque(estado.extratoSiapePendente, info.renda, info.contaSalario);
     estado = { ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined };
@@ -1035,7 +1049,7 @@ async function etapaExtrato(
       }
     }
     if (vinculo && VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
-      return transferir({ ...estado, vinculoSiape: vinculo }, `vínculo lido no contracheque: ${vinculo.replace(/_/g, " ")}. Conferir no contracheque: se for mesmo esse vínculo, não há consignado; se a leitura errou, seguir o atendimento`, TEXTOS.vinculoConferir, "vinculo_siape", [], "vinculo_siape");
+      return encerrar({ ...estado, vinculoSiape: vinculo }, `vínculo lido no contracheque: ${vinculo.replace(/_/g, " ")}: sem consignado SIAPE`, TEXTOS.vinculoSemConsignadoMotivo(vinculo), "vinculo_siape", [], "vinculo_siape");
     }
     if (!vinculo) {
       const { siape: _s, ...guardado } = resultado;
@@ -1117,9 +1131,41 @@ async function etapaExtrato(
     return transferir(estado, resultado.motivo, TEXTOS.servidorNaoFederal, "servidor_outro", [], "servidor_outro");
   }
   if (resultado.tipo === "extrato_invalido") {
-    return tentarDeNovo(estado, TEXTOS.extratoInvalido(produtoExtrato(estado)), "extrato_invalido", "extrato_invalido");
+    return tentarDeNovo(estado, TEXTOS.extratoInvalido(produtoExtrato(estado), estado.tentativas), "extrato_invalido", "extrato_invalido");
+  }
+  // Facta sem tabela para um extrato que mostrou margem: quase sempre é o banco fora do ar (virada de folha
+  // do SIAPE), não falta de saldo. Guarda o extrato, avisa o cliente e tenta de novo de hora em hora.
+  if (resultado.tipo === "sem_saldo" && resultado.banco !== "extrato" && /nenhuma tabela/i.test(resultado.motivo) && porExtrato(estado.produto)) {
+    return bancoIndisponivel(estado, ids.filter((x): x is string => Boolean(x)), deps.agora(), resultado.motivo);
   }
   return mostrarResultado(estado, resultado, deps.agora());
+}
+
+const MAX_TENTATIVAS_BANCO = 3;
+function bancoIndisponivel(estado: EstadoMaisa, ids: string[], agora: Date, motivo: string): Passo {
+  const feitas = estado.bancoTentativas ?? 0;
+  if (!ids.length || feitas >= MAX_TENTATIVAS_BANCO) {
+    return transferir(estado, `Facta sem tabela para um extrato com margem (${motivo}): conferir direto no banco`, TEXTOS.erroBanco, "erro_banco", [], "erro_banco");
+  }
+  return {
+    estado: { ...estado, etapa: "extrato", tentativas: 0, extratosPendentes: ids, bancoTentativas: feitas + 1, bancoProximaEm: new Date(agora.getTime() + 60 * 60_000).toISOString() },
+    // Só a primeira vez avisa o cliente.
+    respostas: feitas === 0 ? [TEXTOS.viradaFolha] : [],
+    efeitos: [],
+    rotulo: "banco_indisponivel",
+  };
+}
+
+// De hora em hora, até 3 vezes e sempre dentro da janela do cliente, lê o extrato guardado de novo.
+async function retomarBanco(estado: EstadoMaisa, agora: Date, deps: Dependencias): Promise<Passo> {
+  const parado: Passo = { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
+  const ids = pendentes(estado);
+  if (estado.etapa !== "extrato" || !estado.bancoProximaEm || !ids.length) return parado;
+  if (Date.parse(estado.bancoProximaEm) > agora.getTime() || !horaPermitida(agora)) return parado;
+  if (estado.ultimaMensagemEm && agora.getTime() - Date.parse(estado.ultimaMensagemEm) > JANELA_FOLLOWUP_MS) {
+    return transferir(estado, "Facta continuou sem tabela e a janela de 24h do cliente está acabando: conferir direto no banco", TEXTOS.erroBanco, "erro_banco", [], "erro_banco");
+  }
+  return etapaExtrato({ ...estado, bancoProximaEm: undefined, extratoPendenteId: undefined, extratosPendentes: undefined }, { texto: null, documento: true }, deps, ids);
 }
 
 async function pedirAutorizacao(
@@ -2280,15 +2326,26 @@ function retomaDaEtapa(estado: EstadoMaisa): string {
   return RETOMA_ETAPA[estado.etapa] ?? PERGUNTA_DA_ETAPA[estado.etapa];
 }
 
-// "Na verdade sou do INSS", "me enganei, sou siape": só entre INSS e SIAPE (mesmo caminho de
-// extrato), ou para CLT enquanto ainda pede o CPF.
-async function trocaDeProduto(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<{ estado: EstadoMaisa; aviso: string; efeito: Efeito } | null> {
+// "Na verdade sou do INSS", "o meu é INSS", "sou CLT", "recebo BPC": o cliente corrige o produto antes da oferta.
+// INSS e SIAPE trocam no mesmo caminho de extrato. CLT recomeça pelo nome (o CPF já está no cadastro). Os demais
+// convênios vão para a equipe, como na escolha do menu.
+const AFIRMA_PRODUTO = /(na verdade|na real|me enganei|errei|alias|eu sou|\bsou (do|da|de|um|uma|aposentad|pensionista|servidor|clt|inss|siape|militar|estadual|municipal)\b|\b(o )?(meu|minha) (e|eh|é)\b|\brecebo\b|\btrabalho de carteira|\bcarteira assinada|\b(clt|inss|siape|loas|bpc|marinha)\b)/;
+const SO_PRODUTO = /^(clt|inss|siape|loas|bpc|marinha|militar)[\s.!]*$/;
+async function trocaDeProduto(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<{ estado: EstadoMaisa; aviso: string; efeito: Efeito } | { passo: Passo } | null> {
   const t = normalizar(texto);
-  if (!/(na verdade|na real|me enganei|errei|alias|eu sou|\bsou (do|da|de)\b)/.test(t)) return null;
+  if (!SO_PRODUTO.test(t) && (!AFIRMA_PRODUTO.test(t) || t.split(/\s+/).length > 12)) return null;
   const c = await deps.classificador.convenio(texto.replace(/\d/g, " "));
-  const pode = c === "inss" || c === "siape" || (c === "clt" && estado.etapa === "cpf");
-  if (!c || !pode || c === estado.produto) return null;
-  return { estado: { ...estado, produto: c, tentativas: 0 }, aviso: `Certo, então é ${{ inss: "INSS", siape: "SIAPE", clt: "CLT" }[c as "inss" | "siape" | "clt"]}.`, efeito: { tipo: "convenio", convenio: c } };
+  if (!c || c === estado.produto) return null;
+  if (c === "inss" || c === "siape") return { estado: { ...estado, produto: c, tentativas: 0 }, aviso: `Certo, então é ${c === "inss" ? "INSS" : "SIAPE"}.`, efeito: { tipo: "convenio", convenio: c } };
+  if (c === "clt") {
+    const depois: EstadoMaisa =
+      estado.etapa === "cpf"
+        ? { ...estado, produto: c, tentativas: 0 }
+        : { ...estado, produto: c, etapa: "nome", tentativas: 0, extratoPendenteId: undefined, extratosPendentes: undefined, extratoSiapePendente: undefined, margemInformada: undefined };
+    return { estado: depois, aviso: "Certo, então é CLT.", efeito: { tipo: "convenio", convenio: c } };
+  }
+  if (c === "servidor" || c === "outro") return null;
+  return { passo: decidirConvenio(estado, c, []) };
 }
 
 // Follow-up e Carrinho. O cliente parou de responder: aos 20 minutos a Maisa retoma, de novo 3 horas
@@ -2356,6 +2413,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     if (entrada.evento === "verificar_oferta") return verificarFollowup(estado, deps.agora(), deps);
     if (entrada.evento === "executar_digitacao") return executarDigitacao(estado, deps);
     if (entrada.evento === "verificar_silencio") return verificarFollowup(estado, deps.agora(), deps);
+    if (entrada.evento === "verificar_banco") return retomarBanco(estado, deps.agora(), deps);
     if (estado.etapa !== "aguardando") return { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
     return consultarAgora(estado, deps, "verificacao_automatica", false);
   }
@@ -2394,7 +2452,8 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   }
 
   // Na etapa do extrato, PDF ou foto é o que ela pediu. Fora dela, arquivo vai para a equipe.
-  if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps);
+  // Vários arquivos que chegaram juntos (extrato e contracheque): lê todos e responde uma vez.
+  if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps, entrada.documentoIds ?? entrada.documentoId);
   // Extrato que a equipe deixou guardado para ela reler (cliente que voltou depois de dias): qualquer
   // resposta do cliente dispara a leitura e a simulação, sem pedir o arquivo de novo.
   if (estado.etapa === "extrato" && !entrada.temMidia && pendentes(estado).length) {
@@ -2408,8 +2467,9 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   if (entrada.documento && entrada.documentoId && porExtrato(estado.produto) && ["cpf", "nome", "nascimento", "margem"].includes(estado.etapa)) {
     // Segundo arquivo seguido: guarda sem repetir o "Recebi o seu documento".
     const jaTinha = pendentes(estado).length > 0;
+    const lote = entrada.documentoIds?.length ? entrada.documentoIds : [entrada.documentoId];
     return {
-      estado: { ...estado, extratoPendenteId: undefined, extratosPendentes: guardarPendente(estado, entrada.documentoId) },
+      estado: { ...estado, extratoPendenteId: undefined, extratosPendentes: lote.reduce((acc, id) => guardarPendente({ ...estado, extratosPendentes: acc }, id), pendentes(estado)) },
       respostas: jaTinha ? [] : [TEXTOS.extratoGuardado, PERGUNTA_DA_ETAPA[estado.etapa]],
       efeitos: [],
       rotulo: "extrato_antecipado",
@@ -2422,7 +2482,8 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   if (entrada.documento && entrada.documentoId && (estado.etapa === "inicio" || estado.etapa === "convenio")) {
     const respostas = estado.etapa === "inicio" ? [`${TEXTOS.apresentacao} ${TEXTOS.arquivoNoInicio}`, TEXTOS.perguntaConvenio] : [TEXTOS.arquivoNoInicio];
     const jaTinha = pendentes(estado).length > 0;
-    return ir(estado, "convenio", jaTinha && estado.etapa === "convenio" ? [] : respostas, "arquivo_no_inicio", [], { extratoPendenteId: undefined, extratosPendentes: guardarPendente(estado, entrada.documentoId) });
+    const lote = entrada.documentoIds?.length ? entrada.documentoIds : [entrada.documentoId];
+    return ir(estado, "convenio", jaTinha && estado.etapa === "convenio" ? [] : respostas, "arquivo_no_inicio", [], { extratoPendenteId: undefined, extratosPendentes: lote.reduce((acc, id) => guardarPendente({ ...estado, extratosPendentes: acc }, id), pendentes(estado)) });
   }
   // Extrato de novo depois da oferta: a simulação já foi feita com ele.
   if (entrada.documento && (estado.etapa === "oferta" || estado.etapa === "oferta_port")) {
@@ -2479,12 +2540,13 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   // "Na verdade sou do INSS": troca o produto antes de seguir.
   if (estado.etapa === "cpf" || estado.etapa === "nascimento" || estado.etapa === "margem" || estado.etapa === "extrato") {
     const troca = await trocaDeProduto(estado, texto, deps);
+    if (troca && "passo" in troca) return troca.passo;
     if (troca) {
       let p: Passo | null = null;
       if (troca.estado.etapa === "cpf" && extrairCpf(texto)) p = await etapaCpf(troca.estado, texto, deps);
       else if (troca.estado.etapa === "nascimento" && lerDataNascimento(texto, deps.agora())) p = await etapaNascimento(troca.estado, texto, deps);
       if (p) return { ...p, respostas: [troca.aviso, ...p.respostas], efeitos: [troca.efeito, ...p.efeitos] };
-      const pergunta = troca.estado.etapa === "extrato" ? TEXTOS.pedeExtrato(produtoExtrato(troca.estado)) : PERGUNTA_DA_ETAPA[troca.estado.etapa];
+      const pergunta = troca.estado.etapa === "extrato" ? TEXTOS.pedeExtrato(produtoExtrato(troca.estado)) : troca.estado.etapa === "nome" ? TEXTOS.pedeNome : PERGUNTA_DA_ETAPA[troca.estado.etapa];
       return { estado: troca.estado, respostas: [troca.aviso, pergunta], efeitos: [troca.efeito], rotulo: "troca_produto" };
     }
   }

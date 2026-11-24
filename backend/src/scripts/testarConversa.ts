@@ -970,6 +970,112 @@ await caso("Pergunta de idade fora da etapa é respondida direto, sem repetir s�
   assert.match(p.respostas.join(" "), /74 anos/);
 });
 
+await caso("E2: Facta sem tabela com margem guarda o extrato e tenta de novo de hora em hora", async () => {
+  let chamadas = 0;
+  let agora = new Date("2026-11-24T15:00:00Z"); // 12h em Brasília
+  const deps = depsBase(roteiro([]), {
+    agora: () => agora,
+    simularPorExtrato: async () => {
+      chamadas++;
+      return chamadas === 1 ? { tipo: "sem_saldo", banco: "Facta", motivo: "nenhuma tabela disponível" } : { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
+    },
+  }, []);
+  const e: EstadoMaisa = { etapa: "extrato", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" };
+  const p1 = await avancar(e, { texto: null, temMidia: true, documento: true, documentoId: "pdf-1" }, deps);
+  assert.equal(p1.rotulo, "banco_indisponivel");
+  assert.equal(p1.estado.etapa, "extrato");
+  assert.deepEqual(p1.estado.extratosPendentes, ["pdf-1"]);
+  assert.match(p1.respostas[0], /atualizando/);
+  assert.ok(!p1.efeitos.some((x) => x.tipo === "encerrar"), "não encerra");
+  agora = new Date("2026-11-24T15:30:00Z");
+  const cedo = await avancar(p1.estado, { evento: "verificar_banco" }, deps);
+  assert.equal(cedo.respostas.length, 0);
+  assert.equal(chamadas, 1, "antes de 1h não tenta de novo");
+  agora = new Date("2026-11-24T16:05:00Z");
+  const p2 = await avancar(p1.estado, { evento: "verificar_banco" }, deps);
+  assert.equal(chamadas, 2);
+  assert.equal(p2.estado.saida, "sem_saldo", "agora a Facta respondeu: sem margem de verdade");
+  const esgotada = await avancar({ ...p1.estado, bancoTentativas: 3 }, { texto: null, temMidia: true, documento: true, documentoId: "pdf-1" }, depsBase(roteiro([]), { simularPorExtrato: async () => ({ tipo: "sem_saldo", banco: "Facta", motivo: "nenhuma tabela disponível" }) }, []));
+  assert.equal(esgotada.estado.saida, "erro_banco", "depois de 3 tentativas a equipe confere");
+});
+
+await caso("F4: 'ok' a uma pergunta sobre o produto vale como aceite; despedida educada não vira 'não entendi'", async () => {
+  const ini: EstadoMaisa = { etapa: "convenio", tentativas: 0 };
+  const deps = depsBase(roteiro([]), { produtoSugerido: async () => "clt" }, []);
+  const p = await avancar(ini, { texto: "Ok", temMidia: false }, deps);
+  assert.equal(p.estado.produto, "clt");
+  assert.equal(p.estado.etapa, "cpf");
+  const sem = await avancar(ini, { texto: "Ok", temMidia: false }, depsBase(roteiro([]), {}, []));
+  assert.notEqual(sem.estado.produto, "clt");
+  const e: EstadoMaisa = { etapa: "extrato", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" };
+  const adeus = await avancar(e, { texto: "Ok obrigada e tenha um ótimo final de semana", temMidia: false }, depsBase(roteiro([]), {}, []));
+  assert.equal(adeus.estado.etapa, "extrato");
+  assert.ok(!adeus.efeitos.some((x) => x.tipo === "transferir"));
+});
+
+await caso("F5: 'o meu é INSS', 'CLT' e 'recebo BPC' trocam o produto em qualquer etapa antes da oferta", async () => {
+  const e: EstadoMaisa = { etapa: "extrato", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" };
+  const deps = () => depsBase(roteiro([]), {}, []);
+  const inss = await avancar(e, { texto: "Mas o meu é INSS", temMidia: false }, deps());
+  assert.equal(inss.estado.produto, "inss");
+  assert.equal(inss.estado.etapa, "extrato");
+  assert.match(inss.respostas.join(" "), /Meu INSS/);
+  const clt = await avancar(e, { texto: "CLT", temMidia: false }, deps());
+  assert.equal(clt.estado.produto, "clt");
+  assert.equal(clt.estado.etapa, "nome");
+  assert.match(clt.respostas.join(" "), /nome completo/);
+  const loas = await avancar(e, { texto: "Recebo BPC loas", temMidia: false }, deps());
+  assert.equal(loas.estado.etapa, "finalizada");
+  assert.equal(loas.estado.saida, "convenio");
+});
+
+await caso("F1 e F6: texto do extrato ilegível muda na segunda vez e SIAPE confirma o público", async () => {
+  const a = TEXTOS.extratoInvalido("siape", 0);
+  const b = TEXTOS.extratoInvalido("siape", 1);
+  assert.match(a, /tela reta, com boa luz/);
+  assert.match(b, /chamo uma pessoa da equipe/);
+  const p = await avancar({ etapa: "convenio", tentativas: 0 }, { texto: "sou servidor federal SIAPE", temMidia: false }, depsBase(roteiro([]), {}, []));
+  assert.match(p.respostas.join(" "), /servidor federal, aposentado ou pensionista pelo SIAPE, certo/);
+});
+
+await caso("E4: arquivos que chegam juntos são lidos todos numa resposta só", async () => {
+  const lidos: (string | undefined)[] = [];
+  const deps = depsBase(roteiro([]), {
+    simularPorExtrato: async (_c, _d, id) => {
+      lidos.push(id);
+      return id === "b" ? { tipo: "extrato_invalido", motivo: "não é extrato" } : { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
+    },
+  }, []);
+  const e: EstadoMaisa = { etapa: "extrato", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" };
+  const p = await avancar(e, { texto: null, temMidia: true, documento: true, documentoId: "b", documentoIds: ["a", "b"] }, deps);
+  assert.deepEqual(lidos.sort(), ["a", "b"]);
+  assert.equal(p.estado.saida, "sem_saldo");
+  assert.equal(p.respostas.length, 1, "uma resposta só");
+  // Antes da data, a rajada inteira fica guardada.
+  const cedo = await avancar({ etapa: "nascimento", tentativas: 0, produto: "siape" }, { texto: null, temMidia: true, documento: true, documentoId: "c", documentoIds: ["a", "b", "c"] }, depsBase(roteiro([]), {}, []));
+  assert.deepEqual(cedo.estado.extratosPendentes, ["a", "b", "c"]);
+});
+
+await caso("E5: o mesmo texto da Maisa não sai duas vezes em 10 segundos", async () => {
+  const { registrarSaidas } = await import("../modules/maisa/saidaMaisa.js");
+  const criadas: string[] = [];
+  const tx = {
+    mensagem: {
+      findMany: async () => criadas.map((c) => ({ conteudoTexto: c })),
+      create: async ({ data }: { data: { conteudoTexto: string } }) => {
+        criadas.push(data.conteudoTexto);
+        return { id: `m${criadas.length}`, ...data };
+      },
+    },
+    saidaMaisa: { create: async () => ({}) },
+    conversa: { update: async () => ({}) },
+  };
+  await registrarSaidas(tx as never, "c1", ["Mesmo texto", "Mesmo texto", "Outro texto"], false);
+  assert.deepEqual(criadas, ["Mesmo texto", "Outro texto"]);
+  await registrarSaidas(tx as never, "c1", ["Mesmo texto"], false);
+  assert.equal(criadas.length, 2, "o texto repetido da segunda chamada também some");
+});
+
 await caso("Follow-up: aos 20 min, de novo 3h depois, no máximo 2, nunca de madrugada, nem depois de 22h", async () => {
   const { verificarFollowup } = await import("../modules/maisa/fluxo.js");
   const base = new Date("2026-11-18T12:00:00Z"); // 9h em Brasília
@@ -1150,9 +1256,9 @@ await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS 
   const depsSiape = () => depsBase(roteiro([]), {
     simularPorExtrato: async (_c, _d, id) => {
       simulou++;
-      return { ...comSaldo, siape: docs[id ?? "atual"] ?? { documento: "extrato_consignacoes", vinculo: null } };
+      return { ...comSaldo, siape: (docs[id ?? "atual"] ?? docs.atual) ?? { documento: "extrato_consignacoes", vinculo: null } };
     },
-    lerVinculoSiape: async (id) => docs[id ?? "atual"] ?? { documento: "outro", vinculo: null },
+    lerVinculoSiape: async (id) => (docs[id ?? "atual"] ?? docs.atual) ?? { documento: "outro", vinculo: null },
   }, []);
   const noExtrato = (): EstadoMaisa => ({ etapa: "extrato", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" });
   const arquivo = (id: string) => ({ texto: null, temMidia: true, documento: true, documentoId: id });
@@ -1186,10 +1292,11 @@ await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS 
       const p2 = await avancar(p1.estado, arquivo("c1"), depsSiape());
       assert.equal(p2.estado.etapa, "finalizada");
       assert.equal(p2.estado.saida, "vinculo_siape");
-      // A leitura do vínculo ainda é conferida pela equipe: passa, não encerra.
-      assert.ok(p2.efeitos.some((e) => e.tipo === "transferir"));
-      assert.ok(!p2.efeitos.some((e) => e.tipo === "encerrar"));
-      assert.match(p2.respostas.join(" "), /conferir o seu contracheque/);
+      // A Maisa explica e encerra; o cliente pode mandar uma foto do trecho se a leitura estiver errada.
+      assert.ok(p2.efeitos.some((e) => e.tipo === "encerrar"));
+      assert.ok(!p2.efeitos.some((e) => e.tipo === "transferir"));
+      assert.match(p2.respostas.join(" "), /não conseguimos fazer consignado SIAPE/);
+      assert.match(p2.respostas.join(" "), /foto nítida do trecho do contracheque/);
     });
   }
 

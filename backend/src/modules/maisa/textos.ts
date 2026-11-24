@@ -64,6 +64,7 @@ export const TEXTOS = {
     OPCOES_CONVENIO,
   perguntaConvenio: PERGUNTA_CONVENIO,
   pedeCpf: "Vamos lá! Para fazer a sua simulação, preciso do seu CPF. Pode mandar só os números.",
+  pedeCpfSiape: "Vamos lá! Você é servidor federal, aposentado ou pensionista pelo SIAPE, certo? Para fazer a sua simulação, preciso do seu CPF. Pode mandar só os números.",
   cpfInvalido: "Não consegui validar esse CPF. Pode conferir os números e me enviar novamente, por favor?",
   cpfTamanho: (n: number) => `O CPF tem 11 números, e aqui eu contei ${n}. Pode conferir e me enviar novamente, por favor?`,
   dataInexistente: (d: string) => `A data ${d} não existe no calendário. Pode conferir o dia e o mês e me mandar de novo, por favor?`,
@@ -98,10 +99,14 @@ export const TEXTOS = {
       ? "Para tirar o extrato: abra o aplicativo ou o site Meu INSS, entre com a sua conta gov.br e toque em \"Extrato de Empréstimos\". "
       : "Para tirar o extrato de consignações: abra o aplicativo SouGov.br, entre com a sua conta gov.br e toque em \"Consignações\". ") +
     "Baixe o PDF e mande aqui.\n\nSe preferir, é só pedir que eu chamo um atendente.",
-  extratoInvalido: (produto: "inss" | "siape") =>
-    produto === "inss"
-      ? "Não consegui ler esse arquivo como extrato de empréstimos do INSS. Pode mandar o PDF do Meu INSS ou uma foto mais nítida?"
-      : "Não consegui ler esse arquivo como extrato de consignações de servidor federal. Pode mandar o PDF do SouGov.br, em Consignações, ou uma foto mais nítida?",
+  // A primeira vez ensina a tirar uma boa foto. A segunda ensina a baixar o PDF e oferece uma pessoa.
+  extratoInvalido: (produto: "inss" | "siape", tentativa = 0) => {
+    const doc = produto === "inss" ? "extrato de empréstimos do INSS" : "extrato de consignações de servidor federal";
+    const app = produto === "inss" ? 'Meu INSS, em "Extrato de Empréstimos"' : 'SouGov.br, em "Consignações"';
+    return tentativa === 0
+      ? `Não consegui ler esse arquivo como ${doc}. Se for foto, tente com a tela reta, com boa luz e sem cortar as bordas. O melhor é o PDF do ${app}.`
+      : `Vamos tentar de outro jeito: abra o ${app}, baixe o extrato em PDF e envie aqui pelo WhatsApp, na opção de compartilhar. Se não conseguir, me diga que eu chamo uma pessoa da equipe para te ajudar.`;
+  },
   semMargemExtrato:
     "Olhei o seu documento e, no momento, não sobra margem para um empréstimo novo. Vou te passar para um atendente ver outras opções com você.",
   nomeInvalido: "Preciso do nome completo, com sobrenome. Pode mandar de novo?",
@@ -154,6 +159,14 @@ export const TEXTOS = {
   enderecoCorrigido: (campos: string) => `Certo, troquei o ${campos}.`,
   enderecoJaTenho: (campos: string) => `O ${campos} já está aqui comigo.`,
   cepNaoEncontrado: "Não encontrei esse CEP. Pode conferir os números e me mandar de novo, por favor?",
+  vinculoSemConsignadoMotivo: (vinculo: string) => {
+    const motivo =
+      vinculo === "pensao_temporaria" ? "a sua pensão é temporária"
+      : vinculo === "celetista" ? "o seu regime é CLT"
+      : vinculo === "comissionado" ? "o seu cargo é comissionado, sem vínculo efetivo"
+      : "o seu contrato é temporário";
+    return `Obrigada pelos documentos! Pelo contracheque, ${motivo}, e nesse caso não conseguimos fazer consignado SIAPE. Se a leitura estiver errada, me manda uma foto nítida do trecho do contracheque que mostra o vínculo que eu confiro de novo. Obrigada pelo contato!`;
+  },
   vinculoConferir:
     "Obrigada pelos documentos! Vou pedir para um especialista da nossa equipe conferir o seu contracheque e seguir com você. Já já alguém continua aqui.",
   servidorNaoFederal:
@@ -289,6 +302,7 @@ export const TEXTOS = {
   siapeOutrosBancos:
     "Boa notícia: encontrei condições para você! Vou te passar para um especialista da nossa equipe, que vai comparar os bancos parceiros e te mostrar a melhor opção. Já já ele fala com você por aqui.",
   lembreteSilencio: "Oi! Ainda estou por aqui para seguir com a sua simulação.",
+  posContrato: "Recebi a sua mensagem. O seu contrato já está no banco e eu avisei a nossa equipe, que vai te responder sobre ele assim que possível.",
   followupSegundo: "Passando para ver se posso te ajudar. É rápido e sem compromisso.",
   followupOfertaSegundo: "Se ficou alguma dúvida sobre a condição, me conta que eu explico. Quer que eu siga com a sua proposta?",
   followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",

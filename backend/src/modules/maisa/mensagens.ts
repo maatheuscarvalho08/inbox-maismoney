@@ -30,6 +30,8 @@ export function mensagemSocial(texto: string): Social | null {
   ) {
     return "atraso";
   }
+  // "Ok obrigada e tenha um ótimo fim de semana": cortesia de despedida, não é resposta à pergunta.
+  if (t.length <= 80 && !t.includes("?") && /^(ok+|certo|beleza|blz|ta|ta bom|combinado|valeu|obrigad[oa]|show)\b.*\b(obrigad[oa]|valeu|abraco|bom dia|boa tarde|boa noite|fim de semana|ate (mais|logo|segunda|amanha)|otimo (dia|fim))/.test(t) && !/\b(mas|quero|sim|nao|pode|duvida)\b/.test(t)) return "agradecimento";
   if (/^(ok+|okay|ah ok|blz|beleza|certo|ta|ta bom|ta certo|entendi|ah entendi|agora entendi|entendi sim|show|joia|combinado|uhum|aham|hum+|hmm+|ah+ ta|ah sim|sei|ata)[\s.!]*$/.test(t)) return "confirmacao_curta";
   return null;
 }

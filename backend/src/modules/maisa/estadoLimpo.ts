@@ -15,7 +15,7 @@ export function estadoLimpoPreservandoCadastro(estadoAtual: unknown): Prisma.Inp
   const temOferta = Boolean(e?.alternativa || e?.oferta);
   if (e && parada && RETOMAVEIS.has(parada) && (!parada.startsWith("oferta") || temOferta)) {
     const { saida: _s, motivoTransferencia: _m, paradaEm: _p, confirmacaoPendente: _c, digitacaoErro: _d, redeAvisoEm: _r, ...resto } = e;
-    return { ...resto, etapa: parada, tentativas: 0, sociais: 0, ultimoContatoCliente: undefined, followupEnviado: false } as unknown as Prisma.InputJsonValue;
+    return { ...resto, etapa: parada, tentativas: 0, sociais: 0, ultimoContatoCliente: undefined, followupEnviado: false, ofertaEm: undefined, followups: undefined, followupEm: undefined, bancoProximaEm: undefined } as unknown as Prisma.InputJsonValue;
   }
   // Reaproveitar cadastro é da fase 7: com a camada desligada, o estado volta limpo como antes.
   if (env.MAISA_CONVERSA_MODO !== "ativo") return Prisma.DbNull;

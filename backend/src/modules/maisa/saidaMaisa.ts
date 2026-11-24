@@ -34,7 +34,12 @@ const proximaOrdem = () => BigInt(Date.now()) * 1000n + BigInt(contador++ % 1000
 // teste): ficam só como mensagem da Maisa, sem saída.
 export async function registrarSaidas(tx: Prisma.TransactionClient, conversaId: string, textos: string[], enviar: boolean) {
   const criadas = [];
+  // Mesmo texto da Maisa nos últimos 10 segundos (roteiro e agente respondendo juntos): sai uma vez só.
+  const recentes = await tx.mensagem.findMany({ where: { conversaId, remetenteTipo: "maisa", createdAt: { gte: new Date(Date.now() - 10_000) } }, select: { conteudoTexto: true } });
+  const jaSaiu = new Set(recentes.map((r) => r.conteudoTexto));
   for (const texto of textos) {
+    if (jaSaiu.has(texto)) continue;
+    jaSaiu.add(texto);
     const m = await tx.mensagem.create({ data: { conversaId, remetenteTipo: "maisa", conteudoTexto: texto }, include: INCLUDE });
     if (enviar) await tx.saidaMaisa.create({ data: { conversaId, mensagemId: m.id, ordem: proximaOrdem(), proximaEm: new Date() } });
     // A tela usa saidaStatus para não tratar mensagem na fila como "sugestão não enviada".

@@ -314,6 +314,10 @@ export function ConversasSplitLayout() {
             // Na aba Maisa, em que etapa ela está. Na fila, por que ela passou a conversa.
             const etapaMaisa = aba === "maisa" && c.comMaisa ? indiceEtapa(c.maisaEstado?.etapa) : null;
             const selo = c.status !== "encerrada" ? seloDaConversa(c) : null;
+            // Cliente esperando resposta há mais de 30 minutos: a fila mostra há quanto tempo.
+            const ultimaFala = c.mensagens?.[0];
+            const minutosParado = naoRespondida && ultimaFala ? Math.floor((Date.now() - new Date(ultimaFala.timestamp).getTime()) / 60_000) : 0;
+            const semResposta = minutosParado >= 30 ? (minutosParado < 120 ? `${minutosParado} min` : minutosParado < 2880 ? `${Math.floor(minutosParado / 60)} h` : `${Math.floor(minutosParado / 1440)} dias`) : null;
             return (
             <button
               key={c.id}
@@ -334,6 +338,11 @@ export function ConversasSplitLayout() {
                     <span title="Cliente respondeu, aguardando retorno" className="size-2 shrink-0 rounded-full bg-primary" />
                   )}
                 </div>
+                {semResposta && (
+                  <span className="mt-1.5 inline-block rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
+                    Sem resposta há {semResposta}
+                  </span>
+                )}
                 {selo && (
                   <div className="mt-1.5 flex flex-wrap items-center gap-1">
                     <span
