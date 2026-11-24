@@ -128,7 +128,7 @@ export const GRUPOS: Grupo[] = [
     id: "pix",
     campos: ["pixCpf"],
     so: ["inss", "clt"],
-    pergunta: () => "O dinheiro cai por PIX, na chave do seu CPF. Pode ser assim? Responda SIM ou NÃO.",
+    pergunta: () => "O dinheiro cai por PIX, na chave do seu CPF. Pode ser assim?",
   },
   {
     // No SIAPE o crédito vai obrigatoriamente para a conta salário (roteiro da Facta).

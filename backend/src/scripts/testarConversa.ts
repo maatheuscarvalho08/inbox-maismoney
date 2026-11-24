@@ -956,12 +956,25 @@ await caso("Naturalidade: o redator reprova abertura repetida e emoji demais", a
   assert.equal(validarSaida("Claro 😊😊 pode me mandar o número do contrato por aqui?", plano), "emoji_demais");
 });
 
-await caso("Naturalidade: consentimento e confirmação mantêm SIM ou NÃO explícitos", async () => {
-  for (const t of [TEXTOS.pedeConsentimento, TEXTOS.perguntaConsentimento, TEXTOS.confirmaAceite, TEXTOS.perguntaConfirmacao, TEXTOS.confirmeComSimOuNao]) {
-    assert.match(t, /SIM/);
-  }
+await caso("Naturalidade: nenhum texto da Maisa manda o cliente \"responder SIM\"; basta a pergunta", async () => {
+  const textos: string[] = [];
+  const colher = (v: unknown) => {
+    if (typeof v === "string") textos.push(v);
+    else if (typeof v === "function") {
+      try {
+        const r = (v as (...a: string[]) => unknown)("x", "x", "x", "x");
+        if (typeof r === "string") textos.push(r);
+      } catch {
+        /* função que pede objeto */
+      }
+    } else if (v && typeof v === "object") Object.values(v).forEach(colher);
+  };
+  colher(TEXTOS);
+  assert.ok(textos.length > 50);
+  const ruins = textos.filter((t) => /(responda|responder|responde|é só responder)\s+(sim|\"sim\")/i.test(t) || /responda SIM ou NÃO/i.test(t));
+  assert.deepEqual(ruins, []);
   assert.match(TEXTOS.pedeConsentimento, /LGPD/);
-  assert.match(TEXTOS.pedeConsentimento, /Responda SIM ou NÃO/);
+  assert.match(TEXTOS.pedeConsentimento, /Posso seguir\?/);
 });
 
 await caso("Pergunta de idade fora da etapa é respondida direto, sem repetir só o pedido", async () => {

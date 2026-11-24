@@ -361,7 +361,7 @@ const RETOMA_ETAPA: Partial<Record<Etapa, string>> = {
   nascimento: "Qual a sua data de nascimento?",
   margem: TEXTOS.lembraMargem,
   extrato: "Quando puder, me manda o extrato aqui, em PDF ou foto.",
-  consentimento: "Posso consultar? É só me responder SIM.",
+  consentimento: "Posso consultar?",
 };
 
 const NOME_ETAPA: Record<Etapa, string> = {
@@ -1334,7 +1334,7 @@ async function ofertarContratoPedido(estado: EstadoMaisa, p: ContratoPedido, dep
   }
   // Só contrato sem troco: explica e mantém a oferta de agora.
   const atual = estado.alternativa?.digitacao?.banco;
-  const pergunta = atual ? `Quer seguir com o contrato do ${atual}, como te mostrei? É só me responder SIM.` : PERGUNTA_DA_ETAPA[estado.etapa];
+  const pergunta = atual ? `Quer seguir com o contrato do ${atual}, como te mostrei?` : PERGUNTA_DA_ETAPA[estado.etapa];
   return { estado, respostas: [...avisos, pergunta], efeitos: [], rotulo: "contrato_pedido_sem_troco" };
 }
 
@@ -1368,6 +1368,13 @@ const MAX_DUVIDAS_OFERTA = 3;
 // reconhece com certeza (pedido de explicação, cumprimento, "ok", dado repetido), depois a
 // leitura do modelo, com travas. Aceite só segue sem condição; "ok" e "valeu" pedem
 // confirmação; outro valor ou prazo vai para a equipe; data ou CPF corrigidos também.
+const FECHOS_OFERTA = ["O que você acha?", "Ficou alguma dúvida?", "Faz sentido para você?", "Me conta o que você achou."];
+const ABERTURAS_OFERTA = [
+  "Como posso te ajudar com a condição que te passei?",
+  "Se ficou alguma dúvida sobre a condição, é só me perguntar.",
+  "Estou por aqui. Quando quiser, a gente conversa sobre a condição.",
+];
+
 async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   // O "posso seguir?" vale só para a resposta seguinte. Se o cliente perguntou outra coisa
   // no meio, um "👍" depois pode ser só "entendi a resposta".
@@ -1376,6 +1383,9 @@ async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencia
   const port = estado.etapa === "oferta_port";
   const t = normalizar(texto);
   const pergunta = PERGUNTA_DA_ETAPA[estado.etapa];
+  // Depois de responder uma dúvida, fecha com uma pergunta aberta em vez de pedir "SIM" toda vez. Se a resposta
+  // já termina em pergunta, não acrescenta outra.
+  const fechar = (resposta: string): string[] => (/\?\s*$/.test(resposta.trim()) ? [] : [FECHOS_OFERTA[estado.tentativas % FECHOS_OFERTA.length]]);
   const fica = (respostas: string[], rotulo: string, extra: Partial<EstadoMaisa> = {}): Passo => ({ estado: { ...estado, ...extra }, respostas, efeitos: [], rotulo });
   const duvida = (respostas: string[], rotulo: string): Passo => {
     const n = estado.tentativas + 1;
@@ -1397,18 +1407,27 @@ async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencia
     }
   }
 
-  if (PEDE_EXPLICACAO.test(t)) return duvida([explicarOferta(estado), pergunta], "explicacao_oferta");
+  if (PEDE_EXPLICACAO.test(t)) {
+    const explicacao = explicarOferta(estado);
+    return duvida([explicacao, ...fechar(explicacao)], "explicacao_oferta");
+  }
 
   const social = mensagemSocial(texto);
   if (social) {
     if (pediuConfirmacao && socialPositivo(social, texto)) return opcoes ? fica([TEXTOS.qualOpcao(opcoes.length)], "qual_opcao") : seguirComAceite(estado, deps, texto);
-    if (social === "confuso") return duvida([explicarOferta(estado), pergunta], "explicacao_oferta");
-    const antes = RESPOSTA_SOCIAL[social] ? [RESPOSTA_SOCIAL[social]!] : [];
+    if (social === "confuso") {
+      const explicacao = explicarOferta(estado);
+      return duvida([explicacao, ...fechar(explicacao)], "explicacao_oferta");
+    }
+    // "oi, tudo bem?": responde ao que foi dito, no tom de quem conversa, e não empurra o SIM.
+    const resposta = social === "cumprimento" ? (/(tudo bem|td bem|como vai|tudo bom)/.test(t) ? "Tudo bem sim, e com você?" : "Oi!") : RESPOSTA_SOCIAL[social];
+    const antes = resposta ? [resposta] : [];
     // "ok", "👍", "valeu": não é sim nem não. Pergunta de novo, e o próximo "sim" ou "ok" vale.
     if (social === "confirmacao_curta" || social === "emoji" || social === "agradecimento") {
       return fica([...antes, TEXTOS.confirmaAceite], `confirma_${social}`, { confirmarAceite: true });
     }
-    return fica([...antes, TEXTOS.relembraOferta], `social_${social}`);
+    const n = estado.sociais ?? 0;
+    return fica([...antes, ABERTURAS_OFERTA[n % ABERTURAS_OFERTA.length]], `social_${social}`, { sociais: n + 1 });
   }
 
   const dado = dadoNaOferta(estado, texto, deps.agora());
@@ -1449,7 +1468,7 @@ async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencia
   if (leitura?.tipo === "pensar") return fica([TEXTOS.semPressa], "pensando");
   // Pergunta que a oferta responde vem antes da objeção ("e o prazo?" não é reclamar do prazo).
   const sobrePergunta = texto.includes("?") ? respostaSobreOferta(estado, t) : null;
-  if (sobrePergunta && leitura?.tipo !== "recusa") return duvida([sobrePergunta, pergunta], "duvida_oferta");
+  if (sobrePergunta && leitura?.tipo !== "recusa") return duvida([sobrePergunta, ...fechar(sobrePergunta)], "duvida_oferta");
   if (leitura && (leitura.tipo === "objecao" || (leitura.tipo === "recusa" && leitura.objecao))) {
     if (port) return contornar(estado, texto, leitura);
     return objecao(estado, texto, "objeção na oferta", leitura.tipo === "recusa");
@@ -1460,9 +1479,9 @@ async function tratarOferta(atual: EstadoMaisa, texto: string, deps: Dependencia
     return transferir(estado, "recusou a oferta", TEXTOS.recusou, "recusou");
   }
   const sobre = respostaSobreOferta(estado, t);
-  if (sobre) return duvida([sobre, pergunta], "duvida_oferta");
+  if (sobre) return duvida([sobre, ...fechar(sobre)], "duvida_oferta");
   const faq = buscarFaq(texto);
-  if (faq) return fica([faq, pergunta], "faq");
+  if (faq) return fica([faq, ...fechar(faq)], "faq");
   // "dá pra fazer em 48x?", "consegue 5 mil?": outro valor ou prazo é com a equipe.
   if (OUTRO_VALOR.test(t) && /\b(da pra|pode ser|consegue|quero|queria|faz|fazer|tem como|seria possivel|aceito|prefiro)\b/.test(t) && !/\bpor que\b|\bporque\b/.test(t)) return transferir(estado, `pediu outro valor ou prazo: "${texto.slice(0, 120)}"`, TEXTOS.outroValorEquipe, "outro_valor", [], "alternativa");
   if (temReceio(t)) return transferir(estado, port ? "objeção na oferta de portabilidade" : "objeção na oferta", TEXTOS.objecao, "objecao", [], "objecao");
@@ -1864,7 +1883,7 @@ function respostaSobreOferta(estado: EstadoMaisa, t: string): string | null {
     else if (refin) partes.push("O refinanciamento que simulei é sem seguro.");
   }
   if (quer(/(proximo passo|e agora\b|o que eu faco|como (eu )?faco|como funciona agora)/)) {
-    partes.push("É só me responder SIM que eu começo o seu contrato. Depois a Facta manda um link no seu WhatsApp para você conferir e assinar.");
+    partes.push("Se fizer sentido, me avisa que eu começo o seu contrato. Depois a Facta manda um link no seu WhatsApp para você conferir e assinar.");
   }
   if (a && quer(/(volta (pro|para o|ao) (zero|comeco|inicio)|recomeca|zera)/)) {
     partes.push(refin ? `Sim. Com o refinanciamento, o contrato recomeça na Facta, em ${dig!.refin!.prazo} parcelas.` : "Não. Na portabilidade você continua com as mesmas parcelas que faltam.");

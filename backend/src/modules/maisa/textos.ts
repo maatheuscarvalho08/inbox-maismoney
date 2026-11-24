@@ -71,8 +71,8 @@ export const TEXTOS = {
   pedeNome: "Agora só preciso confirmar o seu nome completo, exatamente como aparece no documento.",
   pedeNascimento: "Certo, falta só a sua data de nascimento. Pode mandar assim: 15/03/1958.",
   extratoGuardado: "Recebi o seu documento, obrigada! Já guardei aqui para a sua simulação.",
-  confirmaData: (data: string) => `Acho que o ano saiu trocado. Você quis dizer ${data}? Se for isso, é só me responder SIM.`,
-  confirmaDataTrocada: (data: string) => `Só para confirmar: a sua data de nascimento é ${data}, com o dia antes do mês? Se for isso, é só me responder SIM.`,
+  confirmaData: (data: string) => `Acho que o ano saiu trocado. Você quis dizer ${data}? Se for isso, é só me confirmar.`,
+  confirmaDataTrocada: (data: string) => `Só para confirmar: a sua data de nascimento é ${data}, com o dia antes do mês? Se for isso, é só me confirmar.`,
   nascimentoInvalido: "Não consegui validar essa data. Pode conferir o dia, o mês e o ano e me mandar assim: 15/03/1958?",
   pedeMargem: (produto: "inss" | "siape") =>
     `Antes de seguir, preciso conferir a sua margem. No aplicativo ${produto === "inss" ? "Meu INSS" : "SouGov.br"}, veja o valor da margem disponível para empréstimo consignado e me diga qual é.\n\n` +
@@ -126,9 +126,9 @@ export const TEXTOS = {
     "Para eu consultar o seu crédito, preciso da sua autorização para consultar os seus dados de vínculo e margem " +
     "consignável (eSocial/Dataprev) junto ao banco parceiro Facta, conforme a LGPD. " +
     "Você vai receber um link do banco para confirmar.\n\n" +
-    "Posso seguir? Responda SIM ou NÃO.",
-  perguntaConsentimento: "Só preciso confirmar uma coisinha antes de continuar: posso consultar o seu crédito no banco Facta? Responda SIM ou NÃO, por favor.",
-  perguntaOferta: "Quer que eu siga com a sua proposta? É só me responder SIM que eu já começo.",
+    "Posso seguir?",
+  perguntaConsentimento: "Só preciso confirmar uma coisinha antes de continuar: posso consultar o seu crédito no banco Facta?",
+  perguntaOferta: "Quer que eu siga com a sua proposta?",
   naoEntendi: "Desculpa, não entendi.",
   transferindo: "Certo! Estou direcionando para um atendente. Já já alguém da equipe continua com você.",
   // Resposta padrão da política de segurança (politicaSeguranca.ts, seção 6).
@@ -222,7 +222,7 @@ export const TEXTOS = {
     } else {
       corpo = "Para empréstimo novo não sobra margem, mas dá para trazer um dos seus contratos para a Facta com uma taxa menor, o que baixa a sua parcela.";
     }
-    return corpo + "\n\nSe fizer sentido para você, eu mesma cuido de tudo. É só me responder SIM que eu já começo. Ficou alguma dúvida? Pode me perguntar.";
+    return corpo + "\n\nSe fizer sentido para você, eu mesma cuido de tudo. Ficou alguma dúvida? Pode me perguntar.";
   },
   semPressa: "Claro, sem pressa! Quando decidir, é só me responder por aqui.",
   contornoConfianca:
@@ -230,10 +230,10 @@ export const TEXTOS = {
     "Se quiser conferir, o SAC da Facta Financeira é 0800 942 0462, que também atende pelo WhatsApp. E a Mais Money, que cuida da sua proposta, tem CNPJ 45.027.472/0001-76 e Instagram @maismoneyrj.",
   contornoPoucoValor: (parcela: string, troco: string) =>
     `Entendo! Vale lembrar: a sua parcela não aumenta. Você continua pagando os mesmos ${parcela} e ainda recebe até ${troco} na sua conta.\n\n` +
-    "E esse valor foi calculado com o saldo aproximado do seu contrato. Com o saldo real do banco, ele pode ser maior. Você só assina se concordar. Quer que eu siga? É só me responder SIM.",
+    "E esse valor foi calculado com o saldo aproximado do seu contrato. Com o saldo real do banco, ele pode ser maior. Você só assina se concordar. Quer que eu siga?",
   contornoPrazo: (banco: string, restantes: number, atual: string, nova: string) =>
     `Entendo, você não quer esticar o prazo. Então tem outra opção: trazer o seu contrato do ${banco} sem refinanciar. ` +
-    `Você continua com as ${restantes} parcelas que faltam, sem dinheiro extra, e a parcela cai de ${atual} para ${nova}.\n\nPrefere assim? É só me responder SIM.`,
+    `Você continua com as ${restantes} parcelas que faltam, sem dinheiro extra, e a parcela cai de ${atual} para ${nova}.\n\nPrefere assim?`,
   perguntaOutraOferta:
     "Que bom que você está comparando! Me conta quanto te ofereceram, em quantas parcelas e em qual banco. Assim a nossa equipe compara e vê se consegue fazer melhor.",
   ofertaMelhorEquipe:
@@ -265,9 +265,9 @@ export const TEXTOS = {
     `Esse número parece ser um CPF. O que eu preciso agora é o número do contrato do ${banco}, que é diferente do CPF. Pode me mandar esse número?`,
   contratoOutroBanco: (citado: string, pedido: string) =>
     `Esse parece ser o contrato do ${citado}. Para essa proposta eu preciso do número do contrato do ${pedido}. Pode me mandar esse?`,
-  contratoDoAudio: (numero: string) => `Entendi o número ${numero} no seu áudio. É esse mesmo? Responda sim para eu seguir, ou me mande o número certo.`,
+  contratoDoAudio: (numero: string) => `Entendi o número ${numero} no seu áudio. É esse mesmo? Se for, é só confirmar. Se não, me manda o número certo.`,
   contratoDoArquivo: (numero: string, banco: string | null) =>
-    `Achei no arquivo o contrato número ${numero}${banco ? ` do ${banco}` : ""}. É esse mesmo? Responda sim para eu seguir, ou me mande o número certo.`,
+    `Achei no arquivo o contrato número ${numero}${banco ? ` do ${banco}` : ""}. É esse mesmo? Se for, é só confirmar. Se não, me manda o número certo.`,
   contratoArquivoOutroBanco: (citado: string, pedido: string) =>
     `Esse arquivo parece ser de um contrato do ${citado}. Para essa proposta eu preciso do contrato do ${pedido}. Pode me mandar o desse banco?`,
   arquivoSemContrato: (banco: string) =>
@@ -290,7 +290,7 @@ export const TEXTOS = {
   // Nunca prometer valor garantido: sempre "até" e "estimativa".
   oferta: (valor: string, prazo: number, parcela: string, desconto = "no seu salário") =>
     `Boa notícia! Você pode receber até ${valor}, em ${prazo} parcelas de ${parcela}, descontadas direto ${desconto}.\n\n` +
-    "Esse valor é uma estimativa e ainda passa pela análise do banco. Se fizer sentido para você, é só me responder SIM que eu já começo. Ficou alguma dúvida? Pode me perguntar.",
+    "Esse valor é uma estimativa e ainda passa pela análise do banco. Se fizer sentido para você, me avisa que eu já começo. Ficou alguma dúvida? Pode me perguntar.",
   // Várias tabelas da Facta: todas, com os valores como vieram. O cliente escolhe pelo número.
   ofertaOpcoes: (opcoes: { valor: string; prazo: number; parcela: string; taxa?: number }[], desconto = "no seu salário") =>
     `Boa notícia! A Facta liberou ${opcoes.length} opções para você, descontadas direto ${desconto}:\n\n` +
@@ -305,12 +305,12 @@ export const TEXTOS = {
   posContrato: "Recebi a sua mensagem. O seu contrato já está no banco e eu avisei a nossa equipe, que vai te responder sobre ele assim que possível.",
   followupSegundo: "Passando para ver se posso te ajudar. É rápido e sem compromisso.",
   followupOfertaSegundo: "Se ficou alguma dúvida sobre a condição, me conta que eu explico. Quer que eu siga com a sua proposta?",
-  followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",
+  followupOferta: "Oi! Conseguiu ver a condição que separei para você? Se quiser seguir, é só me avisar. Se tiver alguma dúvida, me conta.",
   inicioContrato: "Que bom! Eu mesma faço o seu contrato agora. Preciso de alguns dados, que vão só para o banco Facta.",
   continuarCadastro: "Vamos continuar o seu cadastro.",
-  confirmaDados: (resumo: string) => `Confere se está tudo certo:\n\n${resumo}\n\nEstá tudo certo? Responda SIM ou NÃO.`,
-  confirmeComSimOuNao: "Só para ter certeza de que entendi: você confirma? Responda SIM ou NÃO.",
-  perguntaConfirmacao: "Os dados estão certos? Responda SIM ou NÃO.",
+  confirmaDados: (resumo: string) => `Confere se está tudo certo:\n\n${resumo}\n\nEstá tudo certo?`,
+  confirmeComSimOuNao: "Só para ter certeza de que entendi: você confirma?",
+  perguntaConfirmacao: "Os dados estão certos?",
   contratoEnviado: (url: string, troco: string | null = null) =>
     "Deu certo! O seu contrato foi feito no banco Facta." +
     (troco ? ` O valor que cai na sua conta é ${troco}.` : "") +
@@ -324,7 +324,7 @@ export const TEXTOS = {
     "Na portabilidade, o dinheiro cai depois que você assina e o seu banco atual libera a transferência do contrato. O prazo depende desse banco. Assim que liberar, a gente te avisa.",
   prazoNovo: "Depois que você assinar, o banco confere e libera o valor na sua conta. Assim que liberar, a gente te avisa.",
   trocoMudou: (antes: string, depois: string, parcela: string) =>
-    `Antes de fazer o contrato, conferi de novo no banco e o valor mudou: o que cai na sua conta agora é ${depois} (antes era ${antes}). A parcela fica em ${parcela}. Quer seguir assim? Responda SIM ou NÃO.`,
+    `Antes de fazer o contrato, conferi de novo no banco e o valor mudou: o que cai na sua conta agora é ${depois} (antes era ${antes}). A parcela fica em ${parcela}. Quer seguir assim?`,
   lembreteAssinatura: "Conseguiu assinar o contrato pelo link? Se tiver qualquer dificuldade para abrir ou assinar, me conta aqui que eu te ajudo.",
   erroDigitacao: "Tive um problema para fazer o contrato no sistema do banco. Vou passar para um atendente terminar com você.",
   corrigirDados: "Sem problema. Vou passar para um atendente corrigir os dados com você.",
@@ -332,7 +332,7 @@ export const TEXTOS = {
   qualCorrigir: "Sem problema, vamos corrigir. Me manda só o dado certo. Por exemplo: RG 12345678, ou agência 1234 e conta 12345-6.",
   dadosCorrigidos: "Corrigi aqui, obrigada por avisar.",
   // Oferta: "ok", "👍", "valeu" não são sim nem não. Ela pergunta de novo.
-  confirmaAceite: "Só preciso confirmar uma coisinha antes de continuar: quer que eu siga com a sua proposta? Responda SIM ou NÃO, por favor.",
+  confirmaAceite: "Só preciso confirmar uma coisinha antes de continuar: quer que eu siga com a sua proposta?",
   // "sim" na confirmação: a digitação espera a janela, e o cliente ainda pode corrigir.
   confirmacaoRecebida: "Certo, obrigada por confirmar. Vou fazer o seu contrato agora. Se lembrar de algum dado para corrigir, me avisa aqui nos próximos instantes.",
   // Digitação automática travada: os dados estão completos e a equipe digita.
@@ -345,14 +345,14 @@ export const TEXTOS = {
   dadoExtratoEquipe:
     "Anotei. Esse dado veio do seu extrato, então um especialista da nossa equipe vai conferir com você antes de fazer o contrato. Já já alguém continua aqui.",
   followupOfertaPort:
-    "Oi! Conseguiu ver a condição da portabilidade que separei para você? Se quiser seguir, é só responder SIM. Se tiver alguma dúvida, me conta.",
-  confirmaDadosDeNovo: "Se os dados estiverem certos, é só me responder SIM. Se algum estiver errado, me diz qual.",
-  semPressaConfirmacao: "Claro, sem pressa! Eu só faço o contrato quando você me responder SIM. Se algum dado estiver errado, me diz qual.",
-  relembraOferta: "A sua condição continua de pé. Quer que eu siga? É só me responder SIM.",
+    "Oi! Conseguiu ver a condição da portabilidade que separei para você? Se quiser seguir, é só me avisar. Se tiver alguma dúvida, me conta.",
+  confirmaDadosDeNovo: "Se os dados estiverem certos, é só me confirmar. Se algum estiver errado, me diz qual.",
+  semPressaConfirmacao: "Claro, sem pressa! Eu só faço o contrato quando você confirmar. Se algum dado estiver errado, me diz qual.",
+  relembraOferta: "A sua condição continua de pé. Quer que eu siga?",
   // Aceite com condição ("sim, mas tem seguro?"): responde e confirma antes de seguir.
-  confirmaCondicao: "Com isso esclarecido, posso seguir com a sua proposta? É só me responder SIM.",
+  confirmaCondicao: "Com isso esclarecido, posso seguir com a sua proposta?",
   // Aceite com condição que ela não sabe responder: confirma sem fingir que esclareceu.
-  confirmaAntes: "Antes de seguir, me confirma: posso fazer a proposta do jeito que te mostrei? É só me responder SIM. Se quiser mudar alguma coisa, me conta.",
+  confirmaAntes: "Antes de seguir, me confirma: posso fazer a proposta do jeito que te mostrei? Se quiser mudar alguma coisa, me conta.",
   // Aceite com outro valor ou prazo: a equipe refaz. A Maisa não muda a oferta sozinha.
   outroValorEquipe:
     "Anotei o que você quer. Vou pedir para um especialista da nossa equipe refazer a simulação com esse valor ou prazo. Já já alguém continua aqui com você.",
@@ -364,7 +364,7 @@ export const TEXTOS = {
   dataCorrigida: (data: string) => `Pronto, corrigi a sua data de nascimento para ${data}.`,
   numeroNaOferta: "Recebi esse número, mas não sei a que ele se refere.",
   recomecar: "Sem problema! Se quiser refazer, é só me mandar outro extrato aqui. Se preferir, chamo alguém da equipe para olhar com você.",
-  naoSeiSeEntendi: "Não sei se entendi direito. Quer que eu siga com a sua proposta? Responda SIM, ou me conta a sua dúvida.",
+  naoSeiSeEntendi: "Não sei se entendi direito. Quer que eu siga com a sua proposta? Ou me conta a sua dúvida.",
   menorDeIdade: "Pela data, você teria menos de 18 anos, e o crédito é só para maiores de idade. Pode conferir a data e me mandar de novo?",
   perguntaIdade: "A idade entra na análise: com a sua data de nascimento eu já vejo o prazo possível para você. Qual a sua data de nascimento?",
   senhaGov: (produto: "inss" | "siape") =>

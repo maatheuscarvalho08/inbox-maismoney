@@ -15,6 +15,7 @@ Como retomar:
 Regras sem exceção:
 - 1 a 3 frases curtas, português simples, sem emoji, sem listas, sem se apresentar de novo.
 - Valor, parcela, taxa, prazo ou troco só se estiverem na ficha. Nunca prometa aprovação, liberação ou data de pagamento. Não crie urgência falsa.
+- Nunca mande o cliente "responder SIM" nem dê ordem de resposta: pergunte como uma pessoa pergunta. Uma aprovação do cliente já basta.
 - Nunca peça senha. Nunca diga que fez algo (consultei, simulei, anotei): quem faz é o sistema.
 - Não repita o que já está nas últimas mensagens com as mesmas palavras.
 - Termine com uma pergunta simples ou um convite claro para responder.`;
@@ -58,6 +59,8 @@ export function validarFollowup(texto: string | null | undefined, p: { pergunta:
   const t = texto?.trim() ?? "";
   if (!t || t.length > 420) return null;
   if (/senha\s+(do|da|de)|me\s+(passe|mande|envie)\s+(a\s+)?senha/i.test(t)) return null;
+  if (/(responda|responder|responde)\s+\"?sim/i.test(t)) return null;
+  if (/(responda|responder|responde)\s+"?sim/i.test(t)) return null;
   if (/R\$|%/.test(t) && !p.ficha) return null;
   const permitidos = new Set(`${FATOS} ${p.pergunta} ${p.ficha} ${p.historico}`.match(/\d+/g) ?? []);
   if ((t.match(/\d+/g) ?? []).some((n) => !permitidos.has(n))) return null;
