@@ -82,6 +82,10 @@ export function ConversasSplitLayout() {
 
   const [busca, setBusca] = useState("");
   const [aba, setAba] = useState<Aba>(restrito ? "atribuidas" : "sem_atendente");
+  // O usuário pode chegar depois da primeira renderização: quem é restrito nunca fica numa aba que não vê.
+  useEffect(() => {
+    if (restrito && aba !== "atribuidas") setAba("atribuidas");
+  }, [restrito, aba]);
   const [contagens, setContagens] = useState<Partial<Record<Aba, number>>>({});
   const [filtroStatus, setFiltroStatus] = useState<StatusConversa | undefined>(undefined);
   const [etiquetas, setEtiquetas] = useState<Etiqueta[]>([]);
