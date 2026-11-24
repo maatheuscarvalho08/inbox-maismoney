@@ -51,6 +51,19 @@ const ABAS: { id: Aba; label: string; descricao: string; vazio: string }[] = [
   },
 ];
 
+// Tudo o que a lista mostra como etiqueta automática da conversa (motivo da fila, etapa da Maisa, janela da Meta):
+// serve para o filtro e para a busca achar o mesmo que o atendente vê.
+function rotulosDaConversa(c: Conversa): string[] {
+  const r: string[] = [];
+  const selo = c.status !== "encerrada" ? seloDaConversa(c) : null;
+  if (selo) r.push(selo.texto);
+  if (c.comMaisa && c.maisaEstado?.etapa) r.push(`Etapa: ${ETAPAS_FLUXO[indiceEtapa(c.maisaEstado.etapa)].nome}`);
+  if (c.instancia.tipoConexao === "meta_cloud" && c.status !== "encerrada" && c.ultimaMensagemClienteEm && Date.now() - new Date(c.ultimaMensagemClienteEm).getTime() > 24 * 60 * 60_000) r.push("Janela de 24h fechada");
+  return r;
+}
+
+const diaLocal = (iso: string) => new Date(iso).toLocaleDateString("sv-SE");
+
 function ultimaMensagemPreview(conversa: Conversa) {
   const ultima = conversa.mensagens?.[0];
   if (!ultima) return "—";
@@ -77,6 +90,9 @@ export function ConversasSplitLayout() {
   const [instanciaFiltro, setInstanciaFiltro] = useState<string | null>(null);
   const [vendedores, setVendedores] = useState<Usuario[]>([]);
   const [vendedorFiltro, setVendedorFiltro] = useState<string | null>(null);
+  const [rotuloFiltro, setRotuloFiltro] = useState<string | null>(null);
+  const [dataDe, setDataDe] = useState("");
+  const [dataAte, setDataAte] = useState("");
   const [conversas, setConversas] = useState<Conversa[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [novaConversaAberta, setNovaConversaAberta] = useState(false);
@@ -118,10 +134,23 @@ export function ConversasSplitLayout() {
     if (vendedorFiltro) {
       lista = lista.filter((c) => c.operadorId === vendedorFiltro);
     }
+    if (rotuloFiltro) {
+      lista = lista.filter((c) => rotulosDaConversa(c).includes(rotuloFiltro));
+    }
+    if (dataDe) {
+      lista = lista.filter((c) => diaLocal(c.lastMessageAt) >= dataDe);
+    }
+    if (dataAte) {
+      lista = lista.filter((c) => diaLocal(c.lastMessageAt) <= dataAte);
+    }
     if (busca.trim()) {
       const termo = busca.trim().toLowerCase();
       lista = lista.filter(
-        (c) => c.contato.nome?.toLowerCase().includes(termo) || c.contato.numeroWhatsapp.includes(termo),
+        (c) =>
+          c.contato.nome?.toLowerCase().includes(termo) ||
+          c.contato.numeroWhatsapp.includes(termo) ||
+          rotulosDaConversa(c).some((r) => r.toLowerCase().includes(termo)) ||
+          c.etiquetas.some((e) => e.etiqueta.nome.toLowerCase().includes(termo)),
       );
     }
     // Na fila, quem está pronto para fechar vem primeiro. Dentro de cada grupo vale a ordem de antes.
@@ -132,7 +161,14 @@ export function ConversasSplitLayout() {
         .map((x) => x.c);
     }
     return lista;
-  }, [conversas, aba, filtroStatus, etiquetaFiltro, instanciaFiltro, vendedorFiltro, busca]);
+  }, [conversas, aba, filtroStatus, etiquetaFiltro, instanciaFiltro, vendedorFiltro, rotuloFiltro, dataDe, dataAte, busca]);
+
+  // Etiquetas automáticas que existem na lista de agora, para o filtro "Motivo".
+  const rotulosDisponiveis = useMemo(() => {
+    const todos = new Set<string>();
+    for (const c of conversas) for (const r of rotulosDaConversa(c)) todos.add(r);
+    return [...todos].sort((a, b) => a.localeCompare(b, "pt-BR")).map((r) => ({ id: r, label: r }));
+  }, [conversas]);
 
   const maisaConfig = useMaisaConfig();
   const [erroTeste, setErroTeste] = useState<string | null>(null);
@@ -151,7 +187,7 @@ export function ConversasSplitLayout() {
     }
   }
 
-  const filtrosAtivos = [filtroStatus, etiquetaFiltro, instanciaFiltro, vendedorFiltro].filter(Boolean).length;
+  const filtrosAtivos = [filtroStatus, etiquetaFiltro, instanciaFiltro, vendedorFiltro, rotuloFiltro, dataDe, dataAte].filter(Boolean).length;
 
   return (
     <div className="flex h-full bg-bg">
@@ -233,12 +269,29 @@ export function ConversasSplitLayout() {
                   itens={instancias.map((i) => ({ id: i.id, label: i.numero }))}
                 />
                 <FiltroDropdown
+                  label="Motivo"
+                  icon={Info}
+                  selecionado={rotuloFiltro}
+                  onSelecionar={setRotuloFiltro}
+                  itens={rotulosDisponiveis}
+                />
+                <FiltroDropdown
                   label="Vendedores"
                   icon={User}
                   selecionado={vendedorFiltro}
                   onSelecionar={setVendedorFiltro}
                   itens={vendedores.map((v) => ({ id: v.id, label: v.nome }))}
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="text-[11px] font-medium text-muted">
+                  Data de
+                  <input type="date" value={dataDe} max={dataAte || undefined} onChange={(e) => setDataDe(e.target.value)} className="mt-0.5 h-8 w-full rounded-md border border-border bg-bg/60 px-2 text-xs text-ink outline-none focus:border-accent" />
+                </label>
+                <label className="text-[11px] font-medium text-muted">
+                  Data até
+                  <input type="date" value={dataAte} min={dataDe || undefined} onChange={(e) => setDataAte(e.target.value)} className="mt-0.5 h-8 w-full rounded-md border border-border bg-bg/60 px-2 text-xs text-ink outline-none focus:border-accent" />
+                </label>
               </div>
               {filtrosAtivos > 0 && (
                 <button
@@ -247,6 +300,9 @@ export function ConversasSplitLayout() {
                     setEtiquetaFiltro(null);
                     setInstanciaFiltro(null);
                     setVendedorFiltro(null);
+                    setRotuloFiltro(null);
+                    setDataDe("");
+                    setDataAte("");
                   }}
                   className="text-xs font-semibold text-accent hover:underline"
                 >
@@ -296,7 +352,7 @@ export function ConversasSplitLayout() {
           {carregando &&<p className="p-4 text-center text-xs text-muted">Carregando...</p>}
           {!carregando && conversasFiltradas.length === 0 && (
             <p className="p-4 text-center text-xs text-muted">
-              {busca || etiquetaFiltro || instanciaFiltro || vendedorFiltro || filtroStatus
+              {busca || etiquetaFiltro || instanciaFiltro || vendedorFiltro || rotuloFiltro || dataDe || dataAte || filtroStatus
                 ? "Nenhuma conversa com esses filtros."
                 : aba === "atribuidas" && usuario?.role === "admin"
                   ? "Nenhuma conversa atribuída na equipe."
