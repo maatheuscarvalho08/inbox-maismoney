@@ -8,7 +8,8 @@ export interface Usuario {
   id: string;
   nome: string;
   email: string;
-  role: Role;
+  fotoPath: string | null;
+  somenteAtribuidas?: boolean;
   fotoPath: string | null;
 }
 
