@@ -1006,6 +1006,21 @@ await caso("Dois arquivos antes da hora: guarda os dois, avisa uma vez e lê at�
   assert.equal(p3.estado.extratosPendentes, undefined);
 });
 
+await caso("Arquivo conhecido fora de hora fica guardado e a conversa segue; desconhecido pergunta antes de chamar a equipe", async () => {
+  const ini: EstadoMaisa = { etapa: "nome", tentativas: 0, produto: "clt" };
+  const doc = { texto: null, temMidia: true, documento: true, documentoId: "x1" };
+  const rg = await avancar(ini, doc, depsBase(roteiro([]), { descreverArquivo: async () => ({ tipo: "rg", rotulo: "RG", legivel: true }) }, []));
+  assert.equal(rg.estado.etapa, "nome");
+  assert.equal(rg.rotulo, "arquivo_guardado");
+  assert.match(rg.respostas[0], /rg/i);
+  assert.ok(!rg.efeitos.some((e) => e.tipo === "transferir"));
+  const outro = await avancar(ini, doc, depsBase(roteiro([]), { descreverArquivo: async () => ({ tipo: "outro", rotulo: "Arquivo não identificado", legivel: true }) }, []));
+  assert.equal(outro.rotulo, "arquivo_desconhecido");
+  assert.equal(outro.estado.etapa, "nome");
+  const sem = await avancar(ini, doc, depsBase(roteiro([]), {}, []));
+  assert.equal(sem.estado.saida, "midia");
+});
+
 await caso("Print da margem negativa encerra; com valor segue; sem leitura guarda como extrato", async () => {
   const ini: EstadoMaisa = { etapa: "margem", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" };
   const doc = { texto: null, temMidia: true, documento: true, documentoId: "print-1" };
@@ -1064,7 +1079,7 @@ await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS 
 // ---------- SIAPE: contracheque para conferir o vínculo ----------
 {
   const comSaldo = { tipo: "com_saldo" as const, banco: "Facta", valorCentavos: 500000, parcelaCentavos: 15000, prazoMeses: 96, tabela: { codigoTabela: 1, prazo: 96, contrato: 5000, parcela: 150, coeficiente: 0.03 } };
-  const docs: Record<string, { documento: string; vinculo: string | null }> = {};
+  const docs: Record<string, { documento: string; vinculo: string | null; orgao?: string | null }> = {};
   let simulou = 0;
   const depsSiape = () => depsBase(roteiro([]), {
     simularPorExtrato: async (_c, _d, id) => {
@@ -1120,6 +1135,15 @@ await caso("SIAPE que passa na Facta vai para a equipe tentar outro banco; INSS 
     const p2 = await avancar(noExtrato(), arquivo("c2"), depsSiape());
     assert.equal(p2.estado.vinculoSiape, "aposentado");
     assert.notEqual(p2.rotulo, "pede_contracheque");
+  });
+
+  await caso("SIAPE: contracheque da Marinha vai para o convênio Marinha", async () => {
+    docs.atual = { documento: "contracheque", vinculo: "efetivo", orgao: "COMANDO DA MARINHA" };
+    const p = await avancar(noExtrato(), arquivo("m1"), depsSiape());
+    assert.equal(p.estado.etapa, "finalizada");
+    assert.equal(p.estado.saida, "convenio");
+    assert.ok(p.efeitos.some((e) => e.tipo === "convenio" && e.convenio === "marinha"));
+    assert.match(p.respostas.join(" "), /Marinha/);
   });
 
   await caso("SIAPE: no lugar do contracheque chega outro documento, pede de novo", async () => {

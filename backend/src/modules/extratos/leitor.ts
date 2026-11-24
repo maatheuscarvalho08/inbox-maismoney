@@ -36,6 +36,12 @@ export interface ExtratoLido {
   conta_banco: string | null;
   conta_agencia: string | null;
   conta_numero: string | null;
+  // SIAPE: bloco "CONTA PARA OUTRAS OPERAÇÕES" do contracheque, onde o empréstimo pode ser pago.
+  conta_outras_banco?: string | null;
+  conta_outras_agencia?: string | null;
+  conta_outras_numero?: string | null;
+  // SIAPE: órgão ou unidade pagadora do contracheque (ex.: "COMANDO DA MARINHA").
+  orgao?: string | null;
   base_calculo: number | null;
   margens_informadas: {
     emprestimo: number | null;
@@ -91,6 +97,10 @@ const SCHEMA = {
     "conta_banco",
     "conta_agencia",
     "conta_numero",
+    "conta_outras_banco",
+    "conta_outras_agencia",
+    "conta_outras_numero",
+    "orgao",
     "base_calculo",
     "margens_informadas",
     "contratos",
@@ -115,6 +125,10 @@ const SCHEMA = {
     conta_banco: txt,
     conta_agencia: txt,
     conta_numero: txt,
+    conta_outras_banco: txt,
+    conta_outras_agencia: txt,
+    conta_outras_numero: txt,
+    orgao: txt,
     base_calculo: num,
     margens_informadas: {
       type: "object",
@@ -182,6 +196,8 @@ Regras:
 - matricula: a matrícula SIAPE do servidor ou o número do benefício do INSS, só os dígitos. null se não aparecer.
 - renda_bruta: o total bruto de rendimentos do mês (no INSS, o valor bruto do benefício). null se não aparecer.
 - conta_banco, conta_agencia, conta_numero: a conta em que a pessoa recebe o salário ou o benefício, se o documento mostrar (no contracheque: BANCO, AGÊNCIA e CONTA). Banco pode ser o código ou o nome. null se não aparecer.
+- conta_outras_banco, conta_outras_agencia, conta_outras_numero: no contracheque do SIAPE existe um bloco "CONTA PARA OUTRAS OPERAÇÕES" (banco, agência e conta), separado do bloco "CONTA PARA RECEBIMENTO DO BENEFÍCIO" ou da conta salário. Copie só esse bloco aqui. Pode ser outro banco que o da conta salário. Se o bloco não existir ou estiver vazio, use null. Copie a agência e a conta com todos os dígitos como impressos.
+- orgao: o órgão ou a unidade pagadora do contracheque, como está escrito (nome do órgão no cabeçalho ou "SIGLA DA UPAG"). Ex.: "FUNDACAO UNIVERSIDADE DO AMAZONAS", "COMANDO DA MARINHA". null se não aparecer.
 - documento_siape (só SIAPE, senão null): "contracheque" para o contracheque ou demonstrativo de pagamento (tem rendimentos, descontos, cargo); "extrato_consignacoes" para o Extrato de Consignações do SouGov; "outro" para outro documento.
 - vinculo_siape (só no contracheque do SIAPE; no extrato de consignações ou fora do SIAPE, null): leia cargo, situação funcional, regime jurídico e rubricas. "comissionado" para cargo em comissão sem vínculo efetivo (ex.: "NOMEADO CARGO COMISSÃO", "SEM VÍNCULO", DAS/FCPE sem cargo efetivo); "celetista" para regime CLT ou emprego público; "contratado_temporario" para contrato temporário (Lei 8.745, "CONTRATO TEMPORÁRIO"); "pensao_temporaria" SÓ quando o contracheque escreve "TEMPORÁRIA" junto de pensão ou mostra a data em que a pensão termina; "pensionista_vitalicio" para pensionista sem essa indicação (pensão vitalícia é o caso comum: pensionista não é temporário por padrão); "aposentado" para aposentado ou inativo; "efetivo" para servidor ativo de cargo efetivo (RJU, estatutário), mesmo com função comissionada; "nao_informado" se o contracheque não deixar claro. Na dúvida entre efetivo e comissionado, use "nao_informado".
 - vinculo_evidencia: copie EXATAMENTE o trecho do contracheque que mostra o vínculo (ex.: "PENSÃO TEMPORÁRIA", "REGIME JURÍDICO: CLT", "NOMEADO CARGO COMISSÃO", "APOSENTADO"). null se não houver trecho.

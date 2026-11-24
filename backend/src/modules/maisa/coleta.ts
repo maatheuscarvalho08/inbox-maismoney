@@ -241,6 +241,22 @@ export async function extrairDados(
   arquivo: { conteudo: Buffer; tipo: string } | null,
   faltando: CampoContrato[],
 ): Promise<DadosContrato> {
-  const lido = await perguntarAoModelo(pergunta, texto, arquivo);
+  // Foto de documento: lê duas vezes e só vale o campo em que as duas leituras concordam. O que
+  // diverge fica vazio e a Maisa pergunta ao cliente: dado errado no cadastro custa mais que perguntar.
+  if (arquivo) {
+    const [a, b] = await Promise.all([perguntarAoModelo(pergunta, texto, arquivo), perguntarAoModelo(pergunta, texto, arquivo)]);
+    return validar(concordantes(a, b), new Set(faltando));
+  }
+  const lido = await perguntarAoModelo(pergunta, texto, null);
   return validar(lido, new Set(faltando));
+}
+
+const comparavel = (v: string | null) => semAcento(v ?? "").replace(/[^A-Z0-9]/g, "");
+
+export function concordantes(a: Record<CampoModelo, string | null>, b: Record<CampoModelo, string | null>): Record<CampoModelo, string | null> {
+  const r = { ...a };
+  for (const k of Object.keys(a) as CampoModelo[]) {
+    if (a[k] !== null && comparavel(a[k]) !== comparavel(b[k])) r[k] = null;
+  }
+  return r;
 }

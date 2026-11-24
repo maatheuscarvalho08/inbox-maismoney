@@ -10,6 +10,7 @@ import { criarMensagem } from "../mensagens/mensagens.service.js";
 import { emitConversaAtualizada, emitInstanciaAtualizada, emitNovaMensagem } from "../../ws/events.js";
 import { uploadsRoot } from "../../middleware/upload.js";
 import { processarComMaisa } from "../maisa/maisa.service.js";
+import { resumirArquivoRecebido } from "../maisa/arquivoRecebido.js";
 import { entregaConfirmadaPeloProvedor, falhaInformadaPeloProvedor } from "../maisa/saidaMaisa.js";
 import type { StatusEntrega } from "@prisma/client";
 
@@ -199,7 +200,7 @@ router.post(
 
               emitNovaMensagem(mensagem);
               if (conversaAtualizada) emitConversaAtualizada(conversaAtualizada);
-              void processarComMaisa(conversa.id, mensagem.id);
+              void processarComMaisa(conversa.id, mensagem.id).finally(() => void resumirArquivoRecebido(mensagem.id).catch((err) => console.error("Resumo do arquivo falhou:", err instanceof Error ? err.message : err)));
             }
           }
         }

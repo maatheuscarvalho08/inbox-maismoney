@@ -159,6 +159,8 @@ export const TEXTOS = {
   servidorNaoFederal:
     "Pelo seu documento, você é servidor do estado ou da prefeitura, não federal. Para esse caso, quem cuida é a nossa equipe. Estou direcionando para um atendente, já já alguém continua com você.",
   midiaRecebida: "Recebi o seu arquivo. Vou passar para um atendente, que consegue ver isso melhor que eu.",
+  arquivoRecebido: (rotulo: string) => `Recebi o seu arquivo: ${rotulo.toLowerCase()}. Já guardei aqui.`,
+  arquivoNaoIdentificado: "Recebi o arquivo, mas não consegui identificar do que se trata. Pode me dizer o que é?",
   semSaldoCltEquipe:
     "Consultei aqui e, pela Facta, o banco não liberou valor para o seu CPF agora. Vou te passar para um especialista da nossa equipe, que vai olhar outras opções de bancos para você. Já já alguém continua aqui.",
   disparoContinua: {

@@ -186,7 +186,7 @@ export function MensagemBubble({ mensagem, contatoNome, contatoFotoUrl, podeEdit
                 className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
               >
                 <FileText size={12} aria-hidden="true" />
-                {mensagem.analiseResumo ? "Ver análise" : "Analisar extrato"}
+                {mensagem.analiseResumo && !mensagem.analiseResumo.startsWith("Arquivo:") ? "Ver análise" : "Analisar como extrato"}
               </button>
             )}
           </>

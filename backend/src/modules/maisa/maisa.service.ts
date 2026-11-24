@@ -30,6 +30,7 @@ export { portasMaisa, tempoDigitando } from "./portasMaisa.js";
 export { aguardarDespachos, despachar, recuperarSaidas } from "./saidaMaisa.js";
 import { INTERVALO_AVISO_ACEITE_MS, ehAceiteTardio } from "./aceiteTardio.js";
 import { lerMargemDoArquivo } from "./conversa/documento.js";
+import { lerArquivoGeral, rotuloDoArquivo } from "./arquivoGeral.js";
 import { conversaAtiva, dadosDoRegistro, limparConversa, modoConversa, rodarSombra } from "./conversa/montagem.js";
 
 // Número fictício das conversas criadas pelo simulador. Nenhum número real começa assim.
@@ -425,11 +426,14 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       // Renda e matrícula do documento vão junto: o contrato não pergunta de novo.
       const lido = registro.leitura as ExtratoLido;
       // SIAPE: qual documento chegou e o vínculo (o contracheque mostra). O fluxo decide.
-      const siape = convenio === "siape" ? { documento: lido.documento_siape ?? null, vinculo: vinculoConferido(lido) } : undefined;
+      const siape = convenio === "siape" ? { documento: lido.documento_siape ?? null, vinculo: vinculoConferido(lido), orgao: lido.orgao ?? null } : undefined;
       const com = <T extends object>(r: T) => (siape ? { ...r, siape } : r);
-      const bancoSal = lido.conta_banco ? codigoBancoPorNome(lido.conta_banco) : null;
-      const agenciaSal = agenciaSemDigito(lido.conta_agencia) ?? "";
-      const contaSal = (lido.conta_numero ?? "").replace(/\D/g, "");
+      // O empréstimo vai para a "conta para outras operações" do contracheque, quando ela existe.
+      // Senão, a conta salário.
+      const outras = lido.conta_outras_banco && lido.conta_outras_agencia && lido.conta_outras_numero;
+      const bancoSal = (outras ? lido.conta_outras_banco : lido.conta_banco) ? codigoBancoPorNome((outras ? lido.conta_outras_banco : lido.conta_banco)!) : null;
+      const agenciaSal = agenciaSemDigito(outras ? lido.conta_outras_agencia : lido.conta_agencia) ?? "";
+      const contaSal = ((outras ? lido.conta_outras_numero : lido.conta_numero) ?? "").replace(/\D/g, "");
       const contaSalario = bancoSal && agenciaSal.length >= 3 && contaSal.length >= 4 ? { bancoConta: bancoSal, agencia: agenciaSal, conta: contaSal } : null;
       const lidos = { renda: lido.renda_bruta ?? lido.base_calculo, matricula: lido.matricula, contaSalario };
       const alternativa = async () => {
@@ -458,7 +462,12 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
       const lido = registro.leitura as ExtratoLido;
       const vinculo = vinculoConferido(lido);
       console.log(`Maisa leu o vínculo SIAPE da conversa ${conversa.id}: ${lido.documento_siape ?? "?"} ${lido.vinculo_siape ?? "?"}${vinculo !== lido.vinculo_siape ? ` (sem prova no trecho: ${vinculo})` : ""}`);
-      return { documento: lido.documento_siape ?? null, vinculo, renda: lido.renda_bruta ?? null };
+      return { documento: lido.documento_siape ?? null, vinculo, renda: lido.renda_bruta ?? null, orgao: lido.orgao ?? null };
+    },
+    descreverArquivo: async () => {
+      if (!arquivo) return null;
+      const lido = await lerArquivoGeral(await lerArquivo(arquivo.midiaPath), arquivo.tipo);
+      return { tipo: lido.tipo, rotulo: rotuloDoArquivo(lido.tipo), legivel: lido.legivel };
     },
     lerMargemDoArquivo: async () => {
       if (!arquivo) return null;

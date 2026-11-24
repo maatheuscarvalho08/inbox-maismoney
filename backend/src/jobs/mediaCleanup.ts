@@ -46,6 +46,11 @@ export async function limparMidiaExpirada() {
     data: { midiaDeleted: true, midiaPath: null },
   });
   // A leitura do extrato tem dados pessoais: sai junto com o arquivo. Fica só o resumo.
+  // Resumo de RG, CNH e afins (origem "arquivo") também leva nome, filiação e documento: sai junto.
+  const lidosDoArquivo = await prisma.analiseExtrato.findMany({ where: { mensagemId: { in: ids }, origem: "arquivo" }, select: { mensagemId: true } });
+  if (lidosDoArquivo.length) {
+    await prisma.mensagem.updateMany({ where: { id: { in: lidosDoArquivo.map((x) => x.mensagemId) } }, data: { analiseResumo: null } });
+  }
   await prisma.analiseExtrato.deleteMany({ where: { mensagemId: { in: ids } } });
 
   return { conversas: conversasInativas.length, arquivos: arquivosRemovidos };

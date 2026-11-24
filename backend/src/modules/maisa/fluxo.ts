@@ -193,7 +193,7 @@ export interface ConversaDeps {
 // MAISA_CONVERSA_MODO=ativo. Desligado ou em sombra, o fluxo é o de antes da fase 7.
 // siapeOutrosBancos: SIAPE com tabela aberta na Facta vai para a equipe tentar outro banco
 // (comissão da Facta baixa). Ligado pelo MAISA_SIAPE_OUTROS_BANCOS.
-export interface InfoSiape { documento: string | null; vinculo: string | null; renda?: number | null }
+export interface InfoSiape { documento: string | null; vinculo: string | null; renda?: number | null; orgao?: string | null }
 
 // A simulação veio do extrato (sem renda) e o contracheque tem o bruto: o cadastro não pergunta.
 function comRendaDoContracheque<T extends ResultadoExtrato>(r: T, renda: number | null | undefined): T {
@@ -254,6 +254,8 @@ export interface Dependencias {
   lerVinculoSiape?(documentoId?: string): Promise<InfoSiape>;
   // Lê o print da margem que o cliente mandou na etapa da margem. null: não deu para ler.
   lerMargemDoArquivo?(): Promise<{ legivel: boolean; negativa: boolean; valor: number | null } | null>;
+  // Descreve o arquivo que chegou (tipo e se dá para ler), para a Maisa não chamar a equipe sem saber o que é.
+  descreverArquivo?(): Promise<{ tipo: string; rotulo: string; legivel: boolean } | null>;
   // Digitação na Facta (INSS e SIAPE). Desligada, o "sim" vai para a equipe.
   digitacaoAtiva: boolean;
   extrairDados(pergunta: string, entrada: { texto: string | null; documento?: boolean }, faltando: CampoContrato[]): Promise<DadosContrato>;
@@ -928,6 +930,12 @@ async function etapaNascimento(estado: EstadoMaisa, texto: string, deps: Depende
   return tentarDeNovo(estado, TEXTOS.nascimentoInvalido, "nascimento_invalido");
 }
 
+// Servidor da Marinha também aparece como SIAPE: o órgão do contracheque diz. Esse cliente é do convênio Marinha.
+const ehMarinha = (orgao: string | null | undefined) => /marinha/.test(normalizar(orgao ?? ""));
+function marinhaParaEquipe(estado: EstadoMaisa): Passo {
+  return transferir({ ...estado, produto: undefined }, "contracheque da Marinha: usa o banco que aparece nele", TEXTOS.convenioComEquipe("Marinha"), "convenio", [{ tipo: "convenio", convenio: "marinha" }], "convenio");
+}
+
 // Chegou um PDF ou foto: lê como extrato e simula. Texto: explica como tirar o extrato.
 async function etapaExtrato(
   estado: EstadoMaisa,
@@ -980,6 +988,7 @@ async function etapaExtrato(
   if (estado.extratoSiapePendente && deps.lerVinculoSiape) {
     const info = await deps.lerVinculoSiape(ids[0]).catch(() => null);
     if (!info || info.documento !== "contracheque") return tentarDeNovo(estado, TEXTOS.naoEhContracheque, "contracheque_invalido", "sem_extrato");
+    if (ehMarinha(info.orgao)) return marinhaParaEquipe(estado);
     const vinculo = info.vinculo ?? "nao_informado";
     if (VINCULOS_SEM_CONSIGNADO.has(vinculo)) {
       return transferir({ ...estado, vinculoSiape: vinculo, extratoSiapePendente: undefined }, `vínculo lido no contracheque: ${vinculo.replace(/_/g, " ")}. Conferir no contracheque: se for mesmo esse vínculo, não há consignado; se a leitura errou, seguir o atendimento`, TEXTOS.vinculoConferir, "vinculo_siape", [], "vinculo_siape");
@@ -1003,6 +1012,7 @@ async function etapaExtrato(
   }
   if (!resultado) resultado = { tipo: "erro", banco: "desconhecido", motivo: "nenhum arquivo para ler" };
 
+  if (ehMarinha(resultado.siape?.orgao)) return marinhaParaEquipe(estado);
   // SIAPE: antes de ofertar ou passar para a equipe, confere o vínculo no contracheque.
   if (estado.produto === "siape" && deps.lerVinculoSiape && !estado.vinculoSiape && precisaVinculo(resultado)) {
     const doDoc = resultado.siape;
@@ -2395,7 +2405,16 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     const p = await etapaContratoPorArquivo(estado, entrada.documentoId, deps);
     if (p) return p;
   }
-  if (entrada.temMidia) return transferir(estado, "cliente enviou arquivo", TEXTOS.midiaRecebida, "midia");
+  if (entrada.temMidia) {
+    // Lê o arquivo antes de chamar a equipe: documento conhecido fica guardado e a conversa segue; só
+    // o que ela não identifica depois de perguntar vai para uma pessoa.
+    const d = await deps.descreverArquivo?.().catch(() => null);
+    if (d && d.tipo !== "outro" && d.legivel) {
+      return { estado, respostas: [TEXTOS.arquivoRecebido(d.rotulo), retomaDaEtapa(estado)], efeitos: [], rotulo: "arquivo_guardado" };
+    }
+    if (d) return tentarDeNovo(estado, TEXTOS.arquivoNaoIdentificado, "arquivo_desconhecido", "midia");
+    return transferir(estado, "cliente enviou arquivo", TEXTOS.midiaRecebida, "midia");
+  }
 
   const texto = entrada.texto?.trim() ?? "";
   if (!texto) return { estado, respostas: [], efeitos: [], rotulo: "vazia" };
