@@ -1043,6 +1043,21 @@ await caso("Dois arquivos antes da hora: guarda os dois, avisa uma vez e lê at�
   assert.equal(p3.estado.extratosPendentes, undefined);
 });
 
+await caso("Extrato guardado para reler: a primeira resposta do cliente dispara a leitura", async () => {
+  const lidos: (string | undefined)[] = [];
+  const deps = depsBase(roteiro([]), {
+    simularPorExtrato: async (_c, _d, id) => {
+      lidos.push(id);
+      return { tipo: "sem_saldo", banco: "extrato", motivo: "sem margem" };
+    },
+  }, []);
+  const e: EstadoMaisa = { etapa: "extrato", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10", extratosPendentes: ["pdf-9"] };
+  const p = await avancar(e, { texto: "sim", temMidia: false }, deps);
+  assert.deepEqual(lidos, ["pdf-9"]);
+  assert.equal(p.estado.extratosPendentes, undefined);
+  assert.equal(p.estado.saida, "sem_saldo");
+});
+
 await caso("Contracheque em arquivo separado completa a conta de recebimento e a renda da simulação", async () => {
   const { comRendaDoContracheque } = await import("../modules/maisa/fluxo.js");
   const alt = { tipo: "alternativa", operacao: "port_refin", trocoCentavos: 1000, motivo: "x", simulada: true } as unknown as Parameters<typeof comRendaDoContracheque>[0];

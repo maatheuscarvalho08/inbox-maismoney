@@ -2395,6 +2395,11 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
 
   // Na etapa do extrato, PDF ou foto é o que ela pediu. Fora dela, arquivo vai para a equipe.
   if (estado.etapa === "extrato" && entrada.documento) return etapaExtrato(estado, entrada, deps);
+  // Extrato que a equipe deixou guardado para ela reler (cliente que voltou depois de dias): qualquer
+  // resposta do cliente dispara a leitura e a simulação, sem pedir o arquivo de novo.
+  if (estado.etapa === "extrato" && !entrada.temMidia && pendentes(estado).length) {
+    return etapaExtrato({ ...estado, extratoPendenteId: undefined, extratosPendentes: undefined }, { texto: null, documento: true }, deps, pendentes(estado));
+  }
   if (estado.etapa === "margem" && entrada.documento) {
     const p = await margemPorPrint(estado, deps);
     if (p) return p;
