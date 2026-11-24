@@ -981,7 +981,17 @@ export async function verificarSilencios() {
     orderBy: { lastMessageAt: "asc" },
     select: { id: true, maisaEstado: true },
   });
-  const paradas = candidatas.filter((c) => ((c.maisaEstado as EstadoMaisa | null)?.followups ?? 0) < 2).slice(0, LOTE_FOLLOWUP);
+  // Só entra no lote quem já está na hora: os que esperam as 3h do segundo follow-up não podem ocupar as vagas
+  // dos que ainda devem o primeiro (o lote pega os mais antigos primeiro).
+  const agora = Date.now();
+  const naHora = (e: EstadoMaisa | null): boolean => {
+    const n = e?.followups ?? (e?.followupEnviado ? 1 : 0);
+    if (n >= 2) return false;
+    if (n === 0) return true;
+    const desde = e?.followupEm ? Date.parse(e.followupEm) : e?.ultimaMensagemEm ? Date.parse(e.ultimaMensagemEm) : 0;
+    return agora - desde >= 3 * 60 * 60_000;
+  };
+  const paradas = candidatas.filter((c) => naHora(c.maisaEstado as EstadoMaisa | null)).slice(0, LOTE_FOLLOWUP);
   for (const c of paradas) await enfileirar(c.id, { evento: "verificar_silencio" });
   return paradas.length;
 }
