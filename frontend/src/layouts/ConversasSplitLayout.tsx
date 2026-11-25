@@ -76,16 +76,10 @@ export function ConversasSplitLayout() {
   const navigate = useNavigate();
   const { id: idAtivo } = useParams<{ id: string }>();
   const { usuario } = useAuth();
-  // Quem só vê as conversas atribuídas a ele tem uma aba só.
-  const restrito = Boolean(usuario?.somenteAtribuidas);
-  const abasVisiveis = restrito ? ABAS.filter((a) => a.id === "atribuidas") : ABAS;
+  const abasVisiveis = ABAS;
 
   const [busca, setBusca] = useState("");
-  const [aba, setAba] = useState<Aba>(restrito ? "atribuidas" : "sem_atendente");
-  // O usuário pode chegar depois da primeira renderização: quem é restrito nunca fica numa aba que não vê.
-  useEffect(() => {
-    if (restrito && aba !== "atribuidas") setAba("atribuidas");
-  }, [restrito, aba]);
+  const [aba, setAba] = useState<Aba>("sem_atendente");
   const [contagens, setContagens] = useState<Partial<Record<Aba, number>>>({});
   const [filtroStatus, setFiltroStatus] = useState<StatusConversa | undefined>(undefined);
   const [etiquetas, setEtiquetas] = useState<Etiqueta[]>([]);
@@ -316,7 +310,7 @@ export function ConversasSplitLayout() {
             </div>
           )}
 
-          <div role="tablist" aria-label="Seções de conversas" className={`relative mt-3 grid px-2 ${restrito ? "grid-cols-1" : "grid-cols-4"}`}>
+          <div role="tablist" aria-label="Seções de conversas" className="relative mt-3 grid grid-cols-4 px-2">
             {abasVisiveis.map((a) => {
               const ativa = aba === a.id;
               return (
@@ -337,14 +331,14 @@ export function ConversasSplitLayout() {
             })}
             <span
               aria-hidden="true"
-              className={`aba-pilula absolute bottom-0 left-2 h-0.5 rounded-full bg-primary ${restrito ? "w-[calc(100%-16px)]" : "w-[calc((100%-16px)/4)]"}`}
+              className="aba-pilula absolute bottom-0 left-2 h-0.5 w-[calc((100%-16px)/4)] rounded-full bg-primary"
               style={{ transform: `translateX(${Math.max(0, abasVisiveis.findIndex((a) => a.id === aba)) * 100}%)` }}
             />
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {!restrito && (aba === "maisa" || aba === "sem_atendente") && (
+          {(aba === "maisa" || aba === "sem_atendente") && (
             <button
               onClick={() => setGuiaMaisaAberto(true)}
               className="flex w-full items-center gap-1.5 border-b border-border px-4 py-2 text-left text-xs font-medium text-muted hover:text-ink"

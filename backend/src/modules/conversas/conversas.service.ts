@@ -28,8 +28,8 @@ export interface Leitor {
   somenteAtribuidas?: boolean;
 }
 
-// Quem só vê as atribuídas a ele nunca enxerga as outras, em nenhuma aba.
-const soDele = (leitor: Leitor) => (leitor.somenteAtribuidas ? { operadorId: leitor.id } : {});
+// Quem é restrito vê a fila, a Maisa e as atribuídas a ele. As atribuídas a outra pessoa nunca aparecem.
+const soDele = (leitor: Leitor) => (leitor.somenteAtribuidas ? { OR: [{ operadorId: null }, { operadorId: leitor.id }] } : {});
 
 function filtroDaAba(aba: AbaConversas, leitor: Leitor) {
   switch (aba) {

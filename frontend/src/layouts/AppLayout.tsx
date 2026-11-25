@@ -108,16 +108,12 @@ export function AppLayout() {
   const { usuario, logout } = useAuth();
   const admin = usuario?.role === "admin";
   // Quem só vê as conversas atribuídas a ele tem só Conversas e Configurações.
-  const restrito = Boolean(usuario?.somenteAtribuidas);
-  const secoes = SECOES.filter((s) => (!s.adminOnly || admin) && (!restrito || s.id === "inbox" || s.id === "config")).map((s) => ({
+  const secoes = SECOES.filter((s) => (!s.adminOnly || admin)).map((s) => ({
     ...s,
-    itens: s.itens.filter((i) => (!i.adminOnly || admin) && (!restrito || i.to === "/conversas" || i.to === "/configuracoes" || i.to === "/retornos")),
+    itens: s.itens.filter((i) => (!i.adminOnly || admin)),
   }));
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  useEffect(() => {
-    if (restrito && !pathname.startsWith("/conversas") && !pathname.startsWith("/configuracoes") && !pathname.startsWith("/retornos")) navigate("/conversas", { replace: true });
-  }, [restrito, pathname, navigate]);
   const ativa = secoes.find((s) => s.itens.some((i) => pathname.startsWith(i.to))) ?? secoes[0];
 
   const [painelFechado, setPainelFechado] = useState(lerPainelFechado);

@@ -50,7 +50,7 @@ router.get(
     }
     if (restritoId) {
       const dona = await prisma.conversa.findUnique({ where: { id: mensagem.conversaId }, select: { operadorId: true } });
-      if (dona?.operadorId !== restritoId) return res.status(404).json({ error: "Mídia não disponível" });
+      if (!dona || (dona.operadorId !== null && dona.operadorId !== restritoId)) return res.status(404).json({ error: "Mídia não disponível" });
     }
 
     const absPath = path.resolve(process.cwd(), mensagem.midiaPath);

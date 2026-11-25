@@ -1,7 +1,7 @@
 import { prisma } from "../db/prisma.js";
 import { getIo } from "./socket.js";
 
-// Quem só vê as conversas atribuídas a ele recebe o evento apenas das conversas dele. Os demais recebem tudo.
+// Quem é restrito recebe o evento das conversas sem dono (fila e Maisa) e das dele. Os demais recebem tudo.
 // Sem conversa no evento (instância, campanha, Carrinho), o restrito não recebe.
 function emitirFiltrado(evento: string, payload: unknown, conversaId?: string | null) {
   const io = getIo();
@@ -15,7 +15,7 @@ function emitirFiltrado(evento: string, payload: unknown, conversaId?: string | 
   void prisma.conversa
     .findUnique({ where: { id: conversaId }, select: { operadorId: true } })
     .then((c) => {
-      for (const s of restritos) if (c?.operadorId && s.data.usuarioId === c.operadorId) s.emit(evento, payload);
+      for (const s of restritos) if (c && (c.operadorId === null || s.data.usuarioId === c.operadorId)) s.emit(evento, payload);
     })
     .catch(() => undefined);
 }

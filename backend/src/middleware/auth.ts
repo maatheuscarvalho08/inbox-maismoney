@@ -42,18 +42,18 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
   }
 }
 
-// Telas e dados da equipe toda (métricas, funil, propostas, disparos...): quem só vê as conversas atribuídas
-// a ele não entra.
-export function bloquearRestritos(req: Request, res: Response, next: NextFunction) {
-  if (req.user?.somenteAtribuidas) return res.status(403).json({ error: "Acesso negado" });
+// Quem é restrito só deixa de ver as conversas atribuídas a outra pessoa: as telas e os dados da equipe toda
+// (métricas, funil, propostas, disparos...) continuam abertos. Mantido como ponto único, caso a regra mude.
+export function bloquearRestritos(_req: Request, _res: Response, next: NextFunction) {
   next();
 }
 
-// Conversa que este usuário pode abrir: qualquer uma, ou só as atribuídas a ele.
+// Conversa que este usuário pode abrir: qualquer uma, ou (restrito) a da fila, a da Maisa e as atribuídas a ele.
+// Só as atribuídas a outra pessoa ficam escondidas.
 export async function podeVerConversa(user: NonNullable<Request["user"]>, conversaId: string): Promise<boolean> {
   if (!user.somenteAtribuidas) return true;
   const c = await prisma.conversa.findUnique({ where: { id: conversaId }, select: { operadorId: true } });
-  return c?.operadorId === user.id;
+  return Boolean(c) && (c!.operadorId === null || c!.operadorId === user.id);
 }
 
 export function requireRole(...roles: Role[]) {

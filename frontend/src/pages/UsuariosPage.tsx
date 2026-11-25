@@ -228,9 +228,9 @@ export function UsuariosPage() {
                         {u.ativo ? "Ativo" : "Inativo"}
                       </span>
                       {u.role !== "admin" && (
-                        <label className="mt-1.5 flex cursor-pointer items-center gap-1.5 text-xs text-muted" title="Só vê e atende as conversas atribuídas a ele">
+                        <label className="mt-1.5 flex cursor-pointer items-center gap-1.5 text-xs text-muted" title="Vê tudo, menos as conversas atribuídas a outra pessoa">
                           <input type="checkbox" checked={Boolean(u.somenteAtribuidas)} onChange={() => alternarSomenteAtribuidas(u)} />
-                          Só as atribuídas a ele
+                          Não vê as atribuídas a outros
                         </label>
                       )}
                     </td>
