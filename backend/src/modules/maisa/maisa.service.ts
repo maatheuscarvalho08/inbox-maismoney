@@ -24,6 +24,7 @@ import { vinculoConferido, type ExtratoLido } from "../extratos/leitor.js";
 import { executarReservada, invalidar, passarPontoSemVolta, recuperarOperacoesPresas, reservar } from "./operacaoFacta.js";
 import { aguardarDespachos as aguardarDespachosLocal, criarNota, despachar, recuperarSaidas, registrarSaidas } from "./saidaMaisa.js";
 import { DONO_PROCESSO, portasMaisa } from "./portasMaisa.js";
+import { registrar, registrarCronOk, registrarFollowupsEnfileirados } from "../alertas/monitor.js";
 import { instanteEnvio, invalidaConfirmacao, mandadaDepoisOuJunto } from "./ordemMensagens.js";
 
 export { portasMaisa, tempoDigitando } from "./portasMaisa.js";
@@ -825,6 +826,7 @@ function enfileirar(conversaId: string, gatilho: Gatilho, tentativa = 1): Promis
   const anterior = filas.get(conversaId) ?? Promise.resolve();
   const atual = anterior
     .then(() => processar(conversaId, gatilho))
+    .then(() => registrar("maisa", true))
     .catch(async (err) => {
       // Outro processo com a conversa, ou estado mudado no meio: tenta de novo. Se não der,
       // a recuperação pega a mensagem depois (ela continua não lida).
@@ -834,6 +836,7 @@ function enfileirar(conversaId: string, gatilho: Gatilho, tentativa = 1): Promis
         return;
       }
       if (err instanceof ConversaOcupada) return;
+      registrar("maisa", false);
       console.error(`Maisa falhou na conversa ${conversaId}:`, err);
       // Se ela quebrar no meio, o cliente não pode ficar sem resposta: vai para a fila.
       try {
@@ -978,7 +981,7 @@ export async function verificarSilencios() {
   const candidatas = await prisma.conversa.findMany({
     where: {
       comMaisa: true, status: { not: "encerrada" }, instancia: { maisaAtiva: true },
-      lastMessageAt: { gte: new Date(Date.now() - 23 * 60 * 60_000), lte: new Date(Date.now() - 20 * 60_000) },
+      lastMessageAt: { gte: new Date(Date.now() - 22 * 60 * 60_000), lte: new Date(Date.now() - 20 * 60_000) },
       OR: etapas.map((e) => ({ maisaEstado: { path: ["etapa"], equals: e } })),
     },
     orderBy: { lastMessageAt: "asc" },
@@ -996,6 +999,7 @@ export async function verificarSilencios() {
   };
   const paradas = candidatas.filter((c) => naHora(c.maisaEstado as EstadoMaisa | null)).slice(0, LOTE_FOLLOWUP);
   for (const c of paradas) await enfileirar(c.id, { evento: "verificar_silencio" });
+  registrarFollowupsEnfileirados(paradas.length);
   return paradas.length;
 }
 
@@ -1159,6 +1163,7 @@ export function startMaisaJobs() {
       await verificarRetornos();
       await verificarBancosIndisponiveis();
       await verificarAssinaturas();
+      registrarCronOk();
     } catch (err) {
       console.error("Erro nas checagens de tempo da Maisa:", err);
     }

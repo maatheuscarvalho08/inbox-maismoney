@@ -115,6 +115,8 @@ const envSchema = z.object({
   MAISA_CADASTRO_REAPROVEITA_DIAS: z.coerce.number().min(0).max(30).default(7),
   // OpenAI. A leitura de extrato usa um modelo com visão; as etapas simples, um barato.
   OPENAI_API_KEY: z.string().default(""),
+  // E-mails (separados por vírgula) de quem vê os alertas do sistema no topo do inbox.
+  ALERTAS_EMAILS: z.string().default(""),
   OPENAI_MODELO_EXTRATO: z.string().default("gpt-6.1-sol"),
   // Transcrição dos áudios que o cliente manda para a Maisa.
   OPENAI_MODELO_AUDIO: z.string().default("gpt-4o-transcribe"),

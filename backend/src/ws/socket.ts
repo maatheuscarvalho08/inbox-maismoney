@@ -47,6 +47,11 @@ export function desconectarUsuario(usuarioId: string) {
   io?.in(salaDoUsuario(usuarioId)).disconnectSockets(true);
 }
 
+// Evento só para estes usuários (todas as abas abertas de cada um).
+export function emitirParaUsuarios(usuarioIds: string[], evento: string, payload: unknown) {
+  for (const id of usuarioIds) io?.to(salaDoUsuario(id)).emit(evento, payload);
+}
+
 export function getIo() {
   if (!io) throw new Error("Socket.io não inicializado");
   return io;

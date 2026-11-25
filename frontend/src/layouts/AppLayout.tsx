@@ -25,6 +25,7 @@ import {
 import { useAuth } from "../lib/auth";
 import { useCarrinho } from "../lib/carrinho";
 import { useRetornos } from "../lib/retornos";
+import { useAlertasSistema } from "../lib/alertasSistema";
 import { TEXTO_AVISO, useAvisosMaisa } from "../lib/avisosMaisa";
 import { LogoMaisMoney } from "../components/LogoMaisMoney";
 
@@ -136,6 +137,7 @@ export function AppLayout() {
 
   const carrinho = useCarrinho();
   const retornos = useRetornos();
+  const alertasSistema = useAlertasSistema();
   const [retornoFechado, setRetornoFechado] = useState(false);
   useEffect(() => {
     if (retornos.ultimo) setRetornoFechado(false);
@@ -273,6 +275,18 @@ export function AppLayout() {
       )}
 
       <main className="flex flex-1 flex-col overflow-hidden bg-bg">
+        {/* Alerta do sistema: some sozinho quando o problema passa. Só aparece para quem está em ALERTAS_EMAILS. */}
+        {alertasSistema.map((a) => (
+          <div key={a.id} role="alert" className="flex items-center gap-3 border-b border-marca-indigo/30 bg-primary px-6 py-2 text-sm text-marca-indigo">
+            <CircleAlert size={16} weight="fill" className="shrink-0" aria-hidden="true" />
+            <p className="min-w-0 flex-1">
+              <span className="font-bold">{a.titulo}.</span> {a.detalhe}
+            </p>
+            <span className="shrink-0 text-xs font-semibold tabular-nums">
+              desde {new Date(a.desde).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          </div>
+        ))}
         {avisoMaisa && (
           <div role="alert" className="flex items-center gap-3 border-b border-primary/40 bg-primary/25 px-6 py-2 text-sm">
             <CircleAlert size={16} className="shrink-0 text-accent" aria-hidden="true" />

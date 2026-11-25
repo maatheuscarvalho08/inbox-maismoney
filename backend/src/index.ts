@@ -8,6 +8,7 @@ import { startDisparoLoteWorker } from "./queues/disparoLoteQueue.js";
 import { startFallbackEvolutionWorker } from "./queues/fallbackEvolutionQueue.js";
 import { aguardarDespachos, startMaisaJobs } from "./modules/maisa/maisa.service.js";
 import { prisma } from "./db/prisma.js";
+import { startMonitor } from "./modules/alertas/monitor.js";
 
 const server = http.createServer(app);
 initSocket(server);
@@ -15,6 +16,7 @@ startMediaCleanupJob();
 startDiscadoraWorker();
 startDisparoLoteWorker();
 startFallbackEvolutionWorker();
+startMonitor();
 startMaisaJobs();
 
 server.listen(env.PORT, () => {
