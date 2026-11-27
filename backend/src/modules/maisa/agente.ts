@@ -189,7 +189,7 @@ export interface PassoAgente {
 // chega mascarada para ele, e sem isso ele pedia a data de novo com o cadastro já adiantado.
 const DADO_ACEITO = new Set([
   "nascimento_valido", "cpf_valido", "margem_informada", "margem_por_print", "margem_pelo_extrato", "extrato_na_margem",
-  "vinculo_confirmado", "vinculo_clt", "cpf_anotado_vinculo", "adiado_amanha",
+  "vinculo_confirmado", "vinculo_clt", "cpf_anotado_vinculo", "adiado_amanha", "margem_negativa", "margem_negativa_print",
 ]);
 
 export function roteiroManda(antes: PassoAgente["estado"] | null, passo: PassoAgente): boolean {

@@ -99,6 +99,8 @@ export interface EstadoMaisa {
   // Cliente quer deixar para depois: a Maisa pediu o dia e espera a resposta (no máximo 2 tentativas).
   retornoPergunta?: boolean;
   retornoTentativas?: number;
+  // O cliente disse que a margem está negativa: o extrato é pedido para ver refinanciamento com troco.
+  margemNegativa?: boolean;
   // "Amanhã eu mando": o lembrete espera até esta hora, em vez dos 20 minutos de sempre.
   adiadoAte?: string;
   // SIAPE que chegou pelo anúncio: a Maisa confirma o vínculo antes de pedir o CPF.
@@ -963,13 +965,18 @@ async function margemPorPrint(estado: EstadoMaisa, deps: Dependencias): Promise<
   if (!deps.lerMargemDoArquivo) return null;
   const lida = await deps.lerMargemDoArquivo().catch(() => null);
   if (!lida?.legivel) return null;
-  if (lida.negativa) {
-    return encerrar(estado, "margem negativa no print enviado pelo cliente", TEXTOS.margemNegativaFim, "margem_negativa", [], "margem_negativa");
-  }
+  if (lida.negativa) return margemNegativaParaExtrato(estado, deps, "margem_negativa_print");
   if (lida.valor === null) return null;
   const comMargem: EstadoMaisa = { ...estado, margemInformada: lida.valor > 0 ? lida.valor : undefined };
   const p = await seguirParaExtrato(comMargem, estado.dataNascimento ?? "", deps);
   return { ...p, respostas: [TEXTOS.margemAnotada, ...p.respostas], rotulo: "margem_por_print" };
+}
+
+// Margem negativa: não encerra mais. O refinanciamento de um contrato pode cobrir o negativo e liberar troco,
+// e é o extrato que mostra isso. Se não houver saída, a leitura do extrato encerra como sem saldo.
+async function margemNegativaParaExtrato(estado: EstadoMaisa, deps: Dependencias, rotulo: string): Promise<Passo> {
+  const p = await seguirParaExtrato({ ...estado, margemInformada: undefined, margemNegativa: true }, estado.dataNascimento ?? "", deps);
+  return { ...p, respostas: [TEXTOS.margemNegativaVerExtrato, ...p.respostas], rotulo };
 }
 
 // Não conseguiu ver a margem: o extrato mostra a margem e os contratos. Segue por ele em vez de chamar a equipe.
@@ -1002,9 +1009,7 @@ async function etapaMargemInterna(estado: EstadoMaisa, texto: string, deps: Depe
     return { estado, respostas: [TEXTOS.dataJaAnotada, TEXTOS.lembraMargem], efeitos: [], rotulo: "data_repetida" };
   }
   const leitura = lerMargem(texto);
-  if (leitura?.tipo === "negativa") {
-    return encerrar(estado, "margem negativa informada pelo cliente no aplicativo", TEXTOS.margemNegativaFim, "margem_negativa", [], "margem_negativa");
-  }
+  if (leitura?.tipo === "negativa") return margemNegativaParaExtrato(estado, deps, "margem_negativa");
   if (leitura?.tipo === "varios") return tentarDeNovo(estado, TEXTOS.margemMaisDeUmValor, "margem_varios_valores");
   if (leitura) {
     const comMargem: EstadoMaisa = { ...estado, margemInformada: leitura.tipo === "valor" && leitura.valor > 0 ? leitura.valor : undefined };

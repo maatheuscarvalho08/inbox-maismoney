@@ -99,6 +99,9 @@ export const TEXTOS = {
   combinadoAmanha: "Combinado! Amanhã eu te chamo por aqui para a gente seguir.",
   margemMaisDeUmValor: "Vi mais de um valor na sua mensagem. Pode me mandar só a margem disponível para empréstimo consignado?",
   margemAnotada: "Anotado, obrigada!",
+  // Margem negativa não encerra: o refinanciamento de um contrato pode cobrir o negativo e ainda liberar troco.
+  margemNegativaVerExtrato:
+    "Obrigada por conferir! Mesmo com a margem negativa, às vezes dá para refinanciar um dos seus contratos e ainda liberar um troco. Para eu ver isso, preciso do seu extrato.",
   margemNegativaFim:
     "Obrigada por conferir! Com a margem negativa, não consigo seguir com a sua simulação agora. Se a sua margem voltar a ficar positiva, é só me chamar de novo. Obrigada pelo contato!",
   pedeExtrato: (produto: "inss" | "siape") =>

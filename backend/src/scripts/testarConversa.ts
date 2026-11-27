@@ -1216,12 +1216,14 @@ await caso("Arquivo conhecido fora de hora fica guardado e a conversa segue; des
   assert.equal(sem.estado.saida, "midia");
 });
 
-await caso("Print da margem negativa encerra; com valor segue; sem leitura guarda como extrato", async () => {
+await caso("Print da margem negativa pede o extrato; com valor segue; sem leitura guarda como extrato", async () => {
   const ini: EstadoMaisa = { etapa: "margem", tentativas: 0, produto: "siape", dataNascimento: "1966-12-10" };
   const doc = { texto: null, temMidia: true, documento: true, documentoId: "print-1" };
+  // Margem negativa não encerra: o refin pode cobrir o negativo e liberar troco. Pede o extrato.
   const neg = await avancar(ini, doc, depsBase(roteiro([]), { lerMargemDoArquivo: async () => ({ legivel: true, negativa: true, valor: -80 }) }, []));
-  assert.equal(neg.estado.saida, "margem_negativa");
-  assert.ok(neg.efeitos.some((e) => e.tipo === "encerrar"));
+  assert.equal(neg.estado.etapa, "extrato");
+  assert.equal(neg.estado.margemNegativa, true);
+  assert.ok(!neg.efeitos.some((e) => e.tipo === "encerrar"));
   const ok = await avancar(ini, doc, depsBase(roteiro([]), { lerMargemDoArquivo: async () => ({ legivel: true, negativa: false, valor: 420 }) }, []));
   assert.equal(ok.estado.etapa, "extrato");
   assert.equal(ok.estado.margemInformada, 420);
