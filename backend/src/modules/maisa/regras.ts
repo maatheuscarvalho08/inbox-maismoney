@@ -10,6 +10,9 @@ export const REGRAS = {
   margemMinReais: 30,
   // Usa 98% da margem para não estourar na averbação.
   folgaMargem: 0.98,
+  // CLT: a etapa 1 da Facta limita a parcela a 90% da margem da Dataprev (caso de 27/11:
+  // margem 363,43, teto 327,09). A etapa 1 confere de novo antes da oferta.
+  folgaMargemClt: 0.9,
 };
 
 // Devolve o motivo da recusa, ou null se o vínculo serve. O motivo é só para a equipe.

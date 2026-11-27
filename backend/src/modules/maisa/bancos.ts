@@ -24,6 +24,8 @@ export type ResultadoBanco =
       // Todas as tabelas sem seguro que a Facta devolveu, da que libera mais para a que libera
       // menos. A primeira é a dos campos acima. Com mais de uma, o cliente escolhe.
       opcoes?: OpcaoOferta[];
+      // CLT: resultado da etapa 1 e perfil da Dataprev, gravados na simulação.
+      politica?: string;
     }
   // revisar: a leitura do extrato ficou com dúvida, então a equipe confere antes de desistir.
   | { tipo: "sem_saldo"; banco: string; motivo: string; revisar?: boolean }
@@ -209,16 +211,33 @@ export const bancoFacta: BancoClt = {
       return { tipo: "sem_saldo", banco: this.nome, motivo: avaliados[0]?.recusa ?? "nenhum vínculo CLT encontrado" };
     }
     const v = aptos[0].v;
-    const { tabelas, mensagem } = await facta.simular({
-      cpf,
-      dataNascimento: v.dataNascimento!,
-      renda: v.renda!,
-      valorParcela: v.margemDisponivel! * REGRAS.folgaMargem,
-    });
+    const perfil = v.perfil ?? "";
+    const simularCom = async (parcela: number) => {
+      const { tabelas, mensagem } = await facta.simular({ cpf, dataNascimento: v.dataNascimento!, renda: v.renda!, valorParcela: parcela });
+      return melhorTabela(this.nome, tabelas, mensagem);
+    };
 
-    const r = melhorTabela(this.nome, tabelas, mensagem);
+    let r = await simularCom(v.margemDisponivel! * REGRAS.folgaMargemClt);
     if (r.tipo !== "com_saldo") return r;
-    return { ...r, clt: { matricula: v.matricula, dataNascimento: v.dataNascimento, dataAdmissao: v.dataAdmissao, cnpjEmpregador: v.cnpjEmpregador, renda: v.renda, sexo: v.sexo } };
+    // Sem login_certificado a etapa 1 não roda: não dá para conferir, a equipe confere.
+    if (!facta.digitacaoConfigurada()) return { tipo: "erro", banco: this.nome, motivo: "etapa 1 da Facta sem login_certificado: política não conferida" };
+    // A simulação não confere a política nem o teto da parcela: a etapa 1 confere, sem
+    // criar proposta. Com teto, simula de novo com ele e confere mais uma vez.
+    let politica = await facta.conferirPoliticaClt({ cpf, dataNascimento: v.dataNascimento!, tabela: r.tabela! });
+    if (politica.tipo === "teto") {
+      const teto = politica;
+      r = await simularCom(teto.parcelaMaxima);
+      if (r.tipo !== "com_saldo") return { ...r, motivo: `${r.motivo} (teto da etapa 1: ${teto.mensagem}). ${perfil}` };
+      politica = await facta.conferirPoliticaClt({ cpf, dataNascimento: v.dataNascimento!, tabela: r.tabela! });
+      if (politica.tipo === "teto") politica = { tipo: "erro", mensagem: `teto mudou de novo: ${politica.mensagem}` };
+    }
+    if (politica.tipo === "fora") return { tipo: "sem_saldo", banco: this.nome, motivo: `etapa 1 da Facta recusou: ${politica.mensagem}. ${perfil}` };
+    if (politica.tipo === "erro") return { tipo: "erro", banco: this.nome, motivo: `não deu para conferir a política na etapa 1: ${politica.mensagem}` };
+    return {
+      ...r,
+      politica: `etapa 1 ok. ${perfil}`,
+      clt: { matricula: v.matricula, dataNascimento: v.dataNascimento, dataAdmissao: v.dataAdmissao, cnpjEmpregador: v.cnpjEmpregador, renda: v.renda, sexo: v.sexo },
+    };
   },
 
   async simularConsignado(p) {

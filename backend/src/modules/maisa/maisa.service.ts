@@ -140,7 +140,7 @@ async function aplicarEfeito(tx: Prisma.TransactionClient, conversa: ConversaMai
           convenio: efeito.convenio,
           resultado: r.tipo,
           valorCentavos: r.tipo === "com_saldo" ? r.valorCentavos : null,
-          motivo: r.tipo === "com_saldo" ? null : r.motivo,
+          motivo: r.tipo === "com_saldo" ? (r.politica ?? null) : r.motivo,
         },
       });
       // Erro na API do banco não é simulação concluída, então não move o funil.

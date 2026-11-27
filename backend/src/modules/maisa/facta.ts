@@ -156,6 +156,23 @@ export interface Vinculo {
   renda: number | null;
   margemDisponivel: number | null;
   erroMensagem: string;
+  // Perfil sem dado pessoal, gravado com o resultado da etapa 1 para aprender a política.
+  perfil?: string;
+}
+
+function perfilDataprev(d: Record<string, unknown>): string {
+  const partes = [
+    `emprestimos ${String(d.qtdEmprestimosAtivosSuspensos ?? "?")}`,
+    `categoria ${String(d.codigoCategoriaTrabalhador ?? "?")}`,
+    `bloqueio ${String(d.tipoBloqueio_descricao ?? "?")}`,
+    `alertas ${String(d.possuiAlertas ?? "?")}`,
+    `legados ${String(d.emprestimosLegados ?? "?")}`,
+    `cnae ${String(d.cnae_descricao ?? "?")}`,
+    `cbo ${String(d.cbo_descricao ?? "?")}`,
+    `admissao ${String(d.dataAdmissao ?? "?")}`,
+    `empregador desde ${String(d.dataInicioAtividadeEmpregador ?? "?")}`,
+  ];
+  return partes.join("; ");
 }
 
 export type ResultadoConsulta =
@@ -195,6 +212,7 @@ export async function consultarTrabalhador(cpf: string): Promise<ResultadoConsul
       renda: numero(d.valorTotalVencimentos),
       margemDisponivel: numero(d.valorMargemDisponivel),
       erroMensagem: String(d.erro_mensagem ?? ""),
+      perfil: perfilDataprev(d),
     })),
   };
 }
@@ -425,10 +443,17 @@ export async function contratar(c: Contratacao): Promise<ResultadoContratacao> {
   // CLT: averbador 10010 (manual Crédito do Trabalhador v9.0). INSS e SIAPE: os do extrato.
   const averbador = c.convenio === "clt" ? AVERBADOR : AVERBADOR_EXTRATO[c.convenio];
   if (c.convenio === "clt" && !c.clt) return { tipo: "erro", etapa: "simulador", mensagem: "CLT sem CNPJ do empregador e data de admissão" };
-  const cpf = cpf11(c.cpf);
-  const p = c.pessoa;
+  const e1 = await etapa1(averbador, c.cpf, c.dataNascimento, c.tabela);
+  const idSimulador = String(e1.id_simulador ?? "");
+  if (e1.erro || !idSimulador) return { tipo: "erro", etapa: "simulador", mensagem: String(e1.mensagem ?? "sem id_simulador") };
+  return concluirProposta(c, idSimulador);
+}
 
-  const e1 = await chamar("/proposta/etapa1-simulador", cpf, {
+// Etapa 1 da digitação. Não cria proposta (o código da proposta só sai na etapa 3): é onde a
+// Facta confere a política de crédito e o teto da parcela, que a simulação não confere.
+function etapa1(averbador: string, cpfBruto: string, dataNascimento: string, tabela: Contratacao["tabela"]) {
+  const cpf = cpf11(cpfBruto);
+  return chamar("/proposta/etapa1-simulador", cpf, {
     method: "POST",
     form: {
       produto: PRODUTO,
@@ -436,19 +461,43 @@ export async function contratar(c: Contratacao): Promise<ResultadoContratacao> {
       averbador,
       convenio: CONVENIO,
       cpf,
-      data_nascimento: dataBr(c.dataNascimento),
+      data_nascimento: dataBr(dataNascimento),
       login_certificado: env.FACTA_LOGIN_CERTIFICADO,
-      codigo_tabela: String(c.tabela.codigoTabela),
-      prazo: String(c.tabela.prazo),
-      valor_operacao: c.tabela.contrato.toFixed(2),
-      valor_parcela: c.tabela.parcela.toFixed(2),
-      coeficiente: String(c.tabela.coeficiente),
+      codigo_tabela: String(tabela.codigoTabela),
+      prazo: String(tabela.prazo),
+      valor_operacao: tabela.contrato.toFixed(2),
+      valor_parcela: tabela.parcela.toFixed(2),
+      coeficiente: String(tabela.coeficiente),
       ...(env.FACTA_CODIGO_MASTER ? { codigo_master: env.FACTA_CODIGO_MASTER } : {}),
     },
   });
-  const idSimulador = String(e1.id_simulador ?? "");
-  if (e1.erro || !idSimulador) return { tipo: "erro", etapa: "simulador", mensagem: String(e1.mensagem ?? "sem id_simulador") };
-  return concluirProposta(c, idSimulador);
+}
+
+// CLT: confere a oferta na etapa 1 antes de mostrar ao cliente.
+// - ok: a Facta aceitou a tabela (devolveu id_simulador).
+// - teto: a parcela passou do máximo; simular de novo com parcelaMaxima.
+// - fora: recusa da Facta (política de crédito ou outra regra), com a mensagem dela.
+// - erro: não deu para conferir (rede, resposta estranha).
+export type ResultadoPolitica =
+  | { tipo: "ok" }
+  | { tipo: "teto"; parcelaMaxima: number; mensagem: string }
+  | { tipo: "fora"; mensagem: string }
+  | { tipo: "erro"; mensagem: string };
+
+export async function conferirPoliticaClt(p: { cpf: string; dataNascimento: string; tabela: Contratacao["tabela"] }): Promise<ResultadoPolitica> {
+  let j: Record<string, any>;
+  try {
+    j = await etapa1(AVERBADOR, p.cpf, p.dataNascimento, p.tabela);
+  } catch (err) {
+    return { tipo: "erro", mensagem: err instanceof Error ? err.message : String(err) };
+  }
+  const mensagem = String(j.mensagem ?? "");
+  if (!j.erro && String(j.id_simulador ?? "")) return { tipo: "ok" };
+  if (!j.erro) return { tipo: "erro", mensagem: mensagem || "etapa 1 sem id_simulador" };
+  const teto = numero(j.prestacao_maxima);
+  // "O valor Máximo de Prestação disponível é de R$ 327,09". Teto zero vem junto da recusa por política.
+  if (teto && teto > 0 && teto < p.tabela.parcela) return { tipo: "teto", parcelaMaxima: teto, mensagem };
+  return { tipo: "fora", mensagem: mensagem || "recusada na etapa 1" };
 }
 
 // Etapas 2 e 3 e o envio do link: iguais no empréstimo novo e na port + refin.
