@@ -19,9 +19,10 @@ export interface ContextoTrava {
   portPura?: boolean;
 }
 
-// Vínculo CLT com tudo o que a etapa 2 da Facta exige.
+// Vínculo CLT com tudo o que a etapa 2 da Facta exige. A Dataprev costuma mandar só a raiz
+// do CNPJ (8 dígitos, inscrição do eSocial), e a Facta simula com ela: vale 8 ou 14.
 export const cltDigitavel = (v: VinculoClt | undefined): boolean =>
-  Boolean(v && v.dataNascimento && v.dataAdmissao && v.cnpjEmpregador && /^\d{14}$/.test(v.cnpjEmpregador) && v.matricula);
+  Boolean(v && v.dataNascimento && v.dataAdmissao && v.cnpjEmpregador && /^\d{8}(\d{6})?$/.test(v.cnpjEmpregador) && v.matricula);
 
 export function motivoTravaDigitacao(estado: EstadoMaisa, ctx: ContextoTrava): string | null {
   if (!ctx.liberada) return "trava MAISA_DIGITACAO_LIBERADA desligada";

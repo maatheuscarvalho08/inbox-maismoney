@@ -660,6 +660,16 @@ await caso("CLT: trava do CLT desligada, o aceite vai para a equipe como antes",
   assert.equal(p.estado.saida, "aceitou");
 });
 
+await caso("CLT: CNPJ só com a raiz de 8 dígitos, como a Dataprev manda, começa o cadastro", async () => {
+  const p = await diga(estadoOfertaClt({ ...VINCULO, cnpjEmpregador: "12345678" }), "quero sim", depsClt(true));
+  assert.equal(p.estado.etapa, "coleta");
+});
+
+await caso("CLT: CNPJ com tamanho errado vai para a equipe", async () => {
+  const p = await diga(estadoOfertaClt({ ...VINCULO, cnpjEmpregador: "1234567890" }), "quero sim", depsClt(true));
+  assert.equal(p.estado.etapa, "finalizada");
+});
+
 await caso("CLT: vínculo sem CNPJ do empregador vai para a equipe, não coleta", async () => {
   const p = await diga(estadoOfertaClt({ ...VINCULO, cnpjEmpregador: null as unknown as string }), "quero sim", depsClt(true));
   assert.equal(p.estado.etapa, "finalizada");
