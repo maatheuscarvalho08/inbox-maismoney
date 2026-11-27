@@ -64,7 +64,13 @@ export const TEXTOS = {
     OPCOES_CONVENIO,
   perguntaConvenio: PERGUNTA_CONVENIO,
   pedeCpf: "Vamos lá! Para fazer a sua simulação, preciso do seu CPF. Pode mandar só os números.",
-  pedeCpfSiape: "Vamos lá! Você é servidor federal, aposentado ou pensionista pelo SIAPE, certo? Para fazer a sua simulação, preciso do seu CPF. Pode mandar só os números.",
+  // O anúncio de SIAPE também traz quem trabalha de carteira assinada: confirma o vínculo antes do CPF.
+  pedeVinculoSiape: "Vamos lá! Antes, me conta: você é servidor federal, aposentado ou pensionista pelo SIAPE? Ou trabalha de carteira assinada?",
+  pedeCpfSiape: "Ótimo! Para fazer a sua simulação, preciso do seu CPF. Pode mandar só os números.",
+  // Quem escolheu SIAPE no menu já disse o vínculo.
+  pedeCpfSiapeMenu: "Vamos lá! Você é servidor federal, aposentado ou pensionista pelo SIAPE, certo? Para fazer a sua simulação, preciso do seu CPF. Pode mandar só os números.",
+  vinculoSiapeDeNovo: "Só para eu seguir pelo caminho certo: você é servidor federal (ativo, aposentado ou pensionista do SIAPE) ou trabalha de carteira assinada?",
+  perguntaPensionista: "Você é pensionista do INSS ou de um órgão federal, pelo SIAPE?",
   cpfInvalido: "Não consegui validar esse CPF. Pode conferir os números e me enviar novamente, por favor?",
   cpfTamanho: (n: number) => `O CPF tem 11 números, e aqui eu contei ${n}. Pode conferir e me enviar novamente, por favor?`,
   dataInexistente: (d: string) => `A data ${d} não existe no calendário. Pode conferir o dia e o mês e me mandar de novo, por favor?`,
@@ -74,13 +80,23 @@ export const TEXTOS = {
   confirmaData: (data: string) => `Acho que o ano saiu trocado. Você quis dizer ${data}? Se for isso, é só me confirmar.`,
   confirmaDataTrocada: (data: string) => `Só para confirmar: a sua data de nascimento é ${data}, com o dia antes do mês? Se for isso, é só me confirmar.`,
   nascimentoInvalido: "Não consegui validar essa data. Pode conferir o dia, o mês e o ano e me mandar assim: 15/03/1958?",
+  // Caminho do SouGov.br conferido na FAQ oficial do gov.br: "Autoatendimento" > "Consignação".
   pedeMargem: (produto: "inss" | "siape") =>
-    `Antes de seguir, preciso conferir a sua margem. No aplicativo ${produto === "inss" ? "Meu INSS" : "SouGov.br"}, veja o valor da margem disponível para empréstimo consignado e me diga qual é.\n\n` +
-    "Pode mandar só o valor, por exemplo: 350,00, ou pode me mandar um print.",
-  lembraMargem: "Qual é a margem disponível que aparece no aplicativo? Pode mandar só o valor ou um print da tela.",
+    (produto === "inss"
+      ? "Antes de seguir, preciso conferir a sua margem. No aplicativo Meu INSS, veja o valor da margem disponível para empréstimo consignado e me diga qual é.\n\n"
+      : "Antes de seguir, preciso conferir a sua margem. No aplicativo SouGov.br, toque em \"Autoatendimento\" e depois em \"Consignação\". Ali aparece a margem disponível para empréstimos.\n\n") +
+    `Pode mandar só o valor, por exemplo: 350,00, ou um print da tela. Se já tiver o ${produto === "inss" ? "extrato de empréstimos" : "extrato de consignações"}, pode mandar ele no lugar.`,
+  lembraMargem: "Qual é a margem disponível que aparece no aplicativo? Pode mandar só o valor, um print da tela ou o extrato.",
   comoVerMargem: (produto: "inss" | "siape") =>
-    `Para ver a margem: abra o aplicativo ${produto === "inss" ? "Meu INSS" : "SouGov.br"}, entre com a sua conta gov.br e procure a margem disponível para empréstimo consignado.\n\n` +
-    "Me manda aqui só o valor, por exemplo: 350,00, ou pode me mandar um print. Se preferir, é só pedir que eu chamo um atendente.",
+    (produto === "inss"
+      ? "Para ver a margem: abra o aplicativo Meu INSS, entre com a sua conta gov.br e procure a margem disponível para empréstimo consignado.\n\n"
+      : "Para ver a margem: abra o aplicativo SouGov.br e entre com a sua conta gov.br. Se tiver mais de um vínculo, escolha o certo na barra azul do topo. Depois toque em \"Autoatendimento\" e em \"Consignação\": a margem para empréstimos aparece ali.\n\n") +
+    "Me manda aqui só o valor, por exemplo: 350,00, ou um print. Se preferir, pode mandar o extrato no lugar.",
+  // Não conseguiu ver a margem: segue pelo extrato, que mostra a margem e os contratos.
+  margemPeloExtrato: "Sem problema, vamos por outro caminho.",
+  arquivoNaMargemIlegivel: (produto: "inss" | "siape") =>
+    `Não consegui ler a margem nesse arquivo. Pode me mandar só o valor que aparece no ${produto === "inss" ? "Meu INSS" : "SouGov.br, em \"Autoatendimento\" > \"Consignação\""}, ou o ${produto === "inss" ? "extrato de empréstimos" : "extrato de consignações"} em PDF?`,
+  combinadoAmanha: "Combinado! Amanhã eu te chamo por aqui para a gente seguir.",
   margemMaisDeUmValor: "Vi mais de um valor na sua mensagem. Pode me mandar só a margem disponível para empréstimo consignado?",
   margemAnotada: "Anotado, obrigada!",
   margemNegativaFim:

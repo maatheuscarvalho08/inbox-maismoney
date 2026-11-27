@@ -67,6 +67,8 @@ interface Caso {
   ultimaResposta?: "nenhuma";
   // Fecha sem passar para a equipe.
   encerra?: boolean;
+  // Produto da última mensagem nossa (contato da equipe ou disparo).
+  produtoSugerido?: "clt" | "inss" | "siape";
   // Trecho que a nota para o operador precisa ter.
   notaContem?: string;
 }
@@ -650,6 +652,84 @@ const CASOS: Caso[] = [
     etapaFinal: "finalizada",
     saida: "acompanhar_proposta",
   },
+  // Varredura de 27/11: E8 a E10, F8 a F10.
+  {
+    nome: "Extrato mandado na etapa da margem segue direto para a simulação",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", { extrato: "com_margem" }],
+    etapaFinal: "oferta",
+  },
+  {
+    nome: "Não acha a margem duas vezes: segue pelo extrato, sem a equipe",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", "Nao estou conseguindo", "Encontrar margem"],
+    etapaFinal: "extrato",
+    respostaContem: "outro caminho",
+  },
+  {
+    nome: "Não acha a margem três vezes sem dizer o porquê: extrato, não a equipe",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", "xpto", "xpto de novo", "xpto outra vez"],
+    etapaFinal: "extrato",
+  },
+  {
+    nome: "Pede a margem com o caminho do SouGov.br (Autoatendimento > Consignação)",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958"],
+    etapaFinal: "margem",
+    respostaContem: "Autoatendimento",
+  },
+  { nome: "'Indisponível' não é margem disponível", acoes: ["oi", "3", CPF_SALDO, "15/03/1958", "Indisponível"], etapaFinal: "margem" },
+  { nome: "'Aparece essas 6' não é margem de R$ 6", acoes: ["oi", "3", CPF_SALDO, "15/03/1958", "Aparece essas 6"], etapaFinal: "margem" },
+  {
+    nome: "Anúncio de SIAPE: confirma o vínculo antes do CPF",
+    acoes: ["Sou servidor federal SIAPE e quero mais informações"],
+    etapaFinal: "cpf",
+    respostaContem: "carteira assinada",
+  },
+  {
+    nome: "Anúncio de SIAPE: quem é de carteira assinada vai para o CLT, com o CPF já anotado",
+    acoes: ["Sou servidor federal SIAPE e quero mais informações", CPF_SALDO, "Trabalho de carteira assinada"],
+    etapaFinal: "nome",
+    respostaContem: "CLT",
+  },
+  {
+    nome: "Anúncio de SIAPE: confirma que é aposentado e segue pelo CPF",
+    acoes: ["Sou servidor federal SIAPE e quero mais informações", "sim, sou aposentado", CPF_SALDO],
+    etapaFinal: "nascimento",
+  },
+  {
+    nome: "Anúncio de SIAPE: vínculo e CPF na mesma mensagem",
+    acoes: ["Sou servidor federal SIAPE e quero mais informações", `sou servidora federal, cpf ${CPF_SALDO}`],
+    etapaFinal: "nascimento",
+  },
+  {
+    nome: "Anúncio de SIAPE: 'sim' segue pelo SIAPE",
+    acoes: ["Sou servidor federal SIAPE e quero mais informações", "Sim", CPF_SALDO, "15/03/1958"],
+    etapaFinal: "margem",
+  },
+  {
+    nome: "'Sou pensionista' no SIAPE pergunta se é do INSS ou federal, sem trocar",
+    acoes: ["oi", "3", "Sou pensionista"],
+    etapaFinal: "cpf",
+    respostaContem: "pensionista do INSS ou de um órgão federal",
+  },
+  {
+    nome: "'Amanhã eu mando': combina, não passa para a equipe e lembra no dia seguinte",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", "350,00", "Amanhã eu mando o extrato", { minutos: 30 }, { verificaOferta: true }],
+    etapaFinal: "extrato",
+    ultimaResposta: "nenhuma",
+  },
+  {
+    nome: "'Amanhã eu mando': o lembrete sai no dia seguinte",
+    acoes: ["oi", "3", CPF_SALDO, "15/03/1958", "350,00", "Amanhã eu mando o extrato", { horas: 23 }, { verificaOferta: true }],
+    etapaFinal: "extrato",
+    respostaContem: "extrato",
+  },
+  {
+    nome: "Resposta 'sim' a um contato nosso sobre servidor federal segue pelo SIAPE, sem menu",
+    acoes: ["Sim"],
+    produtoSugerido: "siape",
+    etapaFinal: "cpf",
+    respostaContem: "CPF",
+  },
+  { nome: "'Um atendente' é pedido de pessoa", acoes: ["oi", "3", CPF_SALDO, "15/03/1958", "Um atendente"], etapaFinal: "finalizada", saida: "humano" },
 ];
 
 function descrever(a: Acao) {
@@ -734,7 +814,11 @@ async function rodar(caso: Caso, verbose: boolean) {
       assert.ok(dados.nome && dados.email, "digitou sem o cadastro completo");
       return digitacao === "ok" ? { tipo: "enviada", codigoAf: "123", url: "facta.ly/teste" } : { tipo: "erro", etapa: "dados pessoais", mensagem: "teste" };
     },
+    // O arquivo do teste é sempre um extrato. Foto solta ({ midia }) não tem descrição, como antes.
+    descreverArquivo: async () => (arquivoEhExtrato ? { tipo: "extrato_siape", rotulo: "Extrato de consignações SIAPE", legivel: true } : null),
+    produtoSugerido: async () => caso.produtoSugerido ?? null,
   };
+  let arquivoEhExtrato = false;
 
   let estado: EstadoMaisa | null = null;
   let transferida = false;
@@ -757,6 +841,7 @@ async function rodar(caso: Caso, verbose: boolean) {
     }
 
     let entrada: Entrada;
+    arquivoEhExtrato = typeof acao === "object" && "extrato" in acao;
     if (typeof acao === "string") entrada = { texto: acao, temMidia: false };
     else if ("midia" in acao) entrada = { texto: null, temMidia: true };
     else if ("dados" in acao) {

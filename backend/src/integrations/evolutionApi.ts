@@ -176,7 +176,18 @@ export function mensagemErroEvolution(err: unknown): string {
   if (axios.isAxiosError(err)) {
     const corpo = err.response?.data;
     const detalhe = corpo?.response?.message ?? corpo?.message ?? corpo?.error;
-    if (detalhe) return Array.isArray(detalhe) ? detalhe.join("; ") : String(detalhe);
+    // A Evolution às vezes devolve objetos na lista ({ exists: false, number }): sem isso, o motivo
+    // ficava gravado como "[object Object]".
+    const texto = (x: unknown): string => {
+      if (typeof x === "string") return x;
+      if (x && typeof x === "object" && (x as { exists?: unknown }).exists === false) return "o número não tem WhatsApp";
+      try {
+        return JSON.stringify(x).slice(0, 200);
+      } catch {
+        return String(x);
+      }
+    };
+    if (detalhe) return Array.isArray(detalhe) ? detalhe.map(texto).join("; ") : texto(detalhe);
   }
   return err instanceof Error ? err.message : "Falha na Evolution API";
 }

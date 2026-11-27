@@ -99,6 +99,12 @@ export interface EstadoMaisa {
   // Cliente quer deixar para depois: a Maisa pediu o dia e espera a resposta (no máximo 2 tentativas).
   retornoPergunta?: boolean;
   retornoTentativas?: number;
+  // "Amanhã eu mando": o lembrete espera até esta hora, em vez dos 20 minutos de sempre.
+  adiadoAte?: string;
+  // SIAPE que chegou pelo anúncio: a Maisa confirma o vínculo antes de pedir o CPF.
+  vinculoPendente?: boolean;
+  // Arquivos já lidos (últimos 10): um arquivo que chegou antes de um texto já processado ainda é lido, uma vez só.
+  docsLidos?: string[];
   lembreteEnviado?: boolean; // lembrete quando o cliente some no meio dos dados
   // Quantos follow-ups ela já mandou desde a última fala do cliente (no máximo 2) e quando saiu o último.
   followups?: number;
@@ -651,7 +657,7 @@ function decidirConvenio(estado: EstadoMaisa, convenio: ConvenioEntendido, prefi
   // Só segue com a Maisa o produto que tem simulação por API (CLT, INSS e SIAPE, na Facta).
   // Os demais vão para a equipe abaixo.
   if ((convenio === "clt" || porExtrato(convenio)) && PRODUTOS_COM_SIMULACAO.includes(convenio)) {
-    return comPrefixo(ir(estado, "cpf", [convenio === "siape" ? TEXTOS.pedeCpfSiape : TEXTOS.pedeCpf], convenio, [{ tipo: "convenio", convenio }], { produto: convenio }));
+    return comPrefixo(ir(estado, "cpf", [convenio === "siape" ? TEXTOS.pedeCpfSiapeMenu : TEXTOS.pedeCpf], convenio, [{ tipo: "convenio", convenio }], { produto: convenio }));
   }
   if (convenio === "servidor") {
     return comPrefixo(transferir(estado, "servidor público", TEXTOS.servidorComEquipe, "servidor"));
@@ -732,6 +738,18 @@ async function etapaInicio(estado: EstadoMaisa, texto: string, deps: Dependencia
     const intro = c === "clt" || c === "inss" || c === "siape" ? [TEXTOS.disparoContinua[c]] : [];
     return decidirEContinuar(estado, c, texto, deps, intro);
   }
+  // Resposta a um contato nosso ("Você seria servidor federal?"): "sim" ou um valor seguem pelo produto de que
+  // a mensagem falava, em vez da apresentação e do menu (que a trava do meio de atendimento mandava para a equipe).
+  if (/^\d[\d.,]*\W*$/.test(normalizar(texto)) || mensagemSocial(texto) === "confirmacao_curta" || (await deps.classificador.simNao(texto)) === "sim") {
+    const sugerido = await deps.produtoSugerido?.().catch(() => null);
+    if (sugerido) {
+      const nome = sugerido === "clt" ? "CLT" : sugerido === "inss" ? "INSS" : sugerido === "siape" ? "SIAPE" : "seu convênio";
+      const p = await decidirEContinuar(estado, sugerido, texto, deps, [`Certo, então vamos com o ${nome}.`]);
+      // O "sim" já respondeu se é servidor federal: não pergunta o vínculo de novo.
+      if (p.estado.vinculoPendente) return { ...p, estado: { ...p.estado, vinculoPendente: undefined }, respostas: [`Certo, então vamos com o ${nome}.`, TEXTOS.pedeCpfSiape] };
+      return p;
+    }
+  }
   const intencao = await deps.classificador.intencao(texto);
 
   if (intencao === "acompanhar_proposta") {
@@ -744,6 +762,13 @@ async function etapaInicio(estado: EstadoMaisa, texto: string, deps: Dependencia
   // aqui porque "quero outro empréstimo" não diz nada sobre o vínculo.
   // Um número solto antes de ver a lista não é escolha de produto.
   const convenio = /^\d+\W*$/.test(texto) ? null : await deps.classificador.convenio(texto);
+  // Primeira mensagem já diz SIAPE (a do anúncio é pronta: "Sou servidor federal SIAPE..."): o anúncio também
+  // traz quem é de carteira assinada. Sem CPF na mensagem, confirma o vínculo antes de pedir o CPF.
+  if (convenio === "siape" && !extrairCpf(texto) && PRODUTOS_COM_SIMULACAO.includes("siape")) {
+    const p = decidirConvenio(estado, convenio, [TEXTOS.apresentacao]);
+    if (p.estado.etapa === "cpf") return { ...p, estado: { ...p.estado, vinculoPendente: true }, respostas: [TEXTOS.apresentacao, TEXTOS.pedeVinculoSiape] };
+    return p;
+  }
   if (convenio && convenio !== "outro") return decidirEContinuar(estado, convenio, texto, deps, [TEXTOS.apresentacao]);
 
   if (intencao === "duvida") {
@@ -779,7 +804,53 @@ async function decidirEContinuar(estado: EstadoMaisa, convenio: ConvenioEntendid
   return { ...q, respostas: [...prefixo, ...q.respostas], efeitos: [...p.efeitos, ...q.efeitos] };
 }
 
+// Resposta à confirmação do vínculo SIAPE ("servidor federal ou carteira assinada?"). CPF que chega
+// antes da resposta é anotado, e a pergunta volta uma vez. Sem resposta clara na segunda, segue como SIAPE.
+const VINCULO_CLT = /\b(clt|celetista|carteira|empresa|setor privado|iniciativa privada|privad[oa]|registrad[oa])\b/;
+const VINCULO_SIAPE = /\b(siape|federal|servidor|servidora|aposentad[oa]|pensionista|inativ[oa]|ministerio|universidade|instituto|sim|isso|exato|certo|correto|sou sim|isso mesmo)\b/;
+async function etapaVinculoSiape(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  const t = normalizar(texto);
+  const lido = normalizarCpf(texto);
+  const cpf = lido.tipo === "valido" && cpfValido(lido.cpf) ? lido.cpf : null;
+  const semCpf = cpf ? normalizar(texto.replace(trechoDoCpf(texto) ?? "", " ")) : t;
+  const efeitosCpf: Efeito[] = cpf ? [{ tipo: "cpf", cpf }] : [];
+  const cpfFim = cpf ? cpf.slice(-4) : estado.cpfFim;
+  const limpo: EstadoMaisa = { ...estado, vinculoPendente: undefined, tentativas: 0, cpfFim };
+
+  if (VINCULO_CLT.test(semCpf)) {
+    const clt: EstadoMaisa = { ...limpo, produto: "clt" };
+    if (cpfFim) return ir(clt, "nome", ["Certo, então é CLT.", TEXTOS.pedeNome], "vinculo_clt", [{ tipo: "convenio", convenio: "clt" }, ...efeitosCpf]);
+    return ir(clt, "cpf", ["Certo, então é CLT.", TEXTOS.pedeCpf], "vinculo_clt", [{ tipo: "convenio", convenio: "clt" }]);
+  }
+  // Outro convênio dito com todas as letras (INSS, militar, prefeitura...): segue como na escolha do menu.
+  const outro = /\d/.test(semCpf) && !/[a-z]{3}/.test(semCpf) ? null : await deps.classificador.convenio(semCpf);
+  const ehSiape = VINCULO_SIAPE.test(semCpf) || outro === "siape";
+  if (outro && outro !== "siape" && outro !== "outro" && !(outro === "inss" && ehSiape && !/\binss\b/.test(semCpf))) {
+    const p = decidirConvenio({ ...limpo, produto: undefined }, outro, []);
+    if (p.estado.etapa === "cpf" && cpf) {
+      const q = await etapaCpf(p.estado, texto, deps);
+      return { ...q, efeitos: [...p.efeitos, ...q.efeitos] };
+    }
+    return p;
+  }
+  if (ehSiape || estado.tentativas >= 1) {
+    if (cpf) {
+      const q = await etapaCpf(limpo, texto, deps);
+      return { ...q, rotulo: q.rotulo === "cpf_valido" ? "vinculo_confirmado" : q.rotulo };
+    }
+    if (cpfFim) return ir(limpo, "nascimento", [TEXTOS.pedeNascimento], "vinculo_confirmado");
+    return { estado: limpo, respostas: [TEXTOS.pedeCpfSiape], efeitos: [], rotulo: "vinculo_confirmado" };
+  }
+  // Só o CPF, sem dizer o vínculo: anota e pergunta mais uma vez.
+  if (cpf) {
+    return { estado: { ...estado, cpfFim, tentativas: estado.tentativas + 1 }, respostas: [`Anotei o seu CPF. ${TEXTOS.vinculoSiapeDeNovo}`], efeitos: efeitosCpf, rotulo: "cpf_anotado_vinculo" };
+  }
+  if (texto.includes("?")) return ouvirCliente(estado, texto, deps, TEXTOS.vinculoSiapeDeNovo);
+  return { estado: { ...estado, tentativas: estado.tentativas + 1 }, respostas: [TEXTOS.vinculoSiapeDeNovo], efeitos: [], rotulo: "vinculo_de_novo" };
+}
+
 async function etapaCpf(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  if (estado.vinculoPendente) return etapaVinculoSiape(estado, texto, deps);
   // Normalização determinística: pontuação, espaços e traços não fazem um CPF válido ser recusado.
   const lido = normalizarCpf(texto);
   if (lido.tipo === "tamanho_errado") return tentarDeNovo(estado, TEXTOS.cpfTamanho(lido.digitos), "cpf_tamanho_errado");
@@ -866,10 +937,15 @@ export function lerMargem(texto: string): LeituraMargem | null {
   if (/negativ|estourad|no vermelho|\bmenos\s*(r\$\s*)?\d/.test(t) || /(^|\s|\$)-\s*(r\$\s*)?\d/.test(t)) return { tipo: "negativa" };
   // CPF, telefone e datas têm muitos dígitos: não são margem.
   const numeros = (t.match(/\d[\d.,]*/g) ?? []).filter((x) => x.replace(/\D/g, "").length <= 7).map(numeroDaMargem).filter((n): n is number => n !== null);
+  // "Aparece essas 6", "tenho 3 contratos": o número conta outra coisa, não é a margem.
+  const palavras = t.replace(/\d[\d.,]*/g, " ").trim();
+  const falaDeMargem = /r\$|reais|\breal\b|margem|valor|livre|(^|[^n])disponivel/.test(t);
+  if (numeros.length && palavras && !falaDeMargem && /\b(contratos?|opc\w*|parcelas?|dias?|anos?|mes|meses|vezes|essas?|esses?|itens|bancos?|emprestimos?|cartoes?|cartao|linhas?|botoes|telas?)\b/.test(palavras)) return null;
   if (numeros.length > 1 && new Set(numeros).size > 1) return { tipo: "varios" };
   if (numeros.length) return { tipo: "valor", valor: numeros[0] };
   if (/(zerad|\bzero\b|sem margem|nao (tenho|tem|sobra|ha) margem|nao sobra)/.test(t)) return { tipo: "valor", valor: 0 };
-  if (/(tenho margem|tem margem|positiv|sobra|disponivel)/.test(t)) return { tipo: "positiva" };
+  // "Indisponível" é o aplicativo fora, não margem disponível.
+  if (/(tenho margem|tem margem|positiv|\bsobra|(^|[^n])disponivel)/.test(t) && !/indisponi/.test(t)) return { tipo: "positiva" };
   return null;
 }
 
@@ -877,6 +953,9 @@ export function lerMargem(texto: string): LeituraMargem | null {
 function seguirParaMargem(estado: EstadoMaisa, data: string): Passo {
   return ir(estado, "margem", [TEXTOS.pedeMargem(produtoExtrato(estado))], "nascimento_valido", [], { dataNascimento: data, dataSugerida: undefined });
 }
+
+// Documentos que já servem para a simulação (o extrato mostra a margem; o contracheque, o vínculo).
+const TIPOS_DOCUMENTO_SIMULACAO = new Set(["extrato_siape", "extrato_inss", "contracheque_siape"]);
 
 // Print da margem: negativa encerra, valor segue. Se não for tela de margem (um extrato mandado
 // aqui, por exemplo), devolve null e o arquivo é guardado como extrato antecipado.
@@ -893,8 +972,25 @@ async function margemPorPrint(estado: EstadoMaisa, deps: Dependencias): Promise<
   return { ...p, respostas: [TEXTOS.margemAnotada, ...p.respostas], rotulo: "margem_por_print" };
 }
 
+// Não conseguiu ver a margem: o extrato mostra a margem e os contratos. Segue por ele em vez de chamar a equipe.
+async function margemPeloExtrato(estado: EstadoMaisa, deps: Dependencias): Promise<Passo> {
+  const p = await seguirParaExtrato({ ...estado, margemInformada: undefined }, estado.dataNascimento ?? "", deps);
+  return { ...p, respostas: [TEXTOS.margemPeloExtrato, ...p.respostas], rotulo: "margem_pelo_extrato" };
+}
+
+const NAO_ACHA_MARGEM =
+  /(como|onde) (eu )?(vejo|ver|acho|achar|consulto|consultar|descubro|sei|fica|encontro|encontrar)|nao (sei|consigo|lembro|tenho acesso)|nao (estou|esta|to|tou|tô) conseguindo|nao consegui|\bencontrar\b|nao (acho|achei|encontro|encontrei|aparece|abre|abriu|entra|entrou|carrega|vai)\b|nao esta (abrindo|entrando|aparecendo|carregando)|indisponi|sem acesso|perdi (o )?(acesso|vinculo)|codigo nao chega|nao tenho (o |a )?(aplicativo|app|sougov|senha|gov|celular)|sougov|meu inss|aplicativo/;
+
 // Margem negativa encerra. Zero ou positiva segue para o extrato, onde ainda pode haver port ou refin.
+// Quem não consegue ver a margem não vai para a equipe por isso: segue pelo extrato.
 async function etapaMargem(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
+  if (estado.tentativas >= 1 && lerMargem(texto) === null && NAO_ACHA_MARGEM.test(normalizar(texto))) return margemPeloExtrato(estado, deps);
+  const p = await etapaMargemInterna(estado, texto, deps);
+  if (p.estado.etapa === "finalizada" && p.estado.saida === "nao_entendeu") return margemPeloExtrato(estado, deps);
+  return p;
+}
+
+async function etapaMargemInterna(estado: EstadoMaisa, texto: string, deps: Dependencias): Promise<Passo> {
   const t = normalizar(texto);
   // A data chega de novo (o cliente não viu que ela foi aceita): não é margem.
   const data = lerDataNascimento(texto, deps.agora());
@@ -915,7 +1011,7 @@ async function etapaMargem(estado: EstadoMaisa, texto: string, deps: Dependencia
     const p = await seguirParaExtrato(comMargem, estado.dataNascimento ?? "", deps);
     return { ...p, respostas: [TEXTOS.margemAnotada, ...p.respostas], rotulo: "margem_informada" };
   }
-  if (/(como|onde) (eu )?(vejo|ver|acho|achar|consulto|consultar|descubro|sei)|nao (sei|consigo|lembro|tenho acesso)|nao tenho (o |a )?(aplicativo|app|sougov|senha|gov|celular)|sougov|meu inss|aplicativo/.test(t)) {
+  if (NAO_ACHA_MARGEM.test(t)) {
     return tentarDeNovo(estado, TEXTOS.comoVerMargem(produtoExtrato(estado)), "sem_margem_informada");
   }
   return ouvirCliente(estado, texto, deps);
@@ -2381,6 +2477,11 @@ async function trocaDeProduto(estado: EstadoMaisa, texto: string, deps: Dependen
   if (!SO_PRODUTO.test(t) && (!AFIRMA_PRODUTO.test(t) || t.split(/\s+/).length > 12)) return null;
   const c = await deps.classificador.convenio(texto.replace(/\d/g, " "));
   if (!c || c === estado.produto) return null;
+  // "Sou pensionista", "sou aposentado" no SIAPE: existe pensionista e aposentado do SIAPE. Só troca para o INSS
+  // quando o INSS aparece com todas as letras; senão, pergunta.
+  if (c === "inss" && estado.produto === "siape" && !/\b(inss|meu inss|loas|bpc|beneficio)\b/.test(t)) {
+    return { passo: { estado, respostas: [TEXTOS.perguntaPensionista], efeitos: [], rotulo: "pergunta_pensionista" } };
+  }
   if (c === "inss" || c === "siape") return { estado: { ...estado, produto: c, tentativas: 0 }, aviso: `Certo, então é ${c === "inss" ? "INSS" : "SIAPE"}.`, efeito: { tipo: "convenio", convenio: c } };
   if (c === "clt") {
     const depois: EstadoMaisa =
@@ -2409,9 +2510,35 @@ const horaPermitida = (agora: Date) => {
   return h >= 8 && h < 21;
 };
 
+// "Amanhã": o texto fala do dia seguinte e não é pergunta ("pode ser amanhã?" pede resposta).
+export function adiaParaAmanha(texto: string): boolean {
+  const t = normalizar(texto);
+  return /\bamanha\b/.test(t) && !texto.includes("?") && !/\b(hoje|agora)\b/.test(t);
+}
+
+// Amanhã às 9h de Brasília. Se isso passar de 23 horas a partir de agora (a janela de 24h da Meta), antecipa,
+// mas nunca para antes das 8h: de madrugada ela não manda nada.
+export function lembreteDeAmanha(agora: Date): Date {
+  const brasilia = new Date(agora.getTime() - 3 * 60 * 60_000);
+  const amanha = (h: number) => Date.UTC(brasilia.getUTCFullYear(), brasilia.getUTCMonth(), brasilia.getUTCDate() + 1, h + 3, 0, 0);
+  return new Date(Math.max(Math.min(amanha(9), agora.getTime() + 23 * 60 * 60_000), amanha(8)));
+}
+
 export async function verificarFollowup(estado: EstadoMaisa, agora: Date, deps: Dependencias): Promise<Passo> {
   const parado: Passo = { estado, respostas: [], efeitos: [], rotulo: "nada_a_verificar" };
   if (!ETAPAS_FOLLOWUP.has(estado.etapa)) return parado;
+  // Combinou "amanhã": espera a hora marcada e manda um lembrete só.
+  if (estado.adiadoAte) {
+    if (agora.getTime() < Date.parse(estado.adiadoAte) || !horaPermitida(agora)) return parado;
+    const pergunta = RETOMA_ETAPA[estado.etapa] ?? PERGUNTA_DA_ETAPA[estado.etapa];
+    const escrita = deps.redigirFollowup ? await deps.redigirFollowup({ estado, tentativa: 1, pergunta }).catch(() => null) : null;
+    return {
+      estado: { ...estado, adiadoAte: undefined, followups: 2, followupEm: agora.toISOString(), followupEnviado: true, lembreteEnviado: true },
+      respostas: [escrita ?? `${TEXTOS.lembreteSilencio} ${pergunta}`],
+      efeitos: [],
+      rotulo: "lembrete_combinado",
+    };
+  }
   const oferta = estado.etapa === "oferta" || estado.etapa === "oferta_port";
   // Conversa de antes desta versão, sem a hora da oferta, começa a contar agora.
   if (oferta && !estado.ofertaEm) return { estado: { ...estado, ofertaEm: agora.toISOString(), followupEnviado: false }, respostas: [], efeitos: [], rotulo: "relogio_oferta_iniciado" };
@@ -2480,7 +2607,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   }
 
   // O cliente respondeu: um novo sumiço pode ganhar outro lembrete.
-  if (estado.lembreteEnviado || estado.followups) estado = { ...estado, lembreteEnviado: undefined, followups: undefined, followupEm: undefined };
+  if (estado.lembreteEnviado || estado.followups || estado.adiadoAte) estado = { ...estado, lembreteEnviado: undefined, followups: undefined, followupEm: undefined, adiadoAte: undefined };
   if (!entrada.temMidia && entrada.texto && REACAO.test(entrada.texto)) return { estado, respostas: [], efeitos: [], rotulo: "reacao_ignorada" };
   if (estado.etapa === "inicio" && !estado.produto && !estado.convenioMarcado && deps.propostaRecente && !entrada.temMidia) {
     const p = await deps.propostaRecente().catch(() => null);
@@ -2515,6 +2642,10 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   // "Vou deixar para janeiro", "quando eu tiver margem": ela pede o dia e a equipe chama quando chegar.
   if (entrada.texto && !entrada.temMidia && !entrada.documento) {
     if (estado.retornoPergunta) return tratarRetorno(estado, entrada.texto, deps);
+    // "Amanhã eu mando", "vou pedir amanhã": combina e lembra amanhã, sem passar para a equipe.
+    if (ETAPAS_LEMBRETE.has(estado.etapa) && !estado.vinculoPendente && adiaParaAmanha(entrada.texto)) {
+      return { estado: { ...estado, adiadoAte: lembreteDeAmanha(deps.agora()).toISOString() }, respostas: [TEXTOS.combinadoAmanha], efeitos: [], rotulo: "adiado_amanha" };
+    }
     if (ETAPAS_RETORNO.has(estado.etapa) && querAdiar(entrada.texto)) {
       const data = lerDataRetorno(entrada.texto, deps.agora());
       if (data) return agendarRetorno(estado, data);
@@ -2530,9 +2661,22 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   if (estado.etapa === "extrato" && !entrada.temMidia && pendentes(estado).length) {
     return etapaExtrato({ ...estado, extratoPendenteId: undefined, extratosPendentes: undefined }, { texto: null, documento: true }, deps, pendentes(estado));
   }
-  if (estado.etapa === "margem" && entrada.documento) {
+  // Arquivo na etapa da margem. Extrato ou contracheque: é o documento da simulação, segue direto para a
+  // leitura (antes ela guardava e pedia a margem de novo). Print da tela da margem: lê o valor.
+  if (estado.etapa === "margem" && entrada.documento && entrada.documentoId) {
+    const lote = entrada.documentoIds?.length ? entrada.documentoIds : [entrada.documentoId];
+    const d = await deps.descreverArquivo?.().catch(() => null);
+    if (d && TIPOS_DOCUMENTO_SIMULACAO.has(d.tipo)) {
+      const comDocs: EstadoMaisa = { ...estado, extratoPendenteId: undefined, extratosPendentes: lote.reduce((acc, id) => guardarPendente({ ...estado, extratosPendentes: acc }, id), pendentes(estado)) };
+      const p = await seguirParaExtrato(comDocs, estado.dataNascimento ?? "", deps);
+      return { ...p, rotulo: p.rotulo === "nascimento_valido" ? "extrato_na_margem" : p.rotulo };
+    }
     const p = await margemPorPrint(estado, deps);
     if (p) return p;
+    // Nem documento nem tela de margem legível: diz o que precisa, sem guardar como extrato.
+    if (d && (!d.legivel || d.tipo === "outro" || d.tipo === "print_de_aplicativo")) {
+      return { estado, respostas: [TEXTOS.arquivoNaMargemIlegivel(produtoExtrato(estado))], efeitos: [], rotulo: "arquivo_na_margem_ilegivel" };
+    }
   }
   // Extrato antes da hora (INSS ou SIAPE, ainda no CPF, nome ou data): guarda e pede o que falta.
   if (entrada.documento && entrada.documentoId && porExtrato(estado.produto) && ["cpf", "nome", "nascimento", "margem"].includes(estado.etapa)) {
@@ -2540,7 +2684,8 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
     const jaTinha = pendentes(estado).length > 0;
     const lote = entrada.documentoIds?.length ? entrada.documentoIds : [entrada.documentoId];
     return {
-      estado: { ...estado, extratoPendenteId: undefined, extratosPendentes: lote.reduce((acc, id) => guardarPendente({ ...estado, extratosPendentes: acc }, id), pendentes(estado)) },
+      // O documento do SIAPE já responde à confirmação do vínculo.
+      estado: { ...estado, vinculoPendente: undefined, extratoPendenteId: undefined, extratosPendentes: lote.reduce((acc, id) => guardarPendente({ ...estado, extratosPendentes: acc }, id), pendentes(estado)) },
       respostas: jaTinha ? [] : [TEXTOS.extratoGuardado, PERGUNTA_DA_ETAPA[estado.etapa]],
       efeitos: [],
       rotulo: "extrato_antecipado",
@@ -2597,7 +2742,8 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   // conversacional ligada, ela reconhece o andamento em vez de repetir a pergunta da etapa.
   const pendTipo = descreverPendencia(estado).tipo;
   const andamento = Boolean(deps.conversa?.etapas.has(estado.etapa)) && (pendTipo === "dado" || pendTipo === "arquivo") && leituraCurta(texto) !== null;
-  const social = ETAPAS_SOCIAIS.includes(estado.etapa) && !andamento ? mensagemSocial(texto) : null;
+  // Confirmação do vínculo SIAPE pendente: "sim" e "isso" são a resposta, não conversa social.
+  const social = ETAPAS_SOCIAIS.includes(estado.etapa) && !andamento && !estado.vinculoPendente ? mensagemSocial(texto) : null;
   if (social && !(estado.etapa === "confirmacao" && (social === "confirmacao_curta" || social === "emoji"))) {
     const retoma = retomaDaEtapa(estado);
     const antes = RESPOSTA_SOCIAL[social];
@@ -2609,7 +2755,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   }
 
   // "Na verdade sou do INSS": troca o produto antes de seguir.
-  if (estado.etapa === "cpf" || estado.etapa === "nascimento" || estado.etapa === "margem" || estado.etapa === "extrato") {
+  if (!estado.vinculoPendente && (estado.etapa === "cpf" || estado.etapa === "nascimento" || estado.etapa === "margem" || estado.etapa === "extrato")) {
     const troca = await trocaDeProduto(estado, texto, deps);
     if (troca && "passo" in troca) return troca.passo;
     if (troca) {
@@ -2626,7 +2772,7 @@ export async function avancar(atual: EstadoMaisa | null, entrada: Entrada, deps:
   // orienta, reformula ou encaminha. O que muda estado financeiro segue no motor abaixo, que valida
   // tudo com as regras de sempre. Qualquer falha da camada: vale o fluxo de sempre.
   let decisao: SaidaMotor | null = null;
-  if (deps.conversa?.etapas.has(estado.etapa) && !dadoDireto(estado, texto, deps.agora())) {
+  if (deps.conversa?.etapas.has(estado.etapa) && !estado.vinculoPendente && !dadoDireto(estado, texto, deps.agora())) {
     decisao = await deps.conversa
       .decidir({ estado, texto, pendencia: descreverPendencia(estado), viaAudio: entrada.viaAudio === true, agora: deps.agora() })
       .catch(() => null);

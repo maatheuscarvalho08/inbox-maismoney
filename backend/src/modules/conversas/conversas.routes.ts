@@ -21,6 +21,7 @@ import { definirEtapa } from "../funil/funil.service.js";
 import { retomarComMaisa } from "../maisa/maisa.service.js";
 import { entregarMensagem } from "../mensagens/entrega.js";
 import { emitNovaMensagem } from "../../ws/events.js";
+import { mensagemRelevante } from "../maisa/ordemMensagens.js";
 
 const router = Router();
 router.use(authenticate);
@@ -94,6 +95,37 @@ router.get(
     res.setHeader("Content-Disposition", `attachment; filename="atendimentos-${dias}-dias.csv"`);
     // BOM para o Excel abrir os acentos corretamente.
     res.send(`\uFEFF${[cabecalho, ...linhas].join("\r\n")}`);
+  }),
+);
+
+// Clientes esperando resposta da equipe há mais de 30 minutos: a última fala da conversa é do cliente e
+// não é só "ok" ou "obrigado". Fora da Maisa, nos últimos 3 dias. Quem só vê as próprias atribuídas
+// conta só as que enxerga. Precisa vir antes de /:id.
+router.get(
+  "/esperando",
+  asyncHandler(async (req, res) => {
+    const leitor = req.user!;
+    const linhas = await prisma.$queryRaw<{ id: string; operador_id: string | null; operador: string | null; nome: string | null; em: Date; texto: string | null; midia: string | null }[]>`
+      SELECT c.id, c.operador_id, u.nome AS operador, ct.nome, ult.created_at AS em, ult.conteudo_texto AS texto, ult.tipo_midia AS midia
+      FROM conversas c
+      JOIN contatos ct ON ct.id = c.contato_id
+      LEFT JOIN usuarios u ON u.id = c.operador_id
+      JOIN LATERAL (
+        SELECT m.remetente_tipo, m.created_at, m.conteudo_texto, m.tipo_midia FROM mensagens m
+        WHERE m.conversa_id = c.id AND m.remetente_tipo IN ('cliente', 'operador', 'maisa')
+        ORDER BY m.created_at DESC LIMIT 1
+      ) ult ON true
+      WHERE c.status <> 'encerrada' AND c.com_maisa = false AND ult.remetente_tipo = 'cliente'
+        AND ult.created_at < now() - interval '30 minutes' AND ult.created_at > now() - interval '3 days'
+      ORDER BY ult.created_at ASC`;
+    const esperando = linhas
+      .filter((l) => mensagemRelevante({ conteudoTexto: l.texto, tipoMidia: l.midia }))
+      .filter((l) => !leitor.somenteAtribuidas || l.operador_id === null || l.operador_id === leitor.id);
+    res.json({
+      total: esperando.length,
+      minhas: esperando.filter((l) => l.operador_id === leitor.id).length,
+      conversas: esperando.slice(0, 20).map((l) => ({ id: l.id, nome: l.nome, operador: l.operador, operadorId: l.operador_id, desde: l.em })),
+    });
   }),
 );
 

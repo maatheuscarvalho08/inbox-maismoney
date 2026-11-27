@@ -380,8 +380,17 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
     if (!mensagem || mensagem.remetenteTipo !== "cliente" || mensagem.conversaId !== conversa.id) return;
     // Já lida (webhook repetido, recuperação depois de reinício): não lê de novo.
     if (!gatilho.reler && estadoAntes?.ultimaMensagemEm && !depoisDe(mensagem, estadoAntes.ultimaMensagemEm, estadoAntes.ultimaMensagemId)) {
-      registrarProcesso("mensagem_ja_lida", conversa.id, mensagem.id);
-      return;
+      // Arquivo que chegou segundos antes de um texto, mas foi processado depois dele (o download demora):
+      // ainda é lido, uma vez só. Sem isso, o extrato mandado junto com a data se perdia.
+      const tipoArq = mensagem.tipoMidia?.split(";")[0].trim() ?? "";
+      const atrasado =
+        Boolean(mensagem.midiaPath) && FORMATOS_EXTRATO.includes(tipoArq) && !(estadoAntes.docsLidos ?? []).includes(mensagem.id) &&
+        Date.parse(estadoAntes.ultimaMensagemEm) - mensagem.createdAt.getTime() <= 3 * 60_000;
+      if (!atrasado) {
+        registrarProcesso("mensagem_ja_lida", conversa.id, mensagem.id);
+        return;
+      }
+      registrarProcesso("arquivo_atrasado", conversa.id, mensagem.id);
     }
     lida = { id: mensagem.id, createdAt: mensagem.createdAt };
     const tipo = mensagem.tipoMidia?.split(";")[0].trim() ?? null;
@@ -595,6 +604,11 @@ async function processarComLease(conversaId: string, gatilho: Gatilho) {
   // Releitura de arquivo antigo não faz a marca voltar no tempo.
   const avanca = lida && depoisDe(lida, passo.estado.ultimaMensagemEm, passo.estado.ultimaMensagemId);
   let estadoNovo: EstadoMaisa = lida && avanca ? { ...passo.estado, ultimaMensagemId: lida.id, ultimaMensagemEm: lida.createdAt.toISOString() } : passo.estado;
+  // Guarda os arquivos lidos: um arquivo atrasado (que chegou antes de um texto já lido) é lido uma vez só.
+  if (lida && "documento" in entrada && entrada.documento) {
+    const ids = entrada.documentoIds?.length ? entrada.documentoIds : [lida.id];
+    estadoNovo = { ...estadoNovo, docsLidos: [...(estadoNovo.docsLidos ?? []).filter((x) => !ids.includes(x)), ...ids].slice(-10) };
+  }
   // Foto no cadastro com outra foto logo atrás (frente e verso em duas mensagens): guarda o
   // que leu e deixa a próxima responder, sem pedir o que a outra foto pode trazer.
   const outraFotoLogo =
@@ -991,6 +1005,8 @@ export async function verificarSilencios() {
   // dos que ainda devem o primeiro (o lote pega os mais antigos primeiro).
   const agora = Date.now();
   const naHora = (e: EstadoMaisa | null): boolean => {
+    // "Amanhã eu mando": só entra no lote quando chegar a hora combinada.
+    if (e?.adiadoAte) return Date.parse(e.adiadoAte) <= agora;
     const n = e?.followups ?? (e?.followupEnviado ? 1 : 0);
     if (n >= 2) return false;
     if (n === 0) return true;

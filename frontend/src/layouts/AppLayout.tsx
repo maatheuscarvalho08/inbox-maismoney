@@ -16,6 +16,7 @@ import {
   Bell,
   CalendarCheck,
   CircleAlert,
+  Clock,
   Inbox,
   Megaphone,
   TrendingUp,
@@ -26,6 +27,7 @@ import { useAuth } from "../lib/auth";
 import { useCarrinho } from "../lib/carrinho";
 import { useRetornos } from "../lib/retornos";
 import { useAlertasSistema } from "../lib/alertasSistema";
+import { esperaTexto, useEsperando } from "../lib/esperando";
 import { TEXTO_AVISO, useAvisosMaisa } from "../lib/avisosMaisa";
 import { LogoMaisMoney } from "../components/LogoMaisMoney";
 
@@ -139,6 +141,11 @@ export function AppLayout() {
   const retornos = useRetornos();
   const alertasSistema = useAlertasSistema();
   const [retornoFechado, setRetornoFechado] = useState(false);
+  const esperando = useEsperando();
+  // Fechar a faixa de espera vale por 30 minutos: depois ela volta se ainda houver cliente esperando.
+  const [esperaFechadaAte, setEsperaFechadaAte] = useState(0);
+  const minhaEspera = esperando.conversas.find((c) => c.operadorId === usuario?.id);
+  const maisAntiga = minhaEspera ?? esperando.conversas.find((c) => c.operadorId === null) ?? esperando.conversas[0];
   useEffect(() => {
     if (retornos.ultimo) setRetornoFechado(false);
   }, [retornos.ultimo]);
@@ -302,6 +309,29 @@ export function AppLayout() {
               Abrir conversa
             </Link>
             <button onClick={() => avisosMaisa.dispensar(avisoMaisa)} aria-label="Fechar aviso" className="shrink-0 text-muted hover:text-ink">
+              <X size={14} />
+            </button>
+          </div>
+        )}
+        {esperando.total > 0 && maisAntiga && Date.now() > esperaFechadaAte && (
+          <div role="status" className="flex items-center gap-3 border-b border-primary/30 bg-primary/15 px-6 py-2 text-sm">
+            <Clock size={16} className="shrink-0 text-accent" aria-hidden="true" />
+            <p className="min-w-0 flex-1 truncate text-ink">
+              <span className="font-semibold">{esperando.total}</span> {esperando.total === 1 ? "cliente esperando" : "clientes esperando"} resposta há mais de 30 min
+              {esperando.minhas > 0 && (
+                <>
+                  , <span className="font-semibold">{esperando.minhas}</span> {esperando.minhas === 1 ? "é sua" : "são suas"}
+                </>
+              )}
+              . O mais antigo: <span className="font-semibold">{maisAntiga.nome ?? "cliente"}</span>, há {esperaTexto(maisAntiga.desde)}.
+            </p>
+            <Link
+              to={`/conversas/${maisAntiga.id}`}
+              className="shrink-0 rounded-md bg-primary px-3 py-1 text-xs font-semibold text-marca-indigo hover:opacity-90"
+            >
+              Responder
+            </Link>
+            <button onClick={() => setEsperaFechadaAte(Date.now() + 30 * 60_000)} aria-label="Fechar aviso" className="shrink-0 text-muted hover:text-ink">
               <X size={14} />
             </button>
           </div>
